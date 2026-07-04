@@ -8,7 +8,10 @@ packages:
 #   - esbuild:     native binary used by Vitest
 #   - sharp:       native image pipeline used by Next.js (next/image)
 #   - @sentry/cli: downloads the sentry-cli binary used for source-map upload
+#   - @embedded-postgres/linux-x64: real Postgres 17 binaries for the DB/RLS
+#     integration test harness (packages/db/test)
 allowBuilds:
+  '@embedded-postgres/linux-x64': true
   '@sentry/cli': true
   esbuild: true
   sharp: true
@@ -19,3 +22,4 @@ onlyBuiltDependencies:
   - '@sentry/cli'
   - esbuild
   - sharp
+  - '@embedded-postgres/linux-x64'

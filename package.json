@@ -18,7 +18,8 @@
     "format:check": "prettier --check .",
     "db:gen-types": "pnpm --filter @xidig/db gen-types",
     "search:up": "docker compose up -d meilisearch",
-    "search:down": "docker compose down"
+    "search:down": "docker compose down",
+    "test:db": "pnpm --filter @xidig/db test:integration"
   },
   "devDependencies": {
     "@types/node": "^26.1.0",

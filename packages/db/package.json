@@ -10,9 +10,16 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "test:integration": "vitest run --config vitest.config.integration.ts",
     "gen-types": "pnpm dlx supabase@latest gen types typescript --project-id \"$SUPABASE_PROJECT_ID\" --schema public > src/database.types.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.20.0",
+    "embedded-postgres": "17.10.0-beta.17",
+    "pg": "^8.22.0"
   }
 }
