@@ -47,15 +47,17 @@ export type AuthLinkKind =
   | { kind: 'email_change'; currentEmail: string; newEmail: string };
 
 /**
- * Mint + record + send one auth link. Throws ApiError('already_registered')
- * when a signup link targets an existing account; other GoTrue failures
- * bubble as 500s (they are our misconfiguration, not user error).
+ * Mint + record + send one auth link. Returns the id of the user the link
+ * targets (for signup links, the freshly created user — callers record
+ * consent against it). Throws ApiError('already_registered') when a signup
+ * link targets an existing account; other GoTrue failures bubble as 500s
+ * (they are our misconfiguration, not user error).
  */
 export async function sendAuthLink(
   admin: SupabaseClient<Database>,
   link: AuthLinkKind,
   next?: string,
-): Promise<void> {
+): Promise<string | undefined> {
   const destination = safeNextPath(next);
 
   const { data, error } =
@@ -106,4 +108,6 @@ export async function sendAuthLink(
           : emailChangeEmail(recipient, url);
 
   await getEmailProvider().send(email);
+
+  return data.user?.id;
 }
