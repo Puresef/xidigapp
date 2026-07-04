@@ -1,0 +1,32 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+import type { Database, Enums, Json } from '@xidig/db';
+
+/**
+ * Append-only audit trail writes (§19: immutable audit log). Insert-only by
+ * design — the migration revokes UPDATE/DELETE on audit_logs from every
+ * client role including service_role.
+ */
+export async function writeAudit(
+  admin: SupabaseClient<Database>,
+  entry: {
+    actorUserId: string | null;
+    action: string;
+    targetType?: Enums<'entity_type'>;
+    targetId?: string;
+    metadata?: Record<string, unknown>;
+  },
+): Promise<void> {
+  const { error } = await admin.from('audit_logs').insert({
+    actor_user_id: entry.actorUserId,
+    action: entry.action,
+    target_type: entry.targetType ?? null,
+    target_id: entry.targetId ?? null,
+    metadata: (entry.metadata ?? {}) as Json,
+  });
+  if (error) {
+    // An audit failure must be loud (it's the §19 guarantee) but must not
+    // take the admin action down with it — log and continue.
+    console.error(`[audit] failed to record "${entry.action}":`, error.message);
+  }
+}

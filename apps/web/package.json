@@ -11,7 +11,9 @@
   "dependencies": {
     "@sentry/nextjs": "^10.63.0",
     "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.0",
     "@xidig/db": "workspace:*",
+    "@xidig/i18n": "workspace:*",
     "@xidig/ui": "workspace:*",
     "next": "^16.2.10",
     "react": "^19.2.7",

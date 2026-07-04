@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["SKIP_ENV_VALIDATION=true", "pnpm", "--filter", "@xidig/web", "dev"],
+      "port": 3000
+    }
+  ]
+}

@@ -32,7 +32,11 @@ function selectPluralCategory(count: number, locale: Locale): 'one' | 'other' {
   }
 }
 
-function interpolate(template: string, params: TranslateParams | undefined, locale: Locale): string {
+function interpolate(
+  template: string,
+  params: TranslateParams | undefined,
+  locale: Locale,
+): string {
   return template.replace(/\{(\w+)\}/g, (placeholder, name: string) => {
     const value = params?.[name];
     if (value === undefined) {

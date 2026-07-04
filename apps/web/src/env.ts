@@ -26,6 +26,11 @@ const urlString = (): z.ZodString =>
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
+  // Canonical origin of this deployment. Used to build auth links (magic
+  // links, confirmation, reset) in self-sent emails — never derived from
+  // request headers (host-header injection would poison auth links).
+  APP_URL: urlString().default('http://localhost:3000'),
+
   // Supabase (server-only — safe to use the secret key with these)
   SUPABASE_URL: urlString(),
   SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
@@ -39,8 +44,13 @@ export const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: urlString(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
 
-  // Transactional email
+  // Transactional email. Auth emails (magic links, confirmations, resets)
+  // are sent by the app itself — not by Supabase SMTP — so link expiry can be
+  // enforced app-side (10-minute magic links vs 60-minute reset links, §26).
+  // 'auto' = resend in production, console (log the link) in development.
   EMAIL_API_KEY: z.string().min(1),
+  EMAIL_PROVIDER: z.enum(['auto', 'resend', 'console']).default('auto'),
+  EMAIL_FROM: z.string().min(1).default('Xidig <onboarding@resend.dev>'),
 
   // Maps
   MAPTILER_KEY: z.string().min(1),

@@ -13,10 +13,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p packages/db/tsconfig.json && tsc --noEmit -p packages/ui/tsconfig.json && tsc --noEmit -p packages/config/tsconfig.json",
+    "typecheck": "tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p packages/db/tsconfig.json && tsc --noEmit -p packages/ui/tsconfig.json && tsc --noEmit -p packages/i18n/tsconfig.json && tsc --noEmit -p packages/config/tsconfig.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:gen-types": "pnpm --filter @xidig/db gen-types",
+    "i18n:coverage": "vitest run packages/i18n/src/coverage.test.ts",
     "search:up": "docker compose up -d meilisearch",
     "search:down": "docker compose down",
     "test:db": "pnpm --filter @xidig/db test:integration"
