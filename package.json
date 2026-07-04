@@ -1,0 +1,31 @@
+{
+  "name": "xidig",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @xidig/web dev",
+    "build": "pnpm --recursive build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p apps/web/tsconfig.json && tsc --noEmit -p packages/db/tsconfig.json && tsc --noEmit -p packages/ui/tsconfig.json && tsc --noEmit -p packages/config/tsconfig.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:gen-types": "pnpm --filter @xidig/db gen-types",
+    "search:up": "docker compose up -d meilisearch",
+    "search:down": "docker compose down"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "@xidig/config": "workspace:*",
+    "eslint": "^10.6.0",
+    "prettier": "^3.9.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

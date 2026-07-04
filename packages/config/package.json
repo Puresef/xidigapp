@@ -1,0 +1,19 @@
+{
+  "name": "@xidig/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./eslint": "./eslint-config.js",
+    "./prettier": "./prettier-config.js",
+    "./tsconfig.base.json": "./tsconfig.base.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "typescript-eslint": "^8.62.1"
+  }
+}

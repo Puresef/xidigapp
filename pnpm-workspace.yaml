@@ -1,0 +1,21 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Native dependency build scripts must be explicitly approved (pnpm 10+ blocks
+# them by default as a supply-chain safeguard). Keep this list tight — only
+# dependencies that legitimately need a native build step.
+#   - esbuild:     native binary used by Vitest
+#   - sharp:       native image pipeline used by Next.js (next/image)
+#   - @sentry/cli: downloads the sentry-cli binary used for source-map upload
+allowBuilds:
+  '@sentry/cli': true
+  esbuild: true
+  sharp: true
+
+# `onlyBuiltDependencies` is the equivalent setting for pnpm < 11; kept for
+# forward/backward compatibility.
+onlyBuiltDependencies:
+  - '@sentry/cli'
+  - esbuild
+  - sharp

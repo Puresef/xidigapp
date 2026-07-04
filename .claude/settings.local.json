@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --version)",
+      "Bash(npm --version)",
+      "Bash(git --version)",
+      "Bash(timeout 15 npm view next version)",
+      "Bash(timeout 10 curl -sSI https://registry.npmjs.org/)",
+      "Bash(corepack --version)",
+      "Bash(corepack enable *)",
+      "Bash(corepack prepare *)",
+      "Bash(timeout 60 npm view next version)",
+      "Bash(timeout 60 npm view react version)",
+      "Bash(npm config *)",
+      "Bash(timeout 180 npm install -g pnpm@latest)",
+      "Bash(~/.local/bin/pnpm --version)",
+      "Bash(set -e)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm install *)",
+      "Bash(node -e \"try{require\\('sharp'\\);console.log\\('sharp loads OK'\\)}catch\\(e\\){console.log\\('sharp load FAIL:', e.message.split\\('\\\\n'\\)[0]\\)}\")",
+      "Bash(echo \"EXIT CODE: $?\")",
+      "Read(//tmp/**)",
+      "Bash(rm -rf node_modules apps/*/node_modules packages/*/node_modules)",
+      "Bash(echo \"FRESH INSTALL EXIT: $?\")",
+      "Bash(echo \"CLEAN INSTALL \\(onlyBuiltDependencies only\\) EXIT: $?\")",
+      "Bash(echo \"FINAL CLEAN INSTALL EXIT: $?\")",
+      "Bash(echo \"FROZEN INSTALL EXIT: $?\")"
+    ]
+  }
+}
