@@ -4,8 +4,15 @@
     {
       "name": "web",
       "runtimeExecutable": "env",
-      "runtimeArgs": ["SKIP_ENV_VALIDATION=true", "pnpm", "--filter", "@xidig/web", "dev"],
-      "port": 3000
+      "runtimeArgs": [
+        "SKIP_ENV_VALIDATION=true",
+        "pnpm",
+        "--filter",
+        "@xidig/web",
+        "dev"
+      ],
+      "port": 3000,
+      "autoPort": true
     }
   ]
 }
