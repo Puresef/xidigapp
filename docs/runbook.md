@@ -96,10 +96,26 @@ app-level `public.users` row exists (FK is NO ACTION — §19 anonymise, never
 delete). Account deletion ships as an app-level anonymise routine in a later
 phase; do not hand-delete rows to force it.
 
-**Ops/seed accounts:** `auth.admin.createUser(..., { app_metadata: {
-xidig_gate_bypass: 'true' } })` (service key only) skips the invite gate —
-for provisioning admin/seed accounts. `app_metadata` is not settable by end
-users.
+**Ops/seed accounts:** provision by issuing a `signup_grants` row first, then
+creating the user — the `on_auth_user_created` trigger finds the open grant
+and admits the signup (this is the same path the app's signup route uses):
+
+```js
+// service-role client
+const expires = new Date(Date.now() + 3600_000).toISOString();
+await admin.from('signup_grants').insert({ email, expires_at: expires });
+const { data } = await admin.auth.admin.createUser({ email, email_confirm: true });
+// → public.users row created, grant consumed, founding-member badge if ≤500
+```
+
+> **Do NOT use** the `app_metadata: { xidig_gate_bypass: 'true' }` shortcut with
+> `createUser`. It works against the embedded-postgres test stub but **500s on
+> real GoTrue** (`XIDIG_SIGNUP_NOT_ALLOWED`): GoTrue does not populate
+> `raw_app_meta_data` with the custom key at the moment the AFTER INSERT trigger
+> fires, so the gate-bypass branch in `handle_auth_user_created` never matches.
+> The bypass branch still exists for direct SQL inserts into `auth.users`
+> (migrations/backfills), where you control `raw_app_meta_data` at insert time.
+> Verified live 5 Jul 2026. `app_metadata` remains not settable by end users.
 
 ---
 

@@ -114,9 +114,19 @@ const skipValidation =
  * The validated, typed environment. Importing this module fails fast (throws) at
  * runtime boot if configuration is missing or malformed.
  *
- * Validation is skipped when `SKIP_ENV_VALIDATION` is set, which the `build`
- * script does so that `next build` can run without real secrets. At actual boot
- * (`next start` / `next dev`) the flag is unset, so validation runs — see
- * `src/instrumentation.ts`.
+ * `SKIP_ENV_VALIDATION` (set by the `build` script, and by the dev launcher)
+ * only suppresses the *throw* — it must NOT skip schema parsing wholesale, or
+ * every `.default()` silently vanishes and load-bearing vars like `APP_URL`
+ * come through `undefined` (which breaks auth-link construction). So: always
+ * parse; apply the validated result (defaults included) whenever the env is
+ * valid; fall back to raw `process.env` only when validation genuinely fails
+ * AND skipping is requested (i.e. `next build` without real secrets).
  */
-export const env: Env = skipValidation ? (process.env as unknown as Env) : parseEnv(process.env);
+function resolveEnv(): Env {
+  const result = envSchema.safeParse(process.env);
+  if (result.success) return result.data;
+  if (skipValidation) return process.env as unknown as Env;
+  return parseEnv(process.env); // re-run to throw the readable, aggregated error
+}
+
+export const env: Env = resolveEnv();
