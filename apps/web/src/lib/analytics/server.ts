@@ -1,5 +1,6 @@
 import { env } from '@/env';
 
+import { hasAnalyticsConsent } from './consent';
 import type { AnalyticsEvent, AnalyticsScalar } from './events';
 
 /**
@@ -154,18 +155,27 @@ export function buildCapturePayload(
 export interface CaptureOptions {
   /** PostHog distinct_id — the acting user's UUID, or an anonymous id. */
   distinctId: string;
+  /**
+   * User whose analytics consent governs this event (§26, Art. 6(1)(a)).
+   * `null`/omitted → anonymous → denied. Capture only proceeds with an active
+   * `analytics` consent record; default-deny until the consent UI ships.
+   */
+  userId?: string | null;
   /** ISO timestamp; defaults to now. */
   timestamp?: string;
 }
 
 /**
  * Capture one event. Awaitable, but never throws in production and never
- * blocks meaningfully (2s timeout, errors swallowed). The PII guard runs
- * before the enabled check so misuse is caught even with analytics off.
+ * blocks meaningfully (2s timeout, errors swallowed). Order matters:
+ *   1. PII guard — runs even when disabled, so misuse is caught in dev/test.
+ *   2. enabled check — no key → no-op (tests stop here; no DB, no network).
+ *   3. consent gate — default-deny; only reached on a real, enabled capture.
  */
 export async function captureServer(event: AnalyticsEvent, options: CaptureOptions): Promise<void> {
   const safe = guardProperties(event.properties);
   if (!enabled) return;
+  if (!(await hasAnalyticsConsent(options.userId))) return;
 
   const timestamp = options.timestamp ?? new Date().toISOString();
   const body = buildCapturePayload(event, options.distinctId, timestamp, safe);

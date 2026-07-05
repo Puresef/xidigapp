@@ -99,6 +99,14 @@ rejects PII-bearing keys/values at runtime (throws in dev/test, strips + warns
 in prod). `distinct_id` is the user UUID, or a stable per-browser anonymous id
 pre-signup.
 
+**Consent-gated, default-deny** (`consent.ts`): the lawful basis for analytics
+is opt-in consent (§26, Art. 6(1)(a)), so `captureServer` drops any event whose
+`userId` lacks an active `analytics` consent record — and anonymous events
+(no `userId`) are always dropped. The check is fail-closed. Until the
+consent-capture UI ships (ToS/cookie task), no `analytics` consent rows exist,
+so the pipeline stays dark for everyone even once `POSTHOG_KEY` is set. Wiring
+order in `captureServer`: PII guard → enabled(key) → **consent** → send.
+
 Events wired to the actions that fire them:
 
 | Event                                                             | Where                              |

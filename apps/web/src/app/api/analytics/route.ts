@@ -41,10 +41,13 @@ export async function POST(request: Request): Promise<Response> {
     const ctx = await getAuthContext();
     const distinctId = distinctIdFor(ctx?.appUser.id, body.anonymousId);
 
-    // captureServer re-guards properties for PII before anything leaves the
-    // process; in production it strips offenders rather than throwing.
+    // captureServer re-guards properties for PII AND consent-gates on userId
+    // before anything leaves the process. Anonymous callers (no session) have
+    // no consent record → the event is dropped (default-deny) until an
+    // anonymous/cookie-consent mechanism exists.
     await captureServer(event(body.name, body.properties as AnalyticsEventMap[typeof body.name]), {
       distinctId,
+      userId: ctx?.appUser.id ?? null,
     });
 
     return apiOk({ accepted: true });

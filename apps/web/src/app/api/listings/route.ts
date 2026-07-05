@@ -95,21 +95,31 @@ async function findDuplicates(
   ctx: AuthContext,
   businessName: string,
   city: string | null | undefined,
-): Promise<Array<{ id: string; business_name: string; city: string | null }>> {
+): Promise<Array<{ id: string; business_name: string; city: string | null; claimable: boolean }>> {
   const normalized = normalizeBusinessName(businessName);
   const anchor = normalized.split(' ')[0] ?? normalized;
   if (anchor.length < 2) return [];
 
   let query = ctx.supabase
     .from('business_listings')
-    .select('id, business_name, city')
+    .select('id, business_name, city, owner_user_id')
     .eq('status', 'published')
     .ilike('business_name', `%${anchor}%`)
     .limit(25);
   if (city) query = query.ilike('city', city);
 
   const { data } = await query;
-  return (data ?? []).filter((row) => normalizeBusinessName(row.business_name) === normalized);
+  return (data ?? [])
+    .filter((row) => normalizeBusinessName(row.business_name) === normalized)
+    // §18: expose a derived `claimable` flag but never the raw owner id — an
+    // already-owned listing hits listing_claims_insert_own RLS (42501) if a
+    // member tries to claim it, so the client hides Claim for owned matches.
+    .map((row) => ({
+      id: row.id,
+      business_name: row.business_name,
+      city: row.city,
+      claimable: row.owner_user_id === null,
+    }));
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -164,7 +174,7 @@ export async function POST(request: Request): Promise<Response> {
         category: listing.category_id,
         has_coordinates: listing.latitude !== null && listing.longitude !== null,
       }),
-      { distinctId: ctx.appUser.id },
+      { distinctId: ctx.appUser.id, userId: ctx.appUser.id },
     );
 
     return apiOk({ listing }, 201);

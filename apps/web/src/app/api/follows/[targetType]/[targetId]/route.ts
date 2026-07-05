@@ -75,6 +75,7 @@ export async function PUT(
 
     emitServer(event('follow_created', { target_type: target.targetType }), {
       distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
     });
 
     return apiOk({ following: true }, 201);

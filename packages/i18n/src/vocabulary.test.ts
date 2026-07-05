@@ -13,7 +13,7 @@ describe('canonical navigation names', () => {
   const canonical = [
     ['nav.home', 'Home', 'Hoy'],
     ['nav.plaza', 'Plaza', 'Madal'],
-    ['nav.labs', 'Labs', 'Labs'],
+    ['nav.labs', 'Labs', 'Warshad'],
     ['nav.suuq', 'Directory & Map', 'Suuq'],
     ['nav.messages', 'Messages', 'Fariimo'],
     ['nav.capital', 'Capital', 'Maal'],
@@ -51,6 +51,11 @@ describe('canonical product terms', () => {
     expect(en['term.maalgeli']).toBe('Invest');
     expect(so['term.maalgeli']).toBe('Maalgeli');
   });
+
+  it('Abuur is the create action — a header button, never a nav tab (naming review 5 Jul)', () => {
+    expect(en['action.abuur']).toBe('Create');
+    expect(so['action.abuur']).toBe('Abuur');
+  });
 });
 
 describe('language identity', () => {
@@ -59,8 +64,8 @@ describe('language identity', () => {
     expect(LOCALES[0]).toBe('so');
   });
 
-  it('names each language in itself (endonyms), for the toggle', () => {
-    expect(LOCALE_NAMES.so).toBe('Soomaali');
+  it('toggle language names per naming review 5 Jul: short/brandable "Somali" over "Soomaali"', () => {
+    expect(LOCALE_NAMES.so).toBe('Somali');
     expect(LOCALE_NAMES.en).toBe('English');
   });
 });

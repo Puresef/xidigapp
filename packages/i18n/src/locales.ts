@@ -22,13 +22,15 @@ export const DEFAULT_LOCALE: Locale = 'so';
 export const FALLBACK_LOCALE: Locale = 'en';
 
 /**
- * Endonyms — each language named in itself. These are shown verbatim in the
- * language toggle regardless of the active locale (a Somali speaker stuck on
- * an English UI must be able to find their language), so they are constants
- * here rather than dictionary keys.
+ * Language names shown verbatim in the toggle regardless of the active
+ * locale (a Somali speaker stuck on an English UI must be able to find
+ * their language), so they are constants here rather than dictionary keys.
+ *
+ * Naming review 5 Jul: "Somali" (short/brandable) over the strict endonym
+ * "Soomaali" — shorter and instantly recognisable in both scripts' habits.
  */
 export const LOCALE_NAMES: Record<Locale, string> = {
-  so: 'Soomaali',
+  so: 'Somali',
   en: 'English',
 };
 

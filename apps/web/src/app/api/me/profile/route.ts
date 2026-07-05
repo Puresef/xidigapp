@@ -41,8 +41,13 @@ export async function PUT(request: Request): Promise<Response> {
       contact_options: input.contact_options as unknown as Json,
     };
 
+    // user_id is in the INSERT column grant but NOT the UPDATE grant
+    // (20260704200000_phase1_auth.sql) — including it in an UPDATE SET list
+    // raises 42501. The .eq() already targets the caller's own row, so the
+    // update never needs it.
+    const { user_id: _pk, ...updateRow } = row;
     const query = existing
-      ? ctx.supabase.from('profiles').update(row).eq('user_id', ctx.appUser.id)
+      ? ctx.supabase.from('profiles').update(updateRow).eq('user_id', ctx.appUser.id)
       : ctx.supabase.from('profiles').insert(row);
 
     const { data: saved, error } = await query
@@ -63,7 +68,10 @@ export async function PUT(request: Request): Promise<Response> {
     const previousLanes = new Set((existing?.lanes ?? []) as string[]);
     for (const lane of input.lanes) {
       if (!previousLanes.has(lane)) {
-        emitServer(event('lane_selected', { lane }), { distinctId: ctx.appUser.id });
+        emitServer(event('lane_selected', { lane }), {
+          distinctId: ctx.appUser.id,
+          userId: ctx.appUser.id,
+        });
       }
     }
 
@@ -81,7 +89,7 @@ export async function PUT(request: Request): Promise<Response> {
           skills_count: input.skills.length,
           lanes_count: input.lanes.length,
         }),
-        { distinctId: ctx.appUser.id },
+        { distinctId: ctx.appUser.id, userId: ctx.appUser.id },
       );
     }
 

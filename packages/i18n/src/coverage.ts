@@ -24,6 +24,11 @@ export const LAUNCH_FLOOR_NAMESPACES = [
   'waitlist',
   'settings',
   'a11y',
+  // Member-facing trust surfaces (Phase 1 UI): profiles, Suuq directory/map,
+  // Following feed. Somali must ship complete here too.
+  'profile',
+  'suuq',
+  'feed',
 ] as const;
 
 export interface NamespaceCoverage {

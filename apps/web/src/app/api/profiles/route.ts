@@ -3,15 +3,17 @@ import { z } from 'zod';
 import { apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/pagination';
+import { normalizeSearchName } from '@/lib/search-norm';
 
 /**
  * Directory search (§18). Member-visible (RLS: profiles_select_authenticated).
  * Filters: skill / lane / country / city / free text (q). Keyset-paginated.
  *
- * This is the Postgres-backed baseline; §24 makes Meilisearch the real
- * fuzzy/transliteration search layer (Maxamed/Mohamed). `q` here is a simple
- * prefix/contains match — good enough for exact-ish lookups until the search
- * index is wired.
+ * `q` is transliteration-tolerant (Phase 1 acceptance: Maxamed ↔ Mohamed):
+ * both the stored `search_norm` generated column (migration 20260705010000)
+ * and the query term fold through the same normalization, then match by
+ * substring. §24's Meilisearch adds ranking/typo-tolerance later; this stays
+ * the exact-recall baseline.
  */
 
 const querySchema = z.object({
@@ -39,13 +41,24 @@ export async function GET(request: Request): Promise<Response> {
       .order('user_id', { ascending: false })
       .limit(params.limit + 1);
 
-    if (params.country) query = query.eq('location_country', params.country);
-    if (params.city) query = query.eq('location_city', params.city);
+    // ilike (no wildcards) = case-insensitive whole-string match on these
+    // free-text columns — parity with GET /api/listings, so "somalia" and
+    // "Somalia" behave the same on both Suuq tabs.
+    if (params.country) query = query.ilike('location_country', params.country);
+    if (params.city) query = query.ilike('location_city', params.city);
     if (params.skill) query = query.contains('skills', [params.skill]);
     if (params.lane) query = query.contains('lanes', [params.lane]);
     if (params.q) {
-      const term = params.q.replace(/[%,()]/g, ' ');
-      query = query.or(`display_name.ilike.%${term}%,handle.ilike.%${term}%`);
+      // Folded skeleton is [a-z0-9 ] only — safe inside a PostgREST pattern.
+      const folded = normalizeSearchName(params.q);
+      if (folded) {
+        query = query.ilike('search_norm', `%${folded}%`);
+      } else {
+        // Nothing alphanumeric survived folding (emoji/other-script input):
+        // fall back to the raw contains match rather than returning everyone.
+        const term = params.q.replace(/[%,()]/g, ' ');
+        query = query.or(`display_name.ilike.%${term}%,handle.ilike.%${term}%`);
+      }
     }
 
     const cursor = decodeCursor(params.cursor);

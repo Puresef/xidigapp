@@ -56,7 +56,10 @@ export async function PATCH(
         .eq('id', claim.listing_id);
       if (transferError) throw new Error(`ownership transfer failed: ${transferError.message}`);
 
-      emitServer(event('listing_claimed', {}), { distinctId: claim.claimant_user_id });
+      emitServer(event('listing_claimed', {}), {
+        distinctId: claim.claimant_user_id,
+        userId: claim.claimant_user_id,
+      });
     }
 
     await writeAudit(admin, {

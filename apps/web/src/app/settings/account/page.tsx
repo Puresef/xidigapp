@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation';
 
+import { LowBandwidthToggle } from '@/components/low-bandwidth-toggle';
 import { AccountSettings, type AccountSnapshot } from '@/components/settings/account-settings';
 import { getAuthContext } from '@/lib/auth/guards';
+import { getLowBandwidth } from '@/lib/bandwidth-server';
 import { getT } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
@@ -40,10 +42,15 @@ export default async function AccountSettingsPage() {
     passwordNudgeDismissed: onboarding['passwordNudgeDismissed'] === true,
   };
 
+  const lowBandwidth = await getLowBandwidth();
+
   return (
     <main className="xidig-auth">
       <h1 className="xidig-auth__title">{t('settings.accountTitle')}</h1>
       <AccountSettings snapshot={snapshot} invites={invites ?? []} />
+      <section className="xidig-section">
+        <LowBandwidthToggle initialEnabled={lowBandwidth} signedIn />
+      </section>
     </main>
   );
 }

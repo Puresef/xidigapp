@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { hasAnalyticsConsent } from './consent';
 import { CLIENT_EVENT_NAMES, event, isClientEventName } from './events';
 import { buildCapturePayload, captureServer, distinctIdFor, sanitizeProperties } from './server';
 
@@ -121,6 +122,15 @@ describe('captureServer', () => {
     const spy = vi.spyOn(globalThis, 'fetch');
     await captureServer(event('map_view', {}), { distinctId: 'anonymous' });
     expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe('hasAnalyticsConsent (default-deny, §26/Art. 6(1)(a))', () => {
+  it('denies anonymous (no userId) without touching the database', async () => {
+    // Short-circuits before any admin-client import, so no env/DB is needed.
+    expect(await hasAnalyticsConsent(null)).toBe(false);
+    expect(await hasAnalyticsConsent(undefined)).toBe(false);
+    expect(await hasAnalyticsConsent('')).toBe(false);
   });
 });
 

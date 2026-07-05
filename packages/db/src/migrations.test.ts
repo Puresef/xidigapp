@@ -598,3 +598,151 @@ describe('phase 1 API surface policies', () => {
     ).rejects.toThrow(/permission denied/);
   });
 });
+
+describe('xidig_name_norm — §18 transliteration search (20260705010000)', () => {
+  // Same variant groups as apps/web/src/lib/search-norm.test.ts. The SQL
+  // function and the TS twin fold independently (stored vs query side), so
+  // both suites also pin identical exact skeletons below.
+  const variantGroups: string[][] = [
+    ['Maxamed', 'Mohamed', 'Mohammed', 'Muhammad'],
+    ['Axmed', 'Ahmed'],
+    ['Cali', 'Ali'],
+    ['Cabdullahi', 'Abdullahi', 'Abdulahi'],
+    ['Khadiija', 'Khadija'],
+    ['Xasan', 'Hassan', 'Hasan'],
+    ['Faarax', 'Farah'],
+    ['Cumar', 'Omar', 'Umar'],
+  ];
+
+  it('folds transliteration variants to a single skeleton', async () => {
+    for (const group of variantGroups) {
+      const result = await db.admin.query(
+        `select count(distinct public.xidig_name_norm(n))::int as skeletons
+         from unnest($1::text[]) as n`,
+        [group],
+      );
+      expect(result.rows[0].skeletons).toBe(1);
+    }
+  });
+
+  it('pins the exact skeletons the TS twin pins (cross-language equivalence)', async () => {
+    const result = await db.admin.query(
+      `select public.xidig_name_norm('Maxamed Warsame') as a,
+              public.xidig_name_norm('maxamed_w') as b,
+              public.xidig_name_norm('—— !!') as c`,
+    );
+    expect(result.rows[0].a).toBe('mahamad warsama');
+    expect(result.rows[0].b).toBe('mahamad w');
+    expect(result.rows[0].c).toBe('');
+  });
+
+  it('search_norm generated column is filterable by members under RLS', async () => {
+    const target = await db.createAuthUser({
+      email: 'mohamed.w@example.com',
+      gateBypass: true,
+    });
+    await db.asUser(target, (tx) =>
+      tx.query(`insert into profiles (user_id, display_name, handle) values ($1, $2, $3)`, [
+        target,
+        'Mohamed Warsame',
+        'mohamed_w',
+      ]),
+    );
+    const searcher = await seedMember('search_probe');
+
+    // The query side folds "Maxamed" exactly like lib/search-norm.ts would.
+    const found = await db.asUser(searcher, (tx) =>
+      tx.query(
+        `select handle from profiles
+         where search_norm ilike '%' || public.xidig_name_norm('Maxamed') || '%'`,
+      ),
+    );
+    expect(found.rows.map((r) => r.handle)).toContain('mohamed_w');
+  });
+
+  it('normalizes business listings for duplicate-adjacent search', async () => {
+    const result = await db.admin.query(
+      `select public.xidig_name_norm('Xidig Halal Foods') as norm`,
+    );
+    expect(result.rows[0].norm).toBe(
+      (await db.admin.query(`select public.xidig_name_norm('Hidig Xalal Foods') as norm`))
+        .rows[0].norm,
+    );
+  });
+});
+
+describe('following_listings view + claim idempotency (20260705020000)', () => {
+  it('feed view: caller sees followed users\' published listings, not others\'', async () => {
+    const follower = await seedMember('feed_follower');
+    const followed = await seedMember('feed_followed');
+    const stranger = await seedMember('feed_stranger');
+    const category = (
+      await db.admin.query(`select id from listing_categories order by position limit 1`)
+    ).rows[0].id;
+
+    // Two published listings — one by a followed user, one by a stranger.
+    await db.asUser(followed, (tx) =>
+      tx.query(
+        `insert into business_listings (owner_user_id, business_name, category_id) values ($1, 'Followed Biz', $2)`,
+        [followed, category],
+      ),
+    );
+    await db.asUser(stranger, (tx) =>
+      tx.query(
+        `insert into business_listings (owner_user_id, business_name, category_id) values ($1, 'Stranger Biz', $2)`,
+        [stranger, category],
+      ),
+    );
+    await db.asUser(follower, (tx) =>
+      tx.query(
+        `insert into follows (follower_user_id, target_type, target_id) values ($1, 'user', $2)`,
+        [follower, followed],
+      ),
+    );
+
+    const feed = await db.asUser(follower, (tx) =>
+      tx.query(`select business_name from public.following_listings`),
+    );
+    const names = feed.rows.map((r) => r.business_name);
+    expect(names).toContain('Followed Biz');
+    expect(names).not.toContain('Stranger Biz');
+  });
+
+  it('feed view: security_invoker keeps it empty for a user who follows nobody', async () => {
+    const loner = await seedMember('feed_loner');
+    const feed = await db.asUser(loner, (tx) =>
+      tx.query(`select count(*)::int as n from public.following_listings`),
+    );
+    expect(feed.rows[0].n).toBe(0);
+  });
+
+  it('claim idempotency: a member cannot hold two pending claims on one listing', async () => {
+    const claimant = await seedMember('claim_dup_claimant');
+    const category = (
+      await db.admin.query(`select id from listing_categories order by position limit 1`)
+    ).rows[0].id;
+
+    // An UNCLAIMED (owner_user_id null) seeded listing.
+    const listingId = (
+      await db.admin.query(
+        `insert into business_listings (business_name, category_id, source) values ('Seed Co', $1, 'seed') returning id`,
+        [category],
+      )
+    ).rows[0].id;
+
+    await db.asUser(claimant, (tx) =>
+      tx.query(`insert into listing_claims (listing_id, claimant_user_id) values ($1, $2)`, [
+        listingId,
+        claimant,
+      ]),
+    );
+    await expect(
+      db.asUser(claimant, (tx) =>
+        tx.query(`insert into listing_claims (listing_id, claimant_user_id) values ($1, $2)`, [
+          listingId,
+          claimant,
+        ]),
+      ),
+    ).rejects.toThrow(/duplicate key|listing_claims_one_pending_per_member/);
+  });
+});

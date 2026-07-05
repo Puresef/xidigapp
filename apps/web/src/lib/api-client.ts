@@ -8,7 +8,16 @@ import type { PlainError } from '@/lib/errors';
  */
 
 export class ApiRequestError extends Error {
-  constructor(public readonly plain: PlainError) {
+  constructor(
+    public readonly plain: PlainError,
+    /**
+     * The raw response body, for the one documented envelope deviation:
+     * `POST /api/listings` 409 carries a top-level `duplicates` array next to
+     * `error` (§18 duplicate detection). Callers that need such siblings read
+     * them from here; everyone else ignores it.
+     */
+    public readonly body?: unknown,
+  ) {
     super(plain.message);
     this.name = 'ApiRequestError';
   }
@@ -41,6 +50,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
         code: 'server_error',
         message: '',
       },
+      body,
     );
   }
 
@@ -57,4 +67,12 @@ export function apiPost<T>(path: string, body?: unknown): Promise<T> {
 
 export function apiPatch<T>(path: string, body?: unknown): Promise<T> {
   return request<T>(path, { method: 'PATCH', body: JSON.stringify(body ?? {}) });
+}
+
+export function apiPut<T>(path: string, body?: unknown): Promise<T> {
+  return request<T>(path, { method: 'PUT', body: JSON.stringify(body ?? {}) });
+}
+
+export function apiDelete<T>(path: string): Promise<T> {
+  return request<T>(path, { method: 'DELETE' });
 }

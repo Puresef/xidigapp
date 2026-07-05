@@ -285,3 +285,196 @@ main {
   padding: 0.5rem 0.75rem;
   font-family: ui-monospace, monospace;
 }
+
+/* --- Phase 1 member-facing UI (Seq 29/30 + §18 Suuq) ------------------- */
+
+.xidig-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.xidig-nav__item a[aria-current='page'] {
+  color: var(--x-fg);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.4em;
+}
+
+.xidig-coming-soon {
+  max-width: var(--x-max-form);
+  margin: 3rem auto;
+  padding: 0 var(--x-space);
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+.xidig-coming-soon__badge {
+  margin: 0;
+  border: 1px solid var(--x-border);
+  border-radius: 999px;
+  padding: 0.15rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--x-muted);
+}
+
+/* Generic content card + card grids (directory results, feed, listings). */
+.xidig-card {
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: var(--x-space);
+  display: grid;
+  gap: 0.4rem;
+}
+
+.xidig-card a {
+  text-decoration: none;
+}
+
+.xidig-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.xidig-card__meta {
+  color: var(--x-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.xidig-card__body {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.xidig-card-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+
+.xidig-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Profile page */
+.xidig-profile__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+}
+
+.xidig-profile__handle {
+  color: var(--x-muted);
+}
+
+.xidig-profile__counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: var(--x-muted);
+  font-size: 0.92rem;
+}
+
+.xidig-profile__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+/* Directory toolbar (search + filters) */
+.xidig-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+  margin-bottom: var(--x-space);
+}
+
+.xidig-toolbar .xidig-field {
+  min-width: 9rem;
+  flex: 1 1 9rem;
+}
+
+.xidig-toolbar .xidig-field--grow {
+  flex: 3 1 14rem;
+}
+
+/* Map (Leaflet mounts into this) */
+.xidig-map {
+  width: 100%;
+  height: 55vh;
+  min-height: 18rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+}
+
+.xidig-map--pick {
+  height: 40vh;
+  min-height: 14rem;
+}
+
+.xidig-map-pin {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--x-accent);
+  border: 2px solid var(--x-accent-fg);
+  box-shadow: 0 0 0 1px var(--x-accent);
+}
+
+/* Inline row editors (links, contact links) */
+.xidig-row-editor {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.xidig-row-editor__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.xidig-row-editor__row .xidig-field__input {
+  width: auto;
+  flex: 1 1 8rem;
+}
+
+/* Simple on/off switch button (low-bandwidth toggle) */
+.xidig-switch[aria-pressed='true'] {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+}
+
+/* Links styled as buttons (Abuur, CTAs) share .xidig-button with real
+   buttons — kill the anchor underline. */
+a.xidig-button {
+  text-decoration: none;
+}
+
+/* Link-based tabs (Suuq): same look as button tabs, URL-driven state. */
+a.xidig-tabs__tab {
+  text-decoration: none;
+  text-align: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: calc(var(--x-radius) - 4px);
+  color: var(--x-muted);
+  flex: 1;
+}
+
+a.xidig-tabs__tab[aria-current='page'] {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+}
