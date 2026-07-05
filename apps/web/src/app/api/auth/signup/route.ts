@@ -6,7 +6,7 @@ import { issueSignupGrant } from '@/lib/auth/grants';
 import { emailSchema, normalizePhone } from '@/lib/auth/identifiers';
 import { validateInviteCode } from '@/lib/auth/invites';
 import { mintAuthLink, sendAuthLink } from '@/lib/auth/links';
-import { getEmailProvider } from '@/lib/email/provider';
+import { sendEmailChecked } from '@/lib/email/send';
 import { sendPhoneOtp } from '@/lib/auth/otp';
 import { validatePassword } from '@/lib/auth/password-policy';
 import { clientIp, enforceRateLimit } from '@/lib/rate-limit';
@@ -90,7 +90,7 @@ export async function POST(request: Request): Promise<Response> {
         '/onboarding',
       );
       if (minted.userId) await recordSignupConsents(admin, minted.userId);
-      await getEmailProvider().send(minted.outgoing);
+      await sendEmailChecked(admin, minted.outgoing);
       return apiNotice('confirm_email_sent');
     }
 

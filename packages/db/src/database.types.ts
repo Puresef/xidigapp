@@ -1,2144 +1,3311 @@
-// AUTO-GENERATED from the migrations in supabase/migrations — do not edit.
-//
-// Regenerate with `pnpm gen-types:local` (embedded-postgres, no Supabase
-// project or Docker needed). Once a hosted project exists, `pnpm gen-types`
-// against the project ref should produce an equivalent Database shape.
-
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   public: {
     Tables: {
       api_keys: {
         Row: {
+          created_at: string
+          expires_at: string | null
           id: string
-          owner_user_id: string
-          name: string
           key_hash: string
           key_prefix: string
-          scopes: string[]
           last_used_at: string | null
-          expires_at: string | null
+          name: string
+          owner_user_id: string
           revoked_at: string | null
-          created_at: string
+          scopes: string[]
         }
         Insert: {
+          created_at?: string
+          expires_at?: string | null
           id?: string
-          owner_user_id: string
-          name: string
           key_hash: string
           key_prefix: string
-          scopes?: string[]
           last_used_at?: string | null
-          expires_at?: string | null
+          name: string
+          owner_user_id: string
           revoked_at?: string | null
-          created_at?: string
+          scopes?: string[]
         }
         Update: {
+          created_at?: string
+          expires_at?: string | null
           id?: string
-          owner_user_id?: string
-          name?: string
           key_hash?: string
           key_prefix?: string
-          scopes?: string[]
           last_used_at?: string | null
-          expires_at?: string | null
+          name?: string
+          owner_user_id?: string
           revoked_at?: string | null
-          created_at?: string
+          scopes?: string[]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       app_settings: {
         Row: {
           key: string
-          value: Json
           updated_at: string
+          value: Json
         }
         Insert: {
           key: string
-          value: Json
           updated_at?: string
+          value: Json
         }
         Update: {
           key?: string
-          value?: Json
           updated_at?: string
+          value?: Json
         }
         Relationships: []
       }
       appeals: {
         Row: {
-          id: string
-          mod_action_id: string
           appellant_user_id: string
           body: string
-          status: Database['public']['Enums']['appeal_status']
-          reviewed_by_user_id: string | null
-          decision_notes: string | null
-          decided_at: string | null
           created_at: string
+          decided_at: string | null
+          decision_notes: string | null
+          id: string
+          mod_action_id: string
+          reviewed_by_user_id: string | null
+          status: Database["public"]["Enums"]["appeal_status"]
           updated_at: string
         }
         Insert: {
-          id?: string
-          mod_action_id: string
           appellant_user_id: string
           body: string
-          status?: Database['public']['Enums']['appeal_status']
-          reviewed_by_user_id?: string | null
-          decision_notes?: string | null
-          decided_at?: string | null
           created_at?: string
+          decided_at?: string | null
+          decision_notes?: string | null
+          id?: string
+          mod_action_id: string
+          reviewed_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["appeal_status"]
           updated_at?: string
         }
         Update: {
-          id?: string
-          mod_action_id?: string
           appellant_user_id?: string
           body?: string
-          status?: Database['public']['Enums']['appeal_status']
-          reviewed_by_user_id?: string | null
-          decision_notes?: string | null
-          decided_at?: string | null
           created_at?: string
+          decided_at?: string | null
+          decision_notes?: string | null
+          id?: string
+          mod_action_id?: string
+          reviewed_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["appeal_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "appeals_appellant_user_id_fkey"
+            columns: ["appellant_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appeals_mod_action_id_fkey"
+            columns: ["mod_action_id"]
+            isOneToOne: true
+            referencedRelation: "mod_actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appeals_reviewed_by_user_id_fkey"
+            columns: ["reviewed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_logs: {
         Row: {
-          id: string
+          action: string
           actor_user_id: string | null
           api_key_id: string | null
-          action: string
-          target_type: Database['public']['Enums']['entity_type'] | null
-          target_id: string | null
-          metadata: Json
           created_at: string
+          id: string
+          metadata: Json
+          target_id: string | null
+          target_type: Database["public"]["Enums"]["entity_type"] | null
         }
         Insert: {
-          id?: string
+          action: string
           actor_user_id?: string | null
           api_key_id?: string | null
-          action: string
-          target_type?: Database['public']['Enums']['entity_type'] | null
-          target_id?: string | null
-          metadata?: Json
           created_at?: string
+          id?: string
+          metadata?: Json
+          target_id?: string | null
+          target_type?: Database["public"]["Enums"]["entity_type"] | null
         }
         Update: {
-          id?: string
+          action?: string
           actor_user_id?: string | null
           api_key_id?: string | null
-          action?: string
-          target_type?: Database['public']['Enums']['entity_type'] | null
-          target_id?: string | null
-          metadata?: Json
           created_at?: string
+          id?: string
+          metadata?: Json
+          target_id?: string | null
+          target_type?: Database["public"]["Enums"]["entity_type"] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       auth_email_tokens: {
         Row: {
-          token_hash: string
-          user_id: string | null
-          email: string
-          type: string
-          created_at: string
           consumed_at: string | null
+          created_at: string
+          email: string
+          token_hash: string
+          type: string
+          user_id: string | null
         }
         Insert: {
-          token_hash: string
-          user_id?: string | null
-          email: string
-          type: string
-          created_at?: string
           consumed_at?: string | null
+          created_at?: string
+          email: string
+          token_hash: string
+          type: string
+          user_id?: string | null
         }
         Update: {
-          token_hash?: string
-          user_id?: string | null
-          email?: string
-          type?: string
-          created_at?: string
           consumed_at?: string | null
+          created_at?: string
+          email?: string
+          token_hash?: string
+          type?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "auth_email_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       award_votes: {
         Row: {
+          category: Database["public"]["Enums"]["award_category"]
+          created_at: string
           id: string
           quarter: string
-          category: Database['public']['Enums']['award_category']
-          voter_user_id: string
-          target_type: Database['public']['Enums']['entity_type']
           target_id: string
-          created_at: string
+          target_type: Database["public"]["Enums"]["entity_type"]
+          voter_user_id: string
         }
         Insert: {
+          category: Database["public"]["Enums"]["award_category"]
+          created_at?: string
           id?: string
           quarter: string
-          category: Database['public']['Enums']['award_category']
-          voter_user_id: string
-          target_type: Database['public']['Enums']['entity_type']
           target_id: string
-          created_at?: string
+          target_type: Database["public"]["Enums"]["entity_type"]
+          voter_user_id: string
         }
         Update: {
+          category?: Database["public"]["Enums"]["award_category"]
+          created_at?: string
           id?: string
           quarter?: string
-          category?: Database['public']['Enums']['award_category']
-          voter_user_id?: string
-          target_type?: Database['public']['Enums']['entity_type']
           target_id?: string
-          created_at?: string
+          target_type?: Database["public"]["Enums"]["entity_type"]
+          voter_user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "award_votes_voter_user_id_fkey"
+            columns: ["voter_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       badge_definitions: {
         Row: {
-          id: string
-          slug: string
-          name: string
-          description: string | null
-          is_active: boolean
           created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
         }
         Insert: {
-          id?: string
-          slug: string
-          name: string
-          description?: string | null
-          is_active?: boolean
           created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
         }
         Update: {
-          id?: string
-          slug?: string
-          name?: string
-          description?: string | null
-          is_active?: boolean
           created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
         }
         Relationships: []
       }
       business_listings: {
         Row: {
-          id: string
-          owner_user_id: string | null
+          address: string | null
           business_name: string
           category_id: string
-          short_description: string | null
-          address: string | null
+          city: string | null
+          contact_links: Json
+          country: string | null
+          created_at: string
+          export_checklist: Json | null
+          export_readiness_score: number | null
+          id: string
           landmark: string | null
           latitude: number | null
           longitude: number | null
-          city: string | null
-          country: string | null
-          contact_links: Json
-          verification_status: Database['public']['Enums']['listing_verification_status']
-          status: Database['public']['Enums']['content_status']
-          source: Database['public']['Enums']['content_source']
-          export_checklist: Json | null
-          export_readiness_score: number | null
-          created_at: string
+          owner_user_id: string | null
+          short_description: string | null
+          source: Database["public"]["Enums"]["content_source"]
+          status: Database["public"]["Enums"]["content_status"]
           updated_at: string
+          verification_status: Database["public"]["Enums"]["listing_verification_status"]
         }
         Insert: {
-          id?: string
-          owner_user_id?: string | null
+          address?: string | null
           business_name: string
           category_id: string
-          short_description?: string | null
-          address?: string | null
+          city?: string | null
+          contact_links?: Json
+          country?: string | null
+          created_at?: string
+          export_checklist?: Json | null
+          export_readiness_score?: number | null
+          id?: string
           landmark?: string | null
           latitude?: number | null
           longitude?: number | null
-          city?: string | null
-          country?: string | null
-          contact_links?: Json
-          verification_status?: Database['public']['Enums']['listing_verification_status']
-          status?: Database['public']['Enums']['content_status']
-          source?: Database['public']['Enums']['content_source']
-          export_checklist?: Json | null
-          export_readiness_score?: number | null
-          created_at?: string
+          owner_user_id?: string | null
+          short_description?: string | null
+          source?: Database["public"]["Enums"]["content_source"]
+          status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string
+          verification_status?: Database["public"]["Enums"]["listing_verification_status"]
         }
         Update: {
-          id?: string
-          owner_user_id?: string | null
+          address?: string | null
           business_name?: string
           category_id?: string
-          short_description?: string | null
-          address?: string | null
+          city?: string | null
+          contact_links?: Json
+          country?: string | null
+          created_at?: string
+          export_checklist?: Json | null
+          export_readiness_score?: number | null
+          id?: string
           landmark?: string | null
           latitude?: number | null
           longitude?: number | null
-          city?: string | null
-          country?: string | null
-          contact_links?: Json
-          verification_status?: Database['public']['Enums']['listing_verification_status']
-          status?: Database['public']['Enums']['content_status']
-          source?: Database['public']['Enums']['content_source']
-          export_checklist?: Json | null
-          export_readiness_score?: number | null
-          created_at?: string
+          owner_user_id?: string | null
+          short_description?: string | null
+          source?: Database["public"]["Enums"]["content_source"]
+          status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string
+          verification_status?: Database["public"]["Enums"]["listing_verification_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "business_listings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "listing_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_listings_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       candidate_reviews: {
         Row: {
-          id: string
           candidate_id: string
+          created_at: string
+          feasibility_score: number | null
+          id: string
+          notes: string | null
           reviewer_user_id: string
           team_score: number | null
           traction_score: number | null
-          feasibility_score: number | null
-          notes: string | null
-          created_at: string
           updated_at: string
         }
         Insert: {
-          id?: string
           candidate_id: string
+          created_at?: string
+          feasibility_score?: number | null
+          id?: string
+          notes?: string | null
           reviewer_user_id: string
           team_score?: number | null
           traction_score?: number | null
-          feasibility_score?: number | null
-          notes?: string | null
-          created_at?: string
           updated_at?: string
         }
         Update: {
-          id?: string
           candidate_id?: string
+          created_at?: string
+          feasibility_score?: number | null
+          id?: string
+          notes?: string | null
           reviewer_user_id?: string
           team_score?: number | null
           traction_score?: number | null
-          feasibility_score?: number | null
-          notes?: string | null
-          created_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "candidate_reviews_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "venture_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidate_reviews_reviewer_user_id_fkey"
+            columns: ["reviewer_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       candidate_votes: {
         Row: {
-          id: string
           candidate_id: string
-          voter_user_id: string
-          vote: Database['public']['Enums']['vote_choice']
           created_at: string
+          id: string
+          vote: Database["public"]["Enums"]["vote_choice"]
+          voter_user_id: string
         }
         Insert: {
-          id?: string
           candidate_id: string
-          voter_user_id: string
-          vote: Database['public']['Enums']['vote_choice']
           created_at?: string
+          id?: string
+          vote: Database["public"]["Enums"]["vote_choice"]
+          voter_user_id: string
         }
         Update: {
-          id?: string
           candidate_id?: string
-          voter_user_id?: string
-          vote?: Database['public']['Enums']['vote_choice']
           created_at?: string
+          id?: string
+          vote?: Database["public"]["Enums"]["vote_choice"]
+          voter_user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "candidate_votes_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "venture_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidate_votes_voter_user_id_fkey"
+            columns: ["voter_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       capital_gate_evaluations: {
         Row: {
-          id: string
-          user_id: string
-          profile_country: string | null
-          geo_ip_country: string | null
           attested: boolean
-          granted: boolean
-          reason: string | null
           candidate_id: string | null
           created_at: string
+          geo_ip_country: string | null
+          granted: boolean
+          id: string
+          profile_country: string | null
+          reason: string | null
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          profile_country?: string | null
-          geo_ip_country?: string | null
           attested?: boolean
-          granted: boolean
-          reason?: string | null
           candidate_id?: string | null
           created_at?: string
+          geo_ip_country?: string | null
+          granted: boolean
+          id?: string
+          profile_country?: string | null
+          reason?: string | null
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          profile_country?: string | null
-          geo_ip_country?: string | null
           attested?: boolean
-          granted?: boolean
-          reason?: string | null
           candidate_id?: string | null
           created_at?: string
+          geo_ip_country?: string | null
+          granted?: boolean
+          id?: string
+          profile_country?: string | null
+          reason?: string | null
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "capital_gate_evaluations_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "venture_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_gate_evaluations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comments: {
         Row: {
-          id: string
-          post_id: string | null
-          candidate_id: string | null
           author_user_id: string
           body: string
-          is_credited_answer: boolean
-          status: Database['public']['Enums']['content_status']
-          source: Database['public']['Enums']['content_source']
-          edited_at: string | null
+          candidate_id: string | null
           created_at: string
+          edited_at: string | null
+          id: string
+          is_credited_answer: boolean
+          post_id: string | null
+          source: Database["public"]["Enums"]["content_source"]
+          status: Database["public"]["Enums"]["content_status"]
           updated_at: string
         }
         Insert: {
-          id?: string
-          post_id?: string | null
-          candidate_id?: string | null
           author_user_id: string
           body: string
-          is_credited_answer?: boolean
-          status?: Database['public']['Enums']['content_status']
-          source?: Database['public']['Enums']['content_source']
-          edited_at?: string | null
+          candidate_id?: string | null
           created_at?: string
+          edited_at?: string | null
+          id?: string
+          is_credited_answer?: boolean
+          post_id?: string | null
+          source?: Database["public"]["Enums"]["content_source"]
+          status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string
         }
         Update: {
-          id?: string
-          post_id?: string | null
-          candidate_id?: string | null
           author_user_id?: string
           body?: string
-          is_credited_answer?: boolean
-          status?: Database['public']['Enums']['content_status']
-          source?: Database['public']['Enums']['content_source']
-          edited_at?: string | null
+          candidate_id?: string | null
           created_at?: string
+          edited_at?: string | null
+          id?: string
+          is_credited_answer?: boolean
+          post_id?: string | null
+          source?: Database["public"]["Enums"]["content_source"]
+          status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "comments_author_user_id_fkey"
+            columns: ["author_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_candidate_fk"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "venture_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       consent_records: {
         Row: {
-          id: string
-          user_id: string
-          consent_type: Database['public']['Enums']['consent_type']
-          version: string
-          method: string | null
+          consent_type: Database["public"]["Enums"]["consent_type"]
+          created_at: string
           document_url: string | null
           granted_at: string
+          id: string
+          method: string | null
+          user_id: string
+          version: string
           withdrawn_at: string | null
-          created_at: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          consent_type: Database['public']['Enums']['consent_type']
-          version: string
-          method?: string | null
+          consent_type: Database["public"]["Enums"]["consent_type"]
+          created_at?: string
           document_url?: string | null
           granted_at?: string
+          id?: string
+          method?: string | null
+          user_id: string
+          version: string
           withdrawn_at?: string | null
-          created_at?: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          consent_type?: Database['public']['Enums']['consent_type']
-          version?: string
-          method?: string | null
+          consent_type?: Database["public"]["Enums"]["consent_type"]
+          created_at?: string
           document_url?: string | null
           granted_at?: string
+          id?: string
+          method?: string | null
+          user_id?: string
+          version?: string
           withdrawn_at?: string | null
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "consent_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
-          id: string
-          initiator_user_id: string
-          recipient_user_id: string
-          status: Database['public']['Enums']['conversation_status']
-          initiator_last_read_at: string | null
-          recipient_last_read_at: string | null
           created_at: string
+          id: string
+          initiator_last_read_at: string | null
+          initiator_user_id: string
+          recipient_last_read_at: string | null
+          recipient_user_id: string
+          status: Database["public"]["Enums"]["conversation_status"]
           updated_at: string
         }
         Insert: {
-          id?: string
-          initiator_user_id: string
-          recipient_user_id: string
-          status?: Database['public']['Enums']['conversation_status']
-          initiator_last_read_at?: string | null
-          recipient_last_read_at?: string | null
           created_at?: string
+          id?: string
+          initiator_last_read_at?: string | null
+          initiator_user_id: string
+          recipient_last_read_at?: string | null
+          recipient_user_id: string
+          status?: Database["public"]["Enums"]["conversation_status"]
           updated_at?: string
         }
         Update: {
-          id?: string
-          initiator_user_id?: string
-          recipient_user_id?: string
-          status?: Database['public']['Enums']['conversation_status']
-          initiator_last_read_at?: string | null
-          recipient_last_read_at?: string | null
           created_at?: string
+          id?: string
+          initiator_last_read_at?: string | null
+          initiator_user_id?: string
+          recipient_last_read_at?: string | null
+          recipient_user_id?: string
+          status?: Database["public"]["Enums"]["conversation_status"]
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_initiator_user_id_fkey"
+            columns: ["initiator_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_suppressions: {
+        Row: {
+          created_at: string
+          email: string
+          event_count: number
+          last_event_at: string
+          reason: string
+          released_at: string | null
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          event_count?: number
+          last_event_at?: string
+          reason: string
+          released_at?: string | null
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          event_count?: number
+          last_event_at?: string
+          reason?: string
+          released_at?: string | null
+          source?: string | null
         }
         Relationships: []
       }
       follows: {
         Row: {
-          id: string
-          follower_user_id: string
-          target_type: Database['public']['Enums']['follow_target_type']
-          target_id: string
           created_at: string
+          follower_user_id: string
+          id: string
+          target_id: string
+          target_type: Database["public"]["Enums"]["follow_target_type"]
         }
         Insert: {
-          id?: string
-          follower_user_id: string
-          target_type: Database['public']['Enums']['follow_target_type']
-          target_id: string
           created_at?: string
+          follower_user_id: string
+          id?: string
+          target_id: string
+          target_type: Database["public"]["Enums"]["follow_target_type"]
         }
         Update: {
-          id?: string
-          follower_user_id?: string
-          target_type?: Database['public']['Enums']['follow_target_type']
-          target_id?: string
           created_at?: string
+          follower_user_id?: string
+          id?: string
+          target_id?: string
+          target_type?: Database["public"]["Enums"]["follow_target_type"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_user_id_fkey"
+            columns: ["follower_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       governance_log_entries: {
         Row: {
-          id: string
-          title: string
           body: string
           category: string | null
-          created_by_user_id: string | null
-          published_at: string | null
           created_at: string
+          created_by_user_id: string | null
+          id: string
+          published_at: string | null
+          title: string
           updated_at: string
         }
         Insert: {
-          id?: string
-          title: string
           body: string
           category?: string | null
-          created_by_user_id?: string | null
-          published_at?: string | null
           created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          published_at?: string | null
+          title: string
           updated_at?: string
         }
         Update: {
-          id?: string
-          title?: string
           body?: string
           category?: string | null
-          created_by_user_id?: string | null
-          published_at?: string | null
           created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          published_at?: string | null
+          title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "governance_log_entries_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       interests: {
         Row: {
-          id: string
           candidate_id: string | null
-          user_id: string
-          type: Database['public']['Enums']['interest_type']
-          message: string | null
           created_at: string
+          id: string
+          message: string | null
+          type: Database["public"]["Enums"]["interest_type"]
+          user_id: string
         }
         Insert: {
-          id?: string
           candidate_id?: string | null
-          user_id: string
-          type: Database['public']['Enums']['interest_type']
-          message?: string | null
           created_at?: string
+          id?: string
+          message?: string | null
+          type: Database["public"]["Enums"]["interest_type"]
+          user_id: string
         }
         Update: {
-          id?: string
           candidate_id?: string | null
-          user_id?: string
-          type?: Database['public']['Enums']['interest_type']
-          message?: string | null
           created_at?: string
+          id?: string
+          message?: string | null
+          type?: Database["public"]["Enums"]["interest_type"]
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "interests_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "venture_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invites: {
         Row: {
-          id: string
           code: string
-          created_by_user_id: string | null
-          note: string | null
-          expires_at: string | null
-          revoked_at: string | null
-          redeemed_by_user_id: string | null
-          redeemed_at: string | null
           created_at: string
+          created_by_user_id: string | null
+          expires_at: string | null
+          id: string
+          note: string | null
+          redeemed_at: string | null
+          redeemed_by_user_id: string | null
+          revoked_at: string | null
         }
         Insert: {
-          id?: string
           code: string
-          created_by_user_id?: string | null
-          note?: string | null
-          expires_at?: string | null
-          revoked_at?: string | null
-          redeemed_by_user_id?: string | null
-          redeemed_at?: string | null
           created_at?: string
+          created_by_user_id?: string | null
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          revoked_at?: string | null
         }
         Update: {
-          id?: string
           code?: string
-          created_by_user_id?: string | null
-          note?: string | null
-          expires_at?: string | null
-          revoked_at?: string | null
-          redeemed_by_user_id?: string | null
-          redeemed_at?: string | null
           created_at?: string
+          created_by_user_id?: string | null
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          revoked_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "invites_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invites_redeemed_by_user_id_fkey"
+            columns: ["redeemed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_artifacts: {
         Row: {
+          added_by_user_id: string
+          created_at: string
+          description: string | null
           id: string
           lab_id: string
-          added_by_user_id: string
+          status: Database["public"]["Enums"]["content_status"]
           title: string
           url: string
-          description: string | null
-          status: Database['public']['Enums']['content_status']
-          created_at: string
         }
         Insert: {
+          added_by_user_id: string
+          created_at?: string
+          description?: string | null
           id?: string
           lab_id: string
-          added_by_user_id: string
+          status?: Database["public"]["Enums"]["content_status"]
           title: string
           url: string
-          description?: string | null
-          status?: Database['public']['Enums']['content_status']
-          created_at?: string
         }
         Update: {
+          added_by_user_id?: string
+          created_at?: string
+          description?: string | null
           id?: string
           lab_id?: string
-          added_by_user_id?: string
+          status?: Database["public"]["Enums"]["content_status"]
           title?: string
           url?: string
-          description?: string | null
-          status?: Database['public']['Enums']['content_status']
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lab_artifacts_added_by_user_id_fkey"
+            columns: ["added_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_artifacts_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_collaborations: {
         Row: {
+          created_at: string
+          ended_at: string | null
           id: string
           lab_a_id: string
           lab_b_id: string
-          status: Database['public']['Enums']['lab_collaboration_status']
           proposed_by_user_id: string | null
           responded_at: string | null
-          ended_at: string | null
-          created_at: string
+          status: Database["public"]["Enums"]["lab_collaboration_status"]
         }
         Insert: {
+          created_at?: string
+          ended_at?: string | null
           id?: string
           lab_a_id: string
           lab_b_id: string
-          status?: Database['public']['Enums']['lab_collaboration_status']
           proposed_by_user_id?: string | null
           responded_at?: string | null
-          ended_at?: string | null
-          created_at?: string
+          status?: Database["public"]["Enums"]["lab_collaboration_status"]
         }
         Update: {
+          created_at?: string
+          ended_at?: string | null
           id?: string
           lab_a_id?: string
           lab_b_id?: string
-          status?: Database['public']['Enums']['lab_collaboration_status']
           proposed_by_user_id?: string | null
           responded_at?: string | null
-          ended_at?: string | null
-          created_at?: string
+          status?: Database["public"]["Enums"]["lab_collaboration_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lab_collaborations_lab_a_id_fkey"
+            columns: ["lab_a_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_collaborations_lab_b_id_fkey"
+            columns: ["lab_b_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_collaborations_proposed_by_user_id_fkey"
+            columns: ["proposed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_decisions: {
         Row: {
+          context: string | null
+          created_at: string
+          created_by_user_id: string
+          decided_at: string
+          decision: string
           id: string
           lab_id: string
-          created_by_user_id: string
+          status: Database["public"]["Enums"]["content_status"]
           title: string
-          context: string | null
-          decision: string
-          status: Database['public']['Enums']['content_status']
-          decided_at: string
-          created_at: string
         }
         Insert: {
+          context?: string | null
+          created_at?: string
+          created_by_user_id: string
+          decided_at?: string
+          decision: string
           id?: string
           lab_id: string
-          created_by_user_id: string
+          status?: Database["public"]["Enums"]["content_status"]
           title: string
-          context?: string | null
-          decision: string
-          status?: Database['public']['Enums']['content_status']
-          decided_at?: string
-          created_at?: string
         }
         Update: {
+          context?: string | null
+          created_at?: string
+          created_by_user_id?: string
+          decided_at?: string
+          decision?: string
           id?: string
           lab_id?: string
-          created_by_user_id?: string
+          status?: Database["public"]["Enums"]["content_status"]
           title?: string
-          context?: string | null
-          decision?: string
-          status?: Database['public']['Enums']['content_status']
-          decided_at?: string
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lab_decisions_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_decisions_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_events: {
         Row: {
+          actor_user_id: string | null
+          created_at: string
+          event_type: string
           id: string
           lab_id: string
-          actor_user_id: string | null
-          event_type: string
           metadata: Json
-          created_at: string
         }
         Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type: string
           id?: string
           lab_id: string
-          actor_user_id?: string | null
-          event_type: string
           metadata?: Json
-          created_at?: string
         }
         Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          event_type?: string
           id?: string
           lab_id?: string
-          actor_user_id?: string | null
-          event_type?: string
           metadata?: Json
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lab_events_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_events_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_members: {
         Row: {
-          lab_id: string
-          user_id: string
-          role: Database['public']['Enums']['lab_member_role']
-          specialization: Database['public']['Enums']['lab_member_specialization'] | null
-          status: Database['public']['Enums']['lab_member_status']
-          invited_by_user_id: string | null
-          requested_at: string | null
-          joined_at: string | null
           created_at: string
+          invited_by_user_id: string | null
+          joined_at: string | null
+          lab_id: string
+          requested_at: string | null
+          role: Database["public"]["Enums"]["lab_member_role"]
+          specialization:
+            | Database["public"]["Enums"]["lab_member_specialization"]
+            | null
+          status: Database["public"]["Enums"]["lab_member_status"]
           updated_at: string
+          user_id: string
         }
         Insert: {
-          lab_id: string
-          user_id: string
-          role?: Database['public']['Enums']['lab_member_role']
-          specialization?: Database['public']['Enums']['lab_member_specialization'] | null
-          status?: Database['public']['Enums']['lab_member_status']
-          invited_by_user_id?: string | null
-          requested_at?: string | null
-          joined_at?: string | null
           created_at?: string
+          invited_by_user_id?: string | null
+          joined_at?: string | null
+          lab_id: string
+          requested_at?: string | null
+          role?: Database["public"]["Enums"]["lab_member_role"]
+          specialization?:
+            | Database["public"]["Enums"]["lab_member_specialization"]
+            | null
+          status?: Database["public"]["Enums"]["lab_member_status"]
           updated_at?: string
+          user_id: string
         }
         Update: {
-          lab_id?: string
-          user_id?: string
-          role?: Database['public']['Enums']['lab_member_role']
-          specialization?: Database['public']['Enums']['lab_member_specialization'] | null
-          status?: Database['public']['Enums']['lab_member_status']
-          invited_by_user_id?: string | null
-          requested_at?: string | null
-          joined_at?: string | null
           created_at?: string
+          invited_by_user_id?: string | null
+          joined_at?: string | null
+          lab_id?: string
+          requested_at?: string | null
+          role?: Database["public"]["Enums"]["lab_member_role"]
+          specialization?:
+            | Database["public"]["Enums"]["lab_member_specialization"]
+            | null
+          status?: Database["public"]["Enums"]["lab_member_status"]
           updated_at?: string
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lab_members_invited_by_user_id_fkey"
+            columns: ["invited_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_members_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_playbooks: {
         Row: {
-          id: string
-          slug: string
-          name: string
-          venture_type: string
-          template: Json
-          source: Database['public']['Enums']['content_source']
-          is_active: boolean
-          created_by_user_id: string | null
           created_at: string
+          created_by_user_id: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          source: Database["public"]["Enums"]["content_source"]
+          template: Json
           updated_at: string
+          venture_type: string
         }
         Insert: {
-          id?: string
-          slug: string
-          name: string
-          venture_type: string
-          template?: Json
-          source?: Database['public']['Enums']['content_source']
-          is_active?: boolean
-          created_by_user_id?: string | null
           created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          source?: Database["public"]["Enums"]["content_source"]
+          template?: Json
           updated_at?: string
+          venture_type: string
         }
         Update: {
-          id?: string
-          slug?: string
-          name?: string
-          venture_type?: string
-          template?: Json
-          source?: Database['public']['Enums']['content_source']
-          is_active?: boolean
-          created_by_user_id?: string | null
           created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          source?: Database["public"]["Enums"]["content_source"]
+          template?: Json
           updated_at?: string
+          venture_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lab_playbooks_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_skill_needs: {
         Row: {
+          alerted_at: string | null
+          created_at: string
+          filled_at: string | null
+          filled_by_user_id: string | null
           id: string
           lab_id: string
           skill: string
-          created_at: string
-          alerted_at: string | null
-          filled_at: string | null
-          filled_by_user_id: string | null
         }
         Insert: {
+          alerted_at?: string | null
+          created_at?: string
+          filled_at?: string | null
+          filled_by_user_id?: string | null
           id?: string
           lab_id: string
           skill: string
-          created_at?: string
-          alerted_at?: string | null
-          filled_at?: string | null
-          filled_by_user_id?: string | null
         }
         Update: {
+          alerted_at?: string | null
+          created_at?: string
+          filled_at?: string | null
+          filled_by_user_id?: string | null
           id?: string
           lab_id?: string
           skill?: string
-          created_at?: string
-          alerted_at?: string | null
-          filled_at?: string | null
-          filled_by_user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lab_skill_needs_filled_by_user_id_fkey"
+            columns: ["filled_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_skill_needs_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_tags: {
         Row: {
+          created_at: string
           lab_id: string
           tag_id: string
-          created_at: string
         }
         Insert: {
+          created_at?: string
           lab_id: string
           tag_id: string
-          created_at?: string
         }
         Update: {
+          created_at?: string
           lab_id?: string
           tag_id?: string
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lab_tags_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_updates: {
         Row: {
-          id: string
-          lab_id: string
           author_user_id: string
-          title: string | null
           body: string
           collaboration_id: string | null
-          status: Database['public']['Enums']['content_status']
-          source: Database['public']['Enums']['content_source']
           created_at: string
+          id: string
+          lab_id: string
+          source: Database["public"]["Enums"]["content_source"]
+          status: Database["public"]["Enums"]["content_status"]
+          title: string | null
           updated_at: string
         }
         Insert: {
-          id?: string
-          lab_id: string
           author_user_id: string
-          title?: string | null
           body: string
           collaboration_id?: string | null
-          status?: Database['public']['Enums']['content_status']
-          source?: Database['public']['Enums']['content_source']
           created_at?: string
+          id?: string
+          lab_id: string
+          source?: Database["public"]["Enums"]["content_source"]
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string | null
           updated_at?: string
         }
         Update: {
-          id?: string
-          lab_id?: string
           author_user_id?: string
-          title?: string | null
           body?: string
           collaboration_id?: string | null
-          status?: Database['public']['Enums']['content_status']
-          source?: Database['public']['Enums']['content_source']
           created_at?: string
+          id?: string
+          lab_id?: string
+          source?: Database["public"]["Enums"]["content_source"]
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lab_updates_author_user_id_fkey"
+            columns: ["author_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_updates_collaboration_id_fkey"
+            columns: ["collaboration_id"]
+            isOneToOne: false
+            referencedRelation: "lab_collaborations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_updates_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       labs: {
         Row: {
-          id: string
-          name: string
-          slug: string
-          space_mode: Database['public']['Enums']['space_mode']
-          short_description: string | null
-          problem_statement: string | null
-          hypothesis: string | null
-          sprint_length_weeks: number | null
-          sprint_deadline: string | null
-          success_definition: string | null
           charter_completed_at: string | null
-          promoted_at: string | null
-          stage: Database['public']['Enums']['lab_stage']
-          visibility: Database['public']['Enums']['lab_visibility']
+          created_at: string
+          dormant_since: string | null
+          hypothesis: string | null
+          id: string
           is_listed: boolean
           is_supporter_only: boolean
-          member_list_visibility: Database['public']['Enums']['lab_visibility']
-          join_mode: Database['public']['Enums']['lab_join_mode']
-          lead_user_id: string
-          playbook_id: string | null
-          source: Database['public']['Enums']['content_source']
-          settings: Json
+          join_mode: Database["public"]["Enums"]["lab_join_mode"]
           last_activity_at: string
-          dormant_since: string | null
-          created_at: string
+          lead_user_id: string
+          member_list_visibility: Database["public"]["Enums"]["lab_visibility"]
+          name: string
+          playbook_id: string | null
+          problem_statement: string | null
+          promoted_at: string | null
+          settings: Json
+          short_description: string | null
+          slug: string
+          source: Database["public"]["Enums"]["content_source"]
+          space_mode: Database["public"]["Enums"]["space_mode"]
+          sprint_deadline: string | null
+          sprint_length_weeks: number | null
+          stage: Database["public"]["Enums"]["lab_stage"]
+          success_definition: string | null
           updated_at: string
+          visibility: Database["public"]["Enums"]["lab_visibility"]
         }
         Insert: {
-          id?: string
-          name: string
-          slug: string
-          space_mode?: Database['public']['Enums']['space_mode']
-          short_description?: string | null
-          problem_statement?: string | null
-          hypothesis?: string | null
-          sprint_length_weeks?: number | null
-          sprint_deadline?: string | null
-          success_definition?: string | null
           charter_completed_at?: string | null
-          promoted_at?: string | null
-          stage?: Database['public']['Enums']['lab_stage']
-          visibility?: Database['public']['Enums']['lab_visibility']
+          created_at?: string
+          dormant_since?: string | null
+          hypothesis?: string | null
+          id?: string
           is_listed?: boolean
           is_supporter_only?: boolean
-          member_list_visibility?: Database['public']['Enums']['lab_visibility']
-          join_mode?: Database['public']['Enums']['lab_join_mode']
-          lead_user_id: string
-          playbook_id?: string | null
-          source?: Database['public']['Enums']['content_source']
-          settings?: Json
+          join_mode?: Database["public"]["Enums"]["lab_join_mode"]
           last_activity_at?: string
-          dormant_since?: string | null
-          created_at?: string
+          lead_user_id: string
+          member_list_visibility?: Database["public"]["Enums"]["lab_visibility"]
+          name: string
+          playbook_id?: string | null
+          problem_statement?: string | null
+          promoted_at?: string | null
+          settings?: Json
+          short_description?: string | null
+          slug: string
+          source?: Database["public"]["Enums"]["content_source"]
+          space_mode?: Database["public"]["Enums"]["space_mode"]
+          sprint_deadline?: string | null
+          sprint_length_weeks?: number | null
+          stage?: Database["public"]["Enums"]["lab_stage"]
+          success_definition?: string | null
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["lab_visibility"]
         }
         Update: {
-          id?: string
-          name?: string
-          slug?: string
-          space_mode?: Database['public']['Enums']['space_mode']
-          short_description?: string | null
-          problem_statement?: string | null
-          hypothesis?: string | null
-          sprint_length_weeks?: number | null
-          sprint_deadline?: string | null
-          success_definition?: string | null
           charter_completed_at?: string | null
-          promoted_at?: string | null
-          stage?: Database['public']['Enums']['lab_stage']
-          visibility?: Database['public']['Enums']['lab_visibility']
+          created_at?: string
+          dormant_since?: string | null
+          hypothesis?: string | null
+          id?: string
           is_listed?: boolean
           is_supporter_only?: boolean
-          member_list_visibility?: Database['public']['Enums']['lab_visibility']
-          join_mode?: Database['public']['Enums']['lab_join_mode']
-          lead_user_id?: string
-          playbook_id?: string | null
-          source?: Database['public']['Enums']['content_source']
-          settings?: Json
+          join_mode?: Database["public"]["Enums"]["lab_join_mode"]
           last_activity_at?: string
-          dormant_since?: string | null
-          created_at?: string
+          lead_user_id?: string
+          member_list_visibility?: Database["public"]["Enums"]["lab_visibility"]
+          name?: string
+          playbook_id?: string | null
+          problem_statement?: string | null
+          promoted_at?: string | null
+          settings?: Json
+          short_description?: string | null
+          slug?: string
+          source?: Database["public"]["Enums"]["content_source"]
+          space_mode?: Database["public"]["Enums"]["space_mode"]
+          sprint_deadline?: string | null
+          sprint_length_weeks?: number | null
+          stage?: Database["public"]["Enums"]["lab_stage"]
+          success_definition?: string | null
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["lab_visibility"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "labs_lead_user_id_fkey"
+            columns: ["lead_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "labs_playbook_id_fkey"
+            columns: ["playbook_id"]
+            isOneToOne: false
+            referencedRelation: "lab_playbooks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       listing_categories: {
         Row: {
+          created_at: string
           id: string
-          slug: string
+          is_active: boolean
           name_en: string
           name_so: string | null
           position: number
-          is_active: boolean
-          created_at: string
+          slug: string
         }
         Insert: {
+          created_at?: string
           id?: string
-          slug: string
+          is_active?: boolean
           name_en: string
           name_so?: string | null
           position?: number
-          is_active?: boolean
-          created_at?: string
+          slug: string
         }
         Update: {
+          created_at?: string
           id?: string
-          slug?: string
+          is_active?: boolean
           name_en?: string
           name_so?: string | null
           position?: number
-          is_active?: boolean
-          created_at?: string
+          slug?: string
         }
         Relationships: []
       }
       listing_claims: {
         Row: {
+          claimant_user_id: string
+          created_at: string
+          decided_at: string | null
+          evidence: string | null
           id: string
           listing_id: string
-          claimant_user_id: string
-          evidence: string | null
-          status: Database['public']['Enums']['claim_status']
           reviewed_by_user_id: string | null
-          decided_at: string | null
-          created_at: string
+          status: Database["public"]["Enums"]["claim_status"]
           updated_at: string
         }
         Insert: {
+          claimant_user_id: string
+          created_at?: string
+          decided_at?: string | null
+          evidence?: string | null
           id?: string
           listing_id: string
-          claimant_user_id: string
-          evidence?: string | null
-          status?: Database['public']['Enums']['claim_status']
           reviewed_by_user_id?: string | null
-          decided_at?: string | null
-          created_at?: string
+          status?: Database["public"]["Enums"]["claim_status"]
           updated_at?: string
         }
         Update: {
+          claimant_user_id?: string
+          created_at?: string
+          decided_at?: string | null
+          evidence?: string | null
           id?: string
           listing_id?: string
-          claimant_user_id?: string
-          evidence?: string | null
-          status?: Database['public']['Enums']['claim_status']
           reviewed_by_user_id?: string | null
-          decided_at?: string | null
-          created_at?: string
+          status?: Database["public"]["Enums"]["claim_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "listing_claims_claimant_user_id_fkey"
+            columns: ["claimant_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_claims_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "business_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_claims_reviewed_by_user_id_fkey"
+            columns: ["reviewed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       listing_tags: {
         Row: {
+          created_at: string
           listing_id: string
           tag_id: string
-          created_at: string
         }
         Insert: {
+          created_at?: string
           listing_id: string
           tag_id: string
-          created_at?: string
         }
         Update: {
+          created_at?: string
           listing_id?: string
           tag_id?: string
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "listing_tags_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "business_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       membership_tiers: {
         Row: {
-          id: string
-          name: string
-          monthly_price_usd: number
-          position: number
-          is_active: boolean
           created_at: string
+          id: string
+          is_active: boolean
+          monthly_price_usd: number
+          name: string
+          position: number
           updated_at: string
         }
         Insert: {
-          id: string
-          name: string
-          monthly_price_usd?: number
-          position: number
-          is_active?: boolean
           created_at?: string
+          id: string
+          is_active?: boolean
+          monthly_price_usd?: number
+          name: string
+          position: number
           updated_at?: string
         }
         Update: {
-          id?: string
-          name?: string
-          monthly_price_usd?: number
-          position?: number
-          is_active?: boolean
           created_at?: string
+          id?: string
+          is_active?: boolean
+          monthly_price_usd?: number
+          name?: string
+          position?: number
           updated_at?: string
         }
         Relationships: []
       }
       messages: {
         Row: {
-          id: string
-          conversation_id: string
-          sender_user_id: string
           body: string
-          deleted_at: string | null
+          conversation_id: string
           created_at: string
+          deleted_at: string | null
+          id: string
+          sender_user_id: string
         }
         Insert: {
-          id?: string
-          conversation_id: string
-          sender_user_id: string
           body: string
-          deleted_at?: string | null
+          conversation_id: string
           created_at?: string
+          deleted_at?: string | null
+          id?: string
+          sender_user_id: string
         }
         Update: {
-          id?: string
-          conversation_id?: string
-          sender_user_id?: string
           body?: string
-          deleted_at?: string | null
+          conversation_id?: string
           created_at?: string
+          deleted_at?: string | null
+          id?: string
+          sender_user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_user_id_fkey"
+            columns: ["sender_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mod_actions: {
         Row: {
-          id: string
+          action: Database["public"]["Enums"]["mod_action_type"]
           actor_user_id: string
-          action: Database['public']['Enums']['mod_action_type']
-          target_type: Database['public']['Enums']['entity_type']
-          target_id: string
-          report_id: string | null
-          reason: string | null
-          metadata: Json
           created_at: string
+          id: string
+          metadata: Json
+          reason: string | null
+          report_id: string | null
+          target_id: string
+          target_type: Database["public"]["Enums"]["entity_type"]
         }
         Insert: {
-          id?: string
+          action: Database["public"]["Enums"]["mod_action_type"]
           actor_user_id: string
-          action: Database['public']['Enums']['mod_action_type']
-          target_type: Database['public']['Enums']['entity_type']
-          target_id: string
-          report_id?: string | null
-          reason?: string | null
-          metadata?: Json
           created_at?: string
+          id?: string
+          metadata?: Json
+          reason?: string | null
+          report_id?: string | null
+          target_id: string
+          target_type: Database["public"]["Enums"]["entity_type"]
         }
         Update: {
-          id?: string
+          action?: Database["public"]["Enums"]["mod_action_type"]
           actor_user_id?: string
-          action?: Database['public']['Enums']['mod_action_type']
-          target_type?: Database['public']['Enums']['entity_type']
-          target_id?: string
-          report_id?: string | null
-          reason?: string | null
-          metadata?: Json
           created_at?: string
+          id?: string
+          metadata?: Json
+          reason?: string | null
+          report_id?: string | null
+          target_id?: string
+          target_type?: Database["public"]["Enums"]["entity_type"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mod_actions_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mod_actions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
-          id: string
-          user_id: string
           actor_user_id: string | null
-          type: string
-          entity_type: Database['public']['Enums']['entity_type'] | null
-          entity_id: string | null
-          payload: Json
           bundle_key: string | null
-          read_at: string | null
-          emailed_at: string | null
-          pushed_at: string | null
           created_at: string
+          emailed_at: string | null
+          entity_id: string | null
+          entity_type: Database["public"]["Enums"]["entity_type"] | null
+          id: string
+          payload: Json
+          pushed_at: string | null
+          read_at: string | null
+          type: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
           actor_user_id?: string | null
-          type: string
-          entity_type?: Database['public']['Enums']['entity_type'] | null
-          entity_id?: string | null
-          payload?: Json
           bundle_key?: string | null
-          read_at?: string | null
-          emailed_at?: string | null
-          pushed_at?: string | null
           created_at?: string
+          emailed_at?: string | null
+          entity_id?: string | null
+          entity_type?: Database["public"]["Enums"]["entity_type"] | null
+          id?: string
+          payload?: Json
+          pushed_at?: string | null
+          read_at?: string | null
+          type: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
           actor_user_id?: string | null
-          type?: string
-          entity_type?: Database['public']['Enums']['entity_type'] | null
-          entity_id?: string | null
-          payload?: Json
           bundle_key?: string | null
-          read_at?: string | null
-          emailed_at?: string | null
-          pushed_at?: string | null
           created_at?: string
+          emailed_at?: string | null
+          entity_id?: string | null
+          entity_type?: Database["public"]["Enums"]["entity_type"] | null
+          id?: string
+          payload?: Json
+          pushed_at?: string | null
+          read_at?: string | null
+          type?: string
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       poll_options: {
         Row: {
+          created_at: string
           id: string
-          post_id: string
-          post_type: Database['public']['Enums']['post_type']
           label: string
           position: number
-          created_at: string
+          post_id: string
+          post_type: Database["public"]["Enums"]["post_type"]
         }
         Insert: {
+          created_at?: string
           id?: string
-          post_id: string
-          post_type?: Database['public']['Enums']['post_type']
           label: string
           position?: number
-          created_at?: string
+          post_id: string
+          post_type?: Database["public"]["Enums"]["post_type"]
         }
         Update: {
+          created_at?: string
           id?: string
-          post_id?: string
-          post_type?: Database['public']['Enums']['post_type']
           label?: string
           position?: number
-          created_at?: string
+          post_id?: string
+          post_type?: Database["public"]["Enums"]["post_type"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "poll_options_post_is_poll"
+            columns: ["post_id", "post_type"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id", "type"]
+          },
+        ]
       }
       poll_votes: {
         Row: {
-          id: string
-          post_id: string
-          poll_option_id: string
-          voter_user_id: string
           created_at: string
+          id: string
+          poll_option_id: string
+          post_id: string
           updated_at: string
+          voter_user_id: string
         }
         Insert: {
-          id?: string
-          post_id: string
-          poll_option_id: string
-          voter_user_id: string
           created_at?: string
+          id?: string
+          poll_option_id: string
+          post_id: string
           updated_at?: string
+          voter_user_id: string
         }
         Update: {
-          id?: string
-          post_id?: string
-          poll_option_id?: string
-          voter_user_id?: string
           created_at?: string
+          id?: string
+          poll_option_id?: string
+          post_id?: string
           updated_at?: string
+          voter_user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_option_belongs_to_poll"
+            columns: ["poll_option_id", "post_id"]
+            isOneToOne: false
+            referencedRelation: "poll_options"
+            referencedColumns: ["id", "post_id"]
+          },
+          {
+            foreignKeyName: "poll_votes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_voter_user_id_fkey"
+            columns: ["voter_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_tags: {
         Row: {
+          created_at: string
           post_id: string
           tag_id: string
-          created_at: string
         }
         Insert: {
+          created_at?: string
           post_id: string
           tag_id: string
-          created_at?: string
         }
         Update: {
+          created_at?: string
           post_id?: string
           tag_id?: string
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "post_tags_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts: {
         Row: {
-          id: string
-          author_user_id: string
-          lab_id: string | null
-          type: Database['public']['Enums']['post_type']
-          title: string | null
-          body: string
-          link_url: string | null
-          image_urls: string[]
-          ask_status: Database['public']['Enums']['ask_status'] | null
           ask_nudged_at: string | null
-          poll_status: Database['public']['Enums']['poll_status'] | null
-          poll_closes_at: string | null
-          status: Database['public']['Enums']['content_status']
-          source: Database['public']['Enums']['content_source']
-          pinned_at: string | null
-          edited_at: string | null
+          ask_status: Database["public"]["Enums"]["ask_status"] | null
+          author_user_id: string
+          body: string
           created_at: string
+          edited_at: string | null
+          id: string
+          image_urls: string[]
+          lab_id: string | null
+          link_url: string | null
+          pinned_at: string | null
+          poll_closes_at: string | null
+          poll_status: Database["public"]["Enums"]["poll_status"] | null
+          source: Database["public"]["Enums"]["content_source"]
+          status: Database["public"]["Enums"]["content_status"]
+          title: string | null
+          type: Database["public"]["Enums"]["post_type"]
           updated_at: string
         }
         Insert: {
-          id?: string
-          author_user_id: string
-          lab_id?: string | null
-          type: Database['public']['Enums']['post_type']
-          title?: string | null
-          body: string
-          link_url?: string | null
-          image_urls?: string[]
-          ask_status?: Database['public']['Enums']['ask_status'] | null
           ask_nudged_at?: string | null
-          poll_status?: Database['public']['Enums']['poll_status'] | null
-          poll_closes_at?: string | null
-          status?: Database['public']['Enums']['content_status']
-          source?: Database['public']['Enums']['content_source']
-          pinned_at?: string | null
-          edited_at?: string | null
+          ask_status?: Database["public"]["Enums"]["ask_status"] | null
+          author_user_id: string
+          body: string
           created_at?: string
+          edited_at?: string | null
+          id?: string
+          image_urls?: string[]
+          lab_id?: string | null
+          link_url?: string | null
+          pinned_at?: string | null
+          poll_closes_at?: string | null
+          poll_status?: Database["public"]["Enums"]["poll_status"] | null
+          source?: Database["public"]["Enums"]["content_source"]
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string | null
+          type: Database["public"]["Enums"]["post_type"]
           updated_at?: string
         }
         Update: {
-          id?: string
-          author_user_id?: string
-          lab_id?: string | null
-          type?: Database['public']['Enums']['post_type']
-          title?: string | null
-          body?: string
-          link_url?: string | null
-          image_urls?: string[]
-          ask_status?: Database['public']['Enums']['ask_status'] | null
           ask_nudged_at?: string | null
-          poll_status?: Database['public']['Enums']['poll_status'] | null
-          poll_closes_at?: string | null
-          status?: Database['public']['Enums']['content_status']
-          source?: Database['public']['Enums']['content_source']
-          pinned_at?: string | null
-          edited_at?: string | null
+          ask_status?: Database["public"]["Enums"]["ask_status"] | null
+          author_user_id?: string
+          body?: string
           created_at?: string
+          edited_at?: string | null
+          id?: string
+          image_urls?: string[]
+          lab_id?: string | null
+          link_url?: string | null
+          pinned_at?: string | null
+          poll_closes_at?: string | null
+          poll_status?: Database["public"]["Enums"]["poll_status"] | null
+          source?: Database["public"]["Enums"]["content_source"]
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string | null
+          type?: Database["public"]["Enums"]["post_type"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_user_id_fkey"
+            columns: ["author_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_lab_fk"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profile_pinned_labs: {
         Row: {
-          user_id: string
+          created_at: string
           lab_id: string
           position: number
-          created_at: string
+          user_id: string
         }
         Insert: {
-          user_id: string
+          created_at?: string
           lab_id: string
           position: number
-          created_at?: string
+          user_id: string
         }
         Update: {
-          user_id?: string
+          created_at?: string
           lab_id?: string
           position?: number
-          created_at?: string
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profile_pinned_labs_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_pinned_labs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
-          user_id: string
+          bio: string | null
+          contact_options: Json
+          created_at: string
           display_name: string
           handle: string
-          bio: string | null
+          lanes: string[]
+          latitude: number | null
+          links: Json
           location_city: string | null
           location_country: string | null
-          latitude: number | null
           longitude: number | null
-          timezone: string | null
-          skills: string[]
-          lanes: string[]
-          links: Json
-          contact_options: Json
-          verification_status: Database['public']['Enums']['profile_verification_status']
           membership_tier_id: string
-          subscription_status: string | null
-          region_verified: boolean
           region_attested_at: string | null
-          created_at: string
+          region_verified: boolean
+          skills: string[]
+          subscription_status: string | null
+          timezone: string | null
           updated_at: string
+          user_id: string
+          verification_status: Database["public"]["Enums"]["profile_verification_status"]
         }
         Insert: {
-          user_id: string
+          bio?: string | null
+          contact_options?: Json
+          created_at?: string
           display_name: string
           handle: string
-          bio?: string | null
+          lanes?: string[]
+          latitude?: number | null
+          links?: Json
           location_city?: string | null
           location_country?: string | null
-          latitude?: number | null
           longitude?: number | null
-          timezone?: string | null
-          skills?: string[]
-          lanes?: string[]
-          links?: Json
-          contact_options?: Json
-          verification_status?: Database['public']['Enums']['profile_verification_status']
           membership_tier_id?: string
-          subscription_status?: string | null
-          region_verified?: boolean
           region_attested_at?: string | null
-          created_at?: string
+          region_verified?: boolean
+          skills?: string[]
+          subscription_status?: string | null
+          timezone?: string | null
           updated_at?: string
+          user_id: string
+          verification_status?: Database["public"]["Enums"]["profile_verification_status"]
         }
         Update: {
-          user_id?: string
+          bio?: string | null
+          contact_options?: Json
+          created_at?: string
           display_name?: string
           handle?: string
-          bio?: string | null
+          lanes?: string[]
+          latitude?: number | null
+          links?: Json
           location_city?: string | null
           location_country?: string | null
-          latitude?: number | null
           longitude?: number | null
-          timezone?: string | null
-          skills?: string[]
-          lanes?: string[]
-          links?: Json
-          contact_options?: Json
-          verification_status?: Database['public']['Enums']['profile_verification_status']
           membership_tier_id?: string
-          subscription_status?: string | null
-          region_verified?: boolean
           region_attested_at?: string | null
-          created_at?: string
+          region_verified?: boolean
+          skills?: string[]
+          subscription_status?: string | null
+          timezone?: string | null
           updated_at?: string
+          user_id?: string
+          verification_status?: Database["public"]["Enums"]["profile_verification_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_membership_tier_id_fkey"
+            columns: ["membership_tier_id"]
+            isOneToOne: false
+            referencedRelation: "membership_tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {
-          id: string
-          user_id: string
-          endpoint: string
-          p256dh: string
           auth: string
-          user_agent: string | null
-          last_used_at: string | null
-          revoked_at: string | null
           created_at: string
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          revoked_at: string | null
+          user_agent: string | null
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          endpoint: string
-          p256dh: string
           auth: string
-          user_agent?: string | null
-          last_used_at?: string | null
-          revoked_at?: string | null
           created_at?: string
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          revoked_at?: string | null
+          user_agent?: string | null
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          endpoint?: string
-          p256dh?: string
           auth?: string
-          user_agent?: string | null
-          last_used_at?: string | null
-          revoked_at?: string | null
           created_at?: string
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          revoked_at?: string | null
+          user_agent?: string | null
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reactions: {
         Row: {
-          id: string
-          user_id: string
-          post_id: string | null
           comment_id: string | null
-          type: Database['public']['Enums']['reaction_type']
           created_at: string
+          id: string
+          post_id: string | null
+          type: Database["public"]["Enums"]["reaction_type"]
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          post_id?: string | null
           comment_id?: string | null
-          type: Database['public']['Enums']['reaction_type']
           created_at?: string
+          id?: string
+          post_id?: string | null
+          type: Database["public"]["Enums"]["reaction_type"]
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          post_id?: string | null
           comment_id?: string | null
-          type?: Database['public']['Enums']['reaction_type']
           created_at?: string
+          id?: string
+          post_id?: string | null
+          type?: Database["public"]["Enums"]["reaction_type"]
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reports: {
         Row: {
-          id: string
-          reporter_user_id: string
-          target_type: Database['public']['Enums']['entity_type']
-          target_id: string
-          reason: Database['public']['Enums']['report_reason']
-          details: string | null
-          status: Database['public']['Enums']['report_status']
-          resolution: string | null
-          resolved_by_user_id: string | null
-          resolved_at: string | null
           created_at: string
+          details: string | null
+          id: string
+          reason: Database["public"]["Enums"]["report_reason"]
+          reporter_user_id: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by_user_id: string | null
+          status: Database["public"]["Enums"]["report_status"]
+          target_id: string
+          target_type: Database["public"]["Enums"]["entity_type"]
           updated_at: string
         }
         Insert: {
-          id?: string
-          reporter_user_id: string
-          target_type: Database['public']['Enums']['entity_type']
-          target_id: string
-          reason: Database['public']['Enums']['report_reason']
-          details?: string | null
-          status?: Database['public']['Enums']['report_status']
-          resolution?: string | null
-          resolved_by_user_id?: string | null
-          resolved_at?: string | null
           created_at?: string
+          details?: string | null
+          id?: string
+          reason: Database["public"]["Enums"]["report_reason"]
+          reporter_user_id: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          target_id: string
+          target_type: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
         }
         Update: {
-          id?: string
-          reporter_user_id?: string
-          target_type?: Database['public']['Enums']['entity_type']
-          target_id?: string
-          reason?: Database['public']['Enums']['report_reason']
-          details?: string | null
-          status?: Database['public']['Enums']['report_status']
-          resolution?: string | null
-          resolved_by_user_id?: string | null
-          resolved_at?: string | null
           created_at?: string
+          details?: string | null
+          id?: string
+          reason?: Database["public"]["Enums"]["report_reason"]
+          reporter_user_id?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          target_id?: string
+          target_type?: Database["public"]["Enums"]["entity_type"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reports_reporter_user_id_fkey"
+            columns: ["reporter_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_resolved_by_user_id_fkey"
+            columns: ["resolved_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reputation_events: {
         Row: {
-          id: string
-          user_id: string
-          event_type: string
-          points: number
-          entity_type: Database['public']['Enums']['entity_type'] | null
-          entity_id: string | null
           created_at: string
+          entity_id: string | null
+          entity_type: Database["public"]["Enums"]["entity_type"] | null
+          event_type: string
+          id: string
+          points: number
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          event_type: string
-          points: number
-          entity_type?: Database['public']['Enums']['entity_type'] | null
-          entity_id?: string | null
           created_at?: string
+          entity_id?: string | null
+          entity_type?: Database["public"]["Enums"]["entity_type"] | null
+          event_type: string
+          id?: string
+          points: number
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          event_type?: string
-          points?: number
-          entity_type?: Database['public']['Enums']['entity_type'] | null
-          entity_id?: string | null
           created_at?: string
+          entity_id?: string | null
+          entity_type?: Database["public"]["Enums"]["entity_type"] | null
+          event_type?: string
+          id?: string
+          points?: number
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reputation_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reputation_scores: {
         Row: {
-          user_id: string
           contribution_score: number
-          helper_score: number
           current_streak_days: number
-          longest_streak_days: number
+          helper_score: number
           last_active_on: string | null
+          longest_streak_days: number
           updated_at: string
+          user_id: string
         }
         Insert: {
-          user_id: string
           contribution_score?: number
-          helper_score?: number
           current_streak_days?: number
-          longest_streak_days?: number
+          helper_score?: number
           last_active_on?: string | null
+          longest_streak_days?: number
           updated_at?: string
+          user_id: string
         }
         Update: {
-          user_id?: string
           contribution_score?: number
-          helper_score?: number
           current_streak_days?: number
-          longest_streak_days?: number
+          helper_score?: number
           last_active_on?: string | null
+          longest_streak_days?: number
           updated_at?: string
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reputation_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       signup_grants: {
         Row: {
-          id: string
-          email: string | null
-          phone: string | null
-          invite_id: string | null
-          waitlist_entry_id: string | null
-          expires_at: string
           consumed_at: string | null
           consumed_by_user_id: string | null
           created_at: string
+          email: string | null
+          expires_at: string
+          id: string
+          invite_id: string | null
+          phone: string | null
+          waitlist_entry_id: string | null
         }
         Insert: {
-          id?: string
-          email?: string | null
-          phone?: string | null
-          invite_id?: string | null
-          waitlist_entry_id?: string | null
-          expires_at: string
           consumed_at?: string | null
           consumed_by_user_id?: string | null
           created_at?: string
+          email?: string | null
+          expires_at: string
+          id?: string
+          invite_id?: string | null
+          phone?: string | null
+          waitlist_entry_id?: string | null
         }
         Update: {
-          id?: string
-          email?: string | null
-          phone?: string | null
-          invite_id?: string | null
-          waitlist_entry_id?: string | null
-          expires_at?: string
           consumed_at?: string | null
           consumed_by_user_id?: string | null
           created_at?: string
+          email?: string | null
+          expires_at?: string
+          id?: string
+          invite_id?: string | null
+          phone?: string | null
+          waitlist_entry_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "signup_grants_consumed_by_user_id_fkey"
+            columns: ["consumed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signup_grants_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "invites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signup_grants_waitlist_entry_id_fkey"
+            columns: ["waitlist_entry_id"]
+            isOneToOne: false
+            referencedRelation: "waitlist_entries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skill_endorsements: {
         Row: {
-          id: string
-          endorser_user_id: string
-          endorsee_user_id: string
-          skill: string
           created_at: string
+          endorsee_user_id: string
+          endorser_user_id: string
+          id: string
+          skill: string
         }
         Insert: {
-          id?: string
-          endorser_user_id: string
-          endorsee_user_id: string
-          skill: string
           created_at?: string
+          endorsee_user_id: string
+          endorser_user_id: string
+          id?: string
+          skill: string
         }
         Update: {
-          id?: string
-          endorser_user_id?: string
-          endorsee_user_id?: string
-          skill?: string
           created_at?: string
+          endorsee_user_id?: string
+          endorser_user_id?: string
+          id?: string
+          skill?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "skill_endorsements_endorsee_user_id_fkey"
+            columns: ["endorsee_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_endorsements_endorser_user_id_fkey"
+            columns: ["endorser_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tags: {
         Row: {
+          created_at: string
+          created_by_user_id: string | null
+          description: string | null
           id: string
           name: string
-          description: string | null
-          source: Database['public']['Enums']['content_source']
-          created_by_user_id: string | null
-          created_at: string
+          source: Database["public"]["Enums"]["content_source"]
         }
         Insert: {
+          created_at?: string
+          created_by_user_id?: string | null
+          description?: string | null
           id?: string
           name: string
-          description?: string | null
-          source?: Database['public']['Enums']['content_source']
-          created_by_user_id?: string | null
-          created_at?: string
+          source?: Database["public"]["Enums"]["content_source"]
         }
         Update: {
+          created_at?: string
+          created_by_user_id?: string | null
+          description?: string | null
           id?: string
           name?: string
-          description?: string | null
-          source?: Database['public']['Enums']['content_source']
-          created_by_user_id?: string | null
-          created_at?: string
+          source?: Database["public"]["Enums"]["content_source"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tags_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tier_capabilities: {
         Row: {
-          tier_id: string
-          capability: Database['public']['Enums']['membership_capability']
+          capability: Database["public"]["Enums"]["membership_capability"]
           created_at: string
+          tier_id: string
         }
         Insert: {
-          tier_id: string
-          capability: Database['public']['Enums']['membership_capability']
+          capability: Database["public"]["Enums"]["membership_capability"]
           created_at?: string
+          tier_id: string
         }
         Update: {
-          tier_id?: string
-          capability?: Database['public']['Enums']['membership_capability']
+          capability?: Database["public"]["Enums"]["membership_capability"]
           created_at?: string
+          tier_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tier_capabilities_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "membership_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_badges: {
         Row: {
-          id: string
-          user_id: string
-          badge_id: string
-          tier: string | null
-          context: string | null
-          awarded_by_user_id: string | null
           awarded_at: string
-          revoked_at: string | null
+          awarded_by_user_id: string | null
+          badge_id: string
+          context: string | null
+          id: string
           metadata: Json
+          revoked_at: string | null
+          tier: string | null
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          badge_id: string
-          tier?: string | null
-          context?: string | null
-          awarded_by_user_id?: string | null
           awarded_at?: string
-          revoked_at?: string | null
+          awarded_by_user_id?: string | null
+          badge_id: string
+          context?: string | null
+          id?: string
           metadata?: Json
+          revoked_at?: string | null
+          tier?: string | null
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          badge_id?: string
-          tier?: string | null
-          context?: string | null
-          awarded_by_user_id?: string | null
           awarded_at?: string
-          revoked_at?: string | null
+          awarded_by_user_id?: string | null
+          badge_id?: string
+          context?: string | null
+          id?: string
           metadata?: Json
+          revoked_at?: string | null
+          tier?: string | null
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_awarded_by_user_id_fkey"
+            columns: ["awarded_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badge_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_blocks: {
         Row: {
-          blocker_user_id: string
           blocked_user_id: string
+          blocker_user_id: string
           created_at: string
         }
         Insert: {
-          blocker_user_id: string
           blocked_user_id: string
+          blocker_user_id: string
           created_at?: string
         }
         Update: {
-          blocker_user_id?: string
           blocked_user_id?: string
+          blocker_user_id?: string
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_blocks_blocked_user_id_fkey"
+            columns: ["blocked_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_blocks_blocker_user_id_fkey"
+            columns: ["blocker_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {
-          id: string
+          created_at: string
+          deletion_requested_at: string | null
           email: string | null
-          phone: string | null
-          role: Database['public']['Enums']['user_role']
-          status: Database['public']['Enums']['account_status']
+          id: string
           is_ai: boolean
-          preferred_language: Database['public']['Enums']['language_code']
           low_bandwidth_enabled: boolean
           onboarding_state: Json
+          phone: string | null
+          preferred_language: Database["public"]["Enums"]["language_code"]
+          role: Database["public"]["Enums"]["user_role"]
+          status: Database["public"]["Enums"]["account_status"]
           suspended_at: string | null
           suspension_reason: string | null
-          deletion_requested_at: string | null
-          created_at: string
           updated_at: string
         }
         Insert: {
-          id: string
+          created_at?: string
+          deletion_requested_at?: string | null
           email?: string | null
-          phone?: string | null
-          role?: Database['public']['Enums']['user_role']
-          status?: Database['public']['Enums']['account_status']
+          id: string
           is_ai?: boolean
-          preferred_language?: Database['public']['Enums']['language_code']
           low_bandwidth_enabled?: boolean
           onboarding_state?: Json
+          phone?: string | null
+          preferred_language?: Database["public"]["Enums"]["language_code"]
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: Database["public"]["Enums"]["account_status"]
           suspended_at?: string | null
           suspension_reason?: string | null
-          deletion_requested_at?: string | null
-          created_at?: string
           updated_at?: string
         }
         Update: {
-          id?: string
+          created_at?: string
+          deletion_requested_at?: string | null
           email?: string | null
-          phone?: string | null
-          role?: Database['public']['Enums']['user_role']
-          status?: Database['public']['Enums']['account_status']
+          id?: string
           is_ai?: boolean
-          preferred_language?: Database['public']['Enums']['language_code']
           low_bandwidth_enabled?: boolean
           onboarding_state?: Json
+          phone?: string | null
+          preferred_language?: Database["public"]["Enums"]["language_code"]
+          role?: Database["public"]["Enums"]["user_role"]
+          status?: Database["public"]["Enums"]["account_status"]
           suspended_at?: string | null
           suspension_reason?: string | null
-          deletion_requested_at?: string | null
-          created_at?: string
           updated_at?: string
         }
         Relationships: []
       }
       venture_candidates: {
         Row: {
-          id: string
-          lab_id: string
-          co_lab_id: string | null
-          created_by_user_id: string
-          name: string
-          one_liner: string | null
-          problem: string | null
-          solution: string | null
-          traction: string | null
-          team: string | null
           ask: string | null
-          status: Database['public']['Enums']['candidate_status']
-          status_reason: string | null
-          visibility: Database['public']['Enums']['candidate_visibility']
-          region_gated: boolean
-          rubric_team_score: number | null
-          rubric_traction_score: number | null
-          rubric_feasibility_score: number | null
-          notes: string | null
-          timeline_public: boolean
-          vote_opens_at: string | null
-          vote_closes_at: string | null
-          submitted_at: string | null
+          co_lab_id: string | null
+          created_at: string
+          created_by_user_id: string
           decided_at: string | null
           funded_at: string | null
-          created_at: string
+          id: string
+          lab_id: string
+          name: string
+          notes: string | null
+          one_liner: string | null
+          problem: string | null
+          region_gated: boolean
+          rubric_feasibility_score: number | null
+          rubric_team_score: number | null
+          rubric_traction_score: number | null
+          solution: string | null
+          status: Database["public"]["Enums"]["candidate_status"]
+          status_reason: string | null
+          submitted_at: string | null
+          team: string | null
+          timeline_public: boolean
+          traction: string | null
           updated_at: string
+          visibility: Database["public"]["Enums"]["candidate_visibility"]
+          vote_closes_at: string | null
+          vote_opens_at: string | null
         }
         Insert: {
+          ask?: string | null
+          co_lab_id?: string | null
+          created_at?: string
+          created_by_user_id: string
+          decided_at?: string | null
+          funded_at?: string | null
           id?: string
           lab_id: string
-          co_lab_id?: string | null
-          created_by_user_id: string
           name: string
+          notes?: string | null
           one_liner?: string | null
           problem?: string | null
-          solution?: string | null
-          traction?: string | null
-          team?: string | null
-          ask?: string | null
-          status?: Database['public']['Enums']['candidate_status']
-          status_reason?: string | null
-          visibility?: Database['public']['Enums']['candidate_visibility']
           region_gated?: boolean
+          rubric_feasibility_score?: number | null
           rubric_team_score?: number | null
           rubric_traction_score?: number | null
-          rubric_feasibility_score?: number | null
-          notes?: string | null
-          timeline_public?: boolean
-          vote_opens_at?: string | null
-          vote_closes_at?: string | null
+          solution?: string | null
+          status?: Database["public"]["Enums"]["candidate_status"]
+          status_reason?: string | null
           submitted_at?: string | null
-          decided_at?: string | null
-          funded_at?: string | null
-          created_at?: string
+          team?: string | null
+          timeline_public?: boolean
+          traction?: string | null
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["candidate_visibility"]
+          vote_closes_at?: string | null
+          vote_opens_at?: string | null
         }
         Update: {
-          id?: string
-          lab_id?: string
-          co_lab_id?: string | null
-          created_by_user_id?: string
-          name?: string
-          one_liner?: string | null
-          problem?: string | null
-          solution?: string | null
-          traction?: string | null
-          team?: string | null
           ask?: string | null
-          status?: Database['public']['Enums']['candidate_status']
-          status_reason?: string | null
-          visibility?: Database['public']['Enums']['candidate_visibility']
-          region_gated?: boolean
-          rubric_team_score?: number | null
-          rubric_traction_score?: number | null
-          rubric_feasibility_score?: number | null
-          notes?: string | null
-          timeline_public?: boolean
-          vote_opens_at?: string | null
-          vote_closes_at?: string | null
-          submitted_at?: string | null
+          co_lab_id?: string | null
+          created_at?: string
+          created_by_user_id?: string
           decided_at?: string | null
           funded_at?: string | null
-          created_at?: string
+          id?: string
+          lab_id?: string
+          name?: string
+          notes?: string | null
+          one_liner?: string | null
+          problem?: string | null
+          region_gated?: boolean
+          rubric_feasibility_score?: number | null
+          rubric_team_score?: number | null
+          rubric_traction_score?: number | null
+          solution?: string | null
+          status?: Database["public"]["Enums"]["candidate_status"]
+          status_reason?: string | null
+          submitted_at?: string | null
+          team?: string | null
+          timeline_public?: boolean
+          traction?: string | null
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["candidate_visibility"]
+          vote_closes_at?: string | null
+          vote_opens_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "venture_candidates_co_lab_id_fkey"
+            columns: ["co_lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_candidates_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_candidates_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       verifications: {
         Row: {
-          id: string
-          user_id: string
-          listing_id: string | null
-          type: Database['public']['Enums']['verification_type']
-          status: Database['public']['Enums']['verification_request_status']
-          scheduled_at: string | null
-          verifier_user_id: string | null
           consent_given: boolean
           consent_recorded_at: string | null
-          recording_url: string | null
-          recording_expires_at: string | null
-          decision_notes: string | null
-          decided_at: string | null
           created_at: string
+          decided_at: string | null
+          decision_notes: string | null
+          id: string
+          listing_id: string | null
+          recording_expires_at: string | null
+          recording_url: string | null
+          scheduled_at: string | null
+          status: Database["public"]["Enums"]["verification_request_status"]
+          type: Database["public"]["Enums"]["verification_type"]
           updated_at: string
+          user_id: string
+          verifier_user_id: string | null
         }
         Insert: {
-          id?: string
-          user_id: string
-          listing_id?: string | null
-          type: Database['public']['Enums']['verification_type']
-          status?: Database['public']['Enums']['verification_request_status']
-          scheduled_at?: string | null
-          verifier_user_id?: string | null
           consent_given?: boolean
           consent_recorded_at?: string | null
-          recording_url?: string | null
-          recording_expires_at?: string | null
-          decision_notes?: string | null
-          decided_at?: string | null
           created_at?: string
+          decided_at?: string | null
+          decision_notes?: string | null
+          id?: string
+          listing_id?: string | null
+          recording_expires_at?: string | null
+          recording_url?: string | null
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["verification_request_status"]
+          type: Database["public"]["Enums"]["verification_type"]
           updated_at?: string
+          user_id: string
+          verifier_user_id?: string | null
         }
         Update: {
-          id?: string
-          user_id?: string
-          listing_id?: string | null
-          type?: Database['public']['Enums']['verification_type']
-          status?: Database['public']['Enums']['verification_request_status']
-          scheduled_at?: string | null
-          verifier_user_id?: string | null
           consent_given?: boolean
           consent_recorded_at?: string | null
-          recording_url?: string | null
-          recording_expires_at?: string | null
-          decision_notes?: string | null
-          decided_at?: string | null
           created_at?: string
+          decided_at?: string | null
+          decision_notes?: string | null
+          id?: string
+          listing_id?: string | null
+          recording_expires_at?: string | null
+          recording_url?: string | null
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["verification_request_status"]
+          type?: Database["public"]["Enums"]["verification_type"]
           updated_at?: string
+          user_id?: string
+          verifier_user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "verifications_listing_fk"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "business_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verifications_verifier_user_id_fkey"
+            columns: ["verifier_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vouches: {
         Row: {
-          id: string
-          voucher_user_id: string
-          vouchee_user_id: string
           created_at: string
+          id: string
+          vouchee_user_id: string
+          voucher_user_id: string
         }
         Insert: {
-          id?: string
-          voucher_user_id: string
-          vouchee_user_id: string
           created_at?: string
+          id?: string
+          vouchee_user_id: string
+          voucher_user_id: string
         }
         Update: {
-          id?: string
-          voucher_user_id?: string
-          vouchee_user_id?: string
           created_at?: string
+          id?: string
+          vouchee_user_id?: string
+          voucher_user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vouches_vouchee_user_id_fkey"
+            columns: ["vouchee_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouches_voucher_user_id_fkey"
+            columns: ["voucher_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       waitlist_entries: {
         Row: {
-          id: string
+          created_at: string
           email: string | null
-          phone: string | null
-          status: Database['public']['Enums']['waitlist_status']
+          id: string
           invite_id: string | null
           invited_at: string | null
-          created_at: string
+          phone: string | null
+          status: Database["public"]["Enums"]["waitlist_status"]
         }
         Insert: {
-          id?: string
+          created_at?: string
           email?: string | null
-          phone?: string | null
-          status?: Database['public']['Enums']['waitlist_status']
+          id?: string
           invite_id?: string | null
           invited_at?: string | null
-          created_at?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["waitlist_status"]
         }
         Update: {
-          id?: string
+          created_at?: string
           email?: string | null
-          phone?: string | null
-          status?: Database['public']['Enums']['waitlist_status']
+          id?: string
           invite_id?: string | null
           invited_at?: string | null
-          created_at?: string
+          phone?: string | null
+          status?: Database["public"]["Enums"]["waitlist_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_entries_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "invites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       webhook_endpoints: {
         Row: {
-          id: string
-          owner_user_id: string
           api_key_id: string | null
-          url: string
-          secret: string
+          created_at: string
           event_types: string[]
+          id: string
           is_active: boolean
           last_delivery_at: string | null
-          created_at: string
+          owner_user_id: string
+          secret: string
           updated_at: string
+          url: string
         }
         Insert: {
-          id?: string
-          owner_user_id: string
           api_key_id?: string | null
-          url: string
-          secret: string
+          created_at?: string
           event_types?: string[]
+          id?: string
           is_active?: boolean
           last_delivery_at?: string | null
-          created_at?: string
+          owner_user_id: string
+          secret: string
           updated_at?: string
+          url: string
         }
         Update: {
-          id?: string
-          owner_user_id?: string
           api_key_id?: string | null
-          url?: string
-          secret?: string
+          created_at?: string
           event_types?: string[]
+          id?: string
           is_active?: boolean
           last_delivery_at?: string | null
-          created_at?: string
+          owner_user_id?: string
+          secret?: string
           updated_at?: string
+          url?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "webhook_endpoints_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_endpoints_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
-    Views: Record<string, never>
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
       current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: Database['public']['Enums']['user_role']
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
       }
-      get_signup_mode: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      dearmor: { Args: { "": string }; Returns: string }
+      gen_random_uuid: { Args: never; Returns: string }
+      gen_salt: { Args: { "": string }; Returns: string }
+      get_signup_mode: { Args: never; Returns: string }
       has_capability: {
-        Args: { cap: Database['public']['Enums']['membership_capability'] }
+        Args: { cap: Database["public"]["Enums"]["membership_capability"] }
         Returns: boolean
       }
-      has_password: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_mod: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      has_password: { Args: never; Returns: boolean }
+      is_admin: { Args: never; Returns: boolean }
+      is_mod: { Args: never; Returns: boolean }
       list_visible_tiers: {
-        Args: Record<PropertyKey, never>
-        Returns: { id: string; name: string; monthly_price_usd: number; position: number; capabilities: Database['public']['Enums']['membership_capability'][] }[]
+        Args: never
+        Returns: {
+          capabilities: Database["public"]["Enums"]["membership_capability"][]
+          id: string
+          monthly_price_usd: number
+          name: string
+          position: number
+        }[]
       }
-      normalize_auth_phone: {
-        Args: { p: string }
-        Returns: string
+      normalize_auth_phone: { Args: { p: string }; Returns: string }
+      pgp_armor_headers: {
+        Args: { "": string }
+        Returns: Record<string, unknown>[]
       }
     }
     Enums: {
-      account_status: "active" | "suspended" | "deactivated" | "pending_deletion" | "deleted"
+      account_status:
+        | "active"
+        | "suspended"
+        | "deactivated"
+        | "pending_deletion"
+        | "deleted"
       appeal_status: "pending" | "upheld" | "overturned"
       ask_status: "open" | "answered" | "closed"
-      award_category: "best_lab" | "best_win" | "most_helpful" | "rising_builder"
-      candidate_status: "draft" | "submitted" | "in_review" | "approved" | "parked" | "declined"
+      award_category:
+        | "best_lab"
+        | "best_win"
+        | "most_helpful"
+        | "rising_builder"
+      candidate_status:
+        | "draft"
+        | "submitted"
+        | "in_review"
+        | "approved"
+        | "parked"
+        | "declined"
       candidate_visibility: "all_members" | "reviewers_only"
       claim_status: "pending" | "approved" | "rejected"
-      consent_type: "terms_of_service" | "privacy_policy" | "cookies" | "analytics"
+      consent_type:
+        | "terms_of_service"
+        | "privacy_policy"
+        | "cookies"
+        | "analytics"
       content_source: "member" | "seed" | "ai"
       content_status: "published" | "hidden" | "removed"
       conversation_status: "pending" | "accepted" | "declined" | "blocked"
-      entity_type: "user" | "profile" | "post" | "comment" | "tag" | "lab" | "lab_update" | "lab_artifact" | "lab_decision" | "candidate" | "listing" | "conversation" | "message" | "badge" | "vouch" | "report" | "invite" | "verification" | "interest" | "api_key" | "governance_entry" | "appeal" | "mod_action" | "listing_claim" | "waitlist_entry" | "lab_event" | "award_vote" | "push_subscription" | "webhook_endpoint" | "membership_tier" | "consent_record" | "capital_gate_evaluation"
+      entity_type:
+        | "user"
+        | "profile"
+        | "post"
+        | "comment"
+        | "tag"
+        | "lab"
+        | "lab_update"
+        | "lab_artifact"
+        | "lab_decision"
+        | "candidate"
+        | "listing"
+        | "conversation"
+        | "message"
+        | "badge"
+        | "vouch"
+        | "report"
+        | "invite"
+        | "verification"
+        | "interest"
+        | "api_key"
+        | "governance_entry"
+        | "appeal"
+        | "mod_action"
+        | "listing_claim"
+        | "waitlist_entry"
+        | "lab_event"
+        | "award_vote"
+        | "push_subscription"
+        | "webhook_endpoint"
+        | "membership_tier"
+        | "consent_record"
+        | "capital_gate_evaluation"
       follow_target_type: "user" | "lab" | "candidate" | "tag"
       interest_type: "help" | "cosign" | "invest"
       lab_collaboration_status: "proposed" | "accepted" | "declined" | "ended"
       lab_join_mode: "open" | "request" | "invite"
       lab_member_role: "lead" | "core" | "member" | "observer"
       lab_member_specialization: "operator" | "researcher" | "advisor"
-      lab_member_status: "invited" | "requested" | "active" | "declined" | "removed" | "left"
+      lab_member_status:
+        | "invited"
+        | "requested"
+        | "active"
+        | "declined"
+        | "removed"
+        | "left"
       lab_stage: "idea" | "building" | "validating" | "launched"
       lab_visibility: "private" | "members" | "public"
       language_code: "en" | "so"
       listing_verification_status: "unverified" | "pending" | "verified"
-      membership_capability: "create_lab" | "join_unlimited_labs" | "vote_candidate" | "governance_rights" | "builder_path" | "investor_path" | "intelligence_updates"
-      mod_action_type: "remove_content" | "restore_content" | "hide_content" | "warn_user" | "suspend_user" | "unsuspend_user" | "remove_listing" | "restore_listing" | "verify_user" | "revoke_verification" | "dismiss_report" | "other"
+      membership_capability:
+        | "create_lab"
+        | "join_unlimited_labs"
+        | "vote_candidate"
+        | "governance_rights"
+        | "builder_path"
+        | "investor_path"
+        | "intelligence_updates"
+      mod_action_type:
+        | "remove_content"
+        | "restore_content"
+        | "hide_content"
+        | "warn_user"
+        | "suspend_user"
+        | "unsuspend_user"
+        | "remove_listing"
+        | "restore_listing"
+        | "verify_user"
+        | "revoke_verification"
+        | "dismiss_report"
+        | "other"
       poll_status: "open" | "closed"
       post_type: "intro" | "ask" | "win" | "update" | "poll"
-      profile_verification_status: "unverified" | "pending" | "community_verified" | "identity_verified"
+      profile_verification_status:
+        | "unverified"
+        | "pending"
+        | "community_verified"
+        | "identity_verified"
       reaction_type: "fire" | "strong" | "mashallah" | "idea" | "watching"
-      report_reason: "spam" | "harassment" | "impersonation" | "fraud_or_scam" | "inappropriate_content" | "misinformation" | "other"
+      report_reason:
+        | "spam"
+        | "harassment"
+        | "impersonation"
+        | "fraud_or_scam"
+        | "inappropriate_content"
+        | "misinformation"
+        | "other"
       report_status: "open" | "in_review" | "resolved" | "dismissed"
       space_mode: "club" | "lab"
       user_role: "member" | "mod" | "admin"
-      verification_request_status: "pending" | "scheduled" | "approved" | "rejected" | "cancelled"
+      verification_request_status:
+        | "pending"
+        | "scheduled"
+        | "approved"
+        | "rejected"
+        | "cancelled"
       verification_type: "identity" | "business"
       vote_choice: "approve" | "reject"
       waitlist_status: "pending" | "invited" | "joined"
     }
-    CompositeTypes: Record<string, never>
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
 
-export type Tables<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Row']
-export type TablesInsert<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Insert']
-export type TablesUpdate<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Update']
-export type Enums<T extends keyof Database['public']['Enums']> =
-  Database['public']['Enums'][T]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      account_status: [
+        "active",
+        "suspended",
+        "deactivated",
+        "pending_deletion",
+        "deleted",
+      ],
+      appeal_status: ["pending", "upheld", "overturned"],
+      ask_status: ["open", "answered", "closed"],
+      award_category: [
+        "best_lab",
+        "best_win",
+        "most_helpful",
+        "rising_builder",
+      ],
+      candidate_status: [
+        "draft",
+        "submitted",
+        "in_review",
+        "approved",
+        "parked",
+        "declined",
+      ],
+      candidate_visibility: ["all_members", "reviewers_only"],
+      claim_status: ["pending", "approved", "rejected"],
+      consent_type: [
+        "terms_of_service",
+        "privacy_policy",
+        "cookies",
+        "analytics",
+      ],
+      content_source: ["member", "seed", "ai"],
+      content_status: ["published", "hidden", "removed"],
+      conversation_status: ["pending", "accepted", "declined", "blocked"],
+      entity_type: [
+        "user",
+        "profile",
+        "post",
+        "comment",
+        "tag",
+        "lab",
+        "lab_update",
+        "lab_artifact",
+        "lab_decision",
+        "candidate",
+        "listing",
+        "conversation",
+        "message",
+        "badge",
+        "vouch",
+        "report",
+        "invite",
+        "verification",
+        "interest",
+        "api_key",
+        "governance_entry",
+        "appeal",
+        "mod_action",
+        "listing_claim",
+        "waitlist_entry",
+        "lab_event",
+        "award_vote",
+        "push_subscription",
+        "webhook_endpoint",
+        "membership_tier",
+        "consent_record",
+        "capital_gate_evaluation",
+      ],
+      follow_target_type: ["user", "lab", "candidate", "tag"],
+      interest_type: ["help", "cosign", "invest"],
+      lab_collaboration_status: ["proposed", "accepted", "declined", "ended"],
+      lab_join_mode: ["open", "request", "invite"],
+      lab_member_role: ["lead", "core", "member", "observer"],
+      lab_member_specialization: ["operator", "researcher", "advisor"],
+      lab_member_status: [
+        "invited",
+        "requested",
+        "active",
+        "declined",
+        "removed",
+        "left",
+      ],
+      lab_stage: ["idea", "building", "validating", "launched"],
+      lab_visibility: ["private", "members", "public"],
+      language_code: ["en", "so"],
+      listing_verification_status: ["unverified", "pending", "verified"],
+      membership_capability: [
+        "create_lab",
+        "join_unlimited_labs",
+        "vote_candidate",
+        "governance_rights",
+        "builder_path",
+        "investor_path",
+        "intelligence_updates",
+      ],
+      mod_action_type: [
+        "remove_content",
+        "restore_content",
+        "hide_content",
+        "warn_user",
+        "suspend_user",
+        "unsuspend_user",
+        "remove_listing",
+        "restore_listing",
+        "verify_user",
+        "revoke_verification",
+        "dismiss_report",
+        "other",
+      ],
+      poll_status: ["open", "closed"],
+      post_type: ["intro", "ask", "win", "update", "poll"],
+      profile_verification_status: [
+        "unverified",
+        "pending",
+        "community_verified",
+        "identity_verified",
+      ],
+      reaction_type: ["fire", "strong", "mashallah", "idea", "watching"],
+      report_reason: [
+        "spam",
+        "harassment",
+        "impersonation",
+        "fraud_or_scam",
+        "inappropriate_content",
+        "misinformation",
+        "other",
+      ],
+      report_status: ["open", "in_review", "resolved", "dismissed"],
+      space_mode: ["club", "lab"],
+      user_role: ["member", "mod", "admin"],
+      verification_request_status: [
+        "pending",
+        "scheduled",
+        "approved",
+        "rejected",
+        "cancelled",
+      ],
+      verification_type: ["identity", "business"],
+      vote_choice: ["approve", "reject"],
+      waitlist_status: ["pending", "invited", "joined"],
+    },
+  },
+} as const
+

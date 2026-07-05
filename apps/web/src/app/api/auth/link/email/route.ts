@@ -6,7 +6,7 @@ import { requireUser } from '@/lib/auth/guards';
 import { emailSchema } from '@/lib/auth/identifiers';
 import { sendAuthLink } from '@/lib/auth/links';
 import { mintAppToken, recordAuthToken } from '@/lib/auth/tokens';
-import { getEmailProvider } from '@/lib/email/provider';
+import { sendEmailChecked } from '@/lib/email/send';
 import { emailChangeEmail } from '@/lib/email/templates';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -66,7 +66,7 @@ export async function POST(request: Request): Promise<Response> {
       const url = new URL('/auth/confirm', env.APP_URL);
       url.searchParams.set('token_hash', token.raw);
       url.searchParams.set('type', 'email_link');
-      await getEmailProvider().send(emailChangeEmail(body.email, url.toString()));
+      await sendEmailChecked(admin, emailChangeEmail(body.email, url.toString()));
     }
 
     return apiOk({ pendingEmail: body.email });

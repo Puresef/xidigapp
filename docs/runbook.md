@@ -8,6 +8,7 @@ dashboards, on-call rotations) as the infrastructure is provisioned.
 
 - [Environment](#environment)
 - [Supabase auth configuration](#supabase-auth-configuration)
+- [Auth deliverability (email + SMS)](#auth-deliverability-email--sms)
 - [Backup & Restore](#backup--restore)
 - [Incident Response](#incident-response)
 - [Runbooks (placeholders)](#runbooks-placeholders)
@@ -99,6 +100,76 @@ phase; do not hand-delete rows to force it.
 xidig_gate_bypass: 'true' } })` (service key only) skips the invite gate —
 for provisioning admin/seed accounts. `app_metadata` is not settable by end
 users.
+
+---
+
+## Auth deliverability (email + SMS)
+
+Auth depends on external delivery, and Somali routes + privacy-focused inboxes
+(Proton) can be slow or filtered. The app ships four delivery-independence
+layers — the ops work below keeps the channels themselves healthy.
+
+**What the app already does (no ops needed):**
+
+- **Password path** — a member with a password never waits on delivery; the
+  §20 nudge pushes passwordless members to set one.
+- **Numeric fallback** — magic-link and signup emails carry a copy-pasteable
+  6-digit code (same token, same 10 minutes) entered on the same screen, for
+  clients that mangle or pre-fetch links.
+- **Cross-channel guidance** — the sent-state UI offers "try SMS instead" /
+  "try email instead"; SMS provider failures CTA to the magic link (§27).
+- **Resend UX** — visible resend with a 60 s cooldown and attempt counter;
+  server-side rate limits per identifier + per IP stay authoritative.
+- **Suppression list** — hard bounces/complaints (via the webhook below) stop
+  further sends to that address and surface the §27 "can't deliver email
+  there" error instead of "check your inbox".
+
+### DNS authentication (before real members — Seq 22 provider)
+
+- [ ] Use a **dedicated sending subdomain** (e.g. `mail.xidig.net`) so auth
+      mail reputation is isolated from marketing/personal mail.
+- [ ] **SPF** record for the provider (Resend: `send.` CNAME/TXT per their
+      dashboard) — verify in the provider UI.
+- [ ] **DKIM** keys published + verified.
+- [ ] **DMARC** at `p=none` initially with `rua=` reporting; tighten to
+      `p=quarantine` once reports are clean for 2+ weeks.
+- [ ] **Warmup:** ramp volume gradually the first weeks (invites are naturally
+      low-volume — fine); avoid batch-blasting waitlist invites on day one.
+
+### Delivery-event webhook (suppression list)
+
+- [ ] Resend → Webhooks → add endpoint `{APP_URL}/api/webhooks/email`,
+      events `email.bounced` + `email.complained`.
+- [ ] Copy the signing secret into `EMAIL_WEBHOOK_SECRET` (unset = endpoint
+      answers 503 and no suppressions are recorded).
+- [ ] Suppressed addresses live in `email_suppressions` (service-role only).
+      To release one after investigating: set `released_at = now()` — a fresh
+      bounce re-suppresses automatically.
+
+### Monitoring & alerts
+
+- [ ] Sentry: alert rule on the `email suppressed` warning events (a spike =
+      route-level deliverability incident, not one bad address).
+- [ ] Provider dashboard: watch delivery rate; investigate under ~95%.
+- [ ] SMS: monitor delivery/failure rates in the SMS provider console; the
+      app logs every failed send (`[auth] … OTP send failed`).
+- [ ] Audit trail: every suppression writes an `email.suppression.*` audit
+      row (admin-visible).
+
+### Route testing matrix (before launch, then quarterly)
+
+Send a magic link + signup confirm + reset to each, and an SMS OTP to Somali
+numbers on each carrier you can access:
+
+- [ ] Proton Mail (link AND code path — Proton's link protection can rewrite
+      URLs; the code is the designed fallback)
+- [ ] Gmail, Outlook/Hotmail (spam-folder check)
+- [ ] Common Somali webmail/ISP inboxes available to the team
+- [ ] SMS: Hormuud, Somtel, Telesom numbers — measure latency; if a route is
+      unreliable, configure a secondary provider in Supabase (Twilio ↔
+      MessageBird) and document the switch procedure here.
+- [ ] WhatsApp OTP (v1.1): once a WhatsApp-capable provider is configured,
+      flip `ENABLED_OTP_CHANNELS` — the API already accepts the channel.
 
 ---
 

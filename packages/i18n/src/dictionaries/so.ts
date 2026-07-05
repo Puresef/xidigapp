@@ -68,6 +68,7 @@ export const so = {
   'action.createInvite': 'Samee koodh martiqaad',
   'action.sendInvite': 'Dir martiqaad',
   'action.appeal': 'Codso racfaan',
+  'action.resend': 'Dib u dir',
 
   // Language switching
   'language.label': 'Luqadda',
@@ -123,6 +124,8 @@ export const so = {
     'Kaasi uma eka lambar taleefan oo dhammaystiran. Ku dar koodhka dalka, sida +252 61 234 5678.',
   'error.smsUnavailable':
     'Hadda farriin qoraal ah kuma diri karno. Isku day link gelitaanka ama furaha sirta — annaguna waan ka shaqaynaynaa.',
+  'error.emailUndeliverable':
+    'Hadda email uma diri karno cinwaankaas — fariimihii hore way soo laabteen. Hubi qoraalka, isticmaal email kale, ama ku sii wad lambarkaaga taleefanka.',
   'error.rateLimited':
     'Marar badan ayaad hadda isku dayday. Daqiiqad sug, ka dibna mar kale isku day.',
   'error.invalidRequest':
@@ -173,6 +176,18 @@ export const so = {
   'auth.errorTitle': 'Dhibaato gelitaan',
   'auth.resetTitle': 'Dib u deji furaha sirta',
   'auth.chooseNewPassword': 'Dooro fure sirta oo cusub',
+  'auth.emailCodeLabel': 'Koodhka emailka ku jira',
+  'auth.emailCodeHint':
+    'Linkigu ma imanayo mise ma furmayo? Isla emailkaas waxaa ku jira koodh 6-lambar ah — halkan geli.',
+  'auth.checkSpam': 'Sanduuqaaga waxba ma jiraan? Fiiri spam-ka ama promotions ka hor intaadan dib u dirin.',
+  'auth.trySmsInstead': 'Emailku ma soo gaarayo? Isku day koodh SMS ah.',
+  'auth.tryEmailInstead': 'Farriin qoraal ah ma imanayso? Isku day email.',
+  'auth.resendWait': {
+    one: '{count} ilbiriqsi ka dib ayaad dib u diri kartaa',
+    other: '{count} ilbiriqsi ka dib ayaad dib u diri kartaa',
+  },
+  'auth.resendLimitHint':
+    'Wax ma imanayaan dhawr isku day ka dib? Beddel habka — mid kastaa isla akoonkaaga ayuu ku geliyaa.',
 
   // Waitlist / beta gate
   'waitlist.title': 'Ku biir safka sugitaanka Xidig',

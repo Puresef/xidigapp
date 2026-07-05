@@ -536,7 +536,13 @@ describe('RLS: locked auth tables', () => {
     frank = await createAuthUser({ email: 'frank@example.com' });
   });
 
-  it.each(['app_settings', 'signup_grants', 'auth_email_tokens', 'waitlist_entries'])(
+  it.each([
+    'app_settings',
+    'signup_grants',
+    'auth_email_tokens',
+    'waitlist_entries',
+    'email_suppressions',
+  ])(
     '%s: authenticated reads zero rows and cannot insert',
     async (table) => {
       const r = await h.as('authenticated', frank, (q) => q(`select * from ${table}`));

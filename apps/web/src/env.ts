@@ -51,6 +51,9 @@ export const envSchema = z.object({
   EMAIL_API_KEY: z.string().min(1),
   EMAIL_PROVIDER: z.enum(['auto', 'resend', 'console']).default('auto'),
   EMAIL_FROM: z.string().min(1).default('Xidig <onboarding@resend.dev>'),
+  // Signing secret for the provider's delivery webhooks (Resend → Svix,
+  // "whsec_..."). Empty = webhook endpoint disabled (returns 503).
+  EMAIL_WEBHOOK_SECRET: z.string().default(''),
 
   // Maps
   MAPTILER_KEY: z.string().min(1),

@@ -4,7 +4,8 @@ import type { Database } from '@xidig/db';
 
 import { env } from '@/env';
 import { ApiError } from '@/lib/api';
-import { getEmailProvider, type OutgoingEmail } from '@/lib/email/provider';
+import { type OutgoingEmail } from '@/lib/email/provider';
+import { sendEmailChecked } from '@/lib/email/send';
 import {
   emailChangeEmail,
   magicLinkEmail,
@@ -91,7 +92,7 @@ export async function mintAuthLink(
     throw new Error(`generateLink(${link.kind}) failed: ${message || 'no properties returned'}`);
   }
 
-  const { hashed_token, verification_type } = data.properties;
+  const { hashed_token, email_otp, verification_type } = data.properties;
   // GoTrue names email-change links email_change_current/_new; verifyOtp
   // expects the single type 'email_change'.
   const verifyType = verification_type.startsWith('email_change') ? 'email_change' : verification_type;
@@ -106,11 +107,16 @@ export async function mintAuthLink(
     userId: data.user?.id,
   });
 
+  // Numeric fallback (deliverability): magic-link and signup emails carry
+  // the 6-digit companion code for clients that mangle/pre-fetch links —
+  // verified on the same screen via /api/auth/email-otp/verify. Recovery
+  // stays link-only (the reset form needs the link's recovery session);
+  // email_change stays link-only (the click is the ownership proof).
   const outgoing =
     link.kind === 'magiclink'
-      ? magicLinkEmail(recipient, url)
+      ? magicLinkEmail(recipient, url, email_otp)
       : link.kind === 'signup'
-        ? signupConfirmEmail(recipient, url)
+        ? signupConfirmEmail(recipient, url, email_otp)
         : link.kind === 'recovery'
           ? passwordResetEmail(recipient, url)
           : emailChangeEmail(recipient, url);
@@ -125,6 +131,6 @@ export async function sendAuthLink(
   next?: string,
 ): Promise<string | undefined> {
   const minted = await mintAuthLink(admin, link, next);
-  await getEmailProvider().send(minted.outgoing);
+  await sendEmailChecked(admin, minted.outgoing);
   return minted.userId;
 }

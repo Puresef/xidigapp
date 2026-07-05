@@ -94,6 +94,37 @@ export async function consumeAuthToken(
     .is('consumed_at', null);
 }
 
+export interface LatestEmailToken {
+  tokenHash: string;
+  /** 'magiclink' | 'signup' — the flow the companion code belongs to. */
+  type: string;
+  status: 'ok' | 'expired';
+}
+
+/**
+ * The numeric-code fallback verifies against the LATEST open link token for
+ * an email (link and code are the same underlying GoTrue token). Expiry uses
+ * the same 10-minute ledger window as the link itself.
+ */
+export async function findLatestEmailToken(
+  admin: SupabaseClient<Database>,
+  email: string,
+): Promise<LatestEmailToken | null> {
+  const { data } = await admin
+    .from('auth_email_tokens')
+    .select('token_hash, type, created_at')
+    .eq('email', email)
+    .in('type', ['magiclink', 'signup'])
+    .is('consumed_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!data) return null;
+  const expired = Date.now() - new Date(data.created_at).getTime() > AUTH_LINK_TTL_MS;
+  return { tokenHash: data.token_hash, type: data.type, status: expired ? 'expired' : 'ok' };
+}
+
 /** Mint an app-namespace token (email_link): raw goes in the URL, hash in the DB. */
 export function mintAppToken(): { raw: string; hash: string } {
   const raw = randomBytes(32).toString('base64url');

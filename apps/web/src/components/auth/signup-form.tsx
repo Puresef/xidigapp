@@ -10,6 +10,7 @@ import type { PlainError } from '@/lib/errors';
 
 import { Banner } from '../banner';
 import { PlainErrorBanner } from './plain-error';
+import { ResendControls } from './resend-controls';
 
 /**
  * Beta signup: invite code + one of the three co-equal methods (§9) + terms.
@@ -31,6 +32,8 @@ export function SignUpForm({ initialCode }: { initialCode: string }) {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpRequested, setOtpRequested] = useState(false);
+  const [emailCode, setEmailCode] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -47,6 +50,8 @@ export function SignUpForm({ initialCode }: { initialCode: string }) {
     setNotice(null);
     setOtpRequested(false);
     setOtpCode('');
+    setEmailSent(false);
+    setEmailCode('');
   }
 
   async function run(action: () => Promise<void>) {
@@ -78,6 +83,21 @@ export function SignUpForm({ initialCode }: { initialCode: string }) {
       return;
     }
 
+    if (method !== 'sms' && emailSent) {
+      // Numeric fallback: the confirmation email's 6-digit code completes
+      // signup when the link won't open.
+      void run(async () => {
+        const data = await apiPost<{ next: string }>('/api/auth/email-otp/verify', {
+          email,
+          code: emailCode,
+          next: '/onboarding',
+        });
+        router.push(data.next);
+        router.refresh();
+      });
+      return;
+    }
+
     void run(async () => {
       const payload =
         method === 'sms'
@@ -88,6 +108,7 @@ export function SignUpForm({ initialCode }: { initialCode: string }) {
       const data = await apiPost<{ message: string }>('/api/auth/signup', payload);
       setNotice(data.message);
       if (method === 'sms') setOtpRequested(true);
+      else setEmailSent(true);
     });
   }
 
@@ -197,6 +218,25 @@ export function SignUpForm({ initialCode }: { initialCode: string }) {
           </div>
         ) : null}
 
+        {method !== 'sms' && emailSent ? (
+          <div className="xidig-field">
+            <label className="xidig-field__label" htmlFor="signup-email-code">
+              {t('auth.emailCodeLabel')}
+            </label>
+            <input
+              id="signup-email-code"
+              className="xidig-field__input"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]*"
+              required
+              value={emailCode}
+              onChange={(e) => setEmailCode(e.target.value)}
+            />
+            <p className="xidig-field__hint">{t('auth.emailCodeHint')}</p>
+          </div>
+        ) : null}
+
         {!otpRequested ? (
           <label className="xidig-checkbox">
             <input
@@ -210,9 +250,37 @@ export function SignUpForm({ initialCode }: { initialCode: string }) {
         ) : null}
 
         <button type="submit" className="xidig-button xidig-button--primary" disabled={pending}>
-          {method === 'sms' && otpRequested ? t('action.verifyCode') : t('action.createAccount')}
+          {(method === 'sms' && otpRequested) || (method !== 'sms' && emailSent)
+            ? t('action.verifyCode')
+            : t('action.createAccount')}
         </button>
       </form>
+
+      {method !== 'sms' && emailSent ? (
+        <ResendControls
+          hintKeys={['auth.checkSpam']}
+          onResend={async () => {
+            // The account exists after the first send — a fresh magic link
+            // both confirms the email and signs in, so it doubles as the
+            // signup-confirmation resend.
+            const data = await apiPost<{ message: string }>('/api/auth/signin/magic-link', {
+              email,
+              next: '/onboarding',
+            });
+            setNotice(data.message);
+          }}
+        />
+      ) : null}
+
+      {method === 'sms' && otpRequested ? (
+        <ResendControls
+          hintKeys={['auth.tryEmailInstead']}
+          onResend={async () => {
+            const data = await apiPost<{ message: string }>('/api/auth/otp/request', { phone });
+            setNotice(data.message);
+          }}
+        />
+      ) : null}
 
       <div className="xidig-auth__meta">
         <a href="/signin">{t('auth.haveAccount')} →</a>

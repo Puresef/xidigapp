@@ -5,7 +5,7 @@ import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { generateInviteCode } from '@/lib/auth/invites';
 import { requireRole } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
-import { getEmailProvider } from '@/lib/email/provider';
+import { sendEmailChecked } from '@/lib/email/send';
 import { inviteEmail } from '@/lib/email/templates';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -66,7 +66,9 @@ export async function POST(request: Request): Promise<Response> {
     if (entry.email) {
       const signupUrl = new URL('/signup', env.APP_URL);
       signupUrl.searchParams.set('code', code);
-      await getEmailProvider().send(inviteEmail(entry.email, code, signupUrl.toString()));
+      // Suppression-checked: a bounced waitlist address surfaces the §27
+      // undeliverable error to the admin instead of silently vanishing.
+      await sendEmailChecked(admin, inviteEmail(entry.email, code, signupUrl.toString()));
     }
 
     await writeAudit(admin, {

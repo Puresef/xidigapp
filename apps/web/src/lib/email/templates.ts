@@ -20,8 +20,21 @@ function withHtml(text: string, actionUrl: string, actionLabel: string): string 
 </body></html>`;
 }
 
-export function magicLinkEmail(to: string, link: string): OutgoingEmail {
-  const text = `Here's your sign-in link for Xidig.\n\nIt's valid for 10 minutes and works once. If you didn't request it, you can safely ignore this email — nobody can sign in without it.\n\nSign in: ${link}`;
+/**
+ * The numeric fallback (§ deliverability): some mail clients mangle or
+ * pre-fetch links. Every link email that supports it also carries the
+ * copy-pasteable 6-digit code, entered on the same screen that sent it.
+ */
+function withCode(text: string, code?: string): string {
+  if (!code) return text;
+  return `${text}\n\nLink not working? Enter this code instead: ${code} — same 10 minutes, same one-time use.`;
+}
+
+export function magicLinkEmail(to: string, link: string, code?: string): OutgoingEmail {
+  const text = withCode(
+    `Here's your sign-in link for Xidig.\n\nIt's valid for 10 minutes and works once. If you didn't request it, you can safely ignore this email — nobody can sign in without it.\n\nSign in: ${link}`,
+    code,
+  );
   return {
     to,
     subject: 'Your Xidig sign-in link',
@@ -30,8 +43,11 @@ export function magicLinkEmail(to: string, link: string): OutgoingEmail {
   };
 }
 
-export function signupConfirmEmail(to: string, link: string): OutgoingEmail {
-  const text = `Welcome to Xidig! One step left: confirm your email so we know it's really yours.\n\nThis link is valid for 10 minutes. If it expires, just request a fresh sign-in link — we'll confirm you on the way in.\n\nConfirm your email: ${link}`;
+export function signupConfirmEmail(to: string, link: string, code?: string): OutgoingEmail {
+  const text = withCode(
+    `Welcome to Xidig! One step left: confirm your email so we know it's really yours.\n\nThis link is valid for 10 minutes. If it expires, just request a fresh sign-in link — we'll confirm you on the way in.\n\nConfirm your email: ${link}`,
+    code,
+  );
   return {
     to,
     subject: 'Confirm your email · Xidig',

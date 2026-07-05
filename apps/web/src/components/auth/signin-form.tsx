@@ -10,6 +10,7 @@ import type { PlainError } from '@/lib/errors';
 
 import { Banner } from '../banner';
 import { PlainErrorBanner } from './plain-error';
+import { ResendControls } from './resend-controls';
 
 /**
  * Three co-equal sign-in methods (§9): password, magic link, SMS OTP.
@@ -31,6 +32,8 @@ export function SignInForm({ initialMethod, next }: { initialMethod: SignInMetho
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [otpRequested, setOtpRequested] = useState(false);
+  const [emailCode, setEmailCode] = useState('');
+  const [linkSent, setLinkSent] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -47,6 +50,8 @@ export function SignInForm({ initialMethod, next }: { initialMethod: SignInMetho
     setNotice(null);
     setOtpRequested(false);
     setOtpCode('');
+    setLinkSent(false);
+    setEmailCode('');
   }
 
   async function run(action: () => Promise<void>) {
@@ -76,12 +81,26 @@ export function SignInForm({ initialMethod, next }: { initialMethod: SignInMetho
         router.refresh();
       });
     } else if (method === 'magic-link') {
+      if (linkSent) {
+        // Numeric fallback: the emailed code signs in when the link won't.
+        void run(async () => {
+          const data = await apiPost<{ next: string }>('/api/auth/email-otp/verify', {
+            email,
+            code: emailCode,
+            next,
+          });
+          router.push(data.next);
+          router.refresh();
+        });
+        return;
+      }
       void run(async () => {
         const data = await apiPost<{ message: string }>('/api/auth/signin/magic-link', {
           email,
           next,
         });
         setNotice(data.message);
+        setLinkSent(true);
       });
     } else if (!otpRequested) {
       void run(async () => {
@@ -192,16 +211,60 @@ export function SignInForm({ initialMethod, next }: { initialMethod: SignInMetho
           </div>
         ) : null}
 
+        {method === 'magic-link' && linkSent ? (
+          <div className="xidig-field">
+            <label className="xidig-field__label" htmlFor="signin-email-code">
+              {t('auth.emailCodeLabel')}
+            </label>
+            <input
+              id="signin-email-code"
+              className="xidig-field__input"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]*"
+              required
+              value={emailCode}
+              onChange={(e) => setEmailCode(e.target.value)}
+            />
+            <p className="xidig-field__hint">{t('auth.emailCodeHint')}</p>
+          </div>
+        ) : null}
+
         <button type="submit" className="xidig-button xidig-button--primary" disabled={pending}>
           {method === 'password'
             ? t('action.signIn')
             : method === 'magic-link'
-              ? t('action.sendLink')
+              ? linkSent
+                ? t('action.verifyCode')
+                : t('action.sendLink')
               : otpRequested
                 ? t('action.verifyCode')
                 : t('action.sendCode')}
         </button>
       </form>
+
+      {method === 'magic-link' && linkSent ? (
+        <ResendControls
+          hintKeys={['auth.checkSpam', 'auth.trySmsInstead']}
+          onResend={async () => {
+            const data = await apiPost<{ message: string }>('/api/auth/signin/magic-link', {
+              email,
+              next,
+            });
+            setNotice(data.message);
+          }}
+        />
+      ) : null}
+
+      {method === 'sms' && otpRequested ? (
+        <ResendControls
+          hintKeys={['auth.tryEmailInstead']}
+          onResend={async () => {
+            const data = await apiPost<{ message: string }>('/api/auth/otp/request', { phone });
+            setNotice(data.message);
+          }}
+        />
+      ) : null}
 
       <div className="xidig-auth__meta">
         {method === 'password' ? (

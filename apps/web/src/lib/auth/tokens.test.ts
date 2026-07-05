@@ -77,6 +77,52 @@ describe('checkAuthToken — the 10-minute §26 window keyed on the RECORDED typ
   });
 });
 
+describe('findLatestEmailToken — numeric-code fallback lookup', () => {
+  function listStub(row: { token_hash: string; type: string; created_at: string } | null) {
+    const maybeSingle = vi.fn(async () => ({ data: row, error: null }));
+    const chain = {
+      select: vi.fn(() => chain),
+      eq: vi.fn(() => chain),
+      in: vi.fn(() => chain),
+      is: vi.fn(() => chain),
+      order: vi.fn(() => chain),
+      limit: vi.fn(() => chain),
+      maybeSingle,
+    };
+    return { client: { from: vi.fn(() => chain) } as never, chain };
+  }
+
+  it('returns the fresh token with its type', async () => {
+    const { client } = listStub({
+      token_hash: 'h1',
+      type: 'signup',
+      created_at: new Date(Date.now() - 30_000).toISOString(),
+    });
+    const { findLatestEmailToken } = await import('./tokens');
+    expect(await findLatestEmailToken(client, 'a@b.co')).toEqual({
+      tokenHash: 'h1',
+      type: 'signup',
+      status: 'ok',
+    });
+  });
+
+  it('flags tokens older than the 10-minute window as expired', async () => {
+    const { client } = listStub({
+      token_hash: 'h1',
+      type: 'magiclink',
+      created_at: new Date(Date.now() - AUTH_LINK_TTL_MS - 1000).toISOString(),
+    });
+    const { findLatestEmailToken } = await import('./tokens');
+    expect((await findLatestEmailToken(client, 'a@b.co'))?.status).toBe('expired');
+  });
+
+  it('returns null when no open link token exists (no code was ever sent)', async () => {
+    const { client } = listStub(null);
+    const { findLatestEmailToken } = await import('./tokens');
+    expect(await findLatestEmailToken(client, 'a@b.co')).toBeNull();
+  });
+});
+
 describe('app-namespace tokens (email_link)', () => {
   it('mints url-safe raw values whose sha256 matches hashAppToken', () => {
     const token = mintAppToken();

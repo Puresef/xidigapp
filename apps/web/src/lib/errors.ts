@@ -103,6 +103,10 @@ export const ERROR_DEFS = {
     messageKey: 'error.smsUnavailable',
     cta: { labelKey: 'action.useMagicLink', href: '/signin?method=magic-link' },
   },
+  email_undeliverable: {
+    messageKey: 'error.emailUndeliverable',
+    cta: { labelKey: 'auth.methodSms', href: '/signin?method=sms' },
+  },
 
   // --- Request hygiene ---------------------------------------------------------------
   rate_limited: { messageKey: 'error.rateLimited' },

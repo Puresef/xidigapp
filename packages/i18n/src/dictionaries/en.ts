@@ -62,6 +62,7 @@ export const en = {
   'action.createInvite': 'Create invite code',
   'action.sendInvite': 'Send invite',
   'action.appeal': 'Appeal',
+  'action.resend': 'Resend',
 
   // Language switching
   'language.label': 'Language',
@@ -115,6 +116,8 @@ export const en = {
     'That doesn’t look like a full phone number. Include your country code, like +252 61 234 5678.',
   'error.smsUnavailable':
     'We couldn’t send a text message right now. Try the magic link or password instead — we’re on it.',
+  'error.emailUndeliverable':
+    'We can’t deliver email to that address right now — earlier messages bounced back. Double-check the spelling, use a different address, or continue with your phone number instead.',
   'error.rateLimited': 'You’ve tried that a lot just now. Wait a minute and try again.',
   'error.invalidRequest':
     'Something about that request didn’t look right. Refresh the page and try again.',
@@ -164,6 +167,15 @@ export const en = {
   'auth.errorTitle': 'Sign-in problem',
   'auth.resetTitle': 'Reset your password',
   'auth.chooseNewPassword': 'Choose a new password',
+  'auth.emailCodeLabel': 'Code from the email',
+  'auth.emailCodeHint':
+    'Link not arriving or won’t open? The same email carries a 6-digit code — enter it here instead.',
+  'auth.checkSpam': 'Nothing in your inbox? Check spam or promotions before resending.',
+  'auth.trySmsInstead': 'Email not coming through? Try an SMS code instead.',
+  'auth.tryEmailInstead': 'No text arriving? Try email instead.',
+  'auth.resendWait': { one: 'You can resend in {count} second', other: 'You can resend in {count} seconds' },
+  'auth.resendLimitHint':
+    'Still nothing after a few tries? Switch method — any of them signs you in to the same account.',
 
   // Waitlist / beta gate (§9, §20)
   'waitlist.title': 'Join the Xidig waitlist',
