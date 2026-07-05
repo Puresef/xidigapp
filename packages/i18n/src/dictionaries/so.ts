@@ -131,6 +131,17 @@ export const so = {
   'error.invalidRequest':
     'Codsigaas wax khaldan ayaa ku jiray. Bogga cusboonaysii oo mar kale isku day.',
 
+  // Bogga & tusmada (PRD §27)
+  'error.handleTaken': 'Magacan hore ayaa loo qaatay. Isku day mid kale.',
+  'error.handleInvalid':
+    'Magacyadu waxay isticmaalaan 3–30 xaraf oo yaryar, tiro, ama hoos-xariiq — sida maxamed_a.',
+  'error.profileIncomplete':
+    'Marka hore dhammaystir boggaaga — waxay qaadanaysaa 2 daqiiqo oo keliya.',
+  'error.duplicateListing':
+    'Liis magacan leh oo kuu dhow ayaa hore u jiray. Ma ganacsigaagaa? Halkan ka sheeg inuu kaaga tahay.',
+  'error.listingLimit':
+    'Toddobaadkan waxaad gelisay 2 liis — taasi waa xadka hadda. Toddobaadka danbe ayaad mid kale ku dari kartaa.',
+
   // Onboarding — first-session checklist (PRD §20)
   'onboarding.completeProfile': 'Dhammaystir boggaaga',
   'onboarding.pickLanes': 'Dooro waddooyinkaaga',
@@ -158,7 +169,10 @@ export const so = {
     'Ugu yaraan {min} xaraf. Kan dheer ayaa ka xoog badan — dhawr eray oo aan la filayn ayaa aad u wanaagsan.',
   'auth.otpCodeLabel': 'Koodhka gelitaanka',
   'auth.inviteCodeLabel': 'Koodhka martiqaadka',
+  'auth.inviteCodeLabelOptional': 'Koodhka martiqaadka (ikhtiyaari)',
   'auth.inviteCodeHint': 'Koodhadhku waxay u eg yihiin XIDIG-XXXX-XXXX.',
+  'auth.inviteOptionalHint':
+    'Koodh ma haysaa? Ku dar. Haddii kale, hadda waad ku biiri kartaa mid la’aan.',
   'auth.termsAccept': 'Waan ogolahay Shuruudaha Adeegga iyo Siyaasadda Arrimaha Gaarka ah.',
   'auth.chooseMethod': 'Sidee doonaysaa inaad ku gasho?',
   'auth.magicLinkSent':
@@ -179,7 +193,8 @@ export const so = {
   'auth.emailCodeLabel': 'Koodhka emailka ku jira',
   'auth.emailCodeHint':
     'Linkigu ma imanayo mise ma furmayo? Isla emailkaas waxaa ku jira koodh 6-lambar ah — halkan geli.',
-  'auth.checkSpam': 'Sanduuqaaga waxba ma jiraan? Fiiri spam-ka ama promotions ka hor intaadan dib u dirin.',
+  'auth.checkSpam':
+    'Sanduuqaaga waxba ma jiraan? Fiiri spam-ka ama promotions ka hor intaadan dib u dirin.',
   'auth.trySmsInstead': 'Emailku ma soo gaarayo? Isku day koodh SMS ah.',
   'auth.tryEmailInstead': 'Farriin qoraal ah ma imanayso? Isku day email.',
   'auth.resendWait': {

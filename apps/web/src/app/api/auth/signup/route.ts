@@ -14,14 +14,24 @@ import { getSupabaseAdmin, getSupabaseServer } from '@/lib/supabase/server';
 
 /**
  * Signup (beta-gated, §9): one endpoint, three co-equal methods.
- * Sequence: rate limit → invite code → (existing account? converge, §9 "one
- * canonical account") → signup grant → create the account through the
- * matching channel. The DB trigger enforces the grant server-side, so this
- * route is the ONLY door in.
+ * Sequence: rate limit → gate (invite code OR open-waitlist mode) → (existing
+ * account? converge, §9 "one canonical account") → signup grant → create the
+ * account through the matching channel. The DB trigger enforces the grant
+ * server-side, so this route is the ONLY door in.
+ *
+ * Gate depends on the admin signup-mode toggle (app_settings.signup_mode):
+ *  - invite_only: a valid single-use invite code is REQUIRED;
+ *  - waitlist (open beta): self-serve — signup proceeds with no invite and
+ *    the grant is issued server-side; an invite code, if supplied, is still
+ *    honoured for referral tracking.
+ * The 500-cap Founding Member award is the only brake in open mode.
  */
 
 const base = {
-  inviteCode: z.string().trim().min(1),
+  // Optional: required in invite_only mode, omitted in open-waitlist mode
+  // (enforced server-side against get_signup_mode(), never trusted from the
+  // client).
+  inviteCode: z.string().trim().min(1).optional(),
   // §9 "+ terms": consent must be explicit, not defaulted.
   acceptTerms: z.literal(true),
 };
@@ -46,9 +56,22 @@ export async function POST(request: Request): Promise<Response> {
 
     await enforceRateLimit(`signup:id:${identifier}`, { max: 5, windowSeconds: 3600 });
 
-    const invite = await validateInviteCode(admin, body.inviteCode);
-    if (!invite.ok) {
-      throw new ApiError(invite.code, invite.code === 'invite_used' ? 409 : 400);
+    // Gate: an invite code is required UNLESS the beta is in open-waitlist
+    // mode. The mode is read server-side (never trusted from the client);
+    // in open mode with no code, the grant is auto-issued below.
+    let inviteId: string | undefined;
+    if (body.inviteCode) {
+      const invite = await validateInviteCode(admin, body.inviteCode);
+      if (!invite.ok) {
+        throw new ApiError(invite.code, invite.code === 'invite_used' ? 409 : 400);
+      }
+      inviteId = invite.invite.id;
+    } else {
+      const { data: mode } = await admin.rpc('get_signup_mode');
+      if (mode !== 'waitlist') {
+        // invite_only + no code = the §27 "you need an invite" wall.
+        throw new ApiError('signup_not_allowed', 403);
+      }
     }
 
     // One canonical account (§9): if this identifier already has an account,
@@ -72,7 +95,7 @@ export async function POST(request: Request): Promise<Response> {
 
     await issueSignupGrant(admin, {
       ...(email ? { email } : { phone: phone! }),
-      inviteId: invite.invite.id,
+      ...(inviteId ? { inviteId } : {}),
     });
 
     if (body.method === 'password') {

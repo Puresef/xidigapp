@@ -122,6 +122,16 @@ export const en = {
   'error.invalidRequest':
     'Something about that request didn’t look right. Refresh the page and try again.',
 
+  // --- Profile & directory (§27) ---
+  'error.handleTaken': 'That handle is taken. Try a different one.',
+  'error.handleInvalid':
+    'Handles use 3–30 lowercase letters, numbers, or underscores — like maxamed_a.',
+  'error.profileIncomplete': 'Finish setting up your profile first — it only takes 2 minutes.',
+  'error.duplicateListing':
+    'A listing with this name already exists nearby. Is this your business? Claim it instead.',
+  'error.listingLimit':
+    'You’ve added 2 listings this week — that’s the limit for now. You can add more next week.',
+
   // Onboarding — first-session checklist (PRD §20)
   'onboarding.completeProfile': 'Complete your profile',
   'onboarding.pickLanes': 'Pick your lanes',
@@ -149,7 +159,9 @@ export const en = {
     'At least {min} characters. Longer is stronger — a few random words work great.',
   'auth.otpCodeLabel': 'Sign-in code',
   'auth.inviteCodeLabel': 'Invite code',
+  'auth.inviteCodeLabelOptional': 'Invite code (optional)',
   'auth.inviteCodeHint': 'Codes look like XIDIG-XXXX-XXXX.',
+  'auth.inviteOptionalHint': 'Have a code? Add it. If not, you can join without one right now.',
   'auth.termsAccept': 'I agree to the Terms of Service and Privacy Policy.',
   'auth.chooseMethod': 'How do you want to sign in?',
   'auth.magicLinkSent':
@@ -173,7 +185,10 @@ export const en = {
   'auth.checkSpam': 'Nothing in your inbox? Check spam or promotions before resending.',
   'auth.trySmsInstead': 'Email not coming through? Try an SMS code instead.',
   'auth.tryEmailInstead': 'No text arriving? Try email instead.',
-  'auth.resendWait': { one: 'You can resend in {count} second', other: 'You can resend in {count} seconds' },
+  'auth.resendWait': {
+    one: 'You can resend in {count} second',
+    other: 'You can resend in {count} seconds',
+  },
   'auth.resendLimitHint':
     'Still nothing after a few tries? Switch method — any of them signs you in to the same account.',
 

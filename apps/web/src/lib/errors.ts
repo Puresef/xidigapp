@@ -108,6 +108,16 @@ export const ERROR_DEFS = {
     cta: { labelKey: 'auth.methodSms', href: '/signin?method=sms' },
   },
 
+  // --- Profile & directory (§27) ---------------------------------------------------
+  handle_taken: { messageKey: 'error.handleTaken' },
+  handle_invalid: { messageKey: 'error.handleInvalid' },
+  profile_incomplete: {
+    messageKey: 'error.profileIncomplete',
+    cta: { labelKey: 'onboarding.completeProfile', href: '/settings/profile' },
+  },
+  duplicate_listing: { messageKey: 'error.duplicateListing' },
+  listing_limit: { messageKey: 'error.listingLimit' },
+
   // --- Request hygiene ---------------------------------------------------------------
   rate_limited: { messageKey: 'error.rateLimited' },
   invalid_request: { messageKey: 'error.invalidRequest' },

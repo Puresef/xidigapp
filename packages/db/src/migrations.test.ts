@@ -27,10 +27,11 @@ afterAll(async () => {
 async function seedMember(handle: string): Promise<string> {
   const userId = await db.createAuthUser({ email: `${handle}@example.com`, gateBypass: true });
   await db.asUser(userId, (tx) =>
-    tx.query(
-      `insert into profiles (user_id, display_name, handle) values ($1, $2, $3)`,
-      [userId, handle, handle],
-    ),
+    tx.query(`insert into profiles (user_id, display_name, handle) values ($1, $2, $3)`, [
+      userId,
+      handle,
+      handle,
+    ]),
   );
   return userId;
 }
@@ -66,9 +67,9 @@ describe('migration chain', () => {
 
 describe('beta signup gate (on_auth_user_created)', () => {
   it('aborts a signup that has no open grant', async () => {
-    await expect(
-      db.createAuthUser({ email: 'no-grant@example.com' }),
-    ).rejects.toThrow(/XIDIG_SIGNUP_NOT_ALLOWED/);
+    await expect(db.createAuthUser({ email: 'no-grant@example.com' })).rejects.toThrow(
+      /XIDIG_SIGNUP_NOT_ALLOWED/,
+    );
   });
 
   it('allows signup with an open email grant, consumes it, and mirrors the user', async () => {
@@ -94,9 +95,9 @@ describe('beta signup gate (on_auth_user_created)', () => {
 
   it('rejects an expired grant', async () => {
     await db.createSignupGrant({ email: 'expired@example.com', expiresInMinutes: -5 });
-    await expect(
-      db.createAuthUser({ email: 'expired@example.com' }),
-    ).rejects.toThrow(/XIDIG_SIGNUP_NOT_ALLOWED/);
+    await expect(db.createAuthUser({ email: 'expired@example.com' })).rejects.toThrow(
+      /XIDIG_SIGNUP_NOT_ALLOWED/,
+    );
   });
 
   it('normalises GoTrue phone (no +) to E.164 and matches the grant', async () => {
@@ -302,9 +303,10 @@ describe('users & profiles policies', () => {
 
     await expect(
       db.asUser(bob, (tx) =>
-        tx.query(`update profiles set verification_status = 'identity_verified' where user_id = $1`, [
-          bob,
-        ]),
+        tx.query(
+          `update profiles set verification_status = 'identity_verified' where user_id = $1`,
+          [bob],
+        ),
       ),
     ).rejects.toThrow(/permission denied/);
 
@@ -482,10 +484,10 @@ describe('phase 1 API surface policies', () => {
 
     await expect(
       db.asUser(claimant, (tx) =>
-        tx.query(
-          `insert into listing_claims (listing_id, claimant_user_id) values ($1, $2)`,
-          [owned.rows[0].id, claimant],
-        ),
+        tx.query(`insert into listing_claims (listing_id, claimant_user_id) values ($1, $2)`, [
+          owned.rows[0].id,
+          claimant,
+        ]),
       ),
     ).rejects.toThrow(/row-level security/);
 

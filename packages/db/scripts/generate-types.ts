@@ -155,7 +155,10 @@ function render(data: Awaited<ReturnType<typeof introspect>>): string {
   const lines: string[] = [];
   const push = (indent: number, text: string) => lines.push(`${'  '.repeat(indent)}${text}`);
 
-  push(0, `export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]`);
+  push(
+    0,
+    `export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]`,
+  );
   push(0, ``);
   push(0, `export type Database = {`);
   push(1, `public: {`);
@@ -165,7 +168,10 @@ function render(data: Awaited<ReturnType<typeof introspect>>): string {
     push(3, `${table}: {`);
     push(4, `Row: {`);
     for (const c of cols) {
-      push(5, `${c.column_name}: ${tsType(c.udt_name, enumNames)}${c.is_nullable ? ' | null' : ''}`);
+      push(
+        5,
+        `${c.column_name}: ${tsType(c.udt_name, enumNames)}${c.is_nullable ? ' | null' : ''}`,
+      );
     }
     push(4, `}`);
     push(4, `Insert: {`);
@@ -179,7 +185,10 @@ function render(data: Awaited<ReturnType<typeof introspect>>): string {
     push(4, `}`);
     push(4, `Update: {`);
     for (const c of cols) {
-      push(5, `${c.column_name}?: ${tsType(c.udt_name, enumNames)}${c.is_nullable ? ' | null' : ''}`);
+      push(
+        5,
+        `${c.column_name}?: ${tsType(c.udt_name, enumNames)}${c.is_nullable ? ' | null' : ''}`,
+      );
     }
     push(4, `}`);
     push(4, `Relationships: []`);
@@ -241,7 +250,9 @@ const db = await createTestDatabase();
 try {
   const data = await introspect(db.admin);
   writeFileSync(OUT_FILE, `${HEADER}\n${render(data)}`);
-  console.log(`Wrote ${OUT_FILE} (${data.columns.length} columns, ${data.functions.length} functions)`);
+  console.log(
+    `Wrote ${OUT_FILE} (${data.columns.length} columns, ${data.functions.length} functions)`,
+  );
 } finally {
   await db.stop();
 }

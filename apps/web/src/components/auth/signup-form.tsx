@@ -20,7 +20,13 @@ import { ResendControls } from './resend-controls';
 
 type Method = 'password' | 'magic_link' | 'sms';
 
-export function SignUpForm({ initialCode }: { initialCode: string }) {
+export function SignUpForm({
+  initialCode,
+  inviteRequired = true,
+}: {
+  initialCode: string;
+  inviteRequired?: boolean;
+}) {
   const t = useT();
   const router = useRouter();
 
@@ -99,12 +105,16 @@ export function SignUpForm({ initialCode }: { initialCode: string }) {
     }
 
     void run(async () => {
+      // Omit an empty invite code entirely (open-waitlist mode) — the server
+      // schema treats it as optional and the mode gate decides.
+      const trimmedCode = inviteCode.trim();
+      const codeField = trimmedCode ? { inviteCode: trimmedCode } : {};
       const payload =
         method === 'sms'
-          ? { method, phone, inviteCode, acceptTerms }
+          ? { method, phone, acceptTerms, ...codeField }
           : method === 'password'
-            ? { method, email, password, inviteCode, acceptTerms }
-            : { method, email, inviteCode, acceptTerms };
+            ? { method, email, password, acceptTerms, ...codeField }
+            : { method, email, acceptTerms, ...codeField };
       const data = await apiPost<{ message: string }>('/api/auth/signup', payload);
       setNotice(data.message);
       if (method === 'sms') setOtpRequested(true);
@@ -135,17 +145,19 @@ export function SignUpForm({ initialCode }: { initialCode: string }) {
       <form className="xidig-form" onSubmit={onSubmit}>
         <div className="xidig-field">
           <label className="xidig-field__label" htmlFor="signup-code">
-            {t('auth.inviteCodeLabel')}
+            {inviteRequired ? t('auth.inviteCodeLabel') : t('auth.inviteCodeLabelOptional')}
           </label>
           <input
             id="signup-code"
             className="xidig-field__input"
-            required
+            required={inviteRequired}
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}
             disabled={otpRequested}
           />
-          <p className="xidig-field__hint">{t('auth.inviteCodeHint')}</p>
+          <p className="xidig-field__hint">
+            {inviteRequired ? t('auth.inviteCodeHint') : t('auth.inviteOptionalHint')}
+          </p>
         </div>
 
         {method === 'sms' ? (

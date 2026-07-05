@@ -1,5 +1,3 @@
-import { after } from 'next/server';
-
 import { env } from '@/env';
 
 import type { AnalyticsEvent, AnalyticsScalar } from './events';
@@ -184,20 +182,10 @@ export async function captureServer(event: AnalyticsEvent, options: CaptureOptio
   }
 }
 
-/**
- * Fire-and-forget emission from a route handler: schedules the capture with
- * Next's `after()` so it runs post-response (no added latency). Falls back to
- * a detached promise outside a request scope (e.g. background jobs, tests).
- */
-export function emitServer(event: AnalyticsEvent, options: CaptureOptions): void {
-  try {
-    after(() => captureServer(event, options));
-  } catch {
-    void captureServer(event, options);
-  }
-}
-
 /** Resolve a distinct_id: the signed-in user, else a supplied anon id, else 'anonymous'. */
-export function distinctIdFor(userId: string | null | undefined, anonymousId?: string | null): string {
+export function distinctIdFor(
+  userId: string | null | undefined,
+  anonymousId?: string | null,
+): string {
   return userId ?? anonymousId ?? 'anonymous';
 }
