@@ -333,11 +333,23 @@ begin
 
   -- Founding Member moment (§20): the first 500 accounts carry the badge for
   -- life. Cap mirrored in apps/web (FOUNDING_MEMBER_CAP).
+  --
+  -- Race-safe by double-checked locking. A bare `count(*) <= 500` under READ
+  -- COMMITTED is NOT atomic: two signups committing concurrently each see the
+  -- other's row as uncommitted, so a burst at the boundary could award #501+.
+  -- The cheap unlocked pre-check skips all contention once the cap is clearly
+  -- passed (the steady state); when we might still be under it, a
+  -- transaction-level advisory lock serialises the count+award. Advisory xact
+  -- locks are held until commit, so the re-count inside the lock sees every
+  -- previously-committed founding signup — making the 500th award exact.
   if (select count(*) from public.users) <= 500 then
-    insert into public.user_badges (user_id, badge_id)
-    select new.id, bd.id from public.badge_definitions bd
-    where bd.slug = 'founding-member'
-    on conflict do nothing;
+    perform pg_advisory_xact_lock(74204255);
+    if (select count(*) from public.users) <= 500 then
+      insert into public.user_badges (user_id, badge_id)
+      select new.id, bd.id from public.badge_definitions bd
+      where bd.slug = 'founding-member'
+      on conflict do nothing;
+    end if;
   end if;
 
   return new;
