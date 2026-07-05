@@ -5,7 +5,8 @@ import { recordSignupConsents } from '@/lib/auth/consent';
 import { issueSignupGrant } from '@/lib/auth/grants';
 import { emailSchema, normalizePhone } from '@/lib/auth/identifiers';
 import { validateInviteCode } from '@/lib/auth/invites';
-import { sendAuthLink } from '@/lib/auth/links';
+import { mintAuthLink, sendAuthLink } from '@/lib/auth/links';
+import { getEmailProvider } from '@/lib/email/provider';
 import { sendPhoneOtp } from '@/lib/auth/otp';
 import { validatePassword } from '@/lib/auth/password-policy';
 import { clientIp, enforceRateLimit } from '@/lib/rate-limit';
@@ -79,13 +80,17 @@ export async function POST(request: Request): Promise<Response> {
       if (!verdict.ok) throw new ApiError(verdict.code, 400);
 
       // generateLink(signup) creates the (unconfirmed) user — the gate
-      // trigger consumes the grant — and we email the confirm link.
-      const userId = await sendAuthLink(
+      // trigger consumes the grant. Consents are recorded BEFORE the
+      // fallible email send so a provider outage can never leave an account
+      // without its §12 records; a failed send is recoverable via a fresh
+      // magic link (the account now exists).
+      const minted = await mintAuthLink(
         admin,
         { kind: 'signup', email: email!, password: body.password },
         '/onboarding',
       );
-      if (userId) await recordSignupConsents(admin, userId);
+      if (minted.userId) await recordSignupConsents(admin, minted.userId);
+      await getEmailProvider().send(minted.outgoing);
       return apiNotice('confirm_email_sent');
     }
 

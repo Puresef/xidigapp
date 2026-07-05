@@ -38,7 +38,9 @@ function interpolate(
   locale: Locale,
 ): string {
   return template.replace(/\{(\w+)\}/g, (placeholder, name: string) => {
-    const value = params?.[name];
+    // Own properties only: `{toString}` in a template must not resolve to
+    // Object.prototype.toString.
+    const value = params !== undefined && Object.hasOwn(params, name) ? params[name] : undefined;
     if (value === undefined) {
       warnDev(`missing param "${name}" for template "${template}"`);
       return placeholder;

@@ -5,60 +5,110 @@ import type { EmailOtpType } from '@supabase/supabase-js';
 
 import { env } from '@/env';
 import { safeNextPath } from '@/lib/auth/links';
-import { checkAuthToken, consumeAuthToken } from '@/lib/auth/tokens';
+import { checkAuthToken, consumeAuthToken, hashAppToken } from '@/lib/auth/tokens';
 import { getSupabaseAdmin, getSupabaseServer } from '@/lib/supabase/server';
 
 /**
  * Landing for every self-sent auth email link (magic link, signup confirm,
- * recovery, email change). Order matters:
+ * recovery, email change, email linking). Order matters:
  *
- *   1. app-side 10-minute expiry (auth_email_tokens) for magiclink/signup/
- *      email_change — GoTrue's global email expiry is 60 min for the sake of
- *      recovery links (§26/§27 split);
- *   2. GoTrue verification (single-use, 60-min ceiling);
- *   3. account-state check (§27 suspended copy, not a broken session);
- *   4. locale hydration and §27-coded redirects.
+ *   1. ledger lookup by token_hash — the RECORDED type (never the caller's
+ *      ?type= param) decides whether the 10-minute window applies, so URL
+ *      rewriting cannot stretch a short-lived link to GoTrue's 60 minutes;
+ *   2. 'email_link' tokens are app-owned (phone-only accounts adding an
+ *      email): the click IS the ownership proof — only then is the email
+ *      attached, already confirmed. GoTrue never sees these tokens;
+ *   3. everything else goes to GoTrue verification (single-use, 60-min
+ *      ceiling), then account-state checks and §27-coded redirects —
+ *      recovery links get their own 60-minute expired copy.
  */
 
-const VERIFY_TYPES = new Set(['magiclink', 'signup', 'recovery', 'email_change', 'email', 'invite']);
+/** GoTrue types the app actually issues (links.ts). Anything else is noise. */
+const GOTRUE_TYPES = new Set(['magiclink', 'signup', 'recovery', 'email_change']);
 
-function errorRedirect(reason: string): NextResponse {
+function errorRedirect(reason: string, from: string): NextResponse {
   const url = new URL('/auth/error', env.APP_URL);
   url.searchParams.set('reason', reason);
+  url.searchParams.set('from', from);
   return NextResponse.redirect(url);
+}
+
+function expiredRedirect(effectiveType: string): NextResponse {
+  return errorRedirect(
+    effectiveType === 'recovery' ? 'reset_link_expired' : 'magic_link_expired',
+    effectiveType,
+  );
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
   const tokenHash = searchParams.get('token_hash');
-  const type = searchParams.get('type');
+  const queryType = searchParams.get('type') ?? '';
   const next = safeNextPath(searchParams.get('next'));
 
-  if (!tokenHash || !type || !VERIFY_TYPES.has(type)) {
-    return errorRedirect('magic_link_expired');
+  if (!tokenHash) {
+    return errorRedirect('magic_link_expired', queryType || 'magiclink');
   }
 
   const admin = getSupabaseAdmin();
 
-  // 1. App-enforced 10-minute window (only 10-minute types can come back
-  //    expired here; recovery defers to GoTrue's 60 minutes).
-  if ((await checkAuthToken(admin, tokenHash, type)) === 'expired') {
-    return errorRedirect('magic_link_expired');
+  // App-namespace email-linking tokens: stored hashed, so hash the incoming
+  // raw value for the ledger lookup.
+  const isEmailLink = queryType === 'email_link';
+  const ledgerHash = isEmailLink ? hashAppToken(tokenHash) : tokenHash;
+
+  const check = await checkAuthToken(admin, ledgerHash);
+  const effectiveType = check.recordedType ?? queryType;
+
+  if (check.status === 'expired') {
+    return expiredRedirect(effectiveType);
   }
 
-  // 2. GoTrue verification — creates the session cookies via the ssr client.
+  if (effectiveType === 'email_link') {
+    // The claimed and recorded namespaces must agree — a GoTrue token
+    // presented as email_link (or vice versa) is treated as invalid.
+    if (!isEmailLink || !check.recordedType) {
+      return errorRedirect('magic_link_expired', 'email_link');
+    }
+    const { data: row } = await admin
+      .from('auth_email_tokens')
+      .select('user_id, email')
+      .eq('token_hash', ledgerHash)
+      .maybeSingle();
+    if (!row?.user_id) {
+      return errorRedirect('magic_link_expired', 'email_link');
+    }
+
+    // Ownership proven by the click — attach CONFIRMED. auth.users unique
+    // constraints reject the race where the address got claimed meanwhile.
+    const { error } = await admin.auth.admin.updateUserById(row.user_id, {
+      email: row.email,
+      email_confirm: true,
+    });
+    if (error) {
+      return errorRedirect('email_taken', 'email_link');
+    }
+    await consumeAuthToken(admin, ledgerHash);
+    return NextResponse.redirect(new URL('/settings/account', env.APP_URL));
+  }
+
+  if (!GOTRUE_TYPES.has(effectiveType)) {
+    return errorRedirect('magic_link_expired', effectiveType || 'magiclink');
+  }
+
+  // GoTrue verification — creates the session cookies via the ssr client.
   const supabase = await getSupabaseServer();
   const { error } = await supabase.auth.verifyOtp({
     token_hash: tokenHash,
-    type: type as EmailOtpType,
+    type: effectiveType as EmailOtpType,
   });
   if (error) {
-    return errorRedirect('magic_link_expired');
+    return expiredRedirect(effectiveType);
   }
 
-  await consumeAuthToken(admin, tokenHash);
+  await consumeAuthToken(admin, ledgerHash);
 
-  // 3. Account state (RLS: own row).
+  // Account state (RLS: own row).
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -72,16 +122,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   if (appUser?.status === 'suspended') {
     await supabase.auth.signOut();
-    return errorRedirect('account_suspended');
+    return errorRedirect('account_suspended', effectiveType);
   }
   if (appUser?.status === 'deactivated' || appUser?.status === 'deleted') {
     await supabase.auth.signOut();
-    return errorRedirect('forbidden');
+    return errorRedirect('forbidden', effectiveType);
   }
 
-  // 4. Destination: recovery lands on the new-password form; everything else
-  //    honours ?next (open-redirect-guarded).
-  const destination = type === 'recovery' ? '/reset-password' : next;
+  // Destination: recovery lands on the new-password form; everything else
+  // honours ?next (open-redirect-guarded).
+  const destination = effectiveType === 'recovery' ? '/reset-password' : next;
   const response = NextResponse.redirect(new URL(destination, env.APP_URL));
   if (appUser && isLocale(appUser.preferred_language)) {
     response.cookies.set(LOCALE_COOKIE, appUser.preferred_language, {

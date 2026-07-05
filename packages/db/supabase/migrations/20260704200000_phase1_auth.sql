@@ -69,6 +69,11 @@ create unique index signup_grants_email_active_uq
   on signup_grants (email) where email is not null and consumed_at is null;
 create unique index signup_grants_phone_active_uq
   on signup_grants (phone) where phone is not null and consumed_at is null;
+-- …and at most one open grant per INVITE: a single-use code must not be able
+-- to hold seats for two different identifiers at once (the trigger's
+-- redemption re-check is the second lock on this door).
+create unique index signup_grants_invite_open_uq
+  on signup_grants (invite_id) where invite_id is not null and consumed_at is null;
 create index signup_grants_invite_idx on signup_grants (invite_id) where invite_id is not null;
 
 -- Issued-at ledger for self-sent auth emails (magic link / signup confirm /
@@ -135,10 +140,16 @@ create function public.has_capability(cap public.membership_capability)
 returns boolean
 language sql stable security definer set search_path = ''
 as $$
+  -- lower(): with search_path = '' the public-schema citext '=' operator is
+  -- invisible and a bare '=' silently degrades to case-SENSITIVE text
+  -- equality (same hazard as the trigger's grant lookup below). The FK
+  -- validates case-insensitively, so a case-variant tier id can legally
+  -- exist — the join must match it.
   select exists (
     select 1
     from public.profiles p
-    join public.tier_capabilities tc on tc.tier_id = p.membership_tier_id
+    join public.tier_capabilities tc
+      on lower(tc.tier_id::text) = lower(p.membership_tier_id::text)
     join public.users u on u.id = p.user_id
     where p.user_id = auth.uid()
       and tc.capability = cap
@@ -166,8 +177,10 @@ as $$
     t.monthly_price_usd,
     t.position,
     coalesce(
+      -- lower(): same citext-under-empty-search_path hazard as has_capability
       (select array_agg(tc.capability order by tc.capability)
-         from public.tier_capabilities tc where tc.tier_id = t.id),
+         from public.tier_capabilities tc
+        where lower(tc.tier_id::text) = lower(t.id::text)),
       '{}'::public.membership_capability[]
     )
   from public.membership_tiers t
@@ -289,15 +302,42 @@ begin
    where id = v_grant.id;
 
   if v_grant.invite_id is not null then
+    -- Authoritative single-use enforcement: the redemption UPDATE re-checks
+    -- the invite's live state under this transaction's lock. Two concurrent
+    -- signups holding grants for the same code cannot both pass — the loser
+    -- sees redeemed_at already set and the whole signup aborts.
     update public.invites
        set redeemed_by_user_id = new.id, redeemed_at = now()
-     where id = v_grant.invite_id and redeemed_at is null;
+     where id = v_grant.invite_id
+       and redeemed_at is null
+       and revoked_at is null
+       and (expires_at is null or expires_at > now());
+    if not found then
+      raise exception 'XIDIG_SIGNUP_NOT_ALLOWED'
+        using hint = 'This invite code has already been used, revoked, or expired.';
+    end if;
+
+    -- If this invite was issued to a waitlist entry (admin invite flow sets
+    -- waitlist_entries.invite_id), joining completes that entry's lifecycle
+    -- even though the grant itself only carries the invite.
+    update public.waitlist_entries
+       set status = 'joined'
+     where invite_id = v_grant.invite_id and status <> 'joined';
   end if;
 
   if v_grant.waitlist_entry_id is not null then
     update public.waitlist_entries
        set status = 'joined'
      where id = v_grant.waitlist_entry_id;
+  end if;
+
+  -- Founding Member moment (§20): the first 500 accounts carry the badge for
+  -- life. Cap mirrored in apps/web (FOUNDING_MEMBER_CAP).
+  if (select count(*) from public.users) <= 500 then
+    insert into public.user_badges (user_id, badge_id)
+    select new.id, bd.id from public.badge_definitions bd
+    where bd.slug = 'founding-member'
+    on conflict do nothing;
   end if;
 
   return new;
@@ -460,6 +500,18 @@ grant insert (user_id, display_name, handle, bio, location_city, location_countr
 grant update (display_name, handle, bio, location_city, location_country,
               latitude, longitude, timezone, skills, lanes, links, contact_options,
               region_attested_at)
+  on public.profiles to authenticated;
+
+-- READ columns are restricted too: profiles are member-visible (directory)
+-- but subscription_status is the raw payment-processor state (who is
+-- past_due/cancelled) and region_verified/region_attested_at are Capital
+-- compliance state — none of that is a member-visible credential. Owners get
+-- their own billing/tier state through auth-scoped functions/API when the
+-- membership UI ships, never through the directory read.
+revoke select on public.profiles from anon, authenticated;
+grant select (user_id, display_name, handle, bio, location_city, location_country,
+              latitude, longitude, timezone, skills, lanes, links, contact_options,
+              verification_status, membership_tier_id, created_at, updated_at)
   on public.profiles to authenticated;
 
 revoke insert, update, delete on public.invites from anon, authenticated;

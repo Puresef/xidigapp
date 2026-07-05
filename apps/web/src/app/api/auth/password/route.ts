@@ -1,3 +1,4 @@
+import { after } from 'next/server';
 import { z } from 'zod';
 
 import { ApiError, apiNotice, handleApiError } from '@/lib/api';
@@ -31,8 +32,15 @@ export async function POST(request: Request): Promise<Response> {
       .eq('email', body.email)
       .maybeSingle();
 
+    // after(): off the response path (anti-enumeration — no timing skew).
     if (existing && (existing.status === 'active' || existing.status === 'pending_deletion')) {
-      await sendAuthLink(admin, { kind: 'recovery', email: body.email });
+      after(async () => {
+        try {
+          await sendAuthLink(admin, { kind: 'recovery', email: body.email });
+        } catch (error) {
+          console.error('[auth] recovery link send failed:', error);
+        }
+      });
     }
 
     return apiNotice('password_reset_sent');
@@ -53,8 +61,12 @@ export async function PATCH(request: Request): Promise<Response> {
 
     const { error } = await ctx.supabase.auth.updateUser({ password: body.password });
     if (error) {
-      // e.g. "New password should be different from the old password."
       console.warn('[auth] password update rejected:', error.message);
+      // GoTrue's same-password rejection deserves its own §27 copy —
+      // "refresh the page" would be actively misleading here.
+      if (/different|same/i.test(error.message)) {
+        throw new ApiError('password_unchanged', 400);
+      }
       throw new ApiError('invalid_request', 400);
     }
 

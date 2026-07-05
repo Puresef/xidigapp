@@ -80,20 +80,20 @@ export const so = {
 
   // Errors — plain language per PRD §27
   'error.offline':
-    'Internet ma haysatid. Xidig wuxuu u baahan yahay xiriir si uu u furmo — hubi shabakadaada oo isku day mar kale.',
+    'Internet ma haysatid. Xidig wuxuu u baahan yahay xiriir si uu u furmo — hubi shabakaddaada oo isku day mar kale.',
   'error.server':
     'Khalad ayaa dhankeenna ka dhacay. Si toos ah ayaa naloo ogeysiiyay — daqiiqad ka dib mar kale isku day.',
   'error.notFound':
     'Boggaas ma heli karno. Waxaa laga yaabaa in la tirtiray ama meel kale loo raray.',
   'error.forbidden':
-    'Boggan gelitaan looma ogola. Haddii aad u malaynayso inay khalad tahay, la xiriir kooxda taageerada.',
-  'error.sessionExpired': 'Waa lagaa saaray gudaha. Mar kale soo gal si aad u sii waddo.',
+    'Boggan gelitaan looma oggola. Haddii aad u malaynayso inay khalad tahay, la xiriir kooxda taageerada.',
+  'error.sessionExpired': 'Gelitaankaagii wuu dhacay. Mar kale soo gal si aad u sii waddo.',
   'error.magicLinkExpired':
     'Linkigaas gelitaanku wuu dhacay — waxay shaqeeyaan 10 daqiiqo oo keliya. Codso mid cusub.',
   'error.otpInvalid':
     'Koodhkaasi ma shaqayn — koodhadhku waxay dhacaan 10 daqiiqo ka dib. Codso mid cusub, ama isticmaal link gelitaanka.',
   'error.wrongCredentials':
-    'Emailkaas iyo furaha sirtu isuma dhigmaan. Mar kale isku day, dib u deji furaha sirta, ama ku gal link gelitaan.',
+    'Emailkaas iyo furaha sirtu iskuma aadaan. Mar kale isku day, dib u deji furaha sirta, ama link gelitaan ku soo gal.',
   'error.accountSuspended':
     'Akoonkaaga waa la hakiyay. Haddii aad u malaynayso inay khalad tahay, halkan racfaan ka codso.',
   'error.signupNotAllowed':
@@ -111,6 +111,10 @@ export const so = {
   'error.passwordTooLong': 'Furaha sirtaasi aad buu u dheer yahay — ugu badnaan waa {max} xaraf.',
   'error.passwordBreached':
     'Furaha sirtaas waxaa laga helay xogo horey loo xaday, marka halkan kuma badbaadsana. Dooro mid kale — kan dheer ayaa ka xoog badan.',
+  'error.passwordUnchanged':
+    'Furaha sirta cusub waa inuu ka duwanaado kan aad hadda isticmaasho — dooro mid cusub.',
+  'error.resetLinkExpired':
+    'Linkigaas dib-u-dejinta furaha sirtu wuu dhacay — waxay shaqeeyaan 60 daqiiqo. Codso mid cusub.',
   'error.emailTaken':
     'Emailkaas akoon kale oo Xidig ah ayuu ku xiran yahay. Kaas soo gal, ama isticmaal email kale.',
   'error.phoneTaken':
@@ -119,16 +123,18 @@ export const so = {
     'Kaasi uma eka lambar taleefan oo dhammaystiran. Ku dar koodhka dalka, sida +252 61 234 5678.',
   'error.smsUnavailable':
     'Hadda farriin qoraal ah kuma diri karno. Isku day link gelitaanka ama furaha sirta — annaguna waan ka shaqaynaynaa.',
-  'error.rateLimited': 'Aad ayaad isku dayday hadda. Daqiiqad sug, kadibna mar kale isku day.',
+  'error.rateLimited':
+    'Marar badan ayaad hadda isku dayday. Daqiiqad sug, ka dibna mar kale isku day.',
   'error.invalidRequest':
     'Codsigaas wax khaldan ayaa ku jiray. Bogga cusboonaysii oo mar kale isku day.',
 
   // Onboarding — first-session checklist (PRD §20)
-  'onboarding.completeProfile': 'Dhamaystir boggaaga',
+  'onboarding.completeProfile': 'Dhammaystir boggaaga',
   'onboarding.pickLanes': 'Dooro waddooyinkaaga',
   'onboarding.followThree': 'Raac 3 dhise',
   'onboarding.firstPost': 'Qor qoraalkaaga ugu horreeya',
   'onboarding.setPassword': 'Ku dar fure sirta dheeri ah',
+  'onboarding.title': 'Ku soo dhawoow Xidig — aan ku diyaarinno',
 
   // Home screen
   'home.welcome': 'Ku soo dhawoow Xidig.',
@@ -173,10 +179,12 @@ export const so = {
   'waitlist.subtitle':
     'Xidig hadda waa beta gaar ah. Noo reeb emailkaaga ama lambarkaaga taleefanka, waana ku casuumi doonnaa marka boosas furmaan.',
   'waitlist.contactLabel': 'Email ama lambar taleefan',
-  'waitlist.joined': 'Safka ayaad ku jirtaa! Isla markiiba waan kula soo xiriiri doonnaa marka boos furmo.',
+  'waitlist.joined':
+    'Safka ayaad ku jirtaa! Isla markiiba waan kula soo xiriiri doonnaa marka boos furmo.',
   'waitlist.foundingCounter': {
     one: '{count} boos oo Xubin Aasaasi ah ayaa hadhay — 500-ka xubnood ee ugu horreeya waxay weligood sitaan sumadda.',
-    other: '{count} boos oo Xubin Aasaasi ah ayaa hadhay — 500-ka xubnood ee ugu horreeya waxay weligood sitaan sumadda.',
+    other:
+      '{count} boos oo Xubin Aasaasi ah ayaa hadhay — 500-ka xubnood ee ugu horreeya waxay weligood sitaan sumadda.',
   },
   'waitlist.haveCode': 'Koodh martiqaad ma haysaa?',
 
@@ -196,10 +204,13 @@ export const so = {
   'settings.linkEmailLabel': 'Akoonkan ku dar email',
   'settings.linkPhoneLabel': 'Akoonkan ku dar lambar taleefan',
   'settings.linkEmailPending': 'Ka eeg {email} link xaqiijin si aad u dhammaystirto ku darista.',
-  'settings.linkPhonePending': 'Koodh ayaan u dirnay {phone}. Geli si aad u dhammaystirto ku darista.',
+  'settings.linkPhonePending':
+    'Koodh ayaan u dirnay {phone}. Geli si aad u dhammaystirto ku darista.',
   'settings.invitesTitle': 'Martiqaadyadaada',
-  'settings.invitesIntro': 'La wadaag koodh si aad dhise kale u keento — koodh kastaa hal mar buu shaqeeyaa.',
-  'settings.invitesEmpty': 'Weli koodh martiqaad ma lihid. Samee mid si aad ugu yeedho dhise aad ku kalsoon tahay.',
+  'settings.invitesIntro':
+    'La wadaag koodh si aad dhise kale u keento — koodh kastaa hal mar buu shaqeeyaa.',
+  'settings.invitesEmpty':
+    'Weli koodh martiqaad ma lihid. Samee mid si aad ugu yeedho dhise aad ku kalsoon tahay.',
   'settings.inviteUsed': 'La isticmaalay',
   'settings.inviteOpen': 'Weli lama isticmaalin',
 

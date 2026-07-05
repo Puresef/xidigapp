@@ -30,19 +30,22 @@ export async function POST(request: Request): Promise<Response> {
 
     const admin = getSupabaseAdmin();
 
-    // Already a member? Point at sign-in instead of queueing them twice.
+    // Existing members get the SAME neutral success as everyone else — an
+    // unauthenticated endpoint must not be a membership oracle
+    // (adversarial-review fix). We just skip the queue insert for them.
     let member = admin.from('users').select('id').limit(1);
     member = body.email ? member.eq('email', body.email) : member.eq('phone', phone!);
     const { data: memberRows } = await member;
-    if (memberRows?.length) throw new ApiError('already_registered', 409);
 
-    const { error } = await admin.from('waitlist_entries').insert({
-      email: body.email ?? null,
-      phone,
-    });
-    // 23505 = unique_violation: already on the list — that's a success story.
-    if (error && error.code !== '23505') {
-      throw new Error(`waitlist insert failed: ${error.message}`);
+    if (!memberRows?.length) {
+      const { error } = await admin.from('waitlist_entries').insert({
+        email: body.email ?? null,
+        phone,
+      });
+      // 23505 = unique_violation: already on the list — that's a success story.
+      if (error && error.code !== '23505') {
+        throw new Error(`waitlist insert failed: ${error.message}`);
+      }
     }
 
     return apiNotice('waitlist_joined');

@@ -14,7 +14,9 @@ import { env } from '@/env';
 
 const restUrl = env.UPSTASH_REDIS_REST_URL;
 const restToken = env.UPSTASH_REDIS_REST_TOKEN;
-const enabled = restUrl.startsWith('https://');
+// typeof guard: under SKIP_ENV_VALIDATION (build/tests) env values can be
+// undefined — module load must not crash there.
+const enabled = typeof restUrl === 'string' && restUrl.startsWith('https://');
 
 let warnedDisabled = false;
 

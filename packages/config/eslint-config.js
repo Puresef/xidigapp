@@ -42,6 +42,23 @@ const noHardcodedCopyRule = {
     },
   },
   create(context) {
+    /** Copy text of a string-ish expression, or null. Catches the braces
+     *  bypass: {'copy'}, {`copy`}, {cond ? 'a' : 'b'} in children/attributes. */
+    function copyText(expression) {
+      if (expression == null) return null;
+      if (expression.type === 'Literal' && typeof expression.value === 'string') {
+        return COPY_PATTERN.test(expression.value) ? expression.value : null;
+      }
+      if (expression.type === 'TemplateLiteral') {
+        const cooked = expression.quasis.map((quasi) => quasi.value.cooked ?? '').join(' ');
+        return COPY_PATTERN.test(cooked) ? cooked : null;
+      }
+      if (expression.type === 'ConditionalExpression') {
+        return copyText(expression.consequent) ?? copyText(expression.alternate);
+      }
+      return null;
+    }
+
     return {
       JSXText(node) {
         if (COPY_PATTERN.test(node.value)) {
@@ -52,16 +69,28 @@ const noHardcodedCopyRule = {
           });
         }
       },
+      JSXExpressionContainer(node) {
+        // Attribute values are handled by the JSXAttribute visitor below.
+        if (node.parent.type === 'JSXAttribute') return;
+        if (node.parent.type !== 'JSXElement' && node.parent.type !== 'JSXFragment') return;
+        const text = copyText(node.expression);
+        if (text !== null) {
+          context.report({
+            node,
+            messageId: 'jsxText',
+            data: { text: text.trim().slice(0, 40) },
+          });
+        }
+      },
       JSXAttribute(node) {
         if (node.name.type !== 'JSXIdentifier') return;
         if (!USER_FACING_JSX_ATTRIBUTES.has(node.name.name)) return;
         const value = node.value;
-        if (
-          value !== null &&
-          value.type === 'Literal' &&
-          typeof value.value === 'string' &&
-          COPY_PATTERN.test(value.value)
-        ) {
+        const text =
+          value !== null && value.type === 'JSXExpressionContainer'
+            ? copyText(value.expression)
+            : copyText(value);
+        if (text !== null) {
           context.report({
             node: value,
             messageId: 'jsxAttribute',

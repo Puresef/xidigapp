@@ -122,6 +122,67 @@ describe('beta signup gate (auth.users insert trigger)', () => {
     expect(after.rows[0].redeemed_at).not.toBeNull();
   });
 
+  it('rejects a second open grant for the same invite (single-use, no double-booking)', async () => {
+    const invite = await h.root.query(
+      `insert into invites (code) values ('XIDIG-RACE-0001') returning id`,
+    );
+    const inviteId = invite.rows[0].id as string;
+    await issueGrant({ email: 'race-a@example.com', inviteId });
+    await expect(issueGrant({ email: 'race-b@example.com', inviteId })).rejects.toThrow(
+      /duplicate key/,
+    );
+  });
+
+  it('blocks signup when the invite was already redeemed, even with a fresh grant', async () => {
+    const invite = await h.root.query(
+      `insert into invites (code) values ('XIDIG-REUSE-001') returning id`,
+    );
+    const inviteId = invite.rows[0].id as string;
+    await issueGrant({ email: 'reuse-a@example.com', inviteId });
+    await createAuthUser({ email: 'reuse-a@example.com' });
+
+    // A second open grant for the redeemed invite is insertable (the partial
+    // unique only covers open grants) — the trigger's redemption re-check is
+    // the second lock on the door.
+    await issueGrant({ email: 'reuse-b@example.com', inviteId });
+    await expect(createAuthUser({ email: 'reuse-b@example.com' })).rejects.toThrow(
+      /XIDIG_SIGNUP_NOT_ALLOWED/,
+    );
+  });
+
+  it('marks an admin-invited waitlist entry joined when its invite code is redeemed', async () => {
+    const invite = await h.root.query(
+      `insert into invites (code) values ('XIDIG-WLIN-0001') returning id`,
+    );
+    const inviteId = invite.rows[0].id as string;
+    const wl = await h.root.query(
+      `insert into waitlist_entries (email, status, invite_id, invited_at)
+       values ('wl-invited@example.com', 'invited', $1, now()) returning id`,
+      [inviteId],
+    );
+    // Grant carries only the invite (the real signup flow) — the trigger
+    // completes the waitlist lifecycle through the invite linkage.
+    await issueGrant({ email: 'wl-invited@example.com', inviteId });
+    await createAuthUser({ email: 'wl-invited@example.com' });
+
+    const after = await h.root.query('select status from waitlist_entries where id = $1', [
+      wl.rows[0].id,
+    ]);
+    expect(after.rows[0].status).toBe('joined');
+  });
+
+  it('awards the founding-member badge to early accounts (§20 first 500)', async () => {
+    await issueGrant({ email: 'founder@example.com' });
+    const uid = await createAuthUser({ email: 'founder@example.com' });
+    const badge = await h.root.query(
+      `select 1 from user_badges ub
+       join badge_definitions bd on bd.id = ub.badge_id
+       where ub.user_id = $1 and bd.slug = 'founding-member'`,
+      [uid],
+    );
+    expect(badge.rowCount).toBe(1);
+  });
+
   it('marks the waitlist entry joined when the grant came from the waitlist', async () => {
     const wl = await h.root.query(
       `insert into waitlist_entries (email, status, invited_at)
@@ -240,6 +301,32 @@ describe('RLS: users table', () => {
   });
 });
 
+describe('RLS: profiles read columns', () => {
+  it('members cannot read billing/compliance columns, even their own', async () => {
+    await issueGrant({ email: 'colread@example.com' });
+    const uid = await createAuthUser({ email: 'colread@example.com' });
+    await h.root.query(
+      `insert into profiles (user_id, display_name, handle, subscription_status)
+       values ($1, 'Col Read', 'colread', 'past_due')`,
+      [uid],
+    );
+
+    // Directory-safe columns are readable…
+    const ok = await h.as('authenticated', uid, (q) =>
+      q('select handle, membership_tier_id, verification_status from profiles'),
+    );
+    expect(ok.rowCount).toBeGreaterThan(0);
+
+    // …the raw payment-processor state is not (write AND read locked).
+    await expect(
+      h.as('authenticated', uid, (q) => q('select subscription_status from profiles')),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      h.as('authenticated', uid, (q) => q('select region_verified from profiles')),
+    ).rejects.toThrow(/permission denied/);
+  });
+});
+
 describe('RLS: profiles', () => {
   let carol: string;
   let dave: string;
@@ -279,9 +366,10 @@ describe('RLS: profiles', () => {
     expect(r.rowCount).toBe(1);
   });
 
-  it('anon cannot read profiles', async () => {
-    const r = await h.as('anon', null, (q) => q('select handle from profiles'));
-    expect(r.rowCount).toBe(0);
+  it('anon cannot read profiles at all (select grant revoked)', async () => {
+    await expect(h.as('anon', null, (q) => q('select handle from profiles'))).rejects.toThrow(
+      /permission denied/,
+    );
   });
 
   it('a member cannot set their own membership tier (column grant)', async () => {

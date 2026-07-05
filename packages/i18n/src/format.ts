@@ -23,6 +23,9 @@ export function formatDate(
   locale: Locale,
   options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' },
 ): string {
+  // An invalid Date makes Intl throw RangeError in BOTH branches below —
+  // degrade instead: one bad timestamp must never crash a whole screen.
+  if (!Number.isFinite(Number(value))) return '—';
   try {
     return new Intl.DateTimeFormat(locale, options).format(value);
   } catch {
@@ -58,12 +61,18 @@ export function formatRelativeTime(
     formatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
   }
 
+  // NaN (invalid Date) survives every `<` guard below and Intl throws
+  // RangeError on non-finite values — degrade to "now" instead of crashing.
+  if (!Number.isFinite(duration)) return formatter.format(0, 'second');
+
   for (const division of RELATIVE_TIME_DIVISIONS) {
-    if (Math.abs(duration) < division.amount) {
+    // Round before comparing so the shown value never reaches the unit
+    // boundary ("59.6s" must become "in 1 minute", not "in 60 seconds").
+    if (Math.abs(Math.round(duration)) < division.amount) {
       return formatter.format(Math.round(duration), division.unit);
     }
     duration /= division.amount;
   }
-  // Unreachable: the last division is unbounded.
+  // Unreachable for finite input: the last division is unbounded.
   return formatter.format(Math.round(duration), 'year');
 }

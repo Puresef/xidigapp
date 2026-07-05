@@ -76,7 +76,8 @@ describe('Somali coverage', () => {
     // A new namespace must be added to LAUNCH_FLOOR_NAMESPACES or consciously
     // left off it — this test makes that a deliberate decision, not an accident.
     const known = new Set<string>(LAUNCH_FLOOR_NAMESPACES);
-    // admin.* is internal tooling (mods/admins), English-first by decision.
+    // admin.* is internal mod/admin tooling — off the launch floor (not a
+    // member trust surface); Somali still tracked to 100% post-launch.
     const trackedOffFloor = new Set(['home', 'admin']);
     for (const ns of report.namespaces) {
       expect(

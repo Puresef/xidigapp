@@ -7,6 +7,7 @@ dashboards, on-call rotations) as the infrastructure is provisioned.
 ## Contents
 
 - [Environment](#environment)
+- [Supabase auth configuration](#supabase-auth-configuration)
 - [Backup & Restore](#backup--restore)
 - [Incident Response](#incident-response)
 - [Runbooks (placeholders)](#runbooks-placeholders)
@@ -26,7 +27,8 @@ single error listing every offending key.
 | Concern          | Provider      | Keys                                                                                                                                  |
 | ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Database / auth  | Supabase      | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
-| Email            | _TBD_         | `EMAIL_API_KEY`                                                                                                                       |
+| App identity     | —             | `APP_URL` (canonical origin; auth links are built from it)                                                                           |
+| Email            | Resend (default; adapter-swappable) | `EMAIL_API_KEY`, `EMAIL_PROVIDER` (auto/resend/console), `EMAIL_FROM`                                           |
 | Maps             | MapTiler      | `MAPTILER_KEY`                                                                                                                        |
 | Search           | Meilisearch   | `MEILISEARCH_HOST`, `MEILISEARCH_API_KEY`                                                                                             |
 | Analytics        | PostHog       | `POSTHOG_KEY`, `POSTHOG_HOST`                                                                                                         |
@@ -56,6 +58,47 @@ MEILISEARCH_API_KEY=<same value as MEILI_MASTER_KEY>
 Data persists in the `meilisearch_data` Docker volume; `docker compose down -v`
 wipes the index. Not used in CI/build — `next build` runs with
 `SKIP_ENV_VALIDATION=true` and never needs Meilisearch running.
+
+---
+
+## Supabase auth configuration
+
+Phase 1 auth assumes the following **dashboard settings** on the Supabase
+project (Auth → Providers / Sessions / URL configuration). They are part of
+the security model — re-apply them on any new environment.
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| **Allow new users to sign up** | **OFF** | Beta gate: all account creation goes through our API (invite/waitlist → signup grant → admin API). The `on_auth_user_created` DB trigger blocks ungated signups even if this is misconfigured — two independent layers. |
+| Email provider → **Email OTP expiry** | **3600 s** (60 min) | This single global value must cover the longest-lived email link: password reset (§27: 60 min). The app enforces the **10-minute** window for magic-link / signup / email-change links itself via `auth_email_tokens` (see `apps/web/src/app/auth/confirm/route.ts`). |
+| Email provider → SMTP / templates | **Not used** | Auth emails are sent by the app (`EMAIL_PROVIDER`/`EMAIL_API_KEY`) via `auth.admin.generateLink()` — copy lives in `apps/web/src/lib/email/templates.ts`. Do not enable Supabase email sending; users would get duplicate/competing emails. |
+| **Secure email change** (double confirm) | **Single confirmation** | The linking flow confirms only the NEW address (`email_change_new`); double-confirm would dead-end because no email is ever sent to the old address. |
+| Phone provider | **Enabled**, Twilio (or compatible) creds | SMS-OTP sign-in (§9). Without a provider the API degrades to the §27 "We couldn't send a text message" error — email methods keep working. |
+| Phone → **SMS OTP expiry** | **600 s** (10 min) | §26: codes expire after 10 minutes (natively enforced — no app-side ledger needed for SMS). |
+| Phone → SMS OTP length | 6 digits | Matches the `/^[0-9]{4,10}$/` guard + brute-force rate limits in `otp/verify`. |
+| **Site URL** | the deployment's `APP_URL` | Must equal the `APP_URL` env var; auth links are built from `APP_URL` only (host-header injection is a non-issue by construction). |
+| Refresh token rotation | ON (default) | Session persistence + expiry handling. |
+
+Residual risk (documented, accepted for beta): because GoTrue's email OTP
+expiry is global at 60 min, a raw magic-link token POSTed directly to the
+GoTrue verify endpoint remains valid up to 60 min even though our
+`/auth/confirm` rejects it after 10. The advertised path (the emailed link)
+always goes through `/auth/confirm`.
+
+**WhatsApp OTP (v1.1):** the OTP layer is channel-agnostic
+(`apps/web/src/lib/auth/otp.ts`). To enable: configure a WhatsApp-capable
+provider (Twilio Verify) in the dashboard and add `'whatsapp'` to
+`ENABLED_OTP_CHANNELS`.
+
+**Deleting users:** Supabase's native "delete user" fails by design while the
+app-level `public.users` row exists (FK is NO ACTION — §19 anonymise, never
+delete). Account deletion ships as an app-level anonymise routine in a later
+phase; do not hand-delete rows to force it.
+
+**Ops/seed accounts:** `auth.admin.createUser(..., { app_metadata: {
+xidig_gate_bypass: 'true' } })` (service key only) skips the invite gate —
+for provisioning admin/seed accounts. `app_metadata` is not settable by end
+users.
 
 ---
 

@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 
 import { serializeLocaleCookie } from './cookie';
 import type { Locale } from './locales';
@@ -29,13 +37,28 @@ export function LocaleProvider({
 }) {
   const [locale, setLocaleState] = useState(initialLocale);
 
+  // The provider mounts once in the root layout and survives soft navigations,
+  // so a server render that resolves a NEW locale (sign-in hydrating the
+  // cookie from users.preferred_language, another tab toggling) must be
+  // adopted here — otherwise client components stay in the old language until
+  // a hard reload. Render-phase derived state, per React's docs; user-driven
+  // setLocale still applies instantly and converges via router.refresh().
+  const [lastInitialLocale, setLastInitialLocale] = useState(initialLocale);
+  if (initialLocale !== lastInitialLocale) {
+    setLastInitialLocale(initialLocale);
+    setLocaleState(initialLocale);
+  }
+
+  // Keep assistive tech in sync however the locale changed (toggle, sign-in
+  // hydration, another tab) — not only via the setLocale path.
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
     if (typeof document !== 'undefined') {
       document.cookie = serializeLocaleCookie(next);
-      // Keep assistive tech and font shaping in sync before the server
-      // re-renders <html lang> with the new cookie.
-      document.documentElement.lang = next;
     }
   }, []);
 

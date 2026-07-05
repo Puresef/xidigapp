@@ -1,3 +1,4 @@
+import { after } from 'next/server';
 import { z } from 'zod';
 
 import { ApiError, apiNotice, handleApiError } from '@/lib/api';
@@ -37,9 +38,18 @@ export async function POST(request: Request): Promise<Response> {
       .eq('phone', phone)
       .maybeSingle();
 
+    // after(): off the response path — account existence must not show up as
+    // response-time skew, and a provider outage must not become an existence
+    // oracle either (logged, not surfaced).
     if (existing && (existing.status === 'active' || existing.status === 'pending_deletion')) {
       const supabase = await getSupabaseServer();
-      await sendPhoneOtp(supabase, phone, { channel: body.channel, shouldCreateUser: false });
+      after(async () => {
+        try {
+          await sendPhoneOtp(supabase, phone, { channel: body.channel, shouldCreateUser: false });
+        } catch (error) {
+          console.error('[auth] sign-in OTP send failed:', error);
+        }
+      });
     }
 
     return apiNotice('otp_sent');

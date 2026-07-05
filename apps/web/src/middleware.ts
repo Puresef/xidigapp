@@ -25,6 +25,17 @@ export async function middleware(request: NextRequest) {
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
 
+  // Any redirect must carry the cookies updateSession staged on `response`
+  // (refresh-token rotation / cookie clearing) — a bare redirect would drop
+  // the rotated session and desync the client (adversarial-review fix).
+  function redirectWithSessionCookies(url: URL): NextResponse {
+    const redirect = NextResponse.redirect(url);
+    for (const cookie of response.cookies.getAll()) {
+      redirect.cookies.set(cookie);
+    }
+    return redirect;
+  }
+
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = '/signin';
@@ -33,14 +44,14 @@ export async function middleware(request: NextRequest) {
     // wants that explained ("You've been signed out…").
     if (hadAuthCookies) url.searchParams.set('reason', 'session_expired');
     url.searchParams.set('next', pathname);
-    return NextResponse.redirect(url);
+    return redirectWithSessionCookies(url);
   }
 
   if (user && AUTH_PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     const url = request.nextUrl.clone();
     url.pathname = '/';
     url.search = '';
-    return NextResponse.redirect(url);
+    return redirectWithSessionCookies(url);
   }
 
   return response;

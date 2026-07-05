@@ -315,9 +315,10 @@ describe('users & profiles policies', () => {
     expect(crossUpdate.rowCount).toBe(0);
   });
 
-  it('anon reads nothing from profiles', async () => {
-    const rows = await db.withRole('anon', null, (tx) => tx.query(`select * from profiles`));
-    expect(rows.rows).toEqual([]);
+  it('anon cannot read profiles at all (select grant revoked, not just RLS-empty)', async () => {
+    await expect(
+      db.withRole('anon', null, (tx) => tx.query(`select * from profiles`)),
+    ).rejects.toThrow(/permission denied/);
   });
 });
 

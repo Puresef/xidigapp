@@ -1,3 +1,4 @@
+import { after } from 'next/server';
 import { z } from 'zod';
 
 import { apiNotice, handleApiError } from '@/lib/api';
@@ -32,9 +33,16 @@ export async function POST(request: Request): Promise<Response> {
 
     // Suspended/deactivated members get the neutral response too — the
     // account-state message belongs on the confirm step, not on an
-    // unauthenticated probe.
+    // unauthenticated probe. after(): the send runs off the response path so
+    // account existence doesn't show up as response-time skew.
     if (existing && (existing.status === 'active' || existing.status === 'pending_deletion')) {
-      await sendAuthLink(admin, { kind: 'magiclink', email: body.email }, body.next);
+      after(async () => {
+        try {
+          await sendAuthLink(admin, { kind: 'magiclink', email: body.email }, body.next);
+        } catch (error) {
+          console.error('[auth] magic-link send failed:', error);
+        }
+      });
     }
 
     return apiNotice('magic_link_sent');

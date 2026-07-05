@@ -4,7 +4,7 @@ import type { Database } from '@xidig/db';
 
 import { env } from '@/env';
 import { ApiError } from '@/lib/api';
-import { getEmailProvider } from '@/lib/email/provider';
+import { getEmailProvider, type OutgoingEmail } from '@/lib/email/provider';
 import {
   emailChangeEmail,
   magicLinkEmail,
@@ -46,18 +46,26 @@ export type AuthLinkKind =
   | { kind: 'recovery'; email: string }
   | { kind: 'email_change'; currentEmail: string; newEmail: string };
 
+export interface MintedAuthLink {
+  /** The user the link targets (for signup links, the freshly created user). */
+  userId: string | undefined;
+  /** The rendered email, ready to hand to the provider. */
+  outgoing: OutgoingEmail;
+}
+
 /**
- * Mint + record + send one auth link. Returns the id of the user the link
- * targets (for signup links, the freshly created user — callers record
- * consent against it). Throws ApiError('already_registered') when a signup
- * link targets an existing account; other GoTrue failures bubble as 500s
- * (they are our misconfiguration, not user error).
+ * Mint + record one auth link WITHOUT sending it. Callers that must do work
+ * between account creation and the (fallible) email send — recording §12
+ * consents, most importantly — mint first, then send. Throws
+ * ApiError('already_registered') when a signup link targets an existing
+ * account; other GoTrue failures bubble as 500s (they are our
+ * misconfiguration, not user error).
  */
-export async function sendAuthLink(
+export async function mintAuthLink(
   admin: SupabaseClient<Database>,
   link: AuthLinkKind,
   next?: string,
-): Promise<string | undefined> {
+): Promise<MintedAuthLink> {
   const destination = safeNextPath(next);
 
   const { data, error } =
@@ -98,7 +106,7 @@ export async function sendAuthLink(
     userId: data.user?.id,
   });
 
-  const email =
+  const outgoing =
     link.kind === 'magiclink'
       ? magicLinkEmail(recipient, url)
       : link.kind === 'signup'
@@ -107,7 +115,16 @@ export async function sendAuthLink(
           ? passwordResetEmail(recipient, url)
           : emailChangeEmail(recipient, url);
 
-  await getEmailProvider().send(email);
+  return { userId: data.user?.id, outgoing };
+}
 
-  return data.user?.id;
+/** Mint + record + send in one step, for flows with nothing between the two. */
+export async function sendAuthLink(
+  admin: SupabaseClient<Database>,
+  link: AuthLinkKind,
+  next?: string,
+): Promise<string | undefined> {
+  const minted = await mintAuthLink(admin, link, next);
+  await getEmailProvider().send(minted.outgoing);
+  return minted.userId;
 }

@@ -103,6 +103,10 @@ export const en = {
   'error.passwordTooLong': 'That password is too long — the maximum is {max} characters.',
   'error.passwordBreached':
     'That password has shown up in known data breaches, so it isn’t safe to use here. Pick a different one — longer is stronger.',
+  'error.passwordUnchanged':
+    'Your new password must be different from your current one — pick a fresh one.',
+  'error.resetLinkExpired':
+    "That reset link has expired — they're valid for 60 minutes. Request a new one.",
   'error.emailTaken':
     'That email is already attached to another Xidig account. Sign in to that account instead, or use a different email.',
   'error.phoneTaken':
@@ -121,6 +125,7 @@ export const en = {
   'onboarding.followThree': 'Follow 3 builders',
   'onboarding.firstPost': 'Write your first post',
   'onboarding.setPassword': 'Add a backup password',
+  'onboarding.title': 'Welcome to Xidig — let’s get you set up',
 
   // Home screen
   'home.welcome': 'Welcome to Xidig.',
@@ -137,7 +142,8 @@ export const en = {
   'auth.phoneHint': 'Include your country code, like +252 61 234 5678.',
   'auth.passwordLabel': 'Password',
   'auth.newPasswordLabel': 'New password',
-  'auth.passwordRules': 'At least {min} characters. Longer is stronger — a few random words work great.',
+  'auth.passwordRules':
+    'At least {min} characters. Longer is stronger — a few random words work great.',
   'auth.otpCodeLabel': 'Sign-in code',
   'auth.inviteCodeLabel': 'Invite code',
   'auth.inviteCodeHint': 'Codes look like XIDIG-XXXX-XXXX.',
@@ -149,7 +155,8 @@ export const en = {
     'If that number has a Xidig account, a sign-in code is on its way — it’s valid for 10 minutes.',
   'auth.confirmEmailSent':
     'Almost there — check your email for a confirmation link to finish creating your account. It’s valid for 10 minutes.',
-  'auth.resetSent': "Check your email for a link to reset your password — it's valid for 60 minutes.",
+  'auth.resetSent':
+    "Check your email for a link to reset your password — it's valid for 60 minutes.",
   'auth.passwordUpdated': 'Your password is set. You can sign in with it any time.',
   'auth.forgotPassword': 'Forgot your password?',
   'auth.noAccount': 'New to Xidig? Join with an invite',
@@ -197,7 +204,8 @@ export const en = {
   'admin.title': 'Admin',
   'admin.betaTitle': 'Beta gating',
   'admin.signupModeLabel': 'Signup mode',
-  'admin.modeInviteOnly': 'Invite-only — new members join with a code; the public page offers the waitlist.',
+  'admin.modeInviteOnly':
+    'Invite-only — new members join with a code; the public page offers the waitlist.',
   'admin.modeWaitlist': 'Open waitlist — anyone can queue; you invite in batches.',
   'admin.waitlistTitle': 'Waitlist',
   'admin.waitlistEmpty': 'Nobody is waiting right now.',

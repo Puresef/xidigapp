@@ -1,0 +1,287 @@
+/* Xidig global styles — Phase 1 scaffold.
+   Minimal, token-based, no framework: real brand styling lands with the
+   Brand Guide (§26). Class naming: xidig-<block>__<element>--<modifier>. */
+
+:root {
+  --x-bg: #ffffff;
+  --x-fg: #16181d;
+  --x-muted: #5c6470;
+  --x-border: #d9dee5;
+  --x-accent: #16181d;
+  --x-accent-fg: #ffffff;
+  --x-danger: #b3261e;
+  --x-danger-bg: #fdf1f0;
+  --x-ok: #1b6e3d;
+  --x-ok-bg: #eff8f2;
+  --x-radius: 10px;
+  --x-space: 1rem;
+  --x-max-form: 26rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--x-bg);
+  color: var(--x-fg);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+main {
+  padding: var(--x-space);
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.xidig-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--x-space);
+  padding: 0.75rem var(--x-space);
+  border-bottom: 1px solid var(--x-border);
+  flex-wrap: wrap;
+}
+
+.xidig-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.xidig-nav__item a {
+  text-decoration: none;
+  color: var(--x-muted);
+}
+
+.xidig-nav__item a:hover {
+  color: var(--x-fg);
+}
+
+.xidig-language-toggle {
+  display: inline-flex;
+  border: 1px solid var(--x-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.xidig-language-toggle__option {
+  border: 0;
+  background: transparent;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  font: inherit;
+}
+
+.xidig-language-toggle__option[aria-pressed='true'] {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+}
+
+/* --- Buttons (used by @xidig/ui Button) --- */
+
+.xidig-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--x-radius);
+  border: 1px solid var(--x-accent);
+  padding: 0.55rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.xidig-button--primary {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+}
+
+.xidig-button--secondary {
+  background: transparent;
+  color: var(--x-fg);
+  border-color: var(--x-border);
+}
+
+.xidig-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* --- Auth / settings forms --- */
+
+.xidig-auth {
+  max-width: var(--x-max-form);
+  margin: 3rem auto;
+  padding: 0 var(--x-space);
+}
+
+.xidig-auth__title {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+.xidig-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.xidig-field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.xidig-field__label {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.xidig-field__input {
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  width: 100%;
+}
+
+.xidig-field__input:focus {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 1px;
+}
+
+.xidig-field__hint {
+  color: var(--x-muted);
+  font-size: 0.85rem;
+}
+
+.xidig-checkbox {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-size: 0.92rem;
+}
+
+/* --- Tabs (sign-in method switcher) --- */
+
+.xidig-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.xidig-tabs__tab {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 0.45rem 0.5rem;
+  font: inherit;
+  border-radius: calc(var(--x-radius) - 4px);
+  cursor: pointer;
+  color: var(--x-muted);
+}
+
+.xidig-tabs__tab[aria-selected='true'] {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+}
+
+/* --- Banners (§27 plain-language errors + notices) --- */
+
+.xidig-banner {
+  border-radius: var(--x-radius);
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--x-border);
+}
+
+.xidig-banner--error {
+  background: var(--x-danger-bg);
+  border-color: color-mix(in srgb, var(--x-danger) 30%, white);
+  color: var(--x-danger);
+}
+
+.xidig-banner--notice {
+  background: var(--x-ok-bg);
+  border-color: color-mix(in srgb, var(--x-ok) 30%, white);
+  color: var(--x-ok);
+}
+
+.xidig-banner a {
+  font-weight: 600;
+}
+
+/* --- Settings sections --- */
+
+.xidig-section {
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: var(--x-space);
+  margin-bottom: var(--x-space);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.xidig-section__title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.xidig-tag {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.8rem;
+  border: 1px solid var(--x-border);
+  color: var(--x-muted);
+}
+
+.xidig-tag--ok {
+  color: var(--x-ok);
+  background: var(--x-ok-bg);
+  border-color: color-mix(in srgb, var(--x-ok) 30%, white);
+}
+
+.xidig-auth__meta {
+  margin-top: 1rem;
+  font-size: 0.92rem;
+  color: var(--x-muted);
+  display: grid;
+  gap: 0.35rem;
+}
+
+.xidig-invite-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.xidig-invite-list__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.5rem 0.75rem;
+  font-family: ui-monospace, monospace;
+}

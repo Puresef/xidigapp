@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
+import { ApiError } from '@/lib/api';
+
 import { SIGNUP_GRANT_TTL_MINUTES } from './constants';
 
 /**
@@ -40,5 +42,12 @@ export async function issueSignupGrant(
     waitlist_entry_id: opts.waitlistEntryId ?? null,
     expires_at: new Date(Date.now() + SIGNUP_GRANT_TTL_MINUTES * 60 * 1000).toISOString(),
   });
-  if (error) throw new Error(`Failed to issue signup grant: ${error.message}`);
+  if (error) {
+    // Unique partial index on open grants per invite: someone else is mid-
+    // signup with this code right now — to this caller, the code is used.
+    if (error.code === '23505' && error.message.includes('signup_grants_invite_open_uq')) {
+      throw new ApiError('invite_used', 409);
+    }
+    throw new Error(`Failed to issue signup grant: ${error.message}`);
+  }
 }

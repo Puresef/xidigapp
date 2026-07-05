@@ -1,3 +1,5 @@
+import { createHash, randomBytes } from 'node:crypto';
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
@@ -11,13 +13,20 @@ import type { Database } from '@xidig/db';
  * is set to 60 minutes (the longest), and /auth/confirm enforces the shorter
  * 10-minute window app-side using the created_at recorded here.
  *
- * Fail-open by design: a token_hash with no row (e.g. sent before a deploy
- * that cleared the table) falls through to GoTrue verification, which still
- * enforces the 60-minute ceiling and single-use.
+ * SECURITY: expiry decisions key off the RECORDED type for the token_hash —
+ * never the caller-supplied ?type= query param — so rewriting the URL cannot
+ * stretch a 10-minute link to 60 (adversarial-review finding). A token_hash
+ * with no row falls through to GoTrue verification (fail-open for
+ * availability: GoTrue still enforces the 60-minute ceiling + single-use).
+ *
+ * Two token namespaces share the table:
+ *  - GoTrue tokens: hashed_token from generateLink(), stored verbatim;
+ *  - app tokens ('email_link'): minted here, stored as sha256(raw) — the raw
+ *    value goes in the emailed URL, so a DB read-only leak cannot replay them.
  */
 
 /** Types whose links die after 10 minutes (PRD: "link/code expiry: 10 minutes"). */
-const TEN_MINUTE_TYPES = new Set(['magiclink', 'signup', 'email_change']);
+const TEN_MINUTE_TYPES = new Set(['magiclink', 'signup', 'email_change', 'email_link']);
 
 export const AUTH_LINK_TTL_MS = 10 * 60 * 1000;
 
@@ -41,30 +50,37 @@ export async function recordAuthToken(
   if (error) throw new Error(`Failed to record auth token: ${error.message}`);
 }
 
-export type TokenCheck = 'ok' | 'expired';
+export interface TokenCheck {
+  status: 'ok' | 'expired';
+  /** The type the token was ISSUED as, when the ledger knows it. */
+  recordedType?: string;
+}
 
 /**
  * App-side expiry check for a link that just came back to /auth/confirm.
- * Only the 10-minute types can come back 'expired' here; everything else
- * (recovery at 60 min, unknown rows) defers to GoTrue.
+ * Looks the token up unconditionally; when a row exists, the recorded type —
+ * not the query param — decides whether the 10-minute window applies.
  */
 export async function checkAuthToken(
   admin: SupabaseClient<Database>,
   tokenHash: string,
-  type: string,
 ): Promise<TokenCheck> {
-  if (!TEN_MINUTE_TYPES.has(type)) return 'ok';
-
   const { data } = await admin
     .from('auth_email_tokens')
-    .select('created_at, consumed_at')
+    .select('type, created_at, consumed_at')
     .eq('token_hash', tokenHash)
     .maybeSingle();
 
-  if (!data) return 'ok'; // unknown → GoTrue decides
-  if (data.consumed_at) return 'expired'; // already used
-  if (Date.now() - new Date(data.created_at).getTime() > AUTH_LINK_TTL_MS) return 'expired';
-  return 'ok';
+  if (!data) return { status: 'ok' }; // unknown → GoTrue decides
+
+  const result: TokenCheck = { status: 'ok', recordedType: data.type };
+  if (!TEN_MINUTE_TYPES.has(data.type)) return result; // e.g. recovery: 60 min via GoTrue
+
+  if (data.consumed_at) return { ...result, status: 'expired' }; // already used
+  if (Date.now() - new Date(data.created_at).getTime() > AUTH_LINK_TTL_MS) {
+    return { ...result, status: 'expired' };
+  }
+  return result;
 }
 
 export async function consumeAuthToken(
@@ -76,4 +92,14 @@ export async function consumeAuthToken(
     .update({ consumed_at: new Date().toISOString() })
     .eq('token_hash', tokenHash)
     .is('consumed_at', null);
+}
+
+/** Mint an app-namespace token (email_link): raw goes in the URL, hash in the DB. */
+export function mintAppToken(): { raw: string; hash: string } {
+  const raw = randomBytes(32).toString('base64url');
+  return { raw, hash: hashAppToken(raw) };
+}
+
+export function hashAppToken(raw: string): string {
+  return createHash('sha256').update(raw, 'utf8').digest('hex');
 }

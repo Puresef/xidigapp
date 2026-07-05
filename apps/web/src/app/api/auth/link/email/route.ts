@@ -1,9 +1,13 @@
 import { z } from 'zod';
 
+import { env } from '@/env';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { emailSchema } from '@/lib/auth/identifiers';
 import { sendAuthLink } from '@/lib/auth/links';
+import { mintAppToken, recordAuthToken } from '@/lib/auth/tokens';
+import { getEmailProvider } from '@/lib/email/provider';
+import { emailChangeEmail } from '@/lib/email/templates';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -11,13 +15,15 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * Link (or change) the email on the signed-in account — §9 account linking:
  * additional methods attach to the SAME canonical account, never a new one.
  *
- * - Account already has an email → GoTrue email_change flow (verification-
- *   first: nothing changes until the new address confirms).
- * - Phone-only account → the email is attached unconfirmed, then a
- *   confirmation link is sent. Until confirmed it cannot be used to sign in
- *   with a password, and any magic link goes only to that inbox. Known
- *   trade-off: an unconfirmed link blocks that address for new signups until
- *   it confirms or ops clears it (beta-acceptable; documented in the runbook).
+ * VERIFICATION-FIRST in both branches (adversarial-review fix — attaching an
+ * unconfirmed email would let an attacker squat/pre-hijack an address they
+ * don't own):
+ * - Account already has an email → GoTrue email_change flow (nothing changes
+ *   until the new address confirms).
+ * - Phone-only account → an app-namespace 10-minute token is emailed to the
+ *   address; ONLY the click in that inbox attaches the email (already
+ *   confirmed) via /auth/confirm?type=email_link. Until then auth.users is
+ *   untouched — nothing is blocked or claimable.
  */
 
 const bodySchema = z.object({ email: emailSchema });
@@ -50,17 +56,17 @@ export async function POST(request: Request): Promise<Response> {
         newEmail: body.email,
       });
     } else {
-      const { error } = await admin.auth.admin.updateUserById(ctx.appUser.id, {
+      const token = mintAppToken();
+      await recordAuthToken(admin, {
+        tokenHash: token.hash,
         email: body.email,
-        email_confirm: false,
+        type: 'email_link',
+        userId: ctx.appUser.id,
       });
-      if (error) {
-        if (/already|registered|exists/i.test(error.message)) {
-          throw new ApiError('email_taken', 409);
-        }
-        throw new Error(`link email failed: ${error.message}`);
-      }
-      await sendAuthLink(admin, { kind: 'magiclink', email: body.email }, '/settings/account');
+      const url = new URL('/auth/confirm', env.APP_URL);
+      url.searchParams.set('token_hash', token.raw);
+      url.searchParams.set('type', 'email_link');
+      await getEmailProvider().send(emailChangeEmail(body.email, url.toString()));
     }
 
     return apiOk({ pendingEmail: body.email });

@@ -52,7 +52,7 @@ export function negotiateLocale(acceptLanguage: string | null | undefined): Loca
       let quality = 1;
       for (const param of paramParts) {
         const [name, value] = param.trim().split('=');
-        if (name === 'q' && value !== undefined) {
+        if (name?.toLowerCase() === 'q' && value !== undefined) {
           const parsed = Number(value);
           if (Number.isFinite(parsed)) quality = parsed;
         }

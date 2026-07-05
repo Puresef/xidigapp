@@ -29,7 +29,9 @@ export async function POST(request: Request): Promise<Response> {
     });
 
     if (error) {
-      if (/email.*not.*confirm/i.test(error.message)) {
+      // Prefer GoTrue's stable error code; the message regex is the fallback
+      // for older GoTrue versions.
+      if (error.code === 'email_not_confirmed' || /email.*not.*confirm/i.test(error.message)) {
         throw new ApiError('email_not_confirmed', 403);
       }
       throw new ApiError('wrong_credentials', 401);

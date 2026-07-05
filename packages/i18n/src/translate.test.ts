@@ -72,6 +72,15 @@ describe('translateWith (resolution + interpolation internals)', () => {
     expect(translateWith('en', {}, fallback, 'x.plural' as MessageKey)).toBe('{count} things');
     warn.mockRestore();
   });
+
+  it('never resolves params from the prototype chain', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const dict = { 'x.proto': 'value: {toString}' } as unknown as TestDictionary;
+    // {toString} must stay a literal placeholder, not Object.prototype.toString.
+    expect(translateWith('en', {}, dict, 'x.proto' as MessageKey, {})).toBe('value: {toString}');
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
 });
 
 describe('negotiateLocale', () => {
@@ -89,6 +98,10 @@ describe('negotiateLocale', () => {
   it('is quality-aware, not order-aware', () => {
     expect(negotiateLocale('en;q=0.5, so;q=0.9')).toBe('so');
     expect(negotiateLocale('so;q=0, en;q=0.1')).toBe('en');
+  });
+
+  it('reads quality weights case-insensitively (RFC 9110 params)', () => {
+    expect(negotiateLocale('so;Q=0, en;Q=0.5')).toBe('en');
   });
 
   it('matches on the primary subtag', () => {

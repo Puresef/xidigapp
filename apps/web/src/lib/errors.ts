@@ -36,6 +36,10 @@ export const ERROR_DEFS = {
     messageKey: 'error.otpInvalid',
     cta: { labelKey: 'action.requestNewCode', href: '/signin?method=sms' },
   },
+  reset_link_expired: {
+    messageKey: 'error.resetLinkExpired',
+    cta: { labelKey: 'action.resetPassword', href: '/reset-password' },
+  },
   wrong_credentials: {
     messageKey: 'error.wrongCredentials',
     cta: { labelKey: 'action.resetPassword', href: '/reset-password' },
@@ -83,6 +87,7 @@ export const ERROR_DEFS = {
     params: { max: PASSWORD_MAX_BYTES },
   },
   password_breached: { messageKey: 'error.passwordBreached' },
+  password_unchanged: { messageKey: 'error.passwordUnchanged' },
 
   // --- Contact linking ------------------------------------------------------------
   email_taken: {
