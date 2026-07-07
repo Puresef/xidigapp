@@ -79,13 +79,17 @@ export const envSchema = z.object({
   SENTRY_DSN: urlString(),
   NEXT_PUBLIC_SENTRY_DSN: urlString(),
 
-  // AI provider
+  // AI provider key for the active moderation provider (see below). For
+  // 'openai' this is an OpenAI API key (the omni-moderation endpoint is free);
+  // for 'anthropic' it's an Anthropic key. Phase 8 generation/seeding will add
+  // its own provider key separately.
   AI_API_KEY: z.string().min(1),
-  // AI moderation pre-scan (§15/§24). 'auto' = anthropic in production,
-  // console (log + skip) in development — same selection idea as
-  // EMAIL_PROVIDER. 'console' never blocks content; unscanned content ships
-  // with verdict 'skipped'.
-  AI_MODERATION_PROVIDER: z.enum(['auto', 'anthropic', 'console']).default('auto'),
+  // AI moderation pre-scan (§15/§24). 'openai' = OpenAI omni-moderation (free,
+  // multimodal text+image — recommended in production); 'anthropic' = Claude
+  // Haiku; 'auto' = anthropic in production, console in development; 'console'
+  // = log + skip. 'console' never blocks content; unscanned content ships with
+  // verdict 'skipped' (fail-open).
+  AI_MODERATION_PROVIDER: z.enum(['auto', 'openai', 'anthropic', 'console']).default('auto'),
 
   // Shared secret for scheduled-job routes (/api/cron/*). Vercel Cron sends
   // it as `Authorization: Bearer <CRON_SECRET>` automatically when the env

@@ -1,7 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ModerationProvider } from './provider';
-import { getModerationProvider, parseVerdict, resetModerationProviderForTests } from './provider';
+import {
+  getModerationProvider,
+  guessModerationLanguage,
+  mapOpenAiModeration,
+  parseVerdict,
+  resetModerationProviderForTests,
+} from './provider';
 
 // Keep the fail-open paths quiet and side-effect free under test.
 vi.mock('@sentry/nextjs', () => ({ captureException: vi.fn() }));
@@ -83,6 +89,54 @@ describe('parseVerdict', () => {
   });
 });
 
+describe('mapOpenAiModeration', () => {
+  it('allows content with only low scores', () => {
+    const v = mapOpenAiModeration({ flagged: false, category_scores: { hate: 0.01, violence: 0.2 } });
+    expect(v.decision).toBe('allow');
+    expect(v.confidence).toBe(0.2);
+    expect(v.model).toBe('omni-moderation-latest');
+  });
+
+  it('flags a confident violation (score ≥ 0.9)', () => {
+    const v = mapOpenAiModeration({ flagged: true, category_scores: { 'sexual/minors': 0.97 } }, 'en');
+    expect(v.decision).toBe('flag');
+    expect(v.categories).toContain('sexual/minors');
+    expect(v.language).toBe('en');
+  });
+
+  it('routes mid-confidence content to the human queue (uncertain)', () => {
+    const v = mapOpenAiModeration({ flagged: true, category_scores: { harassment: 0.6 } });
+    expect(v.decision).toBe('uncertain');
+  });
+
+  it('holds Somali content back from auto-flag below the 0.98 bar (→ uncertain)', () => {
+    // Same 0.95 score → flag in English, but uncertain in Somali (human lane).
+    expect(mapOpenAiModeration({ category_scores: { hate: 0.95 } }, 'en').decision).toBe('flag');
+    expect(mapOpenAiModeration({ category_scores: { hate: 0.95 } }, 'so').decision).toBe('uncertain');
+  });
+
+  it('tolerates missing/garbage scores and non-finite values', () => {
+    expect(mapOpenAiModeration({}).decision).toBe('allow');
+    const v = mapOpenAiModeration({
+      category_scores: { a: Number.POSITIVE_INFINITY, b: 0.3, c: NaN } as Record<string, number>,
+    });
+    expect(v.decision).toBe('allow');
+    expect(v.confidence).toBe(0.3);
+  });
+});
+
+describe('guessModerationLanguage', () => {
+  it('detects Somali function words', () => {
+    expect(guessModerationLanguage('salaan walaal, waxaan rabaa caawimaad')).toBe('so');
+  });
+  it('detects English', () => {
+    expect(guessModerationLanguage('hello, can you help me with this')).toBe('en');
+  });
+  it('falls back to other', () => {
+    expect(guessModerationLanguage('12345 !!! ????')).toBe('other');
+  });
+});
+
 describe('provider selection + AnthropicProvider (fetch stubbed)', () => {
   beforeEach(() => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -102,6 +156,40 @@ describe('provider selection + AnthropicProvider (fetch stubbed)', () => {
     resetModerationProviderForTests();
     return getModerationProvider();
   }
+
+  function forceOpenAi(): ModerationProvider {
+    vi.stubEnv('AI_MODERATION_PROVIDER', 'openai');
+    vi.stubEnv('AI_API_KEY', 'sk-test');
+    resetModerationProviderForTests();
+    return getModerationProvider();
+  }
+
+  it("'openai' selects OpenAI omni-moderation and maps a flagged result", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        results: [{ flagged: true, category_scores: { 'sexual/minors': 0.99, hate: 0.02 } }],
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const verdict = await forceOpenAi().scanText('hello there friend');
+    expect(verdict.decision).toBe('flag');
+    expect(verdict.model).toBe('omni-moderation-latest');
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, { headers: Record<string, string> }];
+    expect(url).toBe('https://api.openai.com/v1/moderations');
+    expect(init.headers.authorization).toBe('Bearer sk-test');
+  });
+
+  it('OpenAI provider is fail-open on a non-200 response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: false, status: 429, json: async () => ({}) }),
+    );
+    expect((await forceOpenAi().scanText('x')).decision).toBe('skipped');
+  });
 
   it("'auto' outside production selects the console provider (skipped, no network)", async () => {
     vi.stubEnv('AI_MODERATION_PROVIDER', 'auto');

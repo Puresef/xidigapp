@@ -69,7 +69,7 @@ paste them into Vercel in step 5.
 | 5 | **PostHog** | posthog.com (EU or US) | `POSTHOG_KEY`, `POSTHOG_HOST` | Analytics gated behind consent; events fire from Phase 7. Host default `https://us.i.posthog.com`. |
 | 6 | **Upstash** | upstash.com | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Redis (REST) for rate limits. Fail-open, but env requires it. URL must be `https://…` (not `tcp://`). |
 | 7 | **Sentry** | sentry.io | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN` (same DSN) | Optional build-time: `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (source-map upload). |
-| 8 | **Anthropic** | console.anthropic.com | `AI_API_KEY` | Moderation pre-scan (Haiku). Fail-open. |
+| 8 | **OpenAI** (moderation) | platform.openai.com | `AI_API_KEY` (an OpenAI key), `AI_MODERATION_PROVIDER=openai` | Moderation pre-scan uses the **free** `omni-moderation-latest` (text+image). Fail-open. Anthropic/Claude for writing/seeding is a separate Phase 8 key. |
 
 ---
 
@@ -121,6 +121,9 @@ created lazily on first upload by `lib/media/storage.ts`. All media kinds
 
 **Set for production** (have defaults, but you want real values):
 - `APP_URL=https://app.xidig.net` — **critical**: auth links are built from this.
+- `AI_MODERATION_PROVIDER=openai` — uses the free OpenAI omni-moderation model
+  (with `AI_API_KEY` = your OpenAI key). Leave unset/`auto` only if you're using an
+  Anthropic key instead. `console` = ship unscanned (reports + human queue only).
 - `EMAIL_FROM="Xidig <noreply@mail.xidig.net>"`, `EMAIL_PROVIDER=auto`
 - `CRON_SECRET=<openssl rand -hex 32>` — else the two cron sweeps 503 (see step 6).
 - `EMAIL_WEBHOOK_SECRET=<whsec_… from Resend>` — else bounce-suppression is off.
