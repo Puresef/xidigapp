@@ -277,10 +277,26 @@ numbers on each carrier you can access:
 ### Scheduled sweeps
 
 `GET /api/cron/plaza` runs the 7-day stale-Ask nudge (§15/§26, in-app only)
-and the Seq-14 poll auto-close. `vercel.json` schedules it hourly; Vercel
-sends `Authorization: Bearer <CRON_SECRET>` automatically once the env var is
-set. Unset `CRON_SECRET` = endpoint disabled (503). Any other scheduler works
-too — it just needs the bearer header. Both sweeps are idempotent.
+and the Seq-14 poll auto-close. Both sweeps are idempotent and auth is the
+shared `CRON_SECRET`, sent as `Authorization: Bearer <CRON_SECRET>`. Unset
+`CRON_SECRET` = endpoint disabled (503).
+
+**Not in `vercel.json`** — Vercel's Hobby plan only allows native Cron Jobs to
+run once per day, and an hourly schedule fails the deploy outright. `/api/cron/labs`
+(daily, §Phase 4 below) stays in `vercel.json`; `/api/cron/plaza` needs an
+**external scheduler** instead (any service that can GET a URL with a header on
+a timer works — Vercel Cron was never required, just convenient):
+
+- [ ] Free option: [cron-job.org](https://cron-job.org) → create a job:
+      URL `https://app.xidig.net/api/cron/plaza`, schedule **hourly**, method
+      **GET**, custom header `Authorization: Bearer <CRON_SECRET>` (same value
+      as the Vercel env var).
+- [ ] Alternative: a scheduled GitHub Actions workflow (`workflow_dispatch` +
+      `schedule: cron:`) running `curl -H "Authorization: Bearer $CRON_SECRET" https://app.xidig.net/api/cron/plaza`
+      (store `CRON_SECRET` as a repo Actions secret).
+- [ ] Revisit if/when the project moves to Vercel Pro — hourly can move back
+      into `vercel.json` at that point (no code change needed, just re-add the
+      entry removed 7 Jul).
 
 ### AI moderation pre-scan
 

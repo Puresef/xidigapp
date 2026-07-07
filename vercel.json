@@ -1,6 +1,5 @@
 {
   "crons": [
-    { "path": "/api/cron/plaza", "schedule": "0 * * * *" },
     { "path": "/api/cron/labs", "schedule": "0 3 * * *" }
   ]
 }

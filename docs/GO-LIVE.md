@@ -153,9 +153,15 @@ Local dev: `cp .env.example apps/web/.env.local` and fill in. Prod: step 5.
 5. **Deploy.** First deploy builds and boots; if a required env var is missing the
    runtime logs show the single aggregated "Invalid or missing environment
    variables" error naming each key.
-6. **Cron** — `vercel.json` already declares the two jobs (`/api/cron/plaza`
-   hourly, `/api/cron/labs` daily 03:00). Vercel auto-registers them and sends
-   `Authorization: Bearer $CRON_SECRET` — just make sure `CRON_SECRET` is set.
+6. **Cron** — `vercel.json` declares `/api/cron/labs` (daily 03:00; Vercel
+   auto-registers it and sends `Authorization: Bearer $CRON_SECRET`). The
+   `/api/cron/plaza` hourly sweep is **not** in `vercel.json` — Hobby-plan
+   Vercel Cron only allows daily+ schedules and fails the deploy on an hourly
+   entry. Set up a free external scheduler instead (runbook §Scheduled sweeps
+   has exact steps: [cron-job.org](https://cron-job.org), GET
+   `https://app.xidig.net/api/cron/plaza` hourly, header
+   `Authorization: Bearer <CRON_SECRET>`). Just make sure `CRON_SECRET` is set
+   either way.
 
 CLI alternative for env (🖥️): `vercel env add APP_URL production` (repeat per var),
 then `vercel --prod`.
