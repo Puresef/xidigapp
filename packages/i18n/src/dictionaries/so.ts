@@ -35,6 +35,7 @@ export const so = {
   'nav.profile': 'Aniga',
   'nav.saved': 'Kayd',
   'nav.search': 'Raadi',
+  'nav.searchPlaceholder': 'Raadi Xidig',
   'nav.settings': 'Dejinta',
 
   // Canonical product terms
@@ -467,7 +468,14 @@ export const so = {
   // Accessibility labels
   'a11y.mainNav': 'Hagitaanka guud',
   'a11y.map': 'Khariidad',
+  'a11y.notifications': 'Digniino',
+  'a11y.notificationsUnread': {
+    one: 'Digniino, {count} aan la akhriyin',
+    other: 'Digniino, {count} aan la akhriyin',
+  },
   'a11y.removeRow': 'Ka saar safkan',
+  'a11y.search': 'Raadi',
+  'a11y.userMenu': 'Menu-ga akoonka',
   'a11y.moveUp': 'Kor u qaad',
   'a11y.moveDown': 'Hoos u dhig',
 

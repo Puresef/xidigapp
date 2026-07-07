@@ -30,6 +30,7 @@ export const en = {
   // Phase 4.5 secondary nav entries (Saved bookmarks, Search, Settings hub).
   'nav.saved': 'Saved',
   'nav.search': 'Search',
+  'nav.searchPlaceholder': 'Search Xidig',
   'nav.settings': 'Settings',
 
   // Canonical product terms used inside sentences and on buttons
@@ -515,7 +516,14 @@ export const en = {
   // Accessibility labels (screen-reader only)
   'a11y.mainNav': 'Main navigation',
   'a11y.map': 'Map',
+  'a11y.notifications': 'Notifications',
+  'a11y.notificationsUnread': {
+    one: 'Notifications, {count} unread',
+    other: 'Notifications, {count} unread',
+  },
   'a11y.removeRow': 'Remove row',
+  'a11y.search': 'Search',
+  'a11y.userMenu': 'Account menu',
   'a11y.moveUp': 'Move up',
   'a11y.moveDown': 'Move down',
 

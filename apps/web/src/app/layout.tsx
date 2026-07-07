@@ -8,7 +8,11 @@ import type { ReactNode } from 'react';
 import { LocaleProvider } from '@xidig/i18n/react';
 
 import { AppNav } from '../components/app-nav';
-import { LanguageToggle } from '../components/language-toggle';
+import { BadgeProvider } from '../components/nav/badge-provider';
+import { HeaderSearch } from '../components/nav/header-search';
+import { NotificationBell } from '../components/nav/notification-bell';
+import { UserMenu } from '../components/nav/user-menu';
+import { getHeaderViewer } from '../lib/auth/header-viewer';
 import { getLitePrefs } from '../lib/lite/server';
 import { getLocale, getT } from '../lib/locale';
 import {
@@ -53,6 +57,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const lite = await getLitePrefs();
   const motionOff = motion === 'off' || !lite.animations;
 
+  const viewer = await getHeaderViewer();
+
   return (
     // suppressHydrationWarning: the inline script (and the appearance settings
     // page) legitimately mutate html attributes before/after hydration.
@@ -66,18 +72,24 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <LocaleProvider initialLocale={locale}>
-          <header className="xidig-header">
-            <AppNav />
-            <div className="xidig-header__actions">
-              {/* Abuur — the create action (naming review 5 Jul): a header
-                  button, not a nav tab. Phase 1's only creatable is a Suuq
-                  listing; later phases route it by context. */}
-              <Link href="/suuq/new" className="xidig-button xidig-button--primary">
-                {t('action.abuur')}
-              </Link>
-              <LanguageToggle />
-            </div>
-          </header>
+          {/* One BadgeProvider feeds both the Messages tab and the bell so the
+              unread summary is fetched once. initialSignedIn seeds from the
+              server so the menu doesn't flash. */}
+          <BadgeProvider initialSignedIn={viewer.signedIn}>
+            <header className="xidig-header">
+              <AppNav />
+              <div className="xidig-header__actions">
+                <HeaderSearch />
+                {/* Abuur — the create action (naming review 5 Jul): a header
+                    button, not a nav tab. */}
+                <Link href="/suuq/new" className="xidig-button xidig-button--primary">
+                  {t('action.abuur')}
+                </Link>
+                <NotificationBell />
+                <UserMenu viewer={viewer} />
+              </div>
+            </header>
+          </BadgeProvider>
           {children}
         </LocaleProvider>
       </body>
