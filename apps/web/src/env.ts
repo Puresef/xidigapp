@@ -5,18 +5,32 @@ import { z } from 'zod';
  * `z.url()` (which moved between Zod 3 and 4) by validating with the WHATWG
  * `URL` constructor directly.
  */
+const isUrl = (value: string): boolean => {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const urlString = (): z.ZodString =>
-  z.string().refine(
-    (value) => {
-      try {
-        new URL(value);
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    { message: 'must be a valid URL' },
-  ) as unknown as z.ZodString;
+  z.string().refine(isUrl, { message: 'must be a valid URL' }) as unknown as z.ZodString;
+
+/**
+ * A URL var for an OPTIONAL external service: an empty string is allowed
+ * (feature disabled / degrades gracefully — the app must still boot), but a
+ * NON-empty value must be a well-formed URL so a typo is still caught. Defaults
+ * to '' when unset.
+ */
+const optionalUrl = (): z.ZodDefault<z.ZodString> =>
+  z
+    .string()
+    .refine((v) => v === '' || isUrl(v), { message: 'must be empty or a valid URL' })
+    .default('') as unknown as z.ZodDefault<z.ZodString>;
+
+/** An optional secret/key for an external service — unset means disabled. */
+const optionalKey = (): z.ZodDefault<z.ZodString> => z.string().default('');
 
 /**
  * The full set of environment variables the app requires. Every key here must
@@ -48,27 +62,31 @@ export const envSchema = z.object({
   // are sent by the app itself — not by Supabase SMTP — so link expiry can be
   // enforced app-side (10-minute magic links vs 60-minute reset links, §26).
   // 'auto' = resend in production, console (log the link) in development.
-  EMAIL_API_KEY: z.string().min(1),
+  // Optional: unset ⇒ auth emails fall back to console-logging the link
+  // (getEmailProvider) so the app still boots and links are retrievable from
+  // logs. Set it before inviting real members.
+  EMAIL_API_KEY: optionalKey(),
   EMAIL_PROVIDER: z.enum(['auto', 'resend', 'console']).default('auto'),
   EMAIL_FROM: z.string().min(1).default('Xidig <onboarding@resend.dev>'),
   // Signing secret for the provider's delivery webhooks (Resend → Svix,
   // "whsec_..."). Empty = webhook endpoint disabled (returns 503).
   EMAIL_WEBHOOK_SECRET: z.string().default(''),
 
-  // Maps
-  MAPTILER_KEY: z.string().min(1),
+  // Maps (optional — the map degrades / uses OSM tiles without it)
+  MAPTILER_KEY: optionalKey(),
 
-  // Meilisearch (search)
-  MEILISEARCH_HOST: urlString(),
-  MEILISEARCH_API_KEY: z.string().min(1),
+  // Meilisearch (optional — directory/global search falls back to Postgres
+  // trigram; unset just disables any Meilisearch ranking layer)
+  MEILISEARCH_HOST: optionalUrl(),
+  MEILISEARCH_API_KEY: optionalKey(),
 
-  // PostHog (analytics)
-  POSTHOG_KEY: z.string().min(1),
+  // PostHog (optional — analytics disables cleanly when POSTHOG_KEY is unset)
+  POSTHOG_KEY: optionalKey(),
   POSTHOG_HOST: urlString().default('https://us.i.posthog.com'),
 
-  // Upstash (Redis / rate limiting)
-  UPSTASH_REDIS_REST_URL: urlString(),
-  UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+  // Upstash (optional — rate limiting disables (fail-open) when unset/not https)
+  UPSTASH_REDIS_REST_URL: optionalUrl(),
+  UPSTASH_REDIS_REST_TOKEN: optionalKey(),
 
   // Sentry (error monitoring): server/edge use SENTRY_DSN, the browser client
   // uses the NEXT_PUBLIC_ mirror (same reasoning as the Supabase keys above —
@@ -76,14 +94,17 @@ export const envSchema = z.object({
   // DSN is not secret; it identifies where to send events, nothing more.
   // SENTRY_AUTH_TOKEN (build-time-only, used by withSentryConfig to upload
   // source maps) is intentionally NOT in this schema — see next.config.ts.
-  SENTRY_DSN: urlString(),
-  NEXT_PUBLIC_SENTRY_DSN: urlString(),
+  // Optional: unset ⇒ Sentry.init gets an empty DSN and disables itself
+  // (no-op), so monitoring is off but the app still boots.
+  SENTRY_DSN: optionalUrl(),
+  NEXT_PUBLIC_SENTRY_DSN: optionalUrl(),
 
   // AI provider key for the active moderation provider (see below). For
   // 'openai' this is an OpenAI API key (the omni-moderation endpoint is free);
   // for 'anthropic' it's an Anthropic key. Phase 8 generation/seeding will add
-  // its own provider key separately.
-  AI_API_KEY: z.string().min(1),
+  // its own provider key separately. Optional: unset ⇒ moderation falls back to
+  // the console provider (content ships unscanned as 'skipped', fail-open).
+  AI_API_KEY: optionalKey(),
   // AI moderation pre-scan (§15/§24). 'openai' = OpenAI omni-moderation (free,
   // multimodal text+image — recommended in production); 'anthropic' = Claude
   // Haiku; 'auto' = anthropic in production, console in development; 'console'

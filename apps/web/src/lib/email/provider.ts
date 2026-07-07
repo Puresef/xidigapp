@@ -63,5 +63,8 @@ export function getEmailProvider(): EmailProvider {
         : 'console'
       : env.EMAIL_PROVIDER;
 
-  return mode === 'resend' ? new ResendProvider() : new ConsoleProvider();
+  // Fall back to console when Resend is selected but no key is set — logs the
+  // link instead of failing every send, so a missing key degrades cleanly.
+  if (mode === 'resend' && env.EMAIL_API_KEY) return new ResendProvider();
+  return new ConsoleProvider();
 }

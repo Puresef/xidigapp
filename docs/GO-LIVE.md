@@ -112,12 +112,20 @@ created lazily on first upload by `lib/media/storage.ts`. All media kinds
 
 ## 4. Environment file mapping (reference)
 
-`.env.example` is the template. **Required** (app won't boot without a real value):
-`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`,
-`NEXT_PUBLIC_SUPABASE_URL` (=URL), `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (=publishable),
-`EMAIL_API_KEY`, `MAPTILER_KEY`, `MEILISEARCH_HOST`, `MEILISEARCH_API_KEY`,
-`POSTHOG_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`,
-`SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `AI_API_KEY`.
+`.env.example` is the template. **Only Supabase is hard-required** (app won't
+boot without real values): `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
+`SUPABASE_SECRET_KEY`, `NEXT_PUBLIC_SUPABASE_URL` (=URL),
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (=publishable).
+
+**Everything else is optional and degrades gracefully when unset** — the app
+boots with that feature off: `EMAIL_API_KEY` (auth email → logged to server
+console), `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` (monitoring off),
+`UPSTASH_REDIS_*` (rate limiting off, fail-open), `POSTHOG_KEY` (analytics off),
+`AI_API_KEY` (moderation skipped, fail-open), `MAPTILER_KEY` / `MEILISEARCH_*`
+(unused today). Set them before inviting real members — a missing key is a
+disabled feature, not a crash, but you want them all live for launch. Note: a
+NON-empty but malformed URL value (e.g. a typo, or `tcp://` for Upstash) is
+still rejected at boot — only *empty/unset* degrades silently.
 
 **Set for production** (have defaults, but you want real values):
 - `APP_URL=https://app.xidig.net` — **critical**: auth links are built from this.
