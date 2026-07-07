@@ -7,6 +7,7 @@ import { useT } from '@xidig/i18n/react';
 
 import { apiPatch, apiPost, ApiRequestError } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
+import { createClient } from '@/lib/supabase-browser';
 
 import { Banner } from '../banner';
 import { PlainErrorBanner } from '../auth/plain-error';
@@ -118,6 +119,25 @@ export function AccountSettings({
         <p>
           {snapshot.email ?? '—'} {statusTag(snapshot.email, snapshot.emailVerified)}
         </p>
+        {snapshot.email && !snapshot.emailVerified ? (
+          // Unverified email: a magic link doubles as verification — clicking
+          // it proves ownership and confirms the address (Phase 4.5, §26).
+          <button
+            type="button"
+            className="xidig-button xidig-button--secondary"
+            disabled={pending}
+            onClick={() =>
+              void run(async () => {
+                const data = await apiPost<{ message: string }>('/api/auth/signin/magic-link', {
+                  email: snapshot.email,
+                });
+                setNotice(data.message);
+              })
+            }
+          >
+            {t('settings.resendVerification')}
+          </button>
+        ) : null}
         {pendingEmail ? (
           <Banner kind="notice">{t('settings.linkEmailPending', { email: pendingEmail })}</Banner>
         ) : (
@@ -303,20 +323,50 @@ export function AccountSettings({
         </button>
       </Section>
 
-      <button
-        type="button"
-        className="xidig-button xidig-button--primary"
-        disabled={pending}
-        onClick={() =>
-          void run(async () => {
-            await apiPost('/api/auth/signout');
-            router.push('/signin');
-            router.refresh();
-          })
-        }
-      >
-        {t('action.signOut')}
-      </button>
+      <Section title={t('settings.sessionsTitle')}>
+        <p className="xidig-field__hint">{t('settings.sessionsIntro')}</p>
+        <div className="xidig-profile__actions">
+          <button
+            type="button"
+            className="xidig-button xidig-button--primary"
+            disabled={pending}
+            onClick={() =>
+              void run(async () => {
+                await apiPost('/api/auth/signout');
+                router.push('/signin');
+                router.refresh();
+              })
+            }
+          >
+            {t('action.signOut')}
+          </button>
+          <button
+            type="button"
+            className="xidig-button xidig-button--secondary"
+            disabled={pending}
+            onClick={() =>
+              void run(async () => {
+                // Global scope revokes EVERY refresh token (all devices), then
+                // the local signout clears this browser's session cookies.
+                await createClient().auth.signOut({ scope: 'global' });
+                await apiPost('/api/auth/signout');
+                router.push('/signin');
+                router.refresh();
+              })
+            }
+          >
+            {t('settings.signOutEverywhere')}
+          </button>
+        </div>
+      </Section>
+
+      {/* §19 account lifecycle — no self-service deactivate/delete API yet;
+          the section anchors the Settings → Data link and routes to support. */}
+      <Section title={t('settings.accountStatusTitle')}>
+        <div id="account-status">
+          <p className="xidig-field__hint">{t('settings.accountStatusHelp')}</p>
+        </div>
+      </Section>
     </>
   );
 }

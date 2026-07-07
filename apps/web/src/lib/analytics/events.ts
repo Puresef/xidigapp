@@ -53,6 +53,27 @@ export interface AnalyticsEventMap {
   language_switched: { language: Enums<'language_code'> };
   invite_sent: Record<string, never>;
   invite_accepted: Record<string, never>;
+
+  // --- Phase 4.5 experience expansion (§23, spec §5) ----------------------
+  // Social: bookmarks + mutes carry only the entity type (a taxonomy slug).
+  bookmark_added: { entity_type: 'post' | 'listing' | 'lab' | 'candidate' };
+  bookmark_removed: { entity_type: 'post' | 'listing' | 'lab' | 'candidate' };
+  mute_added: { entity_type: 'user' | 'tag' | 'lab' };
+  post_edited: Record<string, never>;
+  draft_saved: Record<string, never>;
+  // Profile / listings media identity.
+  avatar_updated: { has_avatar: boolean };
+  listing_photos_updated: { count: number };
+  // Settings — coarse, PII-free section slug (privacy | notifications |
+  // appearance | data | general | notifications).
+  settings_updated: { section: string };
+  // Data export request (no payload — the request itself is the signal).
+  data_export_requested: Record<string, never>;
+  // Discovery search — result count only; the query text is PII and never
+  // leaves the server handler.
+  search_performed: { result_count: number };
+  // Lite "Show" taps — which media category the member chose to load.
+  media_revealed: { kind: 'image' | 'embed' | 'map' };
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventMap;
@@ -84,6 +105,11 @@ export const CLIENT_EVENT_NAMES = [
   'contact_click',
   'low_bandwidth_enabled',
   'language_switched',
+  // Phase 4.5: Lite "Show" taps fire client-side; search_performed is emitted
+  // server-side today but spec §5 lists it client-originated — keep it here so
+  // the ingest route accepts it if a future client path emits it directly.
+  'media_revealed',
+  'search_performed',
 ] as const;
 
 export type ClientAnalyticsEventName = (typeof CLIENT_EVENT_NAMES)[number];

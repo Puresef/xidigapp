@@ -29,6 +29,35 @@ export const LAUNCH_FLOOR_NAMESPACES = [
   'profile',
   'suuq',
   'feed',
+  // Phase 2: the Plaza (Madal) is the core community surface — teaching empty
+  // states, Ask lifecycle, reactions, §27 copy all live here.
+  'plaza',
+  // Phase 3: Fariimo (DMs) + notifications + push — member-facing trust
+  // surfaces; §27 DM copy and notification bundling live here.
+  'messages',
+  'notif',
+  'push',
+  // Phase 4: Labs / Spaces (Warshad/Koox) — core nav surface; §27 Labs errors,
+  // teaching empty states, charter + settings copy. SO drafts ship now; native
+  // review is tracked as Alpha Hardening Debt.
+  'lab',
+  // Phase 4.5 experience expansion — all member-facing trust surfaces:
+  //   lite   = deferred-media placeholders ("Show / Muuji") — bandwidth is the
+  //            product's core promise, so this ships fully translated.
+  //   saved  = bookmarks; social = mutes/mentions/post options; search =
+  //            grouped discovery. SO drafts ship now; native review is tracked
+  //            as Alpha Hardening Debt.
+  'lite',
+  'saved',
+  'social',
+  'search',
+  // Phase 5: Capital / Maal — a trust surface (compliance-critical region gate,
+  // §27 error/notice copy, investment intent). Ships fully translated; native
+  // review is tracked as Alpha Hardening Debt.
+  'capital',
+  // `notice.*` — informational success-path copy the API returns (region gate,
+  // etc.); a trust surface alongside `error.*`.
+  'notice',
 ] as const;
 
 export interface NamespaceCoverage {

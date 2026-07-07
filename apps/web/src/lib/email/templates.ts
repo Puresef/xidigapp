@@ -76,6 +76,42 @@ export function emailChangeEmail(to: string, link: string): OutgoingEmail {
   };
 }
 
+/**
+ * Phase 3 (§26 email = DM requests). A new message request from another
+ * member. Plain-language, no message body inlined (privacy — the request
+ * preview lives in-app). English-only for now, matching the auth emails; a
+ * localized transactional-email pass is future work (see docs/runbook.md).
+ */
+export function dmRequestEmail(to: string, senderName: string, messagesUrl: string): OutgoingEmail {
+  const text = `${senderName} sent you a message request on Xidig.\n\nOpen Xidig to read it and choose whether to accept — you stay in control of who can message you.\n\nOpen your messages: ${messagesUrl}`;
+  return {
+    to,
+    subject: `${senderName} wants to message you · Xidig`,
+    text,
+    html: withHtml(text, messagesUrl, 'Open my messages'),
+  };
+}
+
+/**
+ * Phase 3 wires the CHANNEL only (§26 email = candidate status changes); the
+ * Capital workflow that emits it ships in Phase 5. Kept here so the send path
+ * exists and is testable without building Capital.
+ */
+export function candidateStatusEmail(
+  to: string,
+  candidateName: string,
+  status: string,
+  candidateUrl: string,
+): OutgoingEmail {
+  const text = `There's an update on the venture "${candidateName}" on Xidig: its status is now ${status}.\n\nOpen Xidig to see the details and any reviewer notes.\n\nView the venture: ${candidateUrl}`;
+  return {
+    to,
+    subject: `Update on ${candidateName} · Xidig`,
+    text,
+    html: withHtml(text, candidateUrl, 'View the venture'),
+  };
+}
+
 export function inviteEmail(to: string, code: string, signupUrl: string): OutgoingEmail {
   const text = `Good news — a spot opened up for you on Xidig, the platform where Somali builders connect, build, and fund ventures together.\n\nYour invite code: ${code}\n\nUse it to create your account. The code is single-use and yours alone.\n\nJoin Xidig: ${signupUrl}`;
   return {

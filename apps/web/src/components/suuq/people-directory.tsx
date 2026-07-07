@@ -8,13 +8,19 @@ import { useT } from '@xidig/i18n/react';
 import { ApiRequestError, apiGet } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import { LANES } from '@/lib/lanes';
+import { Avatar } from '../media/avatar';
 import { PlainErrorBanner } from '../auth/plain-error';
+import { OPEN_TO_KEYS, OPEN_TO_SLUGS } from '../profile/open-to';
 
 /**
  * People directory (§18): free-text transliteration-tolerant search (the API
- * folds Maxamed/Mohamed server-side) + skill/lane/country/city filters.
- * Explicit search submit + "load more" — no as-you-type requests (§22
- * low-bandwidth: every request is one the member asked for).
+ * folds Maxamed/Mohamed server-side) + skill/lane/country/city/"open to"
+ * filters. Explicit search submit + "load more" — no as-you-type requests
+ * (§22 low-bandwidth: every request is one the member asked for).
+ *
+ * Phase 4.5: avatar thumbs in cards (96px pipeline, <8KB; 0-byte initials
+ * disc when the member has none) + the `openTo` chip filter. The API already
+ * excludes members who opted out of the directory.
  */
 
 interface ProfileRow {
@@ -28,6 +34,8 @@ interface ProfileRow {
   lanes: string[];
   verification_status: string;
   created_at: string;
+  avatar_thumb_url: string | null;
+  avatar_blurhash: string | null;
 }
 
 interface ProfilePage {
@@ -42,6 +50,7 @@ export function PeopleDirectory() {
   const [lane, setLane] = useState('');
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
+  const [openTo, setOpenTo] = useState('');
 
   const [rows, setRows] = useState<ProfileRow[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -79,6 +88,7 @@ export function PeopleDirectory() {
     if (lane) params.set('lane', lane);
     if (country.trim()) params.set('country', country.trim());
     if (city.trim()) params.set('city', city.trim());
+    if (openTo) params.set('openTo', openTo);
     return params.toString();
   }
 
@@ -163,6 +173,24 @@ export function PeopleDirectory() {
             onChange={(e) => setCity(e.target.value)}
           />
         </div>
+        <div className="xidig-field">
+          <label className="xidig-field__label" htmlFor="people-open-to">
+            {t('suuq.filterOpenTo')}
+          </label>
+          <select
+            id="people-open-to"
+            className="xidig-field__input"
+            value={openTo}
+            onChange={(e) => setOpenTo(e.target.value)}
+          >
+            <option value="">{t('suuq.anyOption')}</option>
+            {OPEN_TO_SLUGS.map((slug) => (
+              <option key={slug} value={slug}>
+                {OPEN_TO_KEYS[slug] ? t(OPEN_TO_KEYS[slug]!) : slug}
+              </option>
+            ))}
+          </select>
+        </div>
         <button type="submit" className="xidig-button xidig-button--primary" disabled={pending}>
           {t('action.search')}
         </button>
@@ -177,10 +205,21 @@ export function PeopleDirectory() {
       <ul className="xidig-card-grid">
         {rows.map((profile) => (
           <li key={profile.user_id} className="xidig-card">
-            <h3 className="xidig-card__title">
-              <Link href={`/u/${profile.handle}`}>{profile.display_name}</Link>
-            </h3>
-            <p className="xidig-card__meta">@{profile.handle}</p>
+            <div className="xidig-suggest-card__identity">
+              <Avatar
+                name={profile.display_name}
+                handle={profile.handle}
+                src={profile.avatar_thumb_url}
+                blurhash={profile.avatar_blurhash}
+                size={40}
+              />
+              <div>
+                <h3 className="xidig-card__title">
+                  <Link href={`/u/${profile.handle}`}>{profile.display_name}</Link>
+                </h3>
+                <p className="xidig-card__meta">@{profile.handle}</p>
+              </div>
+            </div>
             {profile.location_city || profile.location_country ? (
               <p className="xidig-card__meta">
                 {[profile.location_city, profile.location_country].filter(Boolean).join(', ')}

@@ -7,6 +7,7 @@ import { event } from '@/lib/analytics/events';
 import { requireUser, type AuthContext } from '@/lib/auth/guards';
 import { resolveError } from '@/lib/errors';
 import { LISTINGS_PER_WEEK, listingCreateSchema, normalizeBusinessName } from '@/lib/listings';
+import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { getT } from '@/lib/locale';
 import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/pagination';
 import { enforceRateLimit } from '@/lib/rate-limit';
@@ -24,7 +25,7 @@ import type { Json } from '@xidig/db';
  */
 
 const SELECT =
-  'id, owner_user_id, business_name, category_id, short_description, address, landmark, latitude, longitude, city, country, contact_links, verification_status, status, created_at';
+  'id, owner_user_id, business_name, category_id, short_description, address, landmark, latitude, longitude, city, country, contact_links, verification_status, status, created_at, opening_hours, price_range, primary_photo_path, primary_photo_blurhash, primary_photo_alt, photo_count';
 
 const bboxSchema = z
   .string()
@@ -84,7 +85,18 @@ export async function GET(request: Request): Promise<Response> {
     const nextCursor =
       hasMore && last ? encodeCursor({ createdAt: last.created_at, id: last.id }) : null;
 
-    return apiOk({ listings: page, nextCursor });
+    // Storage paths → public CDN URLs server-side: clients never build
+    // storage URLs (that would need server env). Thumb by the Phase 4.5
+    // `{path}_thumb.webp` pipeline convention.
+    const listings = page.map((row) => ({
+      ...row,
+      primary_photo_url: row.primary_photo_path ? publicMediaUrl(row.primary_photo_path) : null,
+      primary_photo_thumb_url: row.primary_photo_path
+        ? publicMediaUrl(derivedThumbPath(row.primary_photo_path))
+        : null,
+    }));
+
+    return apiOk({ listings, nextCursor });
   } catch (error) {
     return handleApiError(error);
   }

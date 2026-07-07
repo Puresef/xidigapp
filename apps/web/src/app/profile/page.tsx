@@ -41,7 +41,10 @@ export default async function OwnProfilePage() {
     );
   }
 
-  const view = await getMemberProfileView(ctx.supabase, row.handle);
+  // Own profile — pass the viewer id so the owner always sees their real
+  // city/coords regardless of location_granularity (the privacy fold is for
+  // OTHER members' views).
+  const view = await getMemberProfileView(ctx.supabase, row.handle, ctx.appUser.id);
   if (!view) redirect('/settings/profile');
 
   return (

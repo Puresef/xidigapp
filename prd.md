@@ -114,11 +114,13 @@ This PRD is the single source of truth for building **Xidig v1.0** as a first‑
 - Badges + reputation scores (see section 14)
 - AI seeding + API/MCP layer (see section 21)
 - Low-bandwidth mode + Somali/English toggle (see section 22)
+- Settings surface: account, privacy & safety, notifications matrix, appearance, language, data & Lite controls (see section 22)
+- Standard social hygiene: bookmarks/saves, post drafts, edit + edit history, mutes, global search, native share sheet
 
 ## 10) Builder-friendly data fields
 
-- Profile: displayName, handle, bio, locationCity, locationCountry, skills[], lanes[], verificationStatus, links[]
-- BusinessListing: businessName, ownerUserId, category, shortDescription, address, latitude, longitude, city, country, tags[], contactLinks[], verificationStatus
+- Profile: displayName, handle, bio, avatarUrl, coverUrl, locationCity, locationCountry, skills[], lanes[], verificationStatus, links[] (label + order), openTo[] (availability: co-founding / hiring / hire-me / investing / mentoring / collaborating), pinnedItems[] (up to 3 posts/Wins/Labs)
+- BusinessListing: businessName, ownerUserId, category, shortDescription, photos[] (1–5, alt text required; first photo = card thumbnail + OG image), openingHours, priceRange ($–$$$$), services[] (name + price label), address, latitude, longitude, city, country, tags[], contactLinks[], verificationStatus
 - Lab: name, shortDescription, problemStatement, hypothesis, sprintLengthWeeks, successDefinition, stage, tags[], leadUserId, members[]
 - Candidate: name, labId, oneLiner, problem, solution, traction, team, ask, status, rubricTeamScore, rubricTractionScore, rubricFeasibilityScore, notes, visibility, regionGated
 - Follow: followerUserId, targetType, targetId
@@ -220,7 +222,7 @@ This PRD is the single source of truth for building **Xidig v1.0** as a first‑
 - Duplicate listing detection fires; Claim this listing flow works
 - Directory fuzzy search returns results for transliteration variants (e.g. Maxamed / Mohamed)
 - Founding Member counter shown on waitlist page; badge awarded to first 500
-- Low-bandwidth mode toggle works; disables images and map tiles
+- Low-bandwidth (Lite) mode toggle works; images and map tiles **defer to ~0-byte placeholders with a (Show / Muuji) tap-to-load** — deferred, not disabled (§22)
 - API-first: all data operations go through defined API routes (no direct DB calls from UI)
 - RLS: free member cannot access Supporter-gated routes; admin can access everything
 
@@ -403,7 +405,7 @@ This PRD is the single source of truth for building **Xidig v1.0** as a first‑
 - Looking for matching surfaces relevant Labs on profile completion
 - Mentor-in-residence badge and featured slot in digest works
 - English / Somali language toggle switches UI strings (i18n keys present even if Somali strings are placeholder)
-- Low-bandwidth auto-prompt appears when 3G/2G detected
+- Low-bandwidth auto-prompt appears when 3G/2G detected, offering Lite bundles (Text only / Essentials / Everything); MediaSlot placeholders render with blurhash + (Show / Muuji) per §22
 - All PostHog events from §23 fire and appear in PostHog dashboard
 
 ---
@@ -458,6 +460,18 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 **Open (need a decision)**
 
 - None right now — all build-blocking decisions are locked. New open items get logged here and as decision rows in the Build Tracker.
+
+**Governance note (6 Jul) — this PRD is a living document, not frozen canon**
+
+- Continuous improvement and genuine product wins override stale PRD text. When a later insight justifies changing a decision (schema, UX, scope), update this document and ship the change — don't preserve an earlier call just because it's written down here.
+- Caution language embedded in instructional/process text (e.g. §11's "changing a column in Phase 4 breaks Phase 1 code") is **advisory, not a rule.** It's a reminder to weigh migration cost, not a blocker on justified schema evolution — additive, backward-compatible columns in particular are cheap to add in any phase.
+- Corollary: the current no-avatar/no-cover-photo design (§10 Profile/BusinessListing field lists) and "Lite mode disables images" (Phase 1 AC) are **deliberate, already-encoded consequences of the §22 low-bandwidth mandate** — not an oversight to "discover" later. If that tradeoff is revisited, do it explicitly (update §10 + the relevant ACs), not by treating the gap as accidental.
+
+**Decided (6 Jul) — Phase 4.5 "experience expansion": Lite mode v2 + media identity**
+
+- Root cause acknowledged and fixed: §22 low-bandwidth was treated as a **scope** constraint ("don't build media-heavy features") when it is a **delivery** constraint ("don't auto-download heavy bytes"). §22 is reframed from *disable* to *defer* (MediaSlot + Show/Muuji pattern, granular toggles + bundles, blurhash placeholders, data-saved counter). This revisits the "no-avatar / Lite-disables-images by design" consequence **explicitly per the 6 Jul governance note's own procedure** — §10, §15, §18, §20, §22, §27 and the Phase 1/7 acceptance criteria are updated in the same change.
+- Shipped as Phase 4.5 (backend + frontend, some surfaces enabled in later versions): profile avatars/covers + listing photo galleries + Space icons/covers + Candidate logo/cover columns (extends the existing Plaza media pipeline — same upload/transcode/moderation path, new `kind`s); alt text required on uploads; blurhash stored at upload; full settings surface (privacy / notifications matrix / appearance incl. dark mode + text size + reduced motion / data & Lite); bookmarks, post drafts, edit history, mutes, global search, availability ("open to"), pinned profile content, opening hours / services / price range / WhatsApp CTA on listings; interest-based follow suggestions + profile completion meter; `page_blocks` schema groundwork for block-style profile/Space layouts (renderer/editor = later version).
+- **Deliberately still excluded:** listing reviews/ratings (highest brigading/extortion-risk surface — if ever built: verified-customer-only + mod queue, not v1.0), voice intros, offline read cache, verified-photo badge, DM read receipts/typing, image polls, listing announcements (v1.1 candidates, see §25).
 
 **Decided (2 Jul)**
 
@@ -515,7 +529,7 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 - Post types: Intro / Ask / Win / Update / Poll
 - **Ask lifecycle:** Open → Answered (asker credits an answer; helper earns Helper score) → Closed; stale Asks auto-nudge after 7 days
 - **Feed (default):** chronological + post-type filters + pinned weekly highlights — no engagement-bait algorithm
-- **Images/memes:** direct upload, 1–5MB, auto-compressed to WebP, EXIF stripped, AI moderation pre-scan
+- **Images/memes:** direct upload, 1–5MB, auto-compressed to WebP (+ ~480px thumbnail variant), EXIF stripped, AI moderation pre-scan; **alt text required on all uploads** (accessibility AA + doubles as the Lite-mode placeholder label); **blurhash/LQIP string (~30 bytes) generated and stored at upload** for ~0-byte Lite placeholders
 - **Video:** embed-first — paste a YouTube/TikTok/Vimeo/X/Instagram link and it plays in-app; no native video uploads in v1.0 (see section 24 options)
 - **Link embeds:** rich previews for whitelisted domains; warning interstitial for unknown domains
 
@@ -562,7 +576,9 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 - Fuzzy search engine (Typesense/Meilisearch) tolerant of transliteration variants (Maxamed/Mohamed/Mohammed)
 - Duplicate detection + "Claim this listing" flow for owners
 - Categories + tags: admin-curated starter set, member-suggested additions
-- Low-bandwidth fallback: list view replaces map tiles
+- **Listing photos (1–5):** alt text required; first photo = card thumbnail + OG share image; photos compete with Google Maps/Facebook listings and directly feed the §4 "listing views → contact clicks" metric
+- **Listing extras:** opening hours (+ "Open now" filter), price range indicator ($–$$$$), simple services/menu rows (name + price label — display only, no commerce per §3), **WhatsApp contact as a first-class CTA button** (diaspora default channel)
+- Low-bandwidth: list view is the default surface; map tiles defer behind a MediaSlot "(Show map)" tap target (§22) instead of being removed
 - **Somali business intelligence layer:** surface aggregate insights from Directory data — "37 fintech builders in Mogadishu", "most active sector this month: import/export"; monthly intelligence report emailed to Supporters; a press-worthy data layer no one else produces for this market
 - **Export readiness score:** for import/export business listings, an optional checklist score (documentation, certifications, capacity, contacts); unique data layer for the market
 - **Location-based discovery:** members set where they live / are based on their profile (free-text city/region via locationCity/locationCountry — see §10, editable anytime); Directory, Map, and matching use **proximity / distance** (and optionally timezone), not a fixed grouping; there is no separate chapter or city-grouping taxonomy
@@ -579,7 +595,7 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 
 ## 20) Onboarding & guidance
 
-- First-session checklist: complete profile → pick lanes → follow 3 → first post
+- First-session checklist: complete profile → pick lanes → follow 3 → first post; the "follow 3" step is powered by interest-based suggestions (shared lanes/skills/location, verified boost); a **profile completion meter** (avatar upload counts as a step) pairs with the §4 activation metric
 - **Set-a-password reminder:** if a member signed up via magic link or phone OTP (no password), the onboarding checklist + a Settings banner nudge them to set a password as a delivery-independent backup sign-in — dismissible, and it stops showing once a password is set
 - Tips everywhere: contextual tooltips, teaching empty states, progress nudges — the app always suggests the next helpful step
 - Invite system: codes + tracked referrals
@@ -590,7 +606,7 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 - **Reaction taxonomy:** instead of a generic like, culturally resonant reactions: 🔥 Fire · 💪 Strong · 🤲 Mashallah · 💡 Idea · 👀 Watching; small detail, huge community feel
 - **Lab sprints with public countdowns:** visible sprint timer on Lab cards ("8 days left in Sprint 2"); creates urgency and spectator interest from the broader community
 - **Skill tree on profiles:** visual web of skills + endorsements, not a flat list; shows depth at a glance and is far more shareable than a standard skills section
-- **Pinned Labs on profiles:** members choose 1–3 Labs to feature prominently on their profile card; surfaces Labs passively across the whole app everywhere profiles appear
+- **Pinned content on profiles:** members choose up to 3 items — Labs, posts, or Wins — to feature prominently on their profile; surfaces Labs and best work passively across the whole app everywhere profiles appear
 - **Community Awards (quarterly):** member-voted — Best Lab, Best Win, Most Helpful, Rising Builder; results posted to Plaza as a featured post; costs nothing to operate, drives strong engagement and gives members a reason to return
 
 ## 21) AI & API layer (cold start + automation)
@@ -605,7 +621,8 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 - **Bilingual:** Somali + English UI from day one (i18n architecture), per-user toggle
 - **Mobile:** responsive PWA, installable, push notifications (Android full; iOS 16.4+ limited), lightweight
 - **API-first architecture:** clean separation between frontend and backend from day one so a React Native app can consume the same API in v1.2 without a rewrite
-- **Low-bandwidth mode:** toggle that switches off images, embeds, and map tiles (text-only); **auto pop-up offering the mode when 3G/2G is detected or the user is in a low-bandwidth region**; WebP + lazy-loading everywhere
+- **Low-bandwidth mode ("Lite" / Xawli yar) — defer, never disable:** Lite mode is a **delivery constraint, not a scope constraint** — no feature is ever cut or hidden for bandwidth. Every image/embed/map renders through one reusable **MediaSlot** component: normal mode renders the asset (WebP + lazy-loading everywhere); Lite mode renders a ~0-byte placeholder (blurhash/LQIP stored at upload, or initials avatar) with the alt-text label, estimated size, and a **(Show / Muuji)** tap target that fetches that one asset on demand. Revealed assets stay visible for the session; pages with several hidden assets offer "show all on this page". **Granular controls, not one kill-switch:** images / embeds / map tiles / animations individually toggleable plus bundles (Text only / Essentials / Everything) and a "small avatars always on" option (<8 KB thumbs keep the app feeling human at near-zero cost). A data-saved counter ("Lite mode saved you ~4.2 MB this week") makes the mode feel like a gift. **Auto pop-up offering the mode when 3G/2G is detected or the user is in a low-bandwidth region.** Future phases must build to this pattern — new media features route through MediaSlot instead of being descoped.
+- **Settings surface (standard-app expectation, grouped):** Account (email/phone/sign-in methods, password, sign out everywhere, deactivate/delete per §19) · Privacy & safety (who can DM me: everyone/verified/no one; directory + search-engine discoverability; location granularity: exact/city/region/hidden; blocked + muted lists; report-reasons info) · Notifications (per-type × per-channel matrix with the §26 defaults; quiet hours; digest frequency) · Appearance (dark mode, text size S–XL, reduced motion) · Language & region (EN/SO) · Data & storage (granular Lite controls, data-saved counter, one-click data export per §19)
 - Compatibility: embed/link-first philosophy; works on low-end Android browsers; accessibility AA basics
 - **Smart notification bundling:** group related notifications instead of individual pings ("3 people reacted to your post · 2 new Lab updates · 1 Ask answered"); less noise, more signal
 - **Embed widget:** a JS snippet / iframe any Somali business or diaspora org can drop on their website to show their Xidig profile card or Lab card; drives backlinks and passive brand spread
@@ -626,7 +643,7 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 
 - Core: Supabase (Postgres + RLS as the permission model, auth, storage) + Vercel
 - Search: Typesense or Meilisearch · Maps: MapLibre + Protomaps/MapTiler · Background jobs: Inngest or [Trigger.dev](http://Trigger.dev) · Email: Resend or Postmark · Rate limiting: Upstash · Errors: Sentry · AI moderation pre-filter on posts and images
-- Images: Supabase Storage + transcode pipeline (MB cap enforced client + server side)
+- Images: Supabase Storage + transcode pipeline (MB cap enforced client + server side); one pipeline for all image kinds (post / avatar / cover / listing photo / Space icon+cover) — WebP main + thumbnail variant + blurhash at upload, EXIF stripped, AI pre-scan
 - **Video — decided: Option A for v1.0 (B/C are later upgrade paths):**
     - **A — Embed-only (free, recommended for v1.0):** users paste YouTube/TikTok/etc links; plays in-app
     - **B — A + short native clips:** one-click upload of clips up to 60s via Cloudinary free tier (quota-limited)
@@ -643,6 +660,7 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 - 🌙 **Ramadan mode:** Plaza gains Dua/Reflection post types for the month; Lab sprint clocks pause; special seasonal badge; minimal effort, major community resonance
 - 📊 **"State of Somali Business" annual report:** auto-generated from Directory + Capital data; published as a public PDF each year; press-ready, repeatable, unique
 - Payments: Stripe where supported + manual/local rails (e.g. EVC Plus) via manual ops initially
+- **v1.1 candidates carried from the Phase 4.5 review (§12, 6 Jul):** voice intro on profiles (30s opus, ~100 KB — culturally resonant with WhatsApp voice-note habits; Lite shows a Play button) · offline read cache (PWA service-worker cache of last feed/DMs) · verified listing photo badge (photo captured during business verification) · DM read receipts/typing (needs Realtime presence) · listing announcements/mini-updates · block-style profile/Space layout **editor** (drag-drop; `page_blocks` schema + renderer contract already in place) · listing reviews/ratings only with verified-customer-only + mod-queue safeguards (see §12 risk note)
 - **v1.2 — React Native (Expo):** cross-platform native app (iOS + Android) consuming the existing API; App Store + Play Store listing; full push notifications on both platforms; share most logic with the web codebase via Expo
 - No Swift/Kotlin native planned — React Native via Expo covers all requirements without two separate codebases
 - Principle: free keeps the community core (Plaza, chat, social, browsing); Supporter unlocks governance, Lab creation, Builder/Investor paths, and heavy-bandwidth features
@@ -721,6 +739,15 @@ Every error must answer three questions: **what happened · why · what to do ne
 - Content removed → *"This post was removed for violating our content policy. Read our guidelines →"*
 - Report submitted → *"Thanks for the report. We review all reports within 48 hours and will update you on the outcome."*
 - Appeal submitted → *"Your appeal has been sent to a senior moderator. We'll respond within 72 hours."*
+
+**Lite mode (Xawli yar) placeholders**
+
+- Show button → EN *"Show"* · SO *"Muuji"*
+- Placeholder label → EN *"[alt text] · ~[size]"* (e.g. *"Storefront photo · ~120 KB"*) · SO *"[alt] · ~[size]"*
+- Show all → EN *"Show all on this page"* · SO *"Muuji dhammaan boggan"*
+- Mode explainer → EN *"Lite mode is on — images, embeds, and maps load only when you tap Show."* · SO *"Xawli yar wuu shidan yahay — sawirrada, muuqaallada iyo khariidaddu waxay soo shubmaan kaliya marka aad taabato Muuji."*
+- Data saved → EN *"Lite mode saved you ~[size] this week."* · SO *"Xawli yar wuxuu kuu badbaadiyay ~[size] usbuucan."*
+- Show map → EN *"Show map (~[size])"* · SO *"Muuji khariidadda (~[size])"*
 
 **Platform / technical**
 

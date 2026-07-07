@@ -8,6 +8,7 @@ import { useT } from '@xidig/i18n/react';
 import { ApiRequestError, apiGet } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import { PlainErrorBanner } from '../auth/plain-error';
+import { SuggestedFollows } from '../profile/suggested-follows';
 import { ListingCard, type ListingRow } from '../suuq/listing-card';
 
 /**
@@ -69,6 +70,8 @@ export function FollowingFeed() {
           <Link href="/suuq" className="xidig-button xidig-button--secondary">
             {t('nav.suuq')} →
           </Link>
+          {/* Phase 4.5: an empty following feed is exactly when suggestions help. */}
+          <SuggestedFollows />
         </div>
       ) : null}
       <ul className="xidig-card-grid">

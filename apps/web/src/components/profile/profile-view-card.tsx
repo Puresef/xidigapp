@@ -3,8 +3,13 @@ import type { ReactNode } from 'react';
 
 import { formatDate, type MessageKey } from '@xidig/i18n';
 
+import { Avatar } from '@/components/media/avatar';
+import { MediaSlot } from '@/components/media/media-slot';
+import { LITE_BUNDLES, type LitePrefs } from '@/lib/lite/prefs';
 import type { ProfileView } from '@/lib/profile-view';
 import { getLocale, getT } from '@/lib/locale';
+import { OpenToChips } from './open-to-chips';
+import { PinsSection } from './pins-section';
 
 /**
  * Profile display (§10 fields, §14 badges/verification, §13 contact choices).
@@ -14,6 +19,11 @@ import { getLocale, getT } from '@/lib/locale';
  *  - owner/member: links + the contact channels the member chose to show
  *  - anon: no channels; a sign-in CTA instead (top-of-funnel, §28)
  * `actions` is a slot for viewer-specific buttons (follow/edit/share).
+ *
+ * Phase 4.5 media identity: cover strip through MediaSlot (in Lite mode it
+ * defers behind a blurhash + "Show / Muuji" tap — §22 delivery constraint,
+ * never removed), Avatar with 0-byte initials fallback, "open to" chips and
+ * pinned items (hydrated by lib/profile-view under the viewer's RLS).
  */
 
 const BADGE_KEYS: Record<string, MessageKey> = {
@@ -72,14 +82,18 @@ export async function ProfileViewCard({
   view,
   viewer,
   actions,
+  prefs,
 }: {
   view: ProfileView;
   viewer: 'owner' | 'member' | 'anon';
   actions?: ReactNode;
+  /** Viewer Lite prefs (§22); omit on surfaces that always load media. */
+  prefs?: LitePrefs;
 }) {
   const t = await getT();
   const locale = await getLocale();
-  const { profile, badges, counts } = view;
+  const { profile, badges, counts, media, openTo, pins } = view;
+  const litePrefs = prefs ?? LITE_BUNDLES.everything;
 
   const verificationKey = VERIFICATION_KEYS[profile.verification_status];
   const links = viewer === 'anon' ? [] : asLinkRows(profile.links);
@@ -87,7 +101,29 @@ export async function ProfileViewCard({
 
   return (
     <article className="xidig-profile">
+      {media.coverUrl ? (
+        <MediaSlot
+          kind="image"
+          src={media.coverUrl}
+          thumbSrc={media.coverThumbUrl ?? undefined}
+          blurhash={media.coverBlurhash}
+          alt={t('profile.coverAlt', { name: profile.display_name })}
+          prefs={litePrefs}
+          className="xidig-profile__cover"
+          width={1600}
+          height={600}
+        />
+      ) : null}
+
       <header className="xidig-profile__header">
+        <Avatar
+          name={profile.display_name}
+          handle={profile.handle}
+          src={media.avatarThumbUrl}
+          blurhash={media.avatarBlurhash}
+          size={64}
+          prefs={prefs}
+        />
         <h1 className="xidig-auth__title">{profile.display_name}</h1>
         <span className="xidig-profile__handle">@{profile.handle}</span>
         {verificationKey && profile.verification_status !== 'unverified' ? (
@@ -130,6 +166,8 @@ export async function ProfileViewCard({
         </p>
       ) : null}
 
+      <OpenToChips slugs={openTo} />
+
       {profile.skills.length > 0 ? (
         <section className="xidig-section">
           <h2 className="xidig-section__title">{t('profile.skillsLabel')}</h2>
@@ -155,6 +193,8 @@ export async function ProfileViewCard({
           </ul>
         </section>
       ) : null}
+
+      <PinsSection items={pins} />
 
       {viewer === 'anon' ? (
         <section className="xidig-section">

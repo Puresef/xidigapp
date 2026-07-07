@@ -269,3 +269,103 @@ numbers on each carrier you can access:
 - [ ] Restore the database from backup
 - [ ] Scale up under load
 - [ ] Recover from a failed migration
+
+---
+
+## Phase 2 (Plaza) operations
+
+### Scheduled sweeps
+
+`GET /api/cron/plaza` runs the 7-day stale-Ask nudge (§15/§26, in-app only)
+and the Seq-14 poll auto-close. `vercel.json` schedules it hourly; Vercel
+sends `Authorization: Bearer <CRON_SECRET>` automatically once the env var is
+set. Unset `CRON_SECRET` = endpoint disabled (503). Any other scheduler works
+too — it just needs the bearer header. Both sweeps are idempotent.
+
+### AI moderation pre-scan
+
+- Provider selection: `AI_MODERATION_PROVIDER` (`auto` = Anthropic in prod,
+  console/log in dev). Uses `AI_API_KEY`. FAIL-OPEN by design: provider outage
+  → content ships with verdict `skipped` (Sentry records the failure).
+- Text scans run after the response; a confident flag auto-hides the post/
+  comment and notifies the author. Uncertain content (Somali especially, by
+  prompt design) stays live and lands in the human queue.
+- Human review queue: `/admin/moderation` (mod/admin), filter `?language=so`
+  for the Somali lane. Decisions write `mod_actions` + audit rows.
+
+### Media
+
+The `post-media` Storage bucket is public (WebP only, 5MB cap) and is created
+lazily by the app (`lib/media/storage.ts`) — no dashboard step needed. The
+local CLI stack also declares it in `packages/db/supabase/config.toml`.
+Uploads are re-encoded to WebP (EXIF/GPS stripped) and pre-scanned before
+storage; confidently-flagged images are rejected and never stored.
+
+### Pending `supabase db push`
+
+Three migrations are unpushed as of 6 Jul: `20260705010000_member_search`,
+`20260705020000_feed_and_claims`, `20260706000000_phase2_plaza`. Live Plaza
+stays broken until they're pushed (tables exist from Phase 0, but RLS opens +
+media/moderation tables arrive with the Phase 2 migration).
+
+## Phase 3 (Fariimo — DMs + notifications) operations
+
+### Supabase Realtime (required for live DMs)
+
+DM delivery is Supabase Realtime "Postgres changes" — **no polling**. The
+migration `20260706100000_phase3_fariimo.sql` adds `messages`, `notifications`
+and `conversations` to the `supabase_realtime` publication (guarded, so it is
+idempotent and safe in the migration test harness, which has no
+Supabase-provisioned publication). After `supabase db push`:
+
+- Confirm Realtime is enabled for the project (Dashboard → Project Settings →
+  Realtime, or `[realtime] enabled = true` in `config.toml` for local).
+- Delivery is authorized per-subscriber by each table's RLS SELECT policy, so a
+  client subscribed to `messages` with `conversation_id=eq.<id>` receives an
+  INSERT only if the participant policy lets them read that row —
+  non-participants get nothing, even mid-stream.
+- `messages`/`conversations` are set to `REPLICA IDENTITY FULL` so RLS resolves
+  correctly on UPDATE/DELETE events (read-receipt bumps, moderation soft-delete).
+
+### Web push (Fariimo) — VAPID
+
+Push is a payload-LESS "new activity" tickle (privacy: no message body leaves
+the server; the service worker `public/sw.js` shows a generic notification and
+opens the app). It is dependency-free (Node crypto signs the VAPID JWT — no
+`web-push` package). To enable:
+
+1. Generate a keypair once: `npx web-push generate-vapid-keys`.
+2. Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+   (`mailto:ops@…` or an https URL), and `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (=
+   the public key) — see `.env.example`.
+3. **Fail-safe:** unset keys ⇒ push disabled with one server warning; in-app
+   notifications keep working and the opt-in toggle explains the state. Dead
+   endpoints (404/410 from the push service) are auto-pruned (`revoked_at`).
+
+iOS supports web push only for **installed** PWAs on 16.4+; Android/desktop
+Chrome work in-browser. The toggle lives on `/notifications`.
+
+### Email notifications
+
+`§26` email channel: **DM requests** send an email (best-effort, via the same
+suppression-checked provider as auth email — `lib/email/send.ts`). **Candidate
+status** email is wired as a channel capability (`candidateStatusEmail` +
+`notifications.type = 'candidate_status'`) but nothing emits it until Capital
+(Phase 5). Transactional emails are English-only for now (same as the auth
+emails); a localized-email pass is future work.
+
+### Abuse throttles
+
+DM requests: **5/day** (§26) — enforced twice: Upstash edge limit (fail-open)
+**and** a durable DB-count backstop (`countDmRequestsToday`) so the cap still
+bites when Upstash is unset. Message sends: 30/min burst guard (Upstash).
+Reports: 20/hour. Blocks halt any live conversation and block sends both
+directions.
+
+### Pending `supabase db push` (Phase 3)
+
+Add `20260706100000_phase3_fariimo.sql` to the push list above — it opens RLS
+on conversations/messages/push_subscriptions/user_blocks/reports, adds the
+`dm_inbox()`/`dm_unread_count()` helpers + the message→conversation touch
+trigger, and registers the Realtime publication. DMs/notifications stay dark
+until it's pushed.

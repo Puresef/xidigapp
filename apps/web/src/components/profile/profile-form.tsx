@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation';
 
 import { useT } from '@xidig/i18n/react';
 
-import { ApiRequestError, apiPut } from '@/lib/api-client';
+import { ApiRequestError, apiPatch, apiPut } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import { LANES } from '@/lib/lanes';
 import { Banner } from '../banner';
 import { PlainErrorBanner } from '../auth/plain-error';
+import { OPEN_TO_KEYS, OPEN_TO_SLUGS } from './open-to';
 
 /**
  * Profile create/edit form (§10 fields, §20 complete-profile). Sends the FULL
@@ -19,6 +20,10 @@ import { PlainErrorBanner } from '../auth/plain-error';
  *
  * Contact options (§13): the member adds only the channels they want members
  * to see — whatsapp / email / website. Empty inputs are omitted entirely.
+ *
+ * Phase 4.5: "open to" chips ride the same save (PATCH /api/me/profile after
+ * the PUT — the chip set lives in profile_open_to, not profiles); link rows
+ * gained up/down reordering (array order = display order, §13).
  */
 
 interface LinkRow {
@@ -46,7 +51,13 @@ function contactString(snapshot: ProfileSnapshot | null, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
-export function ProfileForm({ snapshot }: { snapshot: ProfileSnapshot | null }) {
+export function ProfileForm({
+  snapshot,
+  initialOpenTo = [],
+}: {
+  snapshot: ProfileSnapshot | null;
+  initialOpenTo?: string[];
+}) {
   const t = useT();
   const router = useRouter();
 
@@ -61,6 +72,7 @@ export function ProfileForm({ snapshot }: { snapshot: ProfileSnapshot | null }) 
   const [whatsapp, setWhatsapp] = useState(contactString(snapshot, 'whatsapp'));
   const [email, setEmail] = useState(contactString(snapshot, 'email'));
   const [website, setWebsite] = useState(contactString(snapshot, 'website'));
+  const [openTo, setOpenTo] = useState<string[]>(initialOpenTo);
 
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
@@ -72,8 +84,25 @@ export function ProfileForm({ snapshot }: { snapshot: ProfileSnapshot | null }) 
     );
   }
 
+  function toggleOpenTo(slug: string) {
+    setOpenTo((current) =>
+      current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug],
+    );
+  }
+
   function setLink(index: number, patch: Partial<LinkRow>) {
     setLinks((current) => current.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  }
+
+  function moveLink(index: number, delta: -1 | 1) {
+    setLinks((current) => {
+      const target = index + delta;
+      if (target < 0 || target >= current.length) return current;
+      const next = [...current];
+      const [row] = next.splice(index, 1);
+      next.splice(target, 0, row!);
+      return next;
+    });
   }
 
   function onSubmit(event: FormEvent) {
@@ -111,6 +140,12 @@ export function ProfileForm({ snapshot }: { snapshot: ProfileSnapshot | null }) 
           links: links.filter((row) => row.label.trim() && row.url.trim()),
           contact_options: contact,
         });
+        // Open-to chips live in profile_open_to (not a profiles column) —
+        // replace the set only when it actually changed.
+        const changed =
+          openTo.length !== initialOpenTo.length ||
+          openTo.some((slug) => !initialOpenTo.includes(slug));
+        if (changed) await apiPatch('/api/me/profile', { openTo });
         setNotice(t('profile.saved'));
         router.refresh();
       } catch (cause) {
@@ -227,6 +262,23 @@ export function ProfileForm({ snapshot }: { snapshot: ProfileSnapshot | null }) 
       </fieldset>
 
       <fieldset className="xidig-field">
+        <legend className="xidig-field__label">{t('profile.openToTitle')}</legend>
+        <p className="xidig-field__hint">{t('profile.openToHint')}</p>
+        <div className="xidig-chip-row">
+          {OPEN_TO_SLUGS.map((slug) => (
+            <label key={slug} className="xidig-checkbox">
+              <input
+                type="checkbox"
+                checked={openTo.includes(slug)}
+                onChange={() => toggleOpenTo(slug)}
+              />
+              <span>{OPEN_TO_KEYS[slug] ? t(OPEN_TO_KEYS[slug]!) : slug}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className="xidig-field">
         <legend className="xidig-field__label">{t('profile.linksLabel')}</legend>
         <div className="xidig-row-editor">
           {links.map((row, index) => (
@@ -245,6 +297,24 @@ export function ProfileForm({ snapshot }: { snapshot: ProfileSnapshot | null }) 
                 value={row.url}
                 onChange={(e) => setLink(index, { url: e.target.value })}
               />
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                aria-label={t('a11y.moveUp')}
+                disabled={index === 0}
+                onClick={() => moveLink(index, -1)}
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                aria-label={t('a11y.moveDown')}
+                disabled={index === links.length - 1}
+                onClick={() => moveLink(index, 1)}
+              >
+                ↓
+              </button>
               <button
                 type="button"
                 className="xidig-button xidig-button--secondary"

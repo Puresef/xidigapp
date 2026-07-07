@@ -7,12 +7,18 @@ import { useT } from '@xidig/i18n/react';
 import { ApiRequestError, apiGet } from '@/lib/api-client';
 import type { CategoryOption } from '@/lib/categories';
 import type { PlainError } from '@/lib/errors';
+import { listingOpenNow } from '@/lib/listings';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { ListingCard, type ListingRow } from './listing-card';
 
 /**
  * Business directory tab (§18): q + category + city/country filters over
  * GET /api/listings. Same explicit-fetch discipline as the people tab (§22).
+ *
+ * Phase 4.5: "Open now" is a CLIENT-SIDE toggle over the loaded page(s) only
+ * (viewer-clock computation, same v1 caveat as the detail chip) — it does not
+ * change the server query, so load-more still pages the unfiltered set.
+ * Server-side open-now filtering is deferred.
  */
 
 interface ListingPage {
@@ -26,6 +32,7 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
   const [category, setCategory] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
+  const [openNowOnly, setOpenNowOnly] = useState(false);
 
   const [rows, setRows] = useState<ListingRow[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -77,6 +84,11 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
     setApplied(base);
     void fetchPage(base, null);
   }
+
+  // Open-now runs at render time on the client (rows only exist after the
+  // client-side fetch, so there is no SSR/hydration divergence to worry
+  // about). Filters the LOADED results only — see the module comment.
+  const visibleRows = openNowOnly ? rows.filter((row) => listingOpenNow(row.opening_hours)) : rows;
 
   return (
     <div>
@@ -138,15 +150,30 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
         </button>
       </form>
 
+      <p className="xidig-field">
+        <label className="xidig-field__label">
+          <input
+            type="checkbox"
+            checked={openNowOnly}
+            onChange={(e) => setOpenNowOnly(e.target.checked)}
+          />{' '}
+          {t('suuq.openNowFilter')}
+        </label>
+      </p>
+
       {error ? <PlainErrorBanner error={error} /> : null}
       {!loaded && pending ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
-      {loaded && rows.length === 0 && !error ? (
+      {loaded && visibleRows.length === 0 && !error ? (
         <p className="xidig-card__meta">{t('suuq.noResults')}</p>
       ) : null}
 
       <ul className="xidig-card-grid">
-        {rows.map((listing) => (
-          <ListingCard key={listing.id} listing={listing} />
+        {visibleRows.map((listing) => (
+          // The directory is a members-only surface (page + API both gated),
+          // so the bookmark button is always live here. initialBookmarked is
+          // not hydrated for list rows (starts unsaved; the button syncs on
+          // toggle) — acceptable v1.
+          <ListingCard key={listing.id} listing={listing} signedIn />
         ))}
       </ul>
 

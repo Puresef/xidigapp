@@ -7,23 +7,33 @@ import { useRouter } from 'next/navigation';
 
 import { useT } from '@xidig/i18n/react';
 
-import { ApiRequestError, apiPost } from '@/lib/api-client';
+import { ApiRequestError, apiPatch, apiPost, apiPut } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import type { CategoryOption } from '@/lib/categories';
+import { isEmptyOpeningHours, type OpeningHours } from '@/lib/listings';
 import { Banner } from '../banner';
 import { PlainErrorBanner } from '../auth/plain-error';
 import type { ListingRow } from './listing-card';
+import { ListingPhotosPicker, type PickedPhoto } from './listing-photos-picker';
+import { ListingServicesEditor, type ServiceRow } from './listing-services-editor';
+import { EMPTY_OPENING_HOURS, OpeningHoursEditor } from './opening-hours-editor';
+import { PriceRangeSelect } from './price-range';
 
 /**
- * Pin-drop listing creation (§18). Manual pin is the PRIMARY location input
- * (geocoding fails on Somali addressing); address + landmark stay optional
- * text. Low-bandwidth mode gets manual lat/lng fields instead of tiles (§22).
+ * Pin-drop listing creation (§18) + Phase 4.5 owner edit (`/l/[id]/edit`).
+ * Manual pin is the PRIMARY location input (geocoding fails on Somali
+ * addressing); address + landmark stay optional text. Low-bandwidth mode gets
+ * manual lat/lng fields instead of tiles (§22).
  *
- * Duplicate detection (§18/§27): POST without `force` → 409 with a top-level
- * `duplicates` array → render "A listing for {name} already exists. Is this
- * your business? Claim it here →" with a one-click claim per *unowned* match
- * (owned matches show only the permalink), plus "mine is different — create
- * anyway" (`force: true`).
+ * Phase 4.5 fields: photos (≤5, alt required — uploaded up front via
+ * /api/media, attached to the listing via PUT /api/listings/[id]/photos on
+ * save), per-day opening hours, services (≤20), price range 1–4.
+ *
+ * Duplicate detection (§18/§27, create only): POST without `force` → 409 with
+ * a top-level `duplicates` array → render "A listing for {name} already
+ * exists. Is this your business? Claim it here →" with a one-click claim per
+ * *unowned* match (owned matches show only the permalink), plus "mine is
+ * different — create anyway" (`force: true`).
  */
 
 const ListingsMap = dynamic(() => import('./listings-map'), { ssr: false });
@@ -44,31 +54,66 @@ interface DuplicateMatch {
   claimable: boolean;
 }
 
+/** Initial values for edit mode — built by /l/[id]/edit from the listing view. */
+export interface ListingFormInitial {
+  id: string;
+  business_name: string;
+  category_id: string;
+  short_description: string | null;
+  address: string | null;
+  landmark: string | null;
+  city: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  contact_links: Array<{ type: string; value: string }>;
+  openingHours: OpeningHours | null;
+  priceRange: number | null;
+  services: Array<{ name: string; priceLabel: string | null }>;
+  photos: PickedPhoto[];
+}
+
 export function ListingForm({
   categories,
   lowBandwidth,
+  listing,
 }: {
   categories: CategoryOption[];
   lowBandwidth: boolean;
+  /** Present → edit mode (PATCH + photos PUT instead of POST). */
+  listing?: ListingFormInitial | undefined;
 }) {
   const t = useT();
   const router = useRouter();
+  const editing = listing !== undefined;
 
-  const [businessName, setBusinessName] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [description, setDescription] = useState('');
-  const [address, setAddress] = useState('');
-  const [landmark, setLandmark] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
+  const [businessName, setBusinessName] = useState(listing?.business_name ?? '');
+  const [categoryId, setCategoryId] = useState(listing?.category_id ?? '');
+  const [description, setDescription] = useState(listing?.short_description ?? '');
+  const [address, setAddress] = useState(listing?.address ?? '');
+  const [landmark, setLandmark] = useState(listing?.landmark ?? '');
+  const [city, setCity] = useState(listing?.city ?? '');
+  const [country, setCountry] = useState(listing?.country ?? '');
+  const [latitude, setLatitude] = useState<number | null>(listing?.latitude ?? null);
+  const [longitude, setLongitude] = useState<number | null>(listing?.longitude ?? null);
   // Low-bandwidth manual entry holds RAW strings so intermediate values like
   // "2." and "-0.1" survive keystrokes (a number-parsing controlled input
   // would eat the trailing dot and the lone minus). Parsed on submit.
-  const [latText, setLatText] = useState('');
-  const [lngText, setLngText] = useState('');
-  const [contacts, setContacts] = useState<ContactRow[]>([{ type: 'whatsapp', value: '' }]);
+  const [latText, setLatText] = useState(listing?.latitude?.toString() ?? '');
+  const [lngText, setLngText] = useState(listing?.longitude?.toString() ?? '');
+  const [contacts, setContacts] = useState<ContactRow[]>(
+    listing && listing.contact_links.length > 0
+      ? listing.contact_links.map((row) => ({ type: row.type, value: row.value }))
+      : [{ type: 'whatsapp', value: '' }],
+  );
+
+  // Phase 4.5 fields.
+  const [photos, setPhotos] = useState<PickedPhoto[]>(listing?.photos ?? []);
+  const [hours, setHours] = useState<OpeningHours>(listing?.openingHours ?? EMPTY_OPENING_HOURS);
+  const [priceRange, setPriceRange] = useState<number | null>(listing?.priceRange ?? null);
+  const [services, setServices] = useState<ServiceRow[]>(
+    (listing?.services ?? []).map((row) => ({ name: row.name, priceLabel: row.priceLabel ?? '' })),
+  );
 
   const [duplicates, setDuplicates] = useState<DuplicateMatch[]>([]);
   const [claimedId, setClaimedId] = useState<string | null>(null);
@@ -100,7 +145,7 @@ export function ListingForm({
       const lat = lowBandwidth ? parseCoord(latText, 90) : latitude;
       const lng = lowBandwidth ? parseCoord(lngText, 180) : longitude;
 
-      const { listing } = await apiPost<{ listing: ListingRow }>('/api/listings', {
+      const core = {
         business_name: businessName.trim(),
         category_id: categoryId,
         short_description: description.trim() || null,
@@ -113,9 +158,45 @@ export function ListingForm({
         contact_links: contacts
           .filter((row) => row.value.trim())
           .map((row) => ({ type: row.type, value: row.value.trim() })),
+      };
+      // All seven days empty = the editor was never really used → "not
+      // provided" (null), not "closed all week".
+      const extras = {
+        openingHours: isEmptyOpeningHours(hours) ? null : hours,
+        priceRange,
+        services: services
+          .filter((row) => row.name.trim())
+          .map((row) => ({ name: row.name.trim(), priceLabel: row.priceLabel.trim() || null })),
+      };
+      const photosBody = {
+        photos: photos.map((photo) => ({ mediaId: photo.mediaId, alt: photo.alt })),
+      };
+
+      if (editing) {
+        await apiPatch(`/api/listings/${listing.id}`, { ...core, ...extras });
+        // Always PUT — it's how removals and reordering apply.
+        await apiPut(`/api/listings/${listing.id}/photos`, photosBody);
+        router.push(`/l/${listing.id}`);
+        router.refresh();
+        return;
+      }
+
+      const { listing: created } = await apiPost<{ listing: ListingRow }>('/api/listings', {
+        ...core,
+        ...extras,
         force,
       });
-      router.push(`/l/${listing.id}`);
+      if (photos.length > 0) {
+        // Best-effort: the listing already exists — a photo-attach hiccup
+        // must not strand the member on the form. They can re-add photos from
+        // /l/[id]/edit.
+        try {
+          await apiPut(`/api/listings/${created.id}/photos`, photosBody);
+        } catch {
+          // Swallowed on purpose (see above).
+        }
+      }
+      router.push(`/l/${created.id}`);
       router.refresh();
     } catch (cause) {
       if (cause instanceof ApiRequestError) {
@@ -255,6 +336,8 @@ export function ListingForm({
         />
       </div>
 
+      <ListingPhotosPicker value={photos} onChange={setPhotos} />
+
       <fieldset className="xidig-field">
         <legend className="xidig-field__label">{t('suuq.pinLabel')}</legend>
         {lowBandwidth ? (
@@ -346,6 +429,12 @@ export function ListingForm({
         />
       </div>
 
+      <OpeningHoursEditor value={hours} onChange={setHours} />
+
+      <ListingServicesEditor value={services} onChange={setServices} />
+
+      <PriceRangeSelect id="listing-price-range" value={priceRange} onChange={setPriceRange} />
+
       <fieldset className="xidig-field">
         <legend className="xidig-field__label">{t('suuq.contactLinksLabel')}</legend>
         <div className="xidig-row-editor">
@@ -395,7 +484,7 @@ export function ListingForm({
       </fieldset>
 
       <button type="submit" className="xidig-button xidig-button--primary" disabled={pending}>
-        {t('suuq.addListing')}
+        {editing ? t('suuq.saveListing') : t('suuq.addListing')}
       </button>
     </form>
   );

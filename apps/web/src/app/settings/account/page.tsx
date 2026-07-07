@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { LowBandwidthToggle } from '@/components/low-bandwidth-toggle';
@@ -50,6 +51,10 @@ export default async function AccountSettingsPage() {
       <AccountSettings snapshot={snapshot} invites={invites ?? []} />
       <section className="xidig-section">
         <LowBandwidthToggle initialEnabled={lowBandwidth} signedIn />
+        {/* Phase 4.5: the granular per-category Lite controls. */}
+        <Link href="/settings/data" className="xidig-field__hint">
+          {t('settings.liteMoreLink')}
+        </Link>
       </section>
     </main>
   );

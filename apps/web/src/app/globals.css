@@ -478,3 +478,1130 @@ a.xidig-tabs__tab[aria-current='page'] {
   background: var(--x-accent);
   color: var(--x-accent-fg);
 }
+
+/* --- Plaza (Madal, Phase 2) ------------------------------------------- */
+
+/* Reaction bar (§20 taxonomy — five buttons, never a generic like) */
+.xidig-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.xidig-reaction {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--x-border);
+  border-radius: 999px;
+  background: var(--x-bg);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.xidig-reaction[aria-pressed='true'] {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+  border-color: var(--x-accent);
+}
+
+.xidig-reaction:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Poll options + result bars (Seq 14: counts only) */
+.xidig-poll {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.xidig-poll__option {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--x-border);
+  border-radius: calc(var(--x-radius) - 4px);
+  text-align: left;
+  background: var(--x-bg);
+}
+
+button.xidig-poll__option {
+  cursor: pointer;
+}
+
+.xidig-poll__option--mine {
+  border-color: var(--x-accent);
+}
+
+.xidig-poll__labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.xidig-poll__bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--x-border);
+  overflow: hidden;
+}
+
+.xidig-poll__fill {
+  height: 100%;
+  background: var(--x-accent);
+}
+
+/* Embeds (§15): responsive 16:9 player, no layout shift */
+.xidig-embed {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  border: 1px solid var(--x-border);
+  border-radius: calc(var(--x-radius) - 4px);
+  overflow: hidden;
+}
+
+.xidig-embed iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Post images (up to 4, WebP) */
+.xidig-post-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.4rem;
+}
+
+.xidig-post-images img {
+  width: 100%;
+  border-radius: calc(var(--x-radius) - 4px);
+  border: 1px solid var(--x-border);
+}
+
+/* Composer image thumbnails */
+.xidig-media-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.xidig-media-thumb {
+  position: relative;
+  display: grid;
+  gap: 0.2rem;
+  width: 6.5rem;
+}
+
+.xidig-media-thumb img {
+  width: 100%;
+  height: 4.5rem;
+  object-fit: cover;
+  border-radius: calc(var(--x-radius) - 4px);
+  border: 1px solid var(--x-border);
+}
+
+/* Feed layout: single column of cards */
+.xidig-post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--x-space);
+}
+
+/* ============================================================================
+ * Phase 3 — Fariimo (DMs) + Notifications + push
+ * ========================================================================== */
+
+/* Nav + tab unread badges */
+.xidig-nav__badge,
+.xidig-dm-badge {
+  display: inline-block;
+  min-width: 1.1rem;
+  padding: 0 0.35rem;
+  margin-inline-start: 0.35rem;
+  border-radius: 999px;
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+  font-size: 0.72rem;
+  line-height: 1.15rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Conversation inbox */
+.xidig-dm-inbox {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.xidig-dm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.6rem;
+  border-radius: var(--x-radius);
+  border: 1px solid var(--x-border);
+  text-decoration: none;
+  color: inherit;
+}
+
+.xidig-dm-row:hover {
+  background: var(--x-bg);
+}
+
+.xidig-dm-row__main {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.xidig-dm-row__name {
+  font-weight: 600;
+}
+
+.xidig-dm-row__preview {
+  color: var(--x-muted);
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60ch;
+}
+
+.xidig-dm-row__side {
+  display: grid;
+  justify-items: end;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+/* Conversation thread */
+.xidig-dm-back {
+  margin: 0 0 0.5rem;
+}
+
+.xidig-dm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--x-border);
+}
+
+.xidig-dm-header__name {
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.xidig-dm-thread {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.xidig-dm-thread__older,
+.xidig-dm-thread__start {
+  text-align: center;
+  margin: 0.25rem 0;
+}
+
+.xidig-dm-msglist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.xidig-dm-msg {
+  display: grid;
+  gap: 0.15rem;
+  max-width: 80%;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--x-radius);
+  border: 1px solid var(--x-border);
+}
+
+.xidig-dm-msg--mine {
+  justify-self: end;
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+  border-color: transparent;
+}
+
+.xidig-dm-msg--theirs {
+  justify-self: start;
+  background: var(--x-bg);
+}
+
+.xidig-dm-msg__body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.xidig-dm-msg__meta {
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+
+.xidig-dm-composer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--x-border);
+}
+
+.xidig-dm-composer textarea {
+  flex: 1;
+  resize: vertical;
+}
+
+.xidig-dm-request {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  background: var(--x-bg);
+}
+
+/* Conversation options (block / report) */
+.xidig-dm-menu {
+  position: relative;
+}
+
+.xidig-dm-menu__panel {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 0.25rem);
+  z-index: 20;
+  min-width: 16rem;
+  padding: 0.5rem;
+  background: var(--x-fg-bg, #fff);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+.xidig-dm-menu__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.xidig-dm-menu__item {
+  width: 100%;
+  text-align: start;
+  padding: 0.5rem;
+  background: none;
+  border: 0;
+  border-radius: calc(var(--x-radius) - 4px);
+  cursor: pointer;
+  color: inherit;
+}
+
+.xidig-dm-menu__item:hover {
+  background: var(--x-bg);
+}
+
+/* Notifications inbox */
+.xidig-notif-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.xidig-notif__link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: start;
+  padding: 0.7rem 0.6rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  text-decoration: none;
+  color: inherit;
+  background: none;
+  cursor: pointer;
+}
+
+.xidig-notif__link:hover {
+  background: var(--x-bg);
+}
+
+.xidig-notif--unread .xidig-notif__link {
+  border-inline-start: 3px solid var(--x-accent);
+}
+
+.xidig-notif__dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--x-accent);
+}
+
+.xidig-notif__text {
+  flex: 1;
+}
+
+.xidig-push {
+  margin: var(--x-space) 0;
+}
+
+/* ============================================================================
+ * Phase 4.5 — Lite mode media slots + avatars (§22: defer, don't disable)
+ * ========================================================================== */
+
+/* MediaSlot frame: placeholder state carries an inline aspect-ratio; the
+   revealed state wraps the real asset without constraining it. */
+.xidig-media-slot {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: calc(var(--x-radius) - 4px);
+}
+
+.xidig-media-slot img {
+  display: block;
+  width: 100%;
+  border-radius: calc(var(--x-radius) - 4px);
+  border: 1px solid var(--x-border);
+}
+
+/* Neutral base under the (optional) blurhash wash. */
+.xidig-media-slot__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.xidig-media-slot__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px dashed var(--x-border);
+  border-radius: calc(var(--x-radius) - 4px);
+}
+
+.xidig-media-slot__label {
+  font-weight: 600;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.xidig-media-slot__size {
+  color: var(--x-muted);
+  font-size: 0.85em;
+}
+
+.xidig-media-slot__show {
+  background: var(--x-bg);
+}
+
+/* Tap-to-full wrapper around a thumb-first image (slow connections). */
+.xidig-media-slot__thumb-btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* "N hidden — Show all on this page" bar */
+.xidig-lite-showall {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  margin: 0.5rem 0;
+}
+
+/* Avatar: image or 0-byte initials disc */
+.xidig-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: 999px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.xidig-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.xidig-avatar--initials {
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+/* Lite: reduced-motion & the animations pref (html[data-motion="off"] is set
+   by the appearance settings) — media surfaces never animate under either. */
+@media (prefers-reduced-motion: reduce) {
+  .xidig-media-slot,
+  .xidig-media-slot * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+html[data-motion='off'] .xidig-media-slot,
+html[data-motion='off'] .xidig-media-slot *,
+html[data-motion='off'] .xidig-avatar {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ============================================================================
+ * Phase 4.5 — Appearance system (Settings → Appearance)
+ * Theme via html[data-theme] (cookie xidig_theme + no-FOUC script in
+ * app/layout.tsx), text size via html[data-textsize] root font-size,
+ * reduced motion via the media query + html[data-motion="off"].
+ * ========================================================================== */
+
+:root {
+  color-scheme: light;
+}
+
+/* Dark tokens: derived from the light palette, contrast kept ≥ AA on the new
+   background (fg 13.9:1, muted 7.0:1, danger 8.0:1, ok 8.9:1 vs #16181d). */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --x-bg: #16181d;
+  --x-fg: #e9ebef;
+  --x-muted: #a6aeba;
+  --x-border: #3b414b;
+  --x-accent: #e9ebef;
+  --x-accent-fg: #16181d;
+  --x-danger: #ffa39b;
+  --x-danger-bg: #35201e;
+  --x-ok: #8ad4a4;
+  --x-ok-bg: #1c2f24;
+}
+
+/* Light-hardcoded surfaces that tokens don't reach. */
+[data-theme='dark'] .xidig-media-slot__overlay {
+  background: rgba(22, 24, 29, 0.55);
+}
+
+[data-theme='dark'] .xidig-dm-menu__panel {
+  background: var(--x-bg);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* color-mix borders mixed toward white read as glare on dark — mix toward bg. */
+[data-theme='dark'] .xidig-banner--error {
+  border-color: color-mix(in srgb, var(--x-danger) 40%, var(--x-bg));
+}
+
+[data-theme='dark'] .xidig-banner--notice,
+[data-theme='dark'] .xidig-tag--ok {
+  border-color: color-mix(in srgb, var(--x-ok) 40%, var(--x-bg));
+}
+
+/* Text size (§22 accessibility): root font-size scales every rem measure. */
+html[data-textsize='s'] {
+  font-size: 14px;
+}
+
+html[data-textsize='m'] {
+  font-size: 16px;
+}
+
+html[data-textsize='l'] {
+  font-size: 18px;
+}
+
+html[data-textsize='xl'] {
+  font-size: 20px;
+}
+
+/* Reduced motion: honor the OS setting always; the explicit in-app switch
+   (html[data-motion="off"]) is a hard off for everything. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html[data-motion='off'] *,
+html[data-motion='off'] *::before,
+html[data-motion='off'] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* ============================================================================
+ * Phase 4.5 — Settings surface
+ * ========================================================================== */
+
+/* Hub cards: the generic card grid, as links. */
+a.xidig-settings-card {
+  text-decoration: none;
+  color: inherit;
+}
+
+a.xidig-settings-card:hover {
+  border-color: var(--x-accent);
+}
+
+/* Notification matrix table (scrolls inside itself on narrow screens). */
+.xidig-matrix-wrap {
+  overflow-x: auto;
+}
+
+.xidig-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.xidig-matrix th,
+.xidig-matrix td {
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid var(--x-border);
+  text-align: center;
+}
+
+.xidig-matrix th:first-child,
+.xidig-matrix td:first-child {
+  text-align: start;
+}
+
+.xidig-matrix input[type='checkbox'] {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+/* Radio option rows (appearance page). */
+.xidig-option-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.xidig-option-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+}
+
+/* Blocked-members rows (privacy page). */
+.xidig-block-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.xidig-block-list__item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.5rem 0.75rem;
+}
+
+.xidig-block-list__who {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+.xidig-block-list__handle {
+  color: var(--x-muted);
+  font-size: 0.85rem;
+}
+
+/* Data & Lite mode page. */
+.xidig-savings {
+  font-weight: 600;
+}
+
+.xidig-bundle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ==========================================================================
+   Phase 4.5 experience-expansion styles (integration merge). Deduped across
+   profile / listing / social / labs / discovery agents. Media-slot base and
+   dark [data-theme='dark'] tokens live above; these extend them.
+   ========================================================================== */
+/* ===== from profile agent ===== */
+
+/* --- Phase 4.5 PROFILE agent: media identity + customization --- */
+
+/* Avatar joins the header row — center-align beats baseline once a disc is present. */
+
+.xidig-profile__header {
+  align-items: center;
+}
+
+.xidig-profile__cover {
+  width: 100%;
+  border-radius: var(--x-radius);
+  overflow: hidden;
+  margin-bottom: var(--x-space);
+}
+
+/* Completion meter (owner-only nudge on /u/[handle]) */
+
+.xidig-completion {
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.75rem var(--x-space);
+  margin-bottom: var(--x-space);
+}
+
+.xidig-completion__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+}
+
+.xidig-completion__title {
+  font-weight: 600;
+}
+
+.xidig-completion__percent {
+  color: var(--x-muted);
+}
+
+.xidig-completion__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--x-border);
+  overflow: hidden;
+}
+
+.xidig-completion__fill {
+  height: 100%;
+  background: var(--x-ok);
+  border-radius: 999px;
+}
+
+/* Suggested-follows card — extends .xidig-card; the identity row holds the avatar. */
+.xidig-suggest-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Identity row shared by directory + suggested-follows cards */
+
+.xidig-suggest-card__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.xidig-suggest-card__identity .xidig-card__meta {
+  margin: 0;
+}
+
+/* Compact pinned-item cards */
+
+.xidig-pin-card__excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Pins picker rows (settings) */
+
+.xidig-pins-editor {
+  list-style: none;
+  margin: 0 0 var(--x-space);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.xidig-pins-editor__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.4rem 0.75rem;
+}
+
+.xidig-pins-editor__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xidig-pins-editor__actions {
+  display: inline-flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+/* Avatar/cover editor (settings) */
+
+.xidig-media-editor__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.xidig-media-editor__cover {
+  width: 100%;
+  max-width: 24rem;
+  border-radius: var(--x-radius);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* Screen-reader-only (hidden file inputs behind labelled buttons) */
+
+.xidig-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===== from listing agent ===== */
+
+/* Phase 4.5 — Suuq listing gallery, card thumbnail, hours (LISTING agent) */
+
+.xidig-listing-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.xidig-listing-gallery__hero {
+  max-width: 40rem;
+}
+
+.xidig-listing-gallery__thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: 0.5rem;
+  max-width: 40rem;
+}
+
+/* Per-thumb wrapper inside the gallery grid — keep the asset inside its cell. */
+.xidig-listing-gallery__thumb {
+  min-width: 0;
+}
+
+.xidig-listing-gallery__thumb img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Card: thumbnail (or 0-byte initials glyph) beside the text block. */
+
+.xidig-listing-card {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.xidig-listing-card__thumb {
+  flex: none;
+  width: 4.5rem;
+}
+
+.xidig-listing-card__glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border: 1px solid var(--x-border);
+  border-radius: calc(var(--x-radius) - 4px);
+  color: var(--x-muted);
+  font-size: 1.5rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.xidig-listing-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Opening hours editor rows (inside .xidig-row-editor__row). */
+
+.xidig-hours-editor__row {
+  align-items: center;
+}
+
+.xidig-hours-editor__day {
+  flex: none;
+  width: 2.75rem;
+  font-weight: 600;
+}
+
+.xidig-hours-editor__closed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+
+/* Opening hours display grid on /l/[id]. */
+
+.xidig-hours-grid {
+  margin: 0;
+  display: grid;
+  gap: 0.25rem;
+  max-width: 26rem;
+}
+
+.xidig-hours-grid__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.xidig-hours-grid__day {
+  font-weight: 600;
+}
+
+.xidig-hours-grid__times {
+  margin: 0;
+  color: var(--x-muted);
+}
+
+.xidig-price-range {
+  letter-spacing: 0.1em;
+}
+
+/* ===== from social agent ===== */
+
+/* Phase 4.5 SOCIAL: card header row, bookmarks, mention autocomplete, drafts, edit history */
+
+.xidig-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.xidig-bookmark--on {
+  border-color: var(--x-accent);
+  font-weight: 600;
+}
+
+.xidig-mention {
+  position: relative;
+}
+
+.xidig-mention__list {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + 0.25rem);
+  z-index: 30;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: var(--x-bg);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
+  max-height: 14rem;
+  overflow-y: auto;
+}
+
+.xidig-mention__item {
+  display: block;
+  width: 100%;
+  text-align: start;
+  padding: 0.5rem;
+  background: none;
+  border: 0;
+  border-radius: calc(var(--x-radius) - 4px);
+  cursor: pointer;
+  color: inherit;
+}
+
+.xidig-mention__item--active,
+.xidig-mention__item:hover {
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+}
+
+.xidig-drafts {
+  margin-block: 0.5rem;
+}
+
+.xidig-drafts__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.xidig-drafts__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.5rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+}
+
+.xidig-drafts__snippet {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.xidig-drafts__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.xidig-revisions {
+  margin-block: 0.5rem;
+}
+
+.xidig-revisions__panel {
+  margin-top: 0.5rem;
+}
+
+/* ===== from labs agent ===== */
+
+/* Labs Phase 4.5 — Space visual identity (icon + cover) */
+
+.xidig-space-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.xidig-space-cover {
+  margin-bottom: 0.75rem;
+}
+
+/* Shared media-editor controls (also used by components/profile/profile-media-editor.tsx —
+   the PROFILE agent may return identical rules; apply once). */
+
+/* ===== from discovery agent ===== */
+
+/* Phase 4.5 DISCOVERY — /search grouped results */
+
+.xidig-search-group { margin-top: 1.5rem; }
+
+.xidig-search-group__header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+
+.xidig-search-group__more { font-size: 0.9rem; white-space: nowrap; }
+
+.xidig-search-list { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+
+.xidig-search-row { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.6rem 0; border-top: 1px solid var(--x-border); }
+
+.xidig-search-row:first-child { border-top: 0; }
+
+.xidig-search-row__body { min-width: 0; flex: 1; }
+
+.xidig-search-row__title { margin: 0; overflow-wrap: anywhere; }
+
+.xidig-search-row__thumb { width: 56px; flex: 0 0 56px; border-radius: calc(var(--x-radius) / 2); overflow: hidden; }
+
+/* Compact Lite placeholder inside a 56px row thumb: keep the Show button
+   (it carries an aria-label with the alt), drop the text that cannot fit. */
+
+.xidig-search-row__thumb .xidig-media-slot__overlay { padding: 2px; gap: 2px; }
+
+.xidig-search-row__thumb .xidig-media-slot__label,
+.xidig-search-row__thumb .xidig-media-slot__size { display: none; }
+
+.xidig-search-teach { margin-top: 1rem; }
+
+
+/* ============================================================================
+   Phase 5 — Capital / Maal
+   ============================================================================ */
+/* --- Modal (attestation + venture fund) — NEW, no existing dialog class --- */
+.xidig-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,0.5); }
+.xidig-modal__panel { width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto; background: var(--x-bg); border-radius: var(--x-radius); padding: 1.25rem; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.xidig-modal__title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; }
+.xidig-modal__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+/* --- Capital layout hooks (thin; most spacing inherited from xidig-section) --- */
+.xidig-capital-cover { border-radius: var(--x-radius); overflow: hidden; }
+.xidig-capital-rubric__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 0.75rem; margin: 0.5rem 0; }
+.xidig-capital-vote__actions, .xidig-capital-interest__actions, .xidig-capital-decision__actions, .xidig-capital-editor__actions, .xidig-capital-review__scores { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.xidig-capital-review__scores { align-items: flex-end; }
+.xidig-capital-timeline__list { list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.xidig-capital-timeline__item { border-left: 2px solid var(--x-border); padding-left: 0.75rem; }
+.xidig-capital-maalgeli { margin-top: 0.75rem; }
+.xidig-capital-maalgeli__cta { width: 100%; } /* prominent, full-width on mobile-first */
+.xidig-capital-fund__secondary { margin-top: 0.75rem; }
+.xidig-capital-fund__disclaimer { margin-top: 1rem; font-style: italic; }
+.xidig-capital-empty { text-align: center; padding: 1.5rem; }

@@ -283,6 +283,56 @@ export type Database = {
         }
         Relationships: []
       }
+      block_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      bookmarks: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookmarks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_listings: {
         Row: {
           address: string | null
@@ -298,7 +348,14 @@ export type Database = {
           landmark: string | null
           latitude: number | null
           longitude: number | null
+          opening_hours: Json | null
           owner_user_id: string | null
+          photo_count: number
+          price_range: number | null
+          primary_photo_alt: string | null
+          primary_photo_blurhash: string | null
+          primary_photo_path: string | null
+          search_norm: string | null
           short_description: string | null
           source: Database["public"]["Enums"]["content_source"]
           status: Database["public"]["Enums"]["content_status"]
@@ -319,7 +376,14 @@ export type Database = {
           landmark?: string | null
           latitude?: number | null
           longitude?: number | null
+          opening_hours?: Json | null
           owner_user_id?: string | null
+          photo_count?: number
+          price_range?: number | null
+          primary_photo_alt?: string | null
+          primary_photo_blurhash?: string | null
+          primary_photo_path?: string | null
+          search_norm?: string | null
           short_description?: string | null
           source?: Database["public"]["Enums"]["content_source"]
           status?: Database["public"]["Enums"]["content_status"]
@@ -340,7 +404,14 @@ export type Database = {
           landmark?: string | null
           latitude?: number | null
           longitude?: number | null
+          opening_hours?: Json | null
           owner_user_id?: string | null
+          photo_count?: number
+          price_range?: number | null
+          primary_photo_alt?: string | null
+          primary_photo_blurhash?: string | null
+          primary_photo_path?: string | null
+          search_norm?: string | null
           short_description?: string | null
           source?: Database["public"]["Enums"]["content_source"]
           status?: Database["public"]["Enums"]["content_status"]
@@ -1309,9 +1380,13 @@ export type Database = {
       labs: {
         Row: {
           charter_completed_at: string | null
+          cover_blurhash: string | null
+          cover_path: string | null
           created_at: string
           dormant_since: string | null
           hypothesis: string | null
+          icon_blurhash: string | null
+          icon_path: string | null
           id: string
           is_listed: boolean
           is_supporter_only: boolean
@@ -1337,9 +1412,13 @@ export type Database = {
         }
         Insert: {
           charter_completed_at?: string | null
+          cover_blurhash?: string | null
+          cover_path?: string | null
           created_at?: string
           dormant_since?: string | null
           hypothesis?: string | null
+          icon_blurhash?: string | null
+          icon_path?: string | null
           id?: string
           is_listed?: boolean
           is_supporter_only?: boolean
@@ -1365,9 +1444,13 @@ export type Database = {
         }
         Update: {
           charter_completed_at?: string | null
+          cover_blurhash?: string | null
+          cover_path?: string | null
           created_at?: string
           dormant_since?: string | null
           hypothesis?: string | null
+          icon_blurhash?: string | null
+          icon_path?: string | null
           id?: string
           is_listed?: boolean
           is_supporter_only?: boolean
@@ -1488,10 +1571,123 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "listing_claims_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "following_listings"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "listing_claims_reviewed_by_user_id_fkey"
             columns: ["reviewed_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_photos: {
+        Row: {
+          alt_text: string
+          blurhash: string | null
+          created_at: string
+          height: number | null
+          id: string
+          listing_id: string
+          media_upload_id: string | null
+          sort_order: number
+          storage_path: string
+          thumb_path: string | null
+          width: number | null
+        }
+        Insert: {
+          alt_text: string
+          blurhash?: string | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          listing_id: string
+          media_upload_id?: string | null
+          sort_order?: number
+          storage_path: string
+          thumb_path?: string | null
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string
+          blurhash?: string | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          listing_id?: string
+          media_upload_id?: string | null
+          sort_order?: number
+          storage_path?: string
+          thumb_path?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "business_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "following_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_photos_media_upload_id_fkey"
+            columns: ["media_upload_id"]
+            isOneToOne: false
+            referencedRelation: "media_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_services: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          name: string
+          price_label: string | null
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          name: string
+          price_label?: string | null
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          name?: string
+          price_label?: string | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_services_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "business_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_services_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "following_listings"
             referencedColumns: ["id"]
           },
         ]
@@ -1521,10 +1717,114 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "listing_tags_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "following_listings"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "listing_tags_tag_id_fkey"
             columns: ["tag_id"]
             isOneToOne: false
             referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      media_kinds: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      media_uploads: {
+        Row: {
+          alt_text: string | null
+          blurhash: string | null
+          bucket: string
+          bytes: number
+          created_at: string
+          height: number | null
+          id: string
+          kind: string
+          mime_type: string
+          owner_user_id: string
+          post_id: string | null
+          scan_status: Database["public"]["Enums"]["media_scan_status"]
+          scan_verdict: Json
+          storage_path: string
+          thumb_path: string | null
+          width: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          blurhash?: string | null
+          bucket?: string
+          bytes: number
+          created_at?: string
+          height?: number | null
+          id?: string
+          kind?: string
+          mime_type?: string
+          owner_user_id: string
+          post_id?: string | null
+          scan_status: Database["public"]["Enums"]["media_scan_status"]
+          scan_verdict?: Json
+          storage_path: string
+          thumb_path?: string | null
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          blurhash?: string | null
+          bucket?: string
+          bytes?: number
+          created_at?: string
+          height?: number | null
+          id?: string
+          kind?: string
+          mime_type?: string
+          owner_user_id?: string
+          post_id?: string | null
+          scan_status?: Database["public"]["Enums"]["media_scan_status"]
+          scan_verdict?: Json
+          storage_path?: string
+          thumb_path?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "media_uploads_kind_fkey"
+            columns: ["kind"]
+            isOneToOne: false
+            referencedRelation: "media_kinds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_uploads_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "media_uploads_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
             referencedColumns: ["id"]
           },
         ]
@@ -1652,6 +1952,130 @@ export type Database = {
           },
         ]
       }
+      moderation_reviews: {
+        Row: {
+          ai_verdict: Json
+          author_user_id: string
+          content_excerpt: string | null
+          created_at: string
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          id: string
+          language: string | null
+          reason: Database["public"]["Enums"]["moderation_review_reason"]
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by_user_id: string | null
+          status: Database["public"]["Enums"]["moderation_review_status"]
+        }
+        Insert: {
+          ai_verdict?: Json
+          author_user_id: string
+          content_excerpt?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          id?: string
+          language?: string | null
+          reason: Database["public"]["Enums"]["moderation_review_reason"]
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["moderation_review_status"]
+        }
+        Update: {
+          ai_verdict?: Json
+          author_user_id?: string
+          content_excerpt?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          id?: string
+          language?: string | null
+          reason?: Database["public"]["Enums"]["moderation_review_reason"]
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by_user_id?: string | null
+          status?: Database["public"]["Enums"]["moderation_review_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moderation_reviews_author_user_id_fkey"
+            columns: ["author_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moderation_reviews_reviewed_by_user_id_fkey"
+            columns: ["reviewed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mutes: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mutes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_prefs: {
+        Row: {
+          channel: string
+          enabled: boolean
+          notification_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          enabled: boolean
+          notification_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          enabled?: boolean
+          notification_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_prefs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           actor_user_id: string | null
@@ -1708,6 +2132,71 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      open_to_kinds: {
+        Row: {
+          created_at: string
+          id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          sort_order: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      page_blocks: {
+        Row: {
+          block_type: string
+          config: Json
+          created_at: string
+          id: string
+          owner_id: string
+          owner_type: string
+          position: number
+          span: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          block_type: string
+          config?: Json
+          created_at?: string
+          id?: string
+          owner_id: string
+          owner_type: string
+          position: number
+          span?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          block_type?: string
+          config?: Json
+          created_at?: string
+          id?: string
+          owner_id?: string
+          owner_type?: string
+          position?: number
+          span?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_blocks_block_type_fkey"
+            columns: ["block_type"]
+            isOneToOne: false
+            referencedRelation: "block_types"
             referencedColumns: ["id"]
           },
         ]
@@ -1792,6 +2281,96 @@ export type Database = {
             columns: ["voter_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_drafts: {
+        Row: {
+          created_at: string
+          id: string
+          lab_id: string | null
+          payload: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lab_id?: string | null
+          payload: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lab_id?: string | null
+          payload?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_drafts_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_drafts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_revisions: {
+        Row: {
+          created_at: string
+          editor_user_id: string
+          had_replies: boolean
+          id: string
+          post_id: string
+          previous_body: string | null
+          previous_link_url: string | null
+          previous_title: string | null
+        }
+        Insert: {
+          created_at?: string
+          editor_user_id: string
+          had_replies?: boolean
+          id?: string
+          post_id: string
+          previous_body?: string | null
+          previous_link_url?: string | null
+          previous_title?: string | null
+        }
+        Update: {
+          created_at?: string
+          editor_user_id?: string
+          had_replies?: boolean
+          id?: string
+          post_id?: string
+          previous_body?: string | null
+          previous_link_url?: string | null
+          previous_title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_revisions_editor_user_id_fkey"
+            columns: ["editor_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_revisions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
             referencedColumns: ["id"]
           },
         ]
@@ -1907,6 +2486,39 @@ export type Database = {
           },
         ]
       }
+      profile_open_to: {
+        Row: {
+          created_at: string
+          open_to_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          open_to_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          open_to_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_open_to_open_to_id_fkey"
+            columns: ["open_to_id"]
+            isOneToOne: false
+            referencedRelation: "open_to_kinds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_open_to_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_pinned_labs: {
         Row: {
           created_at: string
@@ -1943,10 +2555,46 @@ export type Database = {
           },
         ]
       }
+      profile_pins: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          position: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          position: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          position?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_pins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          avatar_blurhash: string | null
+          avatar_path: string | null
           bio: string | null
           contact_options: Json
+          cover_blurhash: string | null
+          cover_path: string | null
           created_at: string
           display_name: string
           handle: string
@@ -1959,6 +2607,7 @@ export type Database = {
           membership_tier_id: string
           region_attested_at: string | null
           region_verified: boolean
+          search_norm: string | null
           skills: string[]
           subscription_status: string | null
           timezone: string | null
@@ -1967,8 +2616,12 @@ export type Database = {
           verification_status: Database["public"]["Enums"]["profile_verification_status"]
         }
         Insert: {
+          avatar_blurhash?: string | null
+          avatar_path?: string | null
           bio?: string | null
           contact_options?: Json
+          cover_blurhash?: string | null
+          cover_path?: string | null
           created_at?: string
           display_name: string
           handle: string
@@ -1981,6 +2634,7 @@ export type Database = {
           membership_tier_id?: string
           region_attested_at?: string | null
           region_verified?: boolean
+          search_norm?: string | null
           skills?: string[]
           subscription_status?: string | null
           timezone?: string | null
@@ -1989,8 +2643,12 @@ export type Database = {
           verification_status?: Database["public"]["Enums"]["profile_verification_status"]
         }
         Update: {
+          avatar_blurhash?: string | null
+          avatar_path?: string | null
           bio?: string | null
           contact_options?: Json
+          cover_blurhash?: string | null
+          cover_path?: string | null
           created_at?: string
           display_name?: string
           handle?: string
@@ -2003,6 +2661,7 @@ export type Database = {
           membership_tier_id?: string
           region_attested_at?: string | null
           region_verified?: boolean
+          search_norm?: string | null
           skills?: string[]
           subscription_status?: string | null
           timezone?: string | null
@@ -2505,6 +3164,56 @@ export type Database = {
           },
         ]
       }
+      user_settings: {
+        Row: {
+          created_at: string
+          digest_frequency: string
+          discoverable_directory: boolean
+          discoverable_search_engines: boolean
+          dm_privacy: string
+          location_granularity: string
+          preferences: Json
+          quiet_hours_end: number | null
+          quiet_hours_start: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          digest_frequency?: string
+          discoverable_directory?: boolean
+          discoverable_search_engines?: boolean
+          dm_privacy?: string
+          location_granularity?: string
+          preferences?: Json
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          digest_frequency?: string
+          discoverable_directory?: boolean
+          discoverable_search_engines?: boolean
+          dm_privacy?: string
+          location_granularity?: string
+          preferences?: Json
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           created_at: string
@@ -2560,12 +3269,16 @@ export type Database = {
         Row: {
           ask: string | null
           co_lab_id: string | null
+          cover_blurhash: string | null
+          cover_path: string | null
           created_at: string
           created_by_user_id: string
           decided_at: string | null
           funded_at: string | null
           id: string
           lab_id: string
+          logo_blurhash: string | null
+          logo_path: string | null
           name: string
           notes: string | null
           one_liner: string | null
@@ -2589,12 +3302,16 @@ export type Database = {
         Insert: {
           ask?: string | null
           co_lab_id?: string | null
+          cover_blurhash?: string | null
+          cover_path?: string | null
           created_at?: string
           created_by_user_id: string
           decided_at?: string | null
           funded_at?: string | null
           id?: string
           lab_id: string
+          logo_blurhash?: string | null
+          logo_path?: string | null
           name: string
           notes?: string | null
           one_liner?: string | null
@@ -2618,12 +3335,16 @@ export type Database = {
         Update: {
           ask?: string | null
           co_lab_id?: string | null
+          cover_blurhash?: string | null
+          cover_path?: string | null
           created_at?: string
           created_by_user_id?: string
           decided_at?: string | null
           funded_at?: string | null
           id?: string
           lab_id?: string
+          logo_blurhash?: string | null
+          logo_path?: string | null
           name?: string
           notes?: string | null
           one_liner?: string | null
@@ -2726,6 +3447,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "business_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verifications_listing_fk"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "following_listings"
             referencedColumns: ["id"]
           },
           {
@@ -2874,14 +3602,99 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      following_listings: {
+        Row: {
+          address: string | null
+          business_name: string | null
+          category_id: string | null
+          city: string | null
+          contact_links: Json | null
+          country: string | null
+          created_at: string | null
+          export_checklist: Json | null
+          export_readiness_score: number | null
+          id: string | null
+          landmark: string | null
+          latitude: number | null
+          longitude: number | null
+          owner_user_id: string | null
+          search_norm: string | null
+          short_description: string | null
+          source: Database["public"]["Enums"]["content_source"] | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          updated_at: string | null
+          verification_status:
+            | Database["public"]["Enums"]["listing_verification_status"]
+            | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_listings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "listing_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_listings_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      can_read_candidate: { Args: { cand: string }; Returns: boolean }
+      can_read_lab: { Args: { p_lab_id: string }; Returns: boolean }
+      can_read_lab_roster: { Args: { p_lab_id: string }; Returns: boolean }
+      can_review_candidate: { Args: { cand: string }; Returns: boolean }
+      candidate_interest_counts: {
+        Args: { cand: string }
+        Returns: {
+          cosign: number
+          help: number
+          invest: number
+        }[]
+      }
+      candidate_vote_tally: {
+        Args: { cand: string }
+        Returns: {
+          approve: number
+          reject: number
+          total: number
+        }[]
+      }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
       dearmor: { Args: { "": string }; Returns: string }
+      dm_inbox: {
+        Args: { p_before?: string; p_before_id?: string; p_limit?: number }
+        Returns: {
+          conversation_id: string
+          created_at: string
+          is_initiator: boolean
+          last_message_at: string
+          last_message_body: string
+          last_message_deleted: boolean
+          last_message_sender: string
+          other_user_id: string
+          status: Database["public"]["Enums"]["conversation_status"]
+          unread_count: number
+          updated_at: string
+        }[]
+      }
+      dm_unread_count: { Args: never; Returns: number }
+      flag_skill_gaps: {
+        Args: never
+        Returns: {
+          lab_id: string
+          skill: string
+        }[]
+      }
       gen_random_uuid: { Args: never; Returns: string }
       gen_salt: { Args: { "": string }; Returns: string }
       get_signup_mode: { Args: never; Returns: string }
@@ -2891,7 +3704,10 @@ export type Database = {
       }
       has_password: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      is_candidate_lab_member: { Args: { cand: string }; Returns: boolean }
+      is_lab_member: { Args: { p_lab_id: string }; Returns: boolean }
       is_mod: { Args: never; Returns: boolean }
+      is_supporter: { Args: never; Returns: boolean }
       list_visible_tiers: {
         Args: never
         Returns: {
@@ -2902,11 +3718,22 @@ export type Database = {
           position: number
         }[]
       }
+      mark_dormant_labs: { Args: never; Returns: string[] }
       normalize_auth_phone: { Args: { p: string }; Returns: string }
       pgp_armor_headers: {
         Args: { "": string }
         Returns: Record<string, unknown>[]
       }
+      poll_results: {
+        Args: { p_post_id: string }
+        Returns: {
+          poll_option_id: string
+          votes: number
+        }[]
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      xidig_name_norm: { Args: { input: string }; Returns: string }
     }
     Enums: {
       account_status:
@@ -2972,6 +3799,7 @@ export type Database = {
         | "membership_tier"
         | "consent_record"
         | "capital_gate_evaluation"
+        | "media_upload"
       follow_target_type: "user" | "lab" | "candidate" | "tag"
       interest_type: "help" | "cosign" | "invest"
       lab_collaboration_status: "proposed" | "accepted" | "declined" | "ended"
@@ -2989,6 +3817,7 @@ export type Database = {
       lab_visibility: "private" | "members" | "public"
       language_code: "en" | "so"
       listing_verification_status: "unverified" | "pending" | "verified"
+      media_scan_status: "passed" | "uncertain" | "skipped" | "removed"
       membership_capability:
         | "create_lab"
         | "join_unlimited_labs"
@@ -3010,6 +3839,8 @@ export type Database = {
         | "revoke_verification"
         | "dismiss_report"
         | "other"
+      moderation_review_reason: "ai_flagged" | "ai_uncertain"
+      moderation_review_status: "pending" | "approved" | "removed" | "dismissed"
       poll_status: "open" | "closed"
       post_type: "intro" | "ask" | "win" | "update" | "poll"
       profile_verification_status:
@@ -3232,6 +4063,7 @@ export const Constants = {
         "membership_tier",
         "consent_record",
         "capital_gate_evaluation",
+        "media_upload",
       ],
       follow_target_type: ["user", "lab", "candidate", "tag"],
       interest_type: ["help", "cosign", "invest"],
@@ -3251,6 +4083,7 @@ export const Constants = {
       lab_visibility: ["private", "members", "public"],
       language_code: ["en", "so"],
       listing_verification_status: ["unverified", "pending", "verified"],
+      media_scan_status: ["passed", "uncertain", "skipped", "removed"],
       membership_capability: [
         "create_lab",
         "join_unlimited_labs",
@@ -3274,6 +4107,8 @@ export const Constants = {
         "dismiss_report",
         "other",
       ],
+      moderation_review_reason: ["ai_flagged", "ai_uncertain"],
+      moderation_review_status: ["pending", "approved", "removed", "dismissed"],
       poll_status: ["open", "closed"],
       post_type: ["intro", "ask", "win", "update", "poll"],
       profile_verification_status: [

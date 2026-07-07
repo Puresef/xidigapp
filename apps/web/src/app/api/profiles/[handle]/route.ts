@@ -23,7 +23,7 @@ export async function GET(
     const parsed = handleSchema.safeParse((await context.params).handle);
     if (!parsed.success) throw new ApiError('not_found', 404);
 
-    const view = await getMemberProfileView(ctx.supabase, parsed.data);
+    const view = await getMemberProfileView(ctx.supabase, parsed.data, ctx.appUser.id);
     if (!view) throw new ApiError('not_found', 404);
 
     return apiOk(view);

@@ -5,6 +5,11 @@
  * the mode works signed-out too. Signed-in members also persist the flag to
  * `users.low_bandwidth_enabled` (PATCH /api/me/bandwidth) for cross-device
  * continuity + the §23 event.
+ *
+ * Phase 4.5: superseded by the granular Lite model in lib/lite/prefs.ts
+ * (cookie `xidig_lite`). This legacy cookie is still WRITTEN by the simple
+ * toggle and still READ as a fallback — absent `xidig_lite`, `xidig_lowbw=1`
+ * maps to the `essentials` bundle (see lib/lite/server.ts).
  */
 
 export const LOW_BANDWIDTH_COOKIE = 'xidig_lowbw';

@@ -81,6 +81,28 @@ export const envSchema = z.object({
 
   // AI provider
   AI_API_KEY: z.string().min(1),
+  // AI moderation pre-scan (§15/§24). 'auto' = anthropic in production,
+  // console (log + skip) in development — same selection idea as
+  // EMAIL_PROVIDER. 'console' never blocks content; unscanned content ships
+  // with verdict 'skipped'.
+  AI_MODERATION_PROVIDER: z.enum(['auto', 'anthropic', 'console']).default('auto'),
+
+  // Shared secret for scheduled-job routes (/api/cron/*). Vercel Cron sends
+  // it as `Authorization: Bearer <CRON_SECRET>` automatically when the env
+  // var is set. Empty = cron endpoints disabled (503), matching the
+  // EMAIL_WEBHOOK_SECRET pattern.
+  CRON_SECRET: z.string().default(''),
+
+  // Web Push / VAPID (§22 PWA push; §26 push = DMs/mentions/replies). All
+  // optional: unset = push DISABLED (in-app notifications still work), same
+  // fail-safe posture as CRON_SECRET/EMAIL_WEBHOOK_SECRET. Generate a keypair
+  // with `npx web-push generate-vapid-keys` (see docs/runbook.md). The public
+  // key is also exposed to the browser (mirror) so the client can subscribe;
+  // the private key is server-only. Subject is a `mailto:` or https contact.
+  VAPID_PUBLIC_KEY: z.string().default(''),
+  VAPID_PRIVATE_KEY: z.string().default(''),
+  VAPID_SUBJECT: z.string().default(''),
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().default(''),
 });
 
 export type Env = z.infer<typeof envSchema>;

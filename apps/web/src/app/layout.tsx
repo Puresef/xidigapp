@@ -1,6 +1,7 @@
 import './globals.css';
 
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
@@ -8,7 +9,16 @@ import { LocaleProvider } from '@xidig/i18n/react';
 
 import { AppNav } from '../components/app-nav';
 import { LanguageToggle } from '../components/language-toggle';
+import { getLitePrefs } from '../lib/lite/server';
 import { getLocale, getT } from '../lib/locale';
+import {
+  MOTION_COOKIE,
+  parseMotion,
+  parseTextSize,
+  parseTheme,
+  TEXTSIZE_COOKIE,
+  THEME_COOKIE,
+} from '../lib/settings/appearance';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -18,12 +28,43 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * No-FOUC theme resolution (Settings → Appearance). The server already sets
+ * html[data-theme] for an explicit light/dark cookie; this inline script only
+ * resolves 'system' (cookie absent or =system) against prefers-color-scheme
+ * before first paint, so a dark-OS visitor never flashes a light page.
+ * Text size + motion are plain cookie reads, fully server-rendered — no
+ * script needed for them.
+ */
+const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )xidig_theme=([^;]+)/);var v=m?decodeURIComponent(m[1]):'system';if(v!=='dark'&&v!=='light'){v=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',v);}catch(e){}})();`;
+
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const locale = await getLocale();
   const t = await getT();
+
+  const cookieStore = await cookies();
+  const theme = parseTheme(cookieStore.get(THEME_COOKIE)?.value);
+  const textSize = parseTextSize(cookieStore.get(TEXTSIZE_COOKIE)?.value);
+  // data-motion is 'off' when EITHER the Appearance reduced-motion control or
+  // the Lite animations pref asks for it — the Lite "animations: off" toggle
+  // (bundle or granular) must actually stop animations, not just the
+  // Appearance switch (§22 MEDIA-CORE).
+  const motion = parseMotion(cookieStore.get(MOTION_COOKIE)?.value);
+  const lite = await getLitePrefs();
+  const motionOff = motion === 'off' || !lite.animations;
+
   return (
-    <html lang={locale}>
+    // suppressHydrationWarning: the inline script (and the appearance settings
+    // page) legitimately mutate html attributes before/after hydration.
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      data-textsize={textSize}
+      {...(theme !== 'system' ? { 'data-theme': theme } : {})}
+      {...(motionOff ? { 'data-motion': 'off' } : {})}
+    >
       <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <LocaleProvider initialLocale={locale}>
           <header className="xidig-header">
             <AppNav />

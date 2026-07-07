@@ -3,16 +3,25 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
 
+import { LiteMediaProvider } from '@/components/media/lite-media-provider';
+import { LiteShowAll } from '@/components/media/lite-show-all';
 import { ShareActions } from '@/components/share-actions';
+import { BookmarkButton } from '@/components/social/bookmark-button';
 import { ClaimListing } from '@/components/suuq/claim-listing';
 import { ListingContacts } from '@/components/suuq/listing-contacts';
+import { ListingPhotoGallery } from '@/components/suuq/listing-photo-gallery';
+import { ListingServicesList } from '@/components/suuq/listing-services-list';
+import { OpeningHoursDisplay } from '@/components/suuq/opening-hours-display';
+import { PriceRangeDisplay } from '@/components/suuq/price-range';
 import { TrackListingView } from '@/components/suuq/track-listing-view';
+import { WhatsAppCta } from '@/components/suuq/whatsapp-cta';
 import { getAuthContext } from '@/lib/auth/guards';
 import {
   getMemberListingView,
   getPublicListingView,
   type ListingView,
 } from '@/lib/listing-view';
+import { getLitePrefs } from '@/lib/lite/server';
 import { getLocale, getT } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
@@ -24,13 +33,24 @@ export const dynamic = 'force-dynamic';
  * the §4 funnel tail. Members additionally get the claim flow on unclaimed
  * listings. Coordinates render as an OpenStreetMap link, not an embedded map
  * — zero tile cost until the visitor asks for it (§22).
+ *
+ * Phase 4.5: photo gallery (MediaSlot — Lite mode defers each photo behind a
+ * blurhash + "Show" tap), WhatsApp CTA above the fold, opening hours with a
+ * client-computed "Open now" chip, services, price range, bookmark, and an
+ * owner/mod edit link.
  */
 
 const idSchema = z.string().uuid();
 
-async function loadView(
-  id: string,
-): Promise<{ view: ListingView | null; viewerId: string | null; pendingClaim: boolean }> {
+interface LoadResult {
+  view: ListingView | null;
+  viewerId: string | null;
+  pendingClaim: boolean;
+  canEdit: boolean;
+  bookmarked: boolean;
+}
+
+async function loadView(id: string): Promise<LoadResult> {
   const ctx = await getAuthContext();
   // Blocked accounts degrade to the public path (parity with requireUser's
   // 403 on the API); pending_deletion keeps member access (§19 grace).
@@ -40,7 +60,13 @@ async function loadView(
       ctx.appUser.status === 'deactivated' ||
       ctx.appUser.status === 'deleted');
   if (!ctx || blocked) {
-    return { view: await getPublicListingView(id), viewerId: null, pendingClaim: false };
+    return {
+      view: await getPublicListingView(id),
+      viewerId: null,
+      pendingClaim: false,
+      canEdit: false,
+      bookmarked: false,
+    };
   }
   const view = await getMemberListingView(ctx.supabase, id);
   let pendingClaim = false;
@@ -57,7 +83,25 @@ async function loadView(
       .limit(1);
     pendingClaim = (claims?.length ?? 0) > 0;
   }
-  return { view, viewerId: ctx.appUser.id, pendingClaim };
+
+  let bookmarked = false;
+  if (view) {
+    // RLS is own-rows anyway; the explicit user filter is belt-and-braces.
+    const { data: bookmark } = await ctx.supabase
+      .from('bookmarks')
+      .select('entity_id')
+      .eq('user_id', ctx.appUser.id)
+      .eq('entity_type', 'listing')
+      .eq('entity_id', id)
+      .maybeSingle();
+    bookmarked = bookmark !== null;
+  }
+
+  const isMod = ctx.appUser.role === 'mod' || ctx.appUser.role === 'admin';
+  const canEdit =
+    view !== null && (view.listing.owner_user_id === ctx.appUser.id || isMod);
+
+  return { view, viewerId: ctx.appUser.id, pendingClaim, canEdit, bookmarked };
 }
 
 export async function generateMetadata({
@@ -83,12 +127,13 @@ export default async function ListingPermalinkPage({
   const { id } = await params;
   if (!idSchema.safeParse(id).success) notFound();
 
-  const { view, viewerId, pendingClaim } = await loadView(id);
+  const { view, viewerId, pendingClaim, canEdit, bookmarked } = await loadView(id);
   if (!view) notFound();
 
   const t = await getT();
   const locale = await getLocale();
-  const { listing, categoryName, owner } = view;
+  const prefs = await getLitePrefs();
+  const { listing, categoryName, owner, photos, services } = view;
 
   const category =
     categoryName === null
@@ -104,60 +149,88 @@ export default async function ListingPermalinkPage({
   return (
     <main>
       <TrackListingView listingId={listing.id} />
-      <article className="xidig-profile">
-        <header className="xidig-profile__header">
-          <h1 className="xidig-auth__title">{listing.business_name}</h1>
-          {listing.verification_status === 'verified' ? (
-            <span className="xidig-tag xidig-tag--ok">{t('suuq.verifiedBusiness')}</span>
-          ) : null}
-          {listing.owner_user_id === null ? (
-            <span className="xidig-tag">{t('suuq.unclaimed')}</span>
-          ) : null}
-        </header>
+      <LiteMediaProvider>
+        <article className="xidig-profile">
+          <header className="xidig-profile__header">
+            <h1 className="xidig-auth__title">{listing.business_name}</h1>
+            {listing.verification_status === 'verified' ? (
+              <span className="xidig-tag xidig-tag--ok">{t('suuq.verifiedBusiness')}</span>
+            ) : null}
+            {listing.owner_user_id === null ? (
+              <span className="xidig-tag">{t('suuq.unclaimed')}</span>
+            ) : null}
+            <PriceRangeDisplay level={listing.price_range} />
+            {canEdit ? (
+              <Link href={`/l/${listing.id}/edit`} className="xidig-button xidig-button--secondary">
+                {t('suuq.editListing')}
+              </Link>
+            ) : null}
+          </header>
 
-        {category ? <p className="xidig-card__meta">{category}</p> : null}
-        {owner ? (
-          <p className="xidig-card__meta">
-            <Link href={`/u/${owner.handle}`}>
-              {t('suuq.listedBy', { name: owner.display_name })}
-            </Link>
-          </p>
-        ) : null}
-        {listing.short_description ? (
-          <p className="xidig-card__body">{listing.short_description}</p>
-        ) : null}
-        {location ? <p className="xidig-card__meta">{location}</p> : null}
-        {hasCoords ? (
-          <p>
-            <a
-              href={`https://www.openstreetmap.org/?mlat=${listing.latitude}&mlon=${listing.longitude}#map=16/${listing.latitude}/${listing.longitude}`}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              {t('suuq.osmLink')} →
-            </a>
-          </p>
-        ) : null}
+          <LiteShowAll />
 
-        <ShareActions path={`/l/${listing.id}`} text={listing.business_name} />
+          <ListingPhotoGallery photos={photos} prefs={prefs} />
 
-        <ListingContacts listingId={listing.id} contactLinks={listing.contact_links} />
+          <WhatsAppCta listingId={listing.id} contactLinks={listing.contact_links} />
 
-        {viewerId && listing.owner_user_id === null ? (
-          <ClaimListing listingId={listing.id} alreadyPending={pendingClaim} />
-        ) : null}
-
-        {!viewerId ? (
-          <section className="xidig-section">
-            <p className="xidig-card__body">{t('suuq.joinCta')}</p>
-            <p>
-              <Link href="/signup" className="xidig-button xidig-button--primary">
-                {t('action.createAccount')}
+          {category ? <p className="xidig-card__meta">{category}</p> : null}
+          {owner ? (
+            <p className="xidig-card__meta">
+              <Link href={`/u/${owner.handle}`}>
+                {t('suuq.listedBy', { name: owner.display_name })}
               </Link>
             </p>
-          </section>
-        ) : null}
-      </article>
+          ) : null}
+          {listing.short_description ? (
+            <p className="xidig-card__body">{listing.short_description}</p>
+          ) : null}
+          {location ? <p className="xidig-card__meta">{location}</p> : null}
+          {hasCoords ? (
+            <p>
+              <a
+                href={`https://www.openstreetmap.org/?mlat=${listing.latitude}&mlon=${listing.longitude}#map=16/${listing.latitude}/${listing.longitude}`}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {t('suuq.osmLink')} →
+              </a>
+            </p>
+          ) : null}
+
+          <div className="xidig-profile__actions">
+            <ShareActions path={`/l/${listing.id}`} text={listing.business_name} />
+            {/* Signed-out taps bounce to /signin with a return path — the
+                button handles that itself, so it renders for everyone. */}
+            <BookmarkButton
+              entityType="listing"
+              entityId={listing.id}
+              signedIn={viewerId !== null}
+              initialBookmarked={bookmarked}
+            />
+          </div>
+
+          <OpeningHoursDisplay hours={listing.opening_hours} />
+
+          <ListingServicesList services={services} />
+
+          <ListingContacts listingId={listing.id} contactLinks={listing.contact_links} />
+
+          {viewerId && listing.owner_user_id === null ? (
+            <ClaimListing listingId={listing.id} alreadyPending={pendingClaim} />
+          ) : null}
+
+          {!viewerId ? (
+            <section className="xidig-section">
+              <p className="xidig-card__body">{t('suuq.joinCta')}</p>
+              <p>
+                <Link href="/signup" className="xidig-button xidig-button--primary">
+                  {t('action.createAccount')}
+                </Link>
+              </p>
+            </section>
+          ) : null}
+        </article>
+      </LiteMediaProvider>
     </main>
   );
 }
