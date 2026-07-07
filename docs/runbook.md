@@ -303,10 +303,13 @@ storage; confidently-flagged images are rejected and never stored.
 
 ### Pending `supabase db push`
 
-Three migrations are unpushed as of 6 Jul: `20260705010000_member_search`,
-`20260705020000_feed_and_claims`, `20260706000000_phase2_plaza`. Live Plaza
-stays broken until they're pushed (tables exist from Phase 0, but RLS opens +
-media/moderation tables arrive with the Phase 2 migration).
+As of 7 Jul, all Phase 1–5 migrations are consolidated on `main` and unpushed to
+the hosted project. The full launch sequence (link + `db push` of all 11
+migrations, provider keys, Vercel env, DNS, auth-dashboard config, smoke test)
+lives in **[GO-LIVE.md](GO-LIVE.md)** — follow it end to end for a fresh
+environment. Nothing works live until `supabase db push` applies the chain
+(tables exist from Phase 0, but every RLS open + the Phase 2–5 tables/functions
+arrive with their phase migration).
 
 ## Phase 3 (Fariimo — DMs + notifications) operations
 
