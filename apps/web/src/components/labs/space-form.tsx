@@ -1,13 +1,21 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 
 import { useT } from '@xidig/i18n/react';
 
 import { ApiRequestError, apiPost } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import { VISIBILITY_HINT_KEYS } from '@/lib/labs/labels';
+import {
+  orderPlaybooks,
+  playbookHintKey,
+  playbookLabelKey,
+  type Playbook,
+  type PlaybookTemplate,
+} from '@/lib/labs/playbooks';
+import { createClient } from '@/lib/supabase-browser';
 
 import { PlainErrorBanner } from '../auth/plain-error';
 
@@ -32,8 +40,58 @@ export function SpaceForm() {
   const [success, setSuccess] = useState('');
   const [sprintLength, setSprintLength] = useState('');
 
+  // Playbook picker (§16): the six seeded starters, fetched under RLS. Choosing
+  // one pre-fills the charter fields from its template (see applyPlaybook).
+  const [playbooks, setPlaybooks] = useState<Playbook[]>([]);
+  const [playbookSlug, setPlaybookSlug] = useState('');
+  const [playbookId, setPlaybookId] = useState<string | null>(null);
+
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('lab_playbooks')
+        .select('id, slug, name, template')
+        .eq('is_active', true);
+      if (!active || !data) return;
+      setPlaybooks(orderPlaybooks(data as Playbook[]));
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  /**
+   * Apply a playbook's charter template. NON-DESTRUCTIVE: only fills fields the
+   * user has left empty; if a chosen template would overwrite text the user
+   * already typed, confirm first. Declining keeps the user's text but still
+   * stamps the playbook_id so the Space records which starter was picked.
+   */
+  function applyPlaybook(slug: string) {
+    setPlaybookSlug(slug);
+    const chosen = playbooks.find((p) => p.slug === slug);
+    if (!chosen) {
+      setPlaybookId(null);
+      return;
+    }
+    setPlaybookId(chosen.id);
+    const template: PlaybookTemplate = chosen.template ?? {};
+
+    const wouldClobber =
+      (problem.trim() && template.problem_statement && template.problem_statement !== problem) ||
+      (hypothesis.trim() && template.hypothesis && template.hypothesis !== hypothesis) ||
+      (success.trim() && template.success_definition && template.success_definition !== success);
+
+    const overwrite = wouldClobber ? window.confirm(t('lab.playbookOverwriteConfirm')) : false;
+
+    if (!problem.trim() || overwrite) setProblem(template.problem_statement ?? problem);
+    if (!hypothesis.trim() || overwrite) setHypothesis(template.hypothesis ?? hypothesis);
+    if (!success.trim() || overwrite) setSuccess(template.success_definition ?? success);
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -59,6 +117,7 @@ export function SpaceForm() {
         payload.hypothesis = hypothesis.trim();
         payload.successDefinition = success.trim();
         if (sprintLength) payload.sprintLengthWeeks = Number(sprintLength);
+        if (playbookId) payload.playbookId = playbookId;
       }
 
       const { lab } = await apiPost<{ lab: { lab: { slug: string } } }>('/api/labs', payload);
@@ -173,6 +232,30 @@ export function SpaceForm() {
           <h2 className="xidig-section__title">{t('lab.charterHeading')}</h2>
           <p className="xidig-field__hint">{t('lab.charterHint')}</p>
           <p className="xidig-field__hint">{t('lab.createSupporterNote')}</p>
+
+          {playbooks.length > 0 ? (
+            <label className="xidig-field">
+              <span className="xidig-field__label">{t('lab.playbookLabel')}</span>
+              <select
+                className="xidig-field__input"
+                value={playbookSlug}
+                onChange={(e) => applyPlaybook(e.target.value)}
+              >
+                <option value="">{t('lab.playbookNone')}</option>
+                {playbooks.map((p) => (
+                  <option key={p.id} value={p.slug}>
+                    {t(playbookLabelKey(p.slug))}
+                  </option>
+                ))}
+              </select>
+              <span className="xidig-field__hint">
+                {(() => {
+                  const hint = playbookSlug ? playbookHintKey(playbookSlug) : null;
+                  return hint ? t(hint) : t('lab.playbookPickerHint');
+                })()}
+              </span>
+            </label>
+          ) : null}
 
           <label className="xidig-field">
             <span className="xidig-field__label">{t('lab.fieldProblem')}</span>

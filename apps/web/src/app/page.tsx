@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { FollowingFeed } from '@/components/feed/following-feed';
 import { getAuthContext } from '@/lib/auth/guards';
+import { getLitePrefs } from '@/lib/lite/server';
 import { getT } from '@/lib/locale';
 
 // Per-request: the page renders a member Home (Following feed, §13) or the
@@ -16,11 +17,14 @@ export default async function HomePage() {
   const ctx = await getAuthContext();
 
   if (ctx) {
+    // Granular per-category Lite prefs (§22) — the feed honors images/embeds
+    // per category rather than an all-or-nothing bundle.
+    const prefs = await getLitePrefs();
     return (
       <main>
         <h1 className="xidig-auth__title">{t('nav.home')}</h1>
         <h2 className="xidig-section__title">{t('feed.title')}</h2>
-        <FollowingFeed />
+        <FollowingFeed viewerId={ctx.appUser.id} prefs={prefs} />
       </main>
     );
   }

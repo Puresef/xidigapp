@@ -6,6 +6,7 @@ import type { MessageKey } from '@xidig/i18n';
 
 import { ContentComposer } from '@/components/labs/content-composer';
 import { MembershipActions } from '@/components/labs/membership-actions';
+import { ShareActions } from '@/components/share-actions';
 import { Avatar } from '@/components/media/avatar';
 import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
@@ -134,6 +135,8 @@ export default async function LabDetailPage({
         joinMode={lab.join_mode}
         isPinned={Boolean(pin)}
       />
+
+      <ShareActions path={`/labs/${slug}`} text={t('share.labText', { name: lab.name })} />
 
       <div className="xidig-tabs">
         {TABS.map((value) => (
@@ -463,6 +466,8 @@ async function PublicLabView({ slug }: { slug: string }) {
           ))}
         </ul>
       </section>
+
+      <ShareActions path={`/labs/${slug}`} text={t('share.labText', { name: lab.name ?? '' })} />
 
       <p className="xidig-card__meta">
         <Link href={`/signin?next=/labs/${slug}`}>{t('lab.signInToJoin')}</Link>

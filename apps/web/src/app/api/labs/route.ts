@@ -97,6 +97,18 @@ export async function POST(request: Request): Promise<Response> {
       if ((tags ?? []).length !== tagIds.length) throw new ApiError('tag_invalid', 400);
     }
 
+    // §16 playbook: validate the referenced starter exists + is active.
+    if (input.mode === 'lab' && input.playbookId) {
+      const { data: playbook, error } = await admin
+        .from('lab_playbooks')
+        .select('id')
+        .eq('id', input.playbookId)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (error) throw new Error(`playbook validation failed: ${error.message}`);
+      if (!playbook) throw new ApiError('playbook_invalid', 400);
+    }
+
     const lab = await createLab(admin, ctx.appUser.id, input);
     const [view] = await hydrateLabs(admin, ctx.appUser.id, [lab]);
     return apiOk({ lab: view }, 201);

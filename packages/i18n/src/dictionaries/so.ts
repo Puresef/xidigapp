@@ -192,6 +192,8 @@ export const so = {
   'error.pollOptionsInvalid':
     'Codbixintu waxay u baahan tahay {min} ilaa {max} doorasho. Hagaaji doorashooyinkaaga oo mar kale isku day.',
   'error.mediaNotReady': 'Mid ka mid ah sawirradaadu si buuxda uma gelin. Ka saar oo mar kale geli.',
+  'error.playbookInvalid':
+    'Qorshahaas lama heli karo. Dooro mid kale, ama banaan ka bilow.',
   'error.tagInvalid':
     'Tags waxay isticmaalaan 2–50 xaraf yaryar, tiro, ama jiitin (-) — sida halal-finance.',
   'error.tagLimit':
@@ -482,8 +484,18 @@ export const so = {
   // Following feed on Home (§13)
   'feed.title': 'Kuwa aad raacdo',
   'feed.empty':
-    'Weli waxba ma jiraan — Suuqa ka raac dhisayaal, liisaskooda cusubna halkan ayay ka soo muuqan doonaan.',
+    'Weli waxba ma jiraan — raac dad iyo Meelo, qoraalladooda, cusbooneysiintooda, iyo liisaskooda cusubna halkan ayay ka soo muuqan doonaan.',
+  'feed.emptyHint':
+    'Raac dad iyo Meelo si aad halkan ugu aragto qoraalladooda, cusbooneysiintooda, iyo liisaskooda cusub.',
   'feed.newListingFrom': 'Liis cusub oo ka yimid {name}',
+  'feed.labUpdateTag': 'Cusbooneysiinta {kind}',
+  'feed.labUpdateCrossPost': 'La wadaagay',
+  'feed.labUpdateBy': 'Waxaa qoray {name}',
+  'feed.labUpdateOpen': 'Fur Meesha',
+
+  // Share text — WhatsApp/link share of a Space or Venture candidate.
+  'share.labText': '{name} oo Xidig ku jira',
+  'share.candidateText': 'Eeg musharaxa: {name}',
 
   // Member profiles — display + edit (§10, §13, §14, §20)
   'profile.displayNameLabel': 'Magaca',
@@ -583,8 +595,16 @@ export const so = {
   'suuq.filterCity': 'Magaalo',
   'suuq.filterCountry': 'Dal',
   'suuq.filterCategory': 'Qayb',
+  'suuq.filterVerified': 'Xaqiijin',
+  'suuq.filterVerifiedOption': 'Kuwa la xaqiijiyay kaliya',
   'suuq.anyOption': 'Dhammaan',
   'suuq.noResults': 'Natiijo lama helin. Isku day qoraal ka gaaban ama shaandho ka yar.',
+  'suuq.emptyPeople': 'Weli xubno lama helin. Dhammaystir profiilkaaga oo ku casuun kuwa kale.',
+  'suuq.emptyPeopleQuery': 'Cidna kuma habboona raadintaas. Isku day qoraal ka gaaban.',
+  'suuq.emptyPeopleFilters': 'Xubno kuma habboona shaandhooyinkan. Isku day inaad mid ka saarto.',
+  'suuq.emptyBusinesses': 'Weli ganacsi lama diiwaangelin — ku dar kaaga.',
+  'suuq.emptyBusinessesQuery': 'Ganacsi kuma habboona raadintaas. Isku day erayo yar.',
+  'suuq.emptyBusinessesFilters': 'Ganacsi kuma habboona shaandhooyinkan. Isku day inaad mid ka saarto.',
   'suuq.addListing': 'Ku dar ganacsigaaga',
   'suuq.newListingTitle': 'Ku dar liis ganacsi',
   'suuq.businessNameLabel': 'Magaca ganacsiga',
@@ -914,6 +934,27 @@ export const so = {
   'lab.fieldSkillsHint': 'Xirfadaha aad u baahan tahay — xubnaha leh ayaa digniin heli doona.',
   'lab.charterHeading': 'Axdiga Warshadda',
   'lab.charterHint': 'Axdigu waa waxa fikrad u beddela Warshad. Wax ka bedeli kartaa mar dambe.',
+  // Playbook picker — six seeded starters that pre-fill the charter fields.
+  'lab.playbookLabel': 'Ka bilow qorshe diyaarsan (ikhtiyaari)',
+  'lab.playbookNone': "Qorshe la'aan — banaan ka bilow",
+  'lab.playbookPickerHint':
+    'Dooro meel ku habboon fikraddaada. Waxay buuxinaysaa axdiga hoose — waad wax ka bedeli kartaa eray kasta ka hor inta aadan abuurin Meesha.',
+  'lab.playbookOverwriteConfirm':
+    'Qorshahani wuxuu leeyahay qoraal axdi oo kala duwan. Ma beddelaysaa waxaad hore u qortay?',
+  'lab.playbookGeneric': 'Qorshe',
+  'lab.playbookCommunity': 'Mashruuc bulsho',
+  'lab.playbookCommunityHint': 'Isku dub-rid dad ku wareegsan baahi ama hadaf bulsho oo wadaag ah.',
+  'lab.playbookStartup': 'Fikrad startup / ganacsi cusub',
+  'lab.playbookStartupHint':
+    'Dhis alaab lagu xalliyo dhibaato macmiil oo dhab ah oo aan si fiican loo daryeelin.',
+  'lab.playbookResearch': 'Goob cilmi-baaris / barasho',
+  'lab.playbookResearchHint': "Si habaysan wada baadh mowduuc ama su'aal.",
+  'lab.playbookLocalService': 'Adeeg deegaan / iskaashi ganacsi',
+  'lab.playbookLocalServiceHint': 'Iskaashi si aad u bixiso ama u hagaajiso adeeg deegaankaaga.',
+  'lab.playbookCreative': 'Mashruuc hal-abuur / warbaahin',
+  'lab.playbookCreativeHint': 'Gee sheeko, fariin, ama shaqo hal-abuur dhagaystayaal.',
+  'lab.playbookTechnical': 'Dhisme farsamo / mashruuc software',
+  'lab.playbookTechnicalHint': 'Dhis qalab ama nidaam shaqaynaya oo dadku dhab u isticmaalaan.',
   'lab.fieldProblem': 'Dhibaatada',
   'lab.fieldHypothesis': 'Mala-awaal',
   'lab.fieldSuccess': 'Waxa guushu u eg tahay',
@@ -956,6 +997,14 @@ export const so = {
   'lab.actionAddUpdate': 'Warbixin qor',
   'lab.actionAddArtifact': 'Ku dar wax-soo-saar',
   'lab.actionAddDecision': "Diiwaan geli go'aan",
+  // Composer field labels, per content kind.
+  'lab.updateTitleLabel': 'Cinwaanka warbixinta (ikhtiyaari)',
+  'lab.updateBodyLabel': 'Qoraalka warbixinta',
+  'lab.artifactTitleLabel': 'Cinwaanka wax-soo-saarka',
+  'lab.artifactDescriptionLabel': 'Sharaxaadda wax-soo-saarka',
+  'lab.decisionTitleLabel': "Cinwaanka go'aanka",
+  'lab.decisionNoteLabel': "Qoraalka go'aanka",
+  'lab.crossPostNoteLabel': 'Qoraalka wadaag-dhexeed',
   'lab.actionAddSkill': 'Ku dar xirfad',
   'lab.actionPromoteLab': 'U dallaci Warshad',
   'lab.actionPromoteCandidate': 'U soo bandhig Mashruuc',

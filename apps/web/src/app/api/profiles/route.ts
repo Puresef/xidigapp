@@ -30,6 +30,10 @@ const querySchema = z.object({
     .toLowerCase()
     .regex(/^[a-z][a-z0-9_]{0,29}$/)
     .optional(),
+  // §14 verification ladder: 'verified' folds both community_verified and
+  // identity_verified (the two genuine verified tiers; pending/unverified are
+  // not). Filter only — the tier badge distinction stays on the profile card.
+  verification: z.enum(['verified']).optional(),
   q: z.string().trim().min(1).max(80).optional(),
   cursor: z.string().max(512).optional(),
   limit: pageSizeSchema,
@@ -96,6 +100,10 @@ export async function GET(request: Request): Promise<Response> {
     // "Somalia" behave the same on both Suuq tabs.
     if (params.country) query = query.ilike('location_country', params.country);
     if (params.city) query = query.ilike('location_city', params.city);
+    // Verified filter (§14): both verified tiers count as "verified".
+    if (params.verification === 'verified') {
+      query = query.in('verification_status', ['community_verified', 'identity_verified']);
+    }
     if (params.skill) query = query.contains('skills', [params.skill]);
     if (params.lane) query = query.contains('lanes', [params.lane]);
     if (params.q) {

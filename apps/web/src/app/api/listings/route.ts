@@ -39,6 +39,9 @@ const querySchema = z.object({
   city: z.string().trim().min(1).max(120).optional(),
   country: z.string().trim().min(1).max(120).optional(),
   q: z.string().trim().min(1).max(120).optional(),
+  // §7 journey-3 filter: businesses.verification_status is a single 'verified'
+  // tier (no community/identity split, unlike profiles).
+  verification: z.enum(['verified']).optional(),
   bbox: bboxSchema.optional(),
   cursor: z.string().max(512).optional(),
   limit: pageSizeSchema,
@@ -59,6 +62,7 @@ export async function GET(request: Request): Promise<Response> {
     if (params.category) query = query.eq('category_id', params.category);
     if (params.city) query = query.ilike('city', params.city);
     if (params.country) query = query.ilike('country', params.country);
+    if (params.verification === 'verified') query = query.eq('verification_status', 'verified');
     if (params.q) {
       const term = params.q.replace(/[%,()]/g, ' ');
       query = query.or(`business_name.ilike.%${term}%,short_description.ilike.%${term}%`);

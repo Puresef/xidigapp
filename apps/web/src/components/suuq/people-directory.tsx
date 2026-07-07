@@ -11,6 +11,7 @@ import { LANES } from '@/lib/lanes';
 import { Avatar } from '../media/avatar';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { OPEN_TO_KEYS, OPEN_TO_SLUGS } from '../profile/open-to';
+import { emptyPeopleKey } from './directory-empty';
 
 /**
  * People directory (§18): free-text transliteration-tolerant search (the API
@@ -51,6 +52,7 @@ export function PeopleDirectory() {
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
   const [openTo, setOpenTo] = useState('');
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
 
   const [rows, setRows] = useState<ProfileRow[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -89,6 +91,7 @@ export function PeopleDirectory() {
     if (country.trim()) params.set('country', country.trim());
     if (city.trim()) params.set('city', city.trim());
     if (openTo) params.set('openTo', openTo);
+    if (verifiedOnly) params.set('verification', 'verified');
     return params.toString();
   }
 
@@ -191,6 +194,20 @@ export function PeopleDirectory() {
             ))}
           </select>
         </div>
+        <div className="xidig-field">
+          <label className="xidig-field__label" htmlFor="people-verified">
+            {t('suuq.filterVerified')}
+          </label>
+          <select
+            id="people-verified"
+            className="xidig-field__input"
+            value={verifiedOnly ? 'verified' : ''}
+            onChange={(e) => setVerifiedOnly(e.target.value === 'verified')}
+          >
+            <option value="">{t('suuq.anyOption')}</option>
+            <option value="verified">{t('suuq.filterVerifiedOption')}</option>
+          </select>
+        </div>
         <button type="submit" className="xidig-button xidig-button--primary" disabled={pending}>
           {t('action.search')}
         </button>
@@ -199,7 +216,7 @@ export function PeopleDirectory() {
       {error ? <PlainErrorBanner error={error} /> : null}
       {!loaded && pending ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
       {loaded && rows.length === 0 && !error ? (
-        <p className="xidig-card__meta">{t('suuq.noResults')}</p>
+        <p className="xidig-card__meta">{t(emptyPeopleKey(applied))}</p>
       ) : null}
 
       <ul className="xidig-card-grid">

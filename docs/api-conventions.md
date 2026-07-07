@@ -69,7 +69,7 @@ picks an auth level:
 | GET        | `/api/me`                              | public | session snapshot + `has_password` nudge state |
 | PATCH      | `/api/me/onboarding`                   | user   | onboarding_state (nudge dismiss)              |
 | PUT        | `/api/me/profile`                      | user   | create/update own profile; `handle_taken` 409 |
-| GET        | `/api/profiles`                        | user   | directory: skill/lane/country/city/q, keyset  |
+| GET        | `/api/profiles`                        | user   | directory: skill/lane/country/city/q, `?verification=verified`, keyset |
 | GET        | `/api/profiles/{handle}`               | user   | profile + badges + follower/vouch counts      |
 | PUT/DELETE | `/api/follows/{targetType}/{targetId}` | user   | idempotent follow (user/tag)                  |
 | GET        | `/api/me/follows`                      | user   | own follow edges (Following tab)              |
@@ -240,6 +240,29 @@ Phase 5 conventions worth knowing:
   (`candidate_submitted`/`candidate_reviewed`/`interest_expressed`/
   `venture_timeline_viewed`) are **Phase 7**; these routes leave a
   `// Phase 7: analytics` marker where an event would fire and emit nothing.
+
+## PRD-alignment sprint route notes
+
+| Method | Route          | Auth | Notes                                                                          |
+| ------ | -------------- | ---- | ------------------------------------------------------------------------------ |
+| GET    | `/api/me/feed` | user | Following feed (§13): keyset (`cursor`/`limit`) over the `following_feed` source |
+
+- **Following feed is a unified source.** `GET /api/me/feed` was reworked from a
+  listings-only feed to select from the `following_feed` SECURITY INVOKER view
+  (`packages/db` migration `20260708000000_following_feed.sql`), then hydrate each
+  row by type into a discriminated union `FeedItem = post | lab_update | listing`.
+  Items are **posts** by followed users, **lab updates** in followed/member Spaces,
+  and **listings** by followed people. The view is `security_invoker=on` so RLS
+  enforces per-row visibility (private-lab updates, hidden/removed content, muted
+  tags/users and blocked users never leak). The view is not in `database.types.ts`
+  (same as the old `following_listings`), so the route casts it `as any` — that is
+  intentional and RLS-safe, not a type gap. Keyset is `(sort_ts desc, item_id desc)`.
+- **Directory verification filter (§14).** `GET /api/profiles` accepts
+  `?verification=verified`, which folds **both** genuine verified tiers
+  (`community_verified` + `identity_verified`; `pending`/`unverified` are excluded).
+  Surfaced as a select in the People directory. The equivalent business-listing
+  filter (`business_listings.verification_status='verified'`) is **not yet wired**
+  on `GET /api/listings` — tracked as sprint debt.
 
 ## Analytics event taxonomy (§23)
 

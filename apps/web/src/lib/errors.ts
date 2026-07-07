@@ -149,6 +149,7 @@ export const ERROR_DEFS = {
     params: { min: POLL_OPTIONS_MIN, max: POLL_OPTIONS_MAX },
   },
   media_not_ready: { messageKey: 'error.mediaNotReady' },
+  playbook_invalid: { messageKey: 'error.playbookInvalid' },
   tag_invalid: { messageKey: 'error.tagInvalid' },
   tag_limit: { messageKey: 'error.tagLimit' },
   post_not_editable: { messageKey: 'error.postNotEditable' },

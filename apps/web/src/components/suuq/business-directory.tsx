@@ -9,6 +9,7 @@ import type { CategoryOption } from '@/lib/categories';
 import type { PlainError } from '@/lib/errors';
 import { listingOpenNow } from '@/lib/listings';
 import { PlainErrorBanner } from '../auth/plain-error';
+import { emptyBusinessesKey } from './directory-empty';
 import { ListingCard, type ListingRow } from './listing-card';
 
 /**
@@ -33,6 +34,7 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
   const [openNowOnly, setOpenNowOnly] = useState(false);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
 
   const [rows, setRows] = useState<ListingRow[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -68,6 +70,7 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
     if (category) params.set('category', category);
     if (city.trim()) params.set('city', city.trim());
     if (country.trim()) params.set('country', country.trim());
+    if (verifiedOnly) params.set('verification', 'verified');
     return params.toString();
   }
 
@@ -145,6 +148,20 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
             onChange={(e) => setCountry(e.target.value)}
           />
         </div>
+        <div className="xidig-field">
+          <label className="xidig-field__label" htmlFor="biz-verified">
+            {t('suuq.filterVerified')}
+          </label>
+          <select
+            id="biz-verified"
+            className="xidig-field__input"
+            value={verifiedOnly ? 'verified' : ''}
+            onChange={(e) => setVerifiedOnly(e.target.value === 'verified')}
+          >
+            <option value="">{t('suuq.anyOption')}</option>
+            <option value="verified">{t('suuq.filterVerifiedOption')}</option>
+          </select>
+        </div>
         <button type="submit" className="xidig-button xidig-button--primary" disabled={pending}>
           {t('action.search')}
         </button>
@@ -164,7 +181,9 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
       {error ? <PlainErrorBanner error={error} /> : null}
       {!loaded && pending ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
       {loaded && visibleRows.length === 0 && !error ? (
-        <p className="xidig-card__meta">{t('suuq.noResults')}</p>
+        <p className="xidig-card__meta">
+          {t(emptyBusinessesKey(applied, rows.length > 0 && openNowOnly))}
+        </p>
       ) : null}
 
       <ul className="xidig-card-grid">

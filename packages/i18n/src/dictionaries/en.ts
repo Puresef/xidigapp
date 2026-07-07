@@ -193,6 +193,7 @@ export const en = {
     'This poll has closed, so votes can’t be added or changed. The results are final.',
   'error.pollOptionsInvalid': 'Polls need {min} to {max} options. Adjust your options and try again.',
   'error.mediaNotReady': 'One of your images didn’t upload cleanly. Remove it and upload it again.',
+  'error.playbookInvalid': 'That playbook is no longer available. Pick another, or start from a blank charter.',
   'error.tagInvalid': 'Tags use 2–50 lowercase letters, numbers, or dashes — like halal-finance.',
   'error.tagLimit':
     'You’ve added a lot of new tags today. Reuse an existing tag, or try again tomorrow.',
@@ -530,8 +531,20 @@ export const en = {
   // Following feed on Home (§13 — Phase 1 feed = new listings from people you follow)
   'feed.title': 'Following',
   'feed.empty':
-    'Nothing here yet — follow builders in the Suuq and their new listings will show up here.',
+    'Nothing here yet — follow people and Spaces, and their posts, updates, and new listings will show up here.',
+  'feed.emptyHint':
+    'Follow people and Spaces to see their posts, updates, and new listings here.',
   'feed.newListingFrom': 'New listing from {name}',
+  'feed.labUpdateTag': '{kind} update',
+  'feed.labUpdateCrossPost': 'Cross-posted',
+  'feed.labUpdateBy': 'By {name}',
+  'feed.labUpdateOpen': 'Open Space',
+
+  // Share text — WhatsApp/link share of a Space or Venture candidate. Kept
+  // compliance-safe: candidate share carries NO invest/returns language so it
+  // is safe to surface publicly in any region (§17 region gate, sprint spec).
+  'share.labText': '{name} on Xidig',
+  'share.candidateText': 'View candidate: {name}',
 
   // Member profiles — display + edit (§10, §13, §14, §20)
   'profile.displayNameLabel': 'Name',
@@ -631,8 +644,17 @@ export const en = {
   'suuq.filterCity': 'City',
   'suuq.filterCountry': 'Country',
   'suuq.filterCategory': 'Category',
+  'suuq.filterVerified': 'Verification',
+  'suuq.filterVerifiedOption': 'Verified only',
   'suuq.anyOption': 'Any',
   'suuq.noResults': 'No results. Try a shorter spelling or fewer filters.',
+  // Teaching empty states — split by cause so the CTA fits the situation.
+  'suuq.emptyPeople': 'No members here yet. Complete your profile and invite others to join.',
+  'suuq.emptyPeopleQuery': 'No one matched that search. Try a shorter spelling.',
+  'suuq.emptyPeopleFilters': 'No members match these filters. Try removing one.',
+  'suuq.emptyBusinesses': 'No businesses listed yet — add yours.',
+  'suuq.emptyBusinessesQuery': 'No businesses matched that search. Try fewer words.',
+  'suuq.emptyBusinessesFilters': 'No businesses match these filters. Try removing one.',
   'suuq.addListing': 'Add your business',
   'suuq.newListingTitle': 'Add a business listing',
   'suuq.businessNameLabel': 'Business name',
@@ -917,6 +939,28 @@ export const en = {
   'lab.fieldSkillsHint': 'Skills you need — members with these get a nudge.',
   'lab.charterHeading': 'Lab charter',
   'lab.charterHint': 'The charter is what turns an idea into a Lab. You can refine it later.',
+  // Playbook picker — six seeded starters that pre-fill the charter fields
+  // (§16, sprint §1b). Selecting one only fills empty fields (or confirms
+  // before overwriting edited text). Names are English; labels localize here.
+  'lab.playbookLabel': 'Start from a playbook (optional)',
+  'lab.playbookNone': 'No playbook — start blank',
+  'lab.playbookPickerHint':
+    'Pick a starting point that fits your idea. It fills in the charter below — you can edit every word before you create the Space.',
+  'lab.playbookOverwriteConfirm':
+    'This playbook has different charter text. Replace what you already wrote?',
+  'lab.playbookGeneric': 'Playbook',
+  'lab.playbookCommunity': 'Community project',
+  'lab.playbookCommunityHint': 'Organize people around a shared community need or goal.',
+  'lab.playbookStartup': 'Startup / venture idea',
+  'lab.playbookStartupHint': 'Build a product around a real, underserved customer problem.',
+  'lab.playbookResearch': 'Research / learning circle',
+  'lab.playbookResearchHint': 'Explore a topic or question together in a structured way.',
+  'lab.playbookLocalService': 'Local service / business collaboration',
+  'lab.playbookLocalServiceHint': 'Partner to offer or improve a service in your area.',
+  'lab.playbookCreative': 'Creative / media project',
+  'lab.playbookCreativeHint': 'Bring a story, message, or creative work to an audience.',
+  'lab.playbookTechnical': 'Technical build / software project',
+  'lab.playbookTechnicalHint': 'Build a working tool or system people actually use.',
   'lab.fieldProblem': 'Problem',
   'lab.fieldHypothesis': 'Hypothesis',
   'lab.fieldSuccess': 'What success looks like',
@@ -959,6 +1003,15 @@ export const en = {
   'lab.actionAddUpdate': 'Post an update',
   'lab.actionAddArtifact': 'Add an artifact',
   'lab.actionAddDecision': 'Record a decision',
+  // Composer field labels, per content kind (§16, sprint §7). The composer
+  // picks the pair that matches the kind being posted.
+  'lab.updateTitleLabel': 'Update title (optional)',
+  'lab.updateBodyLabel': 'Update body',
+  'lab.artifactTitleLabel': 'Artifact title',
+  'lab.artifactDescriptionLabel': 'Artifact description',
+  'lab.decisionTitleLabel': 'Decision title',
+  'lab.decisionNoteLabel': 'Decision note',
+  'lab.crossPostNoteLabel': 'Cross-post note',
   'lab.actionAddSkill': 'Add a skill',
   'lab.actionPromoteLab': 'Promote to Lab',
   'lab.actionPromoteCandidate': 'Put forward as a Venture',

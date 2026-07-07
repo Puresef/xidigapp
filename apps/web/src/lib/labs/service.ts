@@ -103,6 +103,8 @@ export async function createLab(
     insert.sprint_length_weeks = input.sprintLengthWeeks ?? null;
     insert.sprint_deadline = input.sprintDeadline ?? null;
     insert.charter_completed_at = new Date().toISOString();
+    // §16 playbook provenance: stamp the starter template the charter began from.
+    insert.playbook_id = input.playbookId ?? null;
   }
 
   const { data: lab, error } = await admin.from('labs').insert(insert).select('*').single();

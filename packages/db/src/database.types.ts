@@ -3602,6 +3602,15 @@ export type Database = {
       }
     }
     Views: {
+      following_feed: {
+        Row: {
+          item_id: string | null
+          item_type: string | null
+          lab_id: string | null
+          sort_ts: string | null
+        }
+        Relationships: []
+      }
       following_listings: {
         Row: {
           address: string | null

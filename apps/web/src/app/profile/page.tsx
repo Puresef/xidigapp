@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+import { CompletionMeter } from '@/components/profile/completion-meter';
 import { ProfileViewCard } from '@/components/profile/profile-view-card';
 import { ShareActions } from '@/components/share-actions';
 import { getAuthContext } from '@/lib/auth/guards';
@@ -47,8 +48,24 @@ export default async function OwnProfilePage() {
   const view = await getMemberProfileView(ctx.supabase, row.handle, ctx.appUser.id);
   if (!view) redirect('/settings/profile');
 
+  // Owner-only completion nudge — this page is always the signed-in member's
+  // own profile (viewer id passed above), so there is no leak surface. Mirrors
+  // the input shape used on /u/[handle].
+  const linkRows = Array.isArray(view.profile.links) ? view.profile.links.length : 0;
+
   return (
     <main>
+      <CompletionMeter
+        input={{
+          displayName: view.profile.display_name,
+          bio: view.profile.bio,
+          hasLocation: Boolean(view.profile.location_city ?? view.profile.location_country),
+          skillsCount: view.profile.skills.length,
+          lanesCount: view.profile.lanes.length,
+          linksCount: linkRows,
+          hasAvatar: Boolean(view.media.avatarUrl),
+        }}
+      />
       <ProfileViewCard
         view={view}
         viewer="owner"

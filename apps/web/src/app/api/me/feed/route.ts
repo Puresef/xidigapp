@@ -2,24 +2,26 @@ import { z } from 'zod';
 
 import { apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
-import {
-  decodeCursor,
-  encodeCursor,
-  keysetBefore,
-  pageSizeSchema,
-} from '@/lib/pagination';
+import { hydrateFeed } from '@/lib/feed/hydrate';
+import type { FeedSourceRow } from '@/lib/feed/types';
+import { decodeCursor, encodeCursor, pageSizeSchema } from '@/lib/pagination';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
- * Following feed (§13 — Phase 1 acceptance: "Following feed tab appears on
- * Home"). With Plaza posts deferred to Phase 2, the Phase 1 feed content is
- * the activity followed members produce now: their new published business
- * listings, newest first.
+ * Following feed (§13). The PRD feed is broader than Phase 1's listings-only
+ * slice: posts + lab updates + listings from the people and Spaces the caller
+ * follows (or is a member of). Source is the `following_feed` SECURITY INVOKER
+ * view (migration 20260708000000) — the UNION + privacy filtering happen in the
+ * database under the caller's RLS, so:
+ *   - hidden/removed content and PRIVATE-lab updates never leak (RLS), and
+ *   - the caller's muted (user/tag/lab) + blocked sources are excluded on top.
+ * No follow-id list is ever serialized into the request.
  *
- * Source is the `following_listings` SECURITY INVOKER view (migration
- * 20260705020000) — the join happens in the database under the caller's RLS
- * (follows_select_own + listings_select_published), so no follow-id list ever
- * gets serialized into the request (which broke for members following a few
- * hundred people). Keyset-paginated like every list endpoint.
+ * Rows come back ORDERED (sort_ts DESC, item_id DESC) and are keyset-paginated
+ * on that same key. The route then hydrates each row BY TYPE into a rich card
+ * view (posts via lib/plaza/views, lab updates via lib/labs/views, listings via
+ * the listing-card shape), reading base rows under the caller's RLS and using
+ * the service role only for cross-user aggregates — same split as /api/posts.
  */
 
 const querySchema = z.object({
@@ -27,25 +29,13 @@ const querySchema = z.object({
   limit: pageSizeSchema,
 });
 
-const LISTING_FIELDS =
-  'id, owner_user_id, business_name, category_id, short_description, address, landmark, latitude, longitude, city, country, contact_links, verification_status, status, created_at';
-
-interface FeedListingRow {
-  id: string;
-  owner_user_id: string | null;
-  business_name: string;
-  category_id: string;
-  short_description: string | null;
-  address: string | null;
-  landmark: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  city: string | null;
-  country: string | null;
-  contact_links: unknown;
-  verification_status: string;
-  status: string;
-  created_at: string;
+/**
+ * PostgREST `.or()` filter for "strictly before" the cursor under the feed's
+ * `sort_ts desc, item_id desc` ordering (the view's columns aren't
+ * created_at/id, so lib/pagination's keysetBefore doesn't apply verbatim).
+ */
+function feedKeysetBefore(createdAt: string, id: string): string {
+  return `sort_ts.lt.${createdAt},and(sort_ts.eq.${createdAt},item_id.lt.${id})`;
 }
 
 export async function GET(request: Request): Promise<Response> {
@@ -55,52 +45,32 @@ export async function GET(request: Request): Promise<Response> {
       Object.fromEntries(new URL(request.url).searchParams),
     );
 
-    // The view isn't in the generated Database types (it's created by a
-    // migration); it exposes the same columns as business_listings and is
-    // RLS-safe (security_invoker), so a localized cast is sound.
+    // The view isn't in the generated Database types (created by a migration);
+    // it's RLS-safe (security_invoker) and exposes a fixed column shape, so a
+    // localized cast is sound.
     let query = ctx.supabase
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .from('following_listings' as any)
-      .select(LISTING_FIELDS)
-      .order('created_at', { ascending: false })
-      .order('id', { ascending: false })
-      .limit(params.limit);
+      .from('following_feed' as any)
+      .select('item_type, item_id, sort_ts, lab_id')
+      .order('sort_ts', { ascending: false })
+      .order('item_id', { ascending: false })
+      .limit(params.limit + 1);
 
     const cursor = decodeCursor(params.cursor);
-    if (cursor) query = query.or(keysetBefore(cursor, 'id'));
+    if (cursor) query = query.or(feedKeysetBefore(cursor.createdAt, cursor.id));
 
     const { data, error } = await query;
     if (error) throw new Error(`feed read failed: ${error.message}`);
 
-    const rows = (data ?? []) as unknown as FeedListingRow[];
-
-    // Bylines: resolve owner display cards under the caller's RLS.
-    const ownerIds = [...new Set(rows.map((row) => row.owner_user_id).filter(Boolean))];
-    const owners = new Map<string, { display_name: string; handle: string }>();
-    if (ownerIds.length > 0) {
-      const { data: profiles } = await ctx.supabase
-        .from('profiles')
-        .select('user_id, display_name, handle')
-        .in('user_id', ownerIds as string[]);
-      for (const profile of profiles ?? []) {
-        owners.set(profile.user_id, {
-          display_name: profile.display_name,
-          handle: profile.handle,
-        });
-      }
-    }
-
-    const items = rows.map((listing) => ({
-      type: 'listing' as const,
-      listing,
-      owner: listing.owner_user_id ? (owners.get(listing.owner_user_id) ?? null) : null,
-    }));
-
-    const last = rows.at(-1);
+    const sourceRows = (data ?? []) as unknown as FeedSourceRow[];
+    const hasMore = sourceRows.length > params.limit;
+    const pageRows = hasMore ? sourceRows.slice(0, params.limit) : sourceRows;
+    const last = pageRows.at(-1);
     const nextCursor =
-      rows.length === params.limit && last
-        ? encodeCursor({ createdAt: last.created_at, id: last.id })
-        : null;
+      hasMore && last ? encodeCursor({ createdAt: last.sort_ts, id: last.item_id }) : null;
+
+    const admin = getSupabaseAdmin();
+    const items = await hydrateFeed(ctx.supabase, admin, ctx.appUser.id, pageRows);
 
     return apiOk({ items, nextCursor });
   } catch (error) {

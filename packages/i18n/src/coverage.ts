@@ -29,6 +29,9 @@ export const LAUNCH_FLOOR_NAMESPACES = [
   'profile',
   'suuq',
   'feed',
+  // Share text (WhatsApp/link share of a Space or Venture candidate) is
+  // member- and public-facing copy — ships fully translated.
+  'share',
   // Phase 2: the Plaza (Madal) is the core community surface — teaching empty
   // states, Ask lifecycle, reactions, §27 copy all live here.
   'plaza',

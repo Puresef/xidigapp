@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/capital/status-badge';
 import { Timeline } from '@/components/capital/timeline';
 import { VotePanel } from '@/components/capital/vote-panel';
 import { Banner } from '@/components/banner';
+import { ShareActions } from '@/components/share-actions';
 import { Avatar } from '@/components/media/avatar';
 import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
@@ -115,6 +116,8 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
   return (
     <main className="xidig-section">
       <CandidateHeader view={view} prefs={prefs} />
+
+      <ShareActions path={`/c/${id}`} text={t('share.candidateText', { name: candidate.name })} />
 
       {isEditor && ['draft', 'submitted'].includes(candidate.status) ? (
         <p className="xidig-profile__actions">
@@ -310,6 +313,8 @@ async function PublicCandidate({
       </section>
 
       <Timeline milestones={view.timeline} />
+
+      <ShareActions path={`/c/${view.id}`} text={t('share.candidateText', { name: view.name })} />
 
       <p className="xidig-card__meta">
         <Link href={signInHref}>{t('capital.signInToEngage')} →</Link>

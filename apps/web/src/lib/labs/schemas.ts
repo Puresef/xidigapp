@@ -82,6 +82,14 @@ const charterFields = {
   successDefinition: z.string().trim().min(1).max(CHARTER_SUCCESS_MAX),
   sprintLengthWeeks: z.number().int().min(SPRINT_LENGTH_MIN).max(SPRINT_LENGTH_MAX).optional(),
   sprintDeadline: z.string().datetime().optional(),
+  /**
+   * §16 Lab playbook: which seeded starter the charter was pre-filled from.
+   * Marker only — the charter TEXT is sent in the fields above (already
+   * user-editable), this just records provenance on the labs row. The API
+   * route/service must validate the referenced lab_playbooks id and set
+   * labs.playbook_id (see openIssues — those files are outside this ownership).
+   */
+  playbookId: z.string().uuid().optional(),
 };
 
 /**

@@ -3,11 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
+import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
 import { ApiRequestError, apiPost } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 
+import { Banner } from '../banner';
 import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
@@ -37,6 +39,19 @@ export function ContentComposer({
     artifact: 'lab.actionAddArtifact',
     decision: 'lab.actionAddDecision',
   } as const;
+
+  // Kind-specific field labels (§16/§20) — the generic lab.fieldName/action.comment
+  // read wrong for a decision or artifact. Title is optional on updates.
+  const titleKeys: Record<typeof kind, MessageKey> = {
+    update: 'lab.updateTitleLabel',
+    artifact: 'lab.artifactTitleLabel',
+    decision: 'lab.decisionTitleLabel',
+  };
+  const bodyKeys: Record<typeof kind, MessageKey> = {
+    update: 'lab.updateBodyLabel',
+    artifact: 'lab.artifactDescriptionLabel',
+    decision: 'lab.decisionNoteLabel',
+  };
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -75,8 +90,10 @@ export function ContentComposer({
     <form className="xidig-form" onSubmit={submit}>
       {error ? <PlainErrorBanner error={error} /> : null}
 
+      {kind === 'artifact' ? <Banner kind="notice">{t('lab.ipBanner')}</Banner> : null}
+
       <label className="xidig-field">
-        <span className="xidig-field__label">{t('lab.fieldName')}</span>
+        <span className="xidig-field__label">{t(titleKeys[kind])}</span>
         <input
           className="xidig-field__input"
           value={title}
@@ -100,7 +117,7 @@ export function ContentComposer({
       ) : null}
 
       <label className="xidig-field">
-        <span className="xidig-field__label">{t('action.comment')}</span>
+        <span className="xidig-field__label">{t(bodyKeys[kind])}</span>
         <textarea
           className="xidig-field__input"
           value={body}
