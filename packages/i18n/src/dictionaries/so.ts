@@ -232,7 +232,9 @@ export const so = {
   'auth.inviteCodeHint': 'Koodhadhku waxay u eg yihiin XIDIG-XXXX-XXXX.',
   'auth.inviteOptionalHint':
     'Koodh ma haysaa? Ku dar. Haddii kale, hadda waad ku biiri kartaa mid la’aan.',
-  'auth.termsAccept': 'Waan ogolahay Shuruudaha Adeegga iyo Siyaasadda Arrimaha Gaarka ah.',
+  'auth.termsAccept': 'Waan ogolahay {terms} iyo {privacy}.',
+  'auth.termsLinkText': 'Shuruudaha Adeegga',
+  'auth.privacyLinkText': 'Siyaasadda Arrimaha Gaarka ah',
   'auth.chooseMethod': 'Sidee doonaysaa inaad ku gasho?',
   'auth.magicLinkSent':
     'Haddii emailkaasu leeyahay akoon Xidig ah, link gelitaan ayaa soo socda — wuxuu shaqeynayaa 10 daqiiqo.',
@@ -467,8 +469,14 @@ export const so = {
   'admin.modDismiss': 'Iska dhaaf',
   'admin.modDecided': 'Go’aanka waa la kaydiyay.',
 
+  // Site footer — links out to the marketing site (xidig.net) legal/about pages
+  'footer.privacy': 'Arrimaha Gaarka ah',
+  'footer.terms': 'Shuruudaha',
+  'footer.about': 'Nagu saabsan',
+
   // Accessibility labels
   'a11y.mainNav': 'Hagitaanka guud',
+  'a11y.footerNav': 'Hagitaanka hoose',
   'a11y.map': 'Khariidad',
   'a11y.notifications': 'Digniino',
   'a11y.notificationsUnread': {

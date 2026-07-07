@@ -12,6 +12,7 @@ import { BadgeProvider } from '../components/nav/badge-provider';
 import { HeaderSearch } from '../components/nav/header-search';
 import { NotificationBell } from '../components/nav/notification-bell';
 import { UserMenu } from '../components/nav/user-menu';
+import { SiteFooter } from '../components/site-footer';
 import { getHeaderViewer } from '../lib/auth/header-viewer';
 import { getLitePrefs } from '../lib/lite/server';
 import { getLocale, getT } from '../lib/locale';
@@ -91,6 +92,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             </header>
           </BadgeProvider>
           {children}
+          <SiteFooter />
         </LocaleProvider>
       </body>
     </html>

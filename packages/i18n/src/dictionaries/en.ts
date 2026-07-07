@@ -265,7 +265,12 @@ export const en = {
   'auth.inviteCodeLabelOptional': 'Invite code (optional)',
   'auth.inviteCodeHint': 'Codes look like XIDIG-XXXX-XXXX.',
   'auth.inviteOptionalHint': 'Have a code? Add it. If not, you can join without one right now.',
-  'auth.termsAccept': 'I agree to the Terms of Service and Privacy Policy.',
+  // Composed with two links: the sentence template owns word order (Somali
+  // and English differ), and each {placeholder} is replaced with an <a> whose
+  // text is the matching *LinkText key. See SignUpForm's renderTermsLabel.
+  'auth.termsAccept': 'I agree to the {terms} and {privacy}.',
+  'auth.termsLinkText': 'Terms of Service',
+  'auth.privacyLinkText': 'Privacy Policy',
   'auth.chooseMethod': 'How do you want to sign in?',
   'auth.magicLinkSent':
     'If that email has a Xidig account, a sign-in link is on its way — it’s valid for 10 minutes.',
@@ -514,8 +519,15 @@ export const en = {
   'admin.modDismiss': 'Dismiss',
   'admin.modDecided': 'Decision saved.',
 
+  // Site footer — links out to the public marketing site (xidig.net) for the
+  // legal + about pages, which live there, not in the app.
+  'footer.privacy': 'Privacy',
+  'footer.terms': 'Terms',
+  'footer.about': 'About',
+
   // Accessibility labels (screen-reader only)
   'a11y.mainNav': 'Main navigation',
+  'a11y.footerNav': 'Footer',
   'a11y.map': 'Map',
   'a11y.notifications': 'Notifications',
   'a11y.notificationsUnread': {

@@ -1,9 +1,9 @@
 import type { MetadataRoute } from 'next';
 
 /**
- * PWA manifest (§22 installable PWA). Icons are intentionally omitted until the
- * final brand assets land (§26 — placeholder star assets pending the Brand
- * Guide); the app is still installable and push still works without them.
+ * PWA manifest (§22 installable PWA). Icons point at the placeholder Xidig
+ * star/X mark (served via the app/ file convention — icon.svg + apple-icon.png);
+ * swap these when the final brand assets land (§26 — Brand Guide).
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -14,5 +14,9 @@ export default function manifest(): MetadataRoute.Manifest {
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#111111',
+    icons: [
+      { src: '/icon.svg', type: 'image/svg+xml', sizes: 'any' },
+      { src: '/apple-icon.png', type: 'image/png', sizes: '180x180' },
+    ],
   };
 }

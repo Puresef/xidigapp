@@ -24,6 +24,9 @@ export const LAUNCH_FLOOR_NAMESPACES = [
   'waitlist',
   'settings',
   'a11y',
+  // Footer links out to the marketing site's legal + about pages — a trust
+  // surface, so Somali ships complete.
+  'footer',
   // Member-facing trust surfaces (Phase 1 UI): profiles, Suuq directory/map,
   // Following feed. Somali must ship complete here too.
   'profile',

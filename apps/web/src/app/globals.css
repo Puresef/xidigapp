@@ -1732,3 +1732,32 @@ a.xidig-settings-card:hover {
 .xidig-user-menu__row {
   padding: 0.4rem 0.5rem;
 }
+
+/* --- Site footer (xidig.net ↔ app.xidig.net unified experience) --- */
+
+.xidig-footer {
+  border-top: 1px solid var(--x-border);
+  margin-top: 3rem;
+  padding: 1.25rem var(--x-space);
+}
+
+.xidig-footer__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 64rem;
+}
+
+.xidig-footer__list a {
+  color: var(--x-muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.xidig-footer__list a:hover {
+  color: var(--x-fg);
+  text-decoration: underline;
+}

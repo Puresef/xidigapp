@@ -1,12 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { Fragment, useState, type FormEvent, type ReactNode } from 'react';
 
 import { useT } from '@xidig/i18n/react';
 
 import { apiPost, ApiRequestError } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
+import { MARKETING_LINKS } from '@/lib/external-links';
 
 import { Banner } from '../banner';
 import { PlainErrorBanner } from './plain-error';
@@ -19,6 +20,32 @@ import { ResendControls } from './resend-controls';
  */
 
 type Method = 'password' | 'magic_link' | 'sms';
+
+/**
+ * The terms-acceptance label carries two links (Terms of Service, Privacy
+ * Policy) that point at the marketing site. The sentence template owns word
+ * order per locale (Somali and English differ), so we interpolate a bracketed
+ * sentinel into each link slot, then split on the sentinels — each link's
+ * translated text lands as an <a> in the right place, without ever
+ * concatenating translated fragments by hand (docs/i18n.md).
+ */
+function renderTermsLabel(t: ReturnType<typeof useT>): ReactNode {
+  const slots = [
+    { mark: '[[terms]]', href: MARKETING_LINKS.terms, text: t('auth.termsLinkText') },
+    { mark: '[[privacy]]', href: MARKETING_LINKS.privacy, text: t('auth.privacyLinkText') },
+  ] as const;
+  const sentence = t('auth.termsAccept', { terms: slots[0].mark, privacy: slots[1].mark });
+  return sentence.split(/(\[\[terms\]\]|\[\[privacy\]\])/).map((part, index) => {
+    const slot = slots.find((candidate) => candidate.mark === part);
+    return slot ? (
+      <a key={index} href={slot.href}>
+        {slot.text}
+      </a>
+    ) : (
+      <Fragment key={index}>{part}</Fragment>
+    );
+  });
+}
 
 export function SignUpForm({
   initialCode,
@@ -257,7 +284,7 @@ export function SignUpForm({
               checked={acceptTerms}
               onChange={(e) => setAcceptTerms(e.target.checked)}
             />
-            <span>{t('auth.termsAccept')}</span>
+            <span>{renderTermsLabel(t)}</span>
           </label>
         ) : null}
 
