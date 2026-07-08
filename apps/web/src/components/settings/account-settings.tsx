@@ -7,6 +7,7 @@ import { useT } from '@xidig/i18n/react';
 
 import { apiPatch, apiPost, ApiRequestError } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
+import { DELETION_GRACE_DAYS } from '@/lib/moderation/constants';
 import { createClient } from '@/lib/supabase-browser';
 
 import { Banner } from '../banner';
@@ -25,6 +26,9 @@ export interface AccountSnapshot {
   phoneVerified: boolean;
   hasPassword: boolean;
   passwordNudgeDismissed: boolean;
+  /** §19 lifecycle: the account status + deletion clock for the grace countdown. */
+  status: string;
+  deletionRequestedAt: string | null;
 }
 
 interface Invite {
@@ -56,6 +60,10 @@ export function AccountSettings({
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [nudgeDismissed, setNudgeDismissed] = useState(snapshot.passwordNudgeDismissed);
+  const [status, setStatus] = useState(snapshot.status);
+  const [deletionRequestedAt, setDeletionRequestedAt] = useState(snapshot.deletionRequestedAt);
+  const [verifyConsent, setVerifyConsent] = useState(false);
+  const [verifyRequested, setVerifyRequested] = useState(false);
 
   const [newEmail, setNewEmail] = useState('');
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
@@ -74,6 +82,39 @@ export function AccountSettings({
     } catch (cause) {
       if (cause instanceof ApiRequestError) setError(cause.plain);
       else setError({ code: 'server_error', message: '' });
+    } finally {
+      setPending(false);
+    }
+  }
+
+  // §19 data-rights export — mirrors the Data settings download flow. The
+  // response is a file (not the JSON envelope), so it is fetched directly and
+  // streamed to a download rather than through the api-client helpers.
+  async function onExport() {
+    setPending(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const res = await fetch('/api/me/export', { method: 'POST' });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: PlainError };
+        setError(body.error ?? { code: 'server_error', message: '' });
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get('Content-Disposition') ?? '';
+      const match = disposition.match(/filename="([^"]+)"/);
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = match?.[1] ?? 'xidig-export.json';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      setNotice(t('settings.exportDone'));
+    } catch {
+      setError({ code: 'server_error', message: '' });
     } finally {
       setPending(false);
     }
@@ -360,13 +401,131 @@ export function AccountSettings({
         </div>
       </Section>
 
-      {/* §19 account lifecycle — no self-service deactivate/delete API yet;
-          the section anchors the Settings → Data link and routes to support. */}
-      <Section title={t('settings.accountStatusTitle')}>
+      {/* §19 self-service account lifecycle (Phase 6). Destructive actions
+          confirm first; the pending-deletion grace countdown is shown live. */}
+      <Section title={t('settings.accountStatusSectionTitle')}>
         <div id="account-status">
           <p className="xidig-field__hint">{t('settings.accountStatusHelp')}</p>
+
+          {status === 'pending_deletion' ? (
+            <Banner kind="notice">
+              {t('settings.deletionPending', { days: graceDaysLeft(deletionRequestedAt) })}
+            </Banner>
+          ) : null}
+
+          <div className="xidig-profile__actions">
+            {status !== 'pending_deletion' ? (
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                disabled={pending}
+                onClick={() =>
+                  void run(async () => {
+                    if (!window.confirm(t('settings.deactivateConfirm'))) return;
+                    const data = await apiPost<{ message: string }>('/api/me/account', {
+                      action: 'deactivate',
+                    });
+                    setStatus('deactivated');
+                    setNotice(data.message);
+                  })
+                }
+              >
+                {t('settings.deactivateButton')}
+              </button>
+            ) : null}
+
+            {status === 'pending_deletion' ? (
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                disabled={pending}
+                onClick={() =>
+                  void run(async () => {
+                    const data = await apiPost<{ message: string }>('/api/me/account', {
+                      action: 'cancel_deletion',
+                    });
+                    setStatus('active');
+                    setDeletionRequestedAt(null);
+                    setNotice(data.message);
+                  })
+                }
+              >
+                {t('settings.cancelDeletionButton')}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                disabled={pending}
+                onClick={() =>
+                  void run(async () => {
+                    if (!window.confirm(t('settings.requestDeletionConfirm'))) return;
+                    const data = await apiPost<{ message: string }>('/api/me/account', {
+                      action: 'request_deletion',
+                    });
+                    setStatus('pending_deletion');
+                    setDeletionRequestedAt(new Date().toISOString());
+                    setNotice(data.message);
+                  })
+                }
+              >
+                {t('settings.requestDeletionButton')}
+              </button>
+            )}
+
+            {/* §19 data rights — reuse the export endpoint the Data settings use. */}
+            <button
+              type="button"
+              className="xidig-button xidig-button--secondary"
+              disabled={pending}
+              onClick={() => void onExport()}
+            >
+              {t('settings.exportButton')}
+            </button>
+          </div>
         </div>
+      </Section>
+
+      {/* §14 member verification request — consent-gated. */}
+      <Section title={t('settings.verifyTitle')}>
+        <p className="xidig-field__hint">{t('settings.verifyBody')}</p>
+        {verifyRequested ? null : (
+          <>
+            <label className="xidig-checkbox">
+              <input
+                type="checkbox"
+                checked={verifyConsent}
+                onChange={(e) => setVerifyConsent(e.target.checked)}
+              />
+              <span>{t('settings.verifyConsentLabel')}</span>
+            </label>
+            <button
+              type="button"
+              className="xidig-button xidig-button--secondary"
+              disabled={pending || !verifyConsent}
+              onClick={() =>
+                void run(async () => {
+                  const data = await apiPost<{ message: string }>('/api/me/verification', {
+                    type: 'identity',
+                    consentGiven: true,
+                  });
+                  setVerifyRequested(true);
+                  setNotice(data.message);
+                })
+              }
+            >
+              {t('settings.verifyRequestButton')}
+            </button>
+          </>
+        )}
       </Section>
     </>
   );
+}
+
+/** Whole days remaining in the §19 30-day deletion grace (never negative). */
+function graceDaysLeft(deletionRequestedAt: string | null): number {
+  if (!deletionRequestedAt) return DELETION_GRACE_DAYS;
+  const elapsedDays = (Date.now() - new Date(deletionRequestedAt).getTime()) / 86_400_000;
+  return Math.max(0, Math.ceil(DELETION_GRACE_DAYS - elapsedDays));
 }

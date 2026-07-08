@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
+import { ReportControl } from '@/components/report-control';
 import { ShareActions } from '@/components/share-actions';
 import { BookmarkButton } from '@/components/social/bookmark-button';
 import { ClaimListing } from '@/components/suuq/claim-listing';
@@ -207,6 +208,14 @@ export default async function ListingPermalinkPage({
               signedIn={viewerId !== null}
               initialBookmarked={bookmarked}
             />
+            {/* Members can report a listing they don't own (§19). */}
+            {viewerId && listing.owner_user_id !== viewerId ? (
+              <ReportControl
+                targetType="listing"
+                targetId={listing.id}
+                targetName={listing.business_name}
+              />
+            ) : null}
           </div>
 
           <OpeningHoursDisplay hours={listing.opening_hours} />

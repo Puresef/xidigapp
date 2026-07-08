@@ -38,7 +38,20 @@ export async function POST(): Promise<Response> {
     const me = ctx.appUser.id;
     const db = ctx.supabase;
 
-    const [profile, settings, posts, comments, listings, bookmarks, drafts] = await Promise.all([
+    const [
+      profile,
+      settings,
+      posts,
+      comments,
+      listings,
+      bookmarks,
+      drafts,
+      reactions,
+      pollVotes,
+      follows,
+      consentRecords,
+      labMembers,
+    ] = await Promise.all([
       db.from('profiles').select(PROFILE_EXPORT_COLUMNS).eq('user_id', me).maybeSingle(),
       db.from('user_settings').select('*').eq('user_id', me).maybeSingle(),
       db
@@ -58,9 +71,47 @@ export async function POST(): Promise<Response> {
         .order('created_at', { ascending: false }),
       db.from('bookmarks').select('*').order('created_at', { ascending: false }),
       db.from('post_drafts').select('*').order('created_at', { ascending: false }),
+      db
+        .from('reactions')
+        .select('*')
+        .eq('user_id', me)
+        .order('created_at', { ascending: false }),
+      db
+        .from('poll_votes')
+        .select('*')
+        .eq('voter_user_id', me)
+        .order('created_at', { ascending: false }),
+      db
+        .from('follows')
+        .select('*')
+        .eq('follower_user_id', me)
+        .order('created_at', { ascending: false }),
+      db
+        .from('consent_records')
+        .select('*')
+        .eq('user_id', me)
+        .order('created_at', { ascending: false }),
+      db
+        .from('lab_members')
+        .select('*')
+        .eq('user_id', me)
+        .order('created_at', { ascending: false }),
     ]);
 
-    for (const result of [profile, settings, posts, comments, listings, bookmarks, drafts]) {
+    for (const result of [
+      profile,
+      settings,
+      posts,
+      comments,
+      listings,
+      bookmarks,
+      drafts,
+      reactions,
+      pollVotes,
+      follows,
+      consentRecords,
+      labMembers,
+    ]) {
       if (result.error) throw new Error(`export read failed: ${result.error.message}`);
     }
 
@@ -76,6 +127,11 @@ export async function POST(): Promise<Response> {
       listings: listings.data ?? [],
       bookmarks: bookmarks.data ?? [],
       drafts: drafts.data ?? [],
+      reactions: reactions.data ?? [],
+      pollVotes: pollVotes.data ?? [],
+      follows: follows.data ?? [],
+      consentRecords: consentRecords.data ?? [],
+      labMembers: labMembers.data ?? [],
     };
 
     emitServer(event('data_export_requested', {}), { distinctId: me, userId: me });

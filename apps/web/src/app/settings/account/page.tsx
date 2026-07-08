@@ -6,6 +6,7 @@ import { AccountSettings, type AccountSnapshot } from '@/components/settings/acc
 import { getAuthContext } from '@/lib/auth/guards';
 import { getLowBandwidth } from '@/lib/bandwidth-server';
 import { getT } from '@/lib/locale';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,13 +24,20 @@ export default async function AccountSettingsPage() {
 
   const t = await getT();
 
-  const [{ data: hasPassword }, { data: invites }] = await Promise.all([
+  const [{ data: hasPassword }, { data: invites }, { data: lifecycle }] = await Promise.all([
     ctx.supabase.rpc('has_password'),
     ctx.supabase
       .from('invites')
       .select('id, code, redeemed_at')
       .eq('created_by_user_id', ctx.appUser.id)
       .order('created_at', { ascending: false }),
+    // deletion_requested_at drives the §19 grace countdown; read via service
+    // role since the client `users` select doesn't expose it under RLS.
+    getSupabaseAdmin()
+      .from('users')
+      .select('deletion_requested_at')
+      .eq('id', ctx.appUser.id)
+      .maybeSingle(),
   ]);
 
   const onboarding = (ctx.appUser.onboarding_state ?? {}) as Record<string, unknown>;
@@ -41,6 +49,8 @@ export default async function AccountSettingsPage() {
     phoneVerified: Boolean(ctx.user.phone_confirmed_at),
     hasPassword: Boolean(hasPassword),
     passwordNudgeDismissed: onboarding['passwordNudgeDismissed'] === true,
+    status: ctx.appUser.status,
+    deletionRequestedAt: lifecycle?.deletion_requested_at ?? null,
   };
 
   const lowBandwidth = await getLowBandwidth();

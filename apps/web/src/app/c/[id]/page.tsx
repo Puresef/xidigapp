@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/capital/status-badge';
 import { Timeline } from '@/components/capital/timeline';
 import { VotePanel } from '@/components/capital/vote-panel';
 import { Banner } from '@/components/banner';
+import { ReportControl } from '@/components/report-control';
 import { ShareActions } from '@/components/share-actions';
 import { Avatar } from '@/components/media/avatar';
 import { MediaSlot } from '@/components/media/media-slot';
@@ -118,6 +119,10 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
       <CandidateHeader view={view} prefs={prefs} />
 
       <ShareActions path={`/c/${id}`} text={t('share.candidateText', { name: candidate.name })} />
+
+      {!isEditor ? (
+        <ReportControl targetType="candidate" targetId={id} targetName={candidate.name} />
+      ) : null}
 
       {isEditor && ['draft', 'submitted'].includes(candidate.status) ? (
         <p className="xidig-profile__actions">

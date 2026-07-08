@@ -12,6 +12,7 @@ import type { PlainError } from '@/lib/errors';
 import { COMMENT_BODY_MAX } from '@/lib/plaza/constants';
 
 import { PlainErrorBanner } from '../auth/plain-error';
+import { ReportControl } from '../report-control';
 
 /**
  * Open member comments on a Candidate (§12/§17). Reuses the Phase 2 CommentView
@@ -143,7 +144,13 @@ export function CandidateComments({
                     {t('action.delete')}
                   </button>
                 </p>
-              ) : null}
+              ) : (
+                <ReportControl
+                  targetType="comment"
+                  targetId={comment.id}
+                  targetName={item.author?.display_name ?? ''}
+                />
+              )}
             </li>
           );
         })}

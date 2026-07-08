@@ -2779,8 +2779,45 @@ export type Database = {
           },
         ]
       }
+      report_snapshots: {
+        Row: {
+          captured_body: string | null
+          captured_context: Json
+          created_at: string
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          report_id: string
+        }
+        Insert: {
+          captured_body?: string | null
+          captured_context?: Json
+          created_at?: string
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          report_id: string
+        }
+        Update: {
+          captured_body?: string | null
+          captured_context?: Json
+          created_at?: string
+          entity_id?: string
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          report_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_snapshots_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
+          assigned_at: string | null
+          assigned_to_user_id: string | null
           created_at: string
           details: string | null
           id: string
@@ -2795,6 +2832,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_at?: string | null
+          assigned_to_user_id?: string | null
           created_at?: string
           details?: string | null
           id?: string
@@ -2809,6 +2848,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_at?: string | null
+          assigned_to_user_id?: string | null
           created_at?: string
           details?: string | null
           id?: string
@@ -2823,6 +2864,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reports_assigned_to_user_id_fkey"
+            columns: ["assigned_to_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reports_reporter_user_id_fkey"
             columns: ["reporter_user_id"]
@@ -3216,7 +3264,9 @@ export type Database = {
       }
       users: {
         Row: {
+          anonymised_at: string | null
           created_at: string
+          deactivated_at: string | null
           deletion_requested_at: string | null
           email: string | null
           id: string
@@ -3232,7 +3282,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          anonymised_at?: string | null
           created_at?: string
+          deactivated_at?: string | null
           deletion_requested_at?: string | null
           email?: string | null
           id: string
@@ -3248,7 +3300,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          anonymised_at?: string | null
           created_at?: string
+          deactivated_at?: string | null
           deletion_requested_at?: string | null
           email?: string | null
           id?: string
@@ -3389,14 +3443,58 @@ export type Database = {
           },
         ]
       }
+      verification_access_log: {
+        Row: {
+          access_type: string
+          accessed_by_user_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          verification_id: string
+        }
+        Insert: {
+          access_type: string
+          accessed_by_user_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          verification_id: string
+        }
+        Update: {
+          access_type?: string
+          accessed_by_user_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          verification_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_access_log_accessed_by_user_id_fkey"
+            columns: ["accessed_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_access_log_verification_id_fkey"
+            columns: ["verification_id"]
+            isOneToOne: false
+            referencedRelation: "verifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verifications: {
         Row: {
+          booking_url: string | null
           consent_given: boolean
           consent_recorded_at: string | null
           created_at: string
           decided_at: string | null
           decision_notes: string | null
           id: string
+          info_requested_at: string | null
           listing_id: string | null
           recording_expires_at: string | null
           recording_url: string | null
@@ -3408,12 +3506,14 @@ export type Database = {
           verifier_user_id: string | null
         }
         Insert: {
+          booking_url?: string | null
           consent_given?: boolean
           consent_recorded_at?: string | null
           created_at?: string
           decided_at?: string | null
           decision_notes?: string | null
           id?: string
+          info_requested_at?: string | null
           listing_id?: string | null
           recording_expires_at?: string | null
           recording_url?: string | null
@@ -3425,12 +3525,14 @@ export type Database = {
           verifier_user_id?: string | null
         }
         Update: {
+          booking_url?: string | null
           consent_given?: boolean
           consent_recorded_at?: string | null
           created_at?: string
           decided_at?: string | null
           decision_notes?: string | null
           id?: string
+          info_requested_at?: string | null
           listing_id?: string | null
           recording_expires_at?: string | null
           recording_url?: string | null
@@ -3467,6 +3569,45 @@ export type Database = {
             foreignKeyName: "verifications_verifier_user_id_fkey"
             columns: ["verifier_user_id"]
             isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verifier_grants: {
+        Row: {
+          granted_at: string
+          granted_by_user_id: string | null
+          note: string | null
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by_user_id?: string | null
+          note?: string | null
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by_user_id?: string | null
+          note?: string | null
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verifier_grants_granted_by_user_id_fkey"
+            columns: ["granted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verifier_grants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -3655,6 +3796,7 @@ export type Database = {
       }
     }
     Functions: {
+      author_is_active: { Args: { author_id: string }; Returns: boolean }
       can_read_candidate: { Args: { cand: string }; Returns: boolean }
       can_read_lab: { Args: { p_lab_id: string }; Returns: boolean }
       can_read_lab_roster: { Args: { p_lab_id: string }; Returns: boolean }
@@ -3712,11 +3854,13 @@ export type Database = {
         Returns: boolean
       }
       has_password: { Args: never; Returns: boolean }
+      is_active_account: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_candidate_lab_member: { Args: { cand: string }; Returns: boolean }
       is_lab_member: { Args: { p_lab_id: string }; Returns: boolean }
       is_mod: { Args: never; Returns: boolean }
       is_supporter: { Args: never; Returns: boolean }
+      is_verifier: { Args: never; Returns: boolean }
       list_visible_tiers: {
         Args: never
         Returns: {

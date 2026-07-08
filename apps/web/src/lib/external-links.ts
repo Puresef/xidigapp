@@ -14,4 +14,6 @@ export const MARKETING_LINKS = {
   privacy: `${MARKETING_ORIGIN}/privacy`,
   terms: `${MARKETING_ORIGIN}/terms`,
   about: `${MARKETING_ORIGIN}/about`,
+  // Phase 6: the community-guidelines stub links out here for the full policy.
+  guidelines: `${MARKETING_ORIGIN}/guidelines`,
 } as const;

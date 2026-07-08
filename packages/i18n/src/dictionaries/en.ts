@@ -99,6 +99,9 @@ export const en = {
   'action.unblock': 'Unblock',
   'action.report': 'Report',
   'action.enable': 'Enable',
+  // Phase 6 (Moderation / account lifecycle)
+  'action.readGuidelines': 'Read our guidelines',
+  'action.manageAccount': 'Manage account',
 
   // Language switching
   'language.label': 'Language',
@@ -230,6 +233,27 @@ export const en = {
   'error.candidateNotSubmittable':
     "This Candidate can't be submitted right now. Only a draft can be sent for review.",
   'error.voteClosed': 'Voting on this Candidate is closed.',
+
+  // --- Moderation / account (§27 Moderation block + §19 lifecycle) ---
+  // Generic by design — cites the policy, never the specific rule or the
+  // reporter, so removals can't be reverse-engineered or gamed (§19).
+  'error.contentRemoved':
+    'This post was removed for violating our content policy. Read our guidelines.',
+  'error.reportDuplicate':
+    "You've already reported this — our team is on it. Thanks for looking out for the community.",
+  'error.appealAlreadySubmitted':
+    "You've already appealed this decision. There's one appeal per action, and a senior moderator will respond within 72 hours.",
+  'error.appealNotEligible': "There's nothing to appeal here, or this action isn't yours to appeal.",
+  'error.appealSelfReview':
+    "You took this action, so its appeal can't be yours to review — it goes to another moderator.",
+  'error.verificationPending':
+    "You already have a verification request in progress. We'll be in touch to schedule your call.",
+  'error.notAVerifier': 'Only verifiers can do this.',
+  'error.accountAlreadyDeactivated':
+    'Your account is already deactivated. Sign in again anytime to reactivate it.',
+  'error.deletionAlreadyRequested':
+    'Your account is already scheduled for deletion. You can cancel it from account settings during the grace period.',
+
   // Informational notice (non-error): non-Somalia invest attempt falls back to
   // the informational view. Returned via apiNotice, never thrown.
   'notice.capitalRegionGated':
@@ -465,8 +489,46 @@ export const en = {
   'settings.accountStatusBody':
     'Deactivating hides everything until you sign back in. Deleting is permanent after a 30-day grace period.',
   'settings.accountStatusHelp':
-    'Self-service deactivation is coming. For now, message the Xidig team from your account email and we will handle it within 30 days.',
+    'Deactivating hides your profile and content until you sign back in — nothing is deleted. Requesting deletion starts a 30-day grace period you can cancel any time; after that your account is permanently removed.',
   'settings.accountStatusLink': 'Go to account settings',
+  // Phase 6 (§19) self-service account lifecycle controls.
+  'settings.accountStatusSectionTitle': 'Account status',
+  'settings.deactivateButton': 'Deactivate account',
+  'settings.deactivateConfirm':
+    'Deactivate your account? Your profile and content are hidden until you sign back in. Nothing is deleted.',
+  'settings.requestDeletionButton': 'Request deletion',
+  'settings.requestDeletionConfirm':
+    'Request account deletion? You have 30 days to cancel before everything is permanently removed.',
+  'settings.cancelDeletionButton': 'Cancel deletion',
+  'settings.deletionPending':
+    'Your account is scheduled for deletion. {days} days left to cancel.',
+  // Phase 6 (§14) member verification request.
+  'settings.verifyTitle': 'Get verified',
+  'settings.verifyBody':
+    'A short video call confirms you are a real person. Verified members get a badge and higher trust across Xidig.',
+  'settings.verifyConsentLabel':
+    'I agree to my verification video call being recorded and stored securely for review.',
+  'settings.verifyRequestButton': 'Request identity verification',
+  // Phase 6 (§19) member appeal form (replaces the mailto stub).
+  'settings.appealTitle': 'Appeal a moderation decision',
+  'settings.appealIntro':
+    'If you think a decision was wrong, tell us what happened. A different moderator than the one who made the decision will review your appeal within 72 hours.',
+  'settings.appealEmpty':
+    'You have no moderation decisions to appeal right now.',
+  'settings.appealActionLabel': 'Decision',
+  'settings.appealReasonLabel': 'Why should we reconsider?',
+  'settings.appealReasonPlaceholder': 'Explain what happened…',
+  'settings.appealSubmit': 'Submit appeal',
+  'settings.appealActionSuspend': 'Account suspended',
+  'settings.appealActionWarn': 'Warning issued',
+  'settings.appealActionRemove': 'Content removed',
+  'settings.appealActionHide': 'Content hidden',
+  'settings.appealActionOther': 'Moderation action',
+  // Phase 6 community guidelines stub (error.contentRemoved CTA target).
+  'settings.guidelinesTitle': 'Community guidelines',
+  'settings.guidelinesBody':
+    'Xidig is a place for a respectful Somali community. Our full community guidelines are being finalised. In the meantime, be honest, be kind, and keep it safe for everyone.',
+  'settings.guidelinesLink': 'Read more at xidig.net',
   // Account / sessions
   'settings.sessionsTitle': 'Sessions',
   'settings.sessionsIntro': 'Sign out here, or everywhere if a device is lost or shared.',
@@ -518,6 +580,72 @@ export const en = {
   'admin.modRemove': 'Remove',
   'admin.modDismiss': 'Dismiss',
   'admin.modDecided': 'Decision saved.',
+
+  // Admin — Phase 6 mod reports queue (§19 member reports; distinct from the
+  // Phase 2 AI-escalation queue above). Off the launch floor — internal tooling.
+  'admin.reportsTitle': 'Member reports',
+  'admin.reportsIntro':
+    'Reports members filed, oldest first. Claim one to review, then decide. The 48-hour SLA badge turns red when a report is overdue.',
+  'admin.reportsEmpty': 'No reports in this view.',
+  'admin.reportStatusOpen': 'Open',
+  'admin.reportStatusInReview': 'In review',
+  'admin.reportStatusResolved': 'Resolved',
+  'admin.reportStatusDismissed': 'Dismissed',
+  'admin.reportStatusAll': 'All',
+  'admin.reportReporter': 'Reported by',
+  'admin.reportTarget': 'Target',
+  'admin.reportReason': 'Reason',
+  'admin.reportSnapshot': 'Captured evidence',
+  'admin.reportAgeHours': '{hours}h old',
+  'admin.reportSlaBreached': 'SLA overdue',
+  'admin.reportClaim': 'Claim',
+  'admin.reportNoViolation': 'No violation',
+  'admin.reportDismiss': 'Dismiss report',
+  'admin.reportHide': 'Hide content',
+  'admin.reportRemove': 'Remove content',
+  'admin.reportWarn': 'Warn user',
+  'admin.reportSuspend': 'Suspend user',
+  'admin.reportNoteLabel': 'Internal note (not shown to anyone)',
+  'admin.reportResolutionLabel': 'Outcome shown to the reporter (optional)',
+  'admin.reportDecided': 'Decision saved.',
+
+  // Admin — Phase 6 appeals review queue (§19 second-mod review).
+  'admin.appealsTitle': 'Appeals',
+  'admin.appealsIntro':
+    'Members appealing a moderation action. You cannot review an appeal of your own action — those are hidden. The 72-hour SLA badge turns red when an appeal is overdue.',
+  'admin.appealsEmpty': 'No appeals to review.',
+  'admin.appealAppellant': 'Appeal from',
+  'admin.appealOriginalAction': 'Action under appeal',
+  'admin.appealBody': 'Their appeal',
+  'admin.appealModNote': 'Original mod note',
+  'admin.appealUphold': 'Uphold action',
+  'admin.appealOverturn': 'Overturn (restore)',
+  'admin.appealNotesLabel': 'Decision notes (optional)',
+  'admin.appealDecided': 'Appeal decided.',
+
+  // Admin — Phase 6 verification queue (§14 verifier tooling).
+  'admin.verifyTitle': 'Verification queue',
+  'admin.verifyIntro':
+    'Identity and business verification requests, oldest first. The 7-day SLA badge turns red when a request is overdue. Opening a recording is logged.',
+  'admin.verifyEmpty': 'No verification requests waiting.',
+  'admin.verifyTypeIdentity': 'Identity',
+  'admin.verifyTypeBusiness': 'Business',
+  'admin.verifyRequester': 'Requested by',
+  'admin.verifyBusinessName': 'Business',
+  'admin.verifyConsentGiven': 'Recording consent given',
+  'admin.verifyConsentMissing': 'No recording consent',
+  'admin.verifyAgeDays': '{days}d old',
+  'admin.verifyStatusPending': 'Pending',
+  'admin.verifyStatusScheduled': 'Scheduled',
+  'admin.verifyBookingLabel': 'Booking link',
+  'admin.verifySchedule': 'Schedule call',
+  'admin.verifyApprove': 'Approve',
+  'admin.verifyDecline': 'Decline',
+  'admin.verifyMoreInfo': 'Request more info',
+  'admin.verifyNotesLabel': 'Notes to the member (optional)',
+  'admin.verifyViewRecording': 'View recording',
+  'admin.verifyRecordingError': 'No recording is available for this request.',
+  'admin.verifyDecided': 'Saved.',
 
   // Site footer — links out to the public marketing site (xidig.net) for the
   // legal + about pages, which live there, not in the app.
@@ -865,6 +993,17 @@ export const en = {
   'messages.requestSent': 'Your message request has been sent. They’ll see it when they next open Xidig.',
   'messages.reportSubmitted':
     'Thanks for the report. We review all reports within 48 hours and will update you on the outcome.',
+  // Phase 6 (§27 Moderation + §19 account lifecycle) success notices
+  'messages.appealSubmitted':
+    "Your appeal has been sent to a senior moderator. We'll respond within 72 hours.",
+  'messages.verificationRequested':
+    "Your verification request is in. We'll be in touch to schedule your video call.",
+  'messages.accountDeactivated':
+    'Your account is deactivated. Sign in anytime to reactivate it — nothing has been deleted.',
+  'messages.deletionRequested':
+    'Your account is scheduled for deletion in 30 days. You can cancel any time before then — and you can download a copy of your data from Settings.',
+  'messages.deletionCancelled':
+    'Welcome back. Your deletion request is cancelled and your account is active again.',
   // Conversation options (block / report)
   'messages.optionsLabel': 'Conversation options',
   'messages.blockConfirm':

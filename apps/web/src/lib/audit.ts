@@ -12,9 +12,11 @@ export async function writeAudit(
   entry: {
     actorUserId: string | null;
     action: string;
-    targetType?: Enums<'entity_type'>;
-    targetId?: string;
-    metadata?: Record<string, unknown>;
+    // exactOptionalPropertyTypes: accept explicit undefined (coalesced to null
+    // below) so callers can pass a maybe-undefined id without a guard dance.
+    targetType?: Enums<'entity_type'> | undefined;
+    targetId?: string | undefined;
+    metadata?: Record<string, unknown> | undefined;
   },
 ): Promise<void> {
   const { error } = await admin.from('audit_logs').insert({

@@ -71,3 +71,19 @@ export async function requireRole(minRole: 'mod' | 'admin'): Promise<AuthContext
   if (!allowed) throw new ApiError('forbidden', 403);
   return ctx;
 }
+
+/**
+ * Verifier gate (§14). A least-privilege capability that sits BESIDE mod/admin:
+ * admins inherit it, and specific members are granted it via verifier_grants
+ * (so a mod is NOT automatically a verifier — biometric call recordings stay
+ * scoped to a small trusted set). Checked through the is_verifier() SECURITY
+ * DEFINER RPC because verifier_grants is admin-read-only under RLS, so a plain
+ * verifier cannot read their own grant row directly.
+ */
+export async function requireVerifier(): Promise<AuthContext> {
+  const ctx = await requireUser();
+  if (ctx.appUser.role === 'admin') return ctx;
+  const { data, error } = await ctx.supabase.rpc('is_verifier');
+  if (error || data !== true) throw new ApiError('not_a_verifier', 403);
+  return ctx;
+}

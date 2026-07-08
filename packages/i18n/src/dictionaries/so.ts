@@ -435,9 +435,52 @@ export const so = {
   'settings.accountStatusTitle': 'Hakii ama tirtir akoonka',
   'settings.accountStatusBody':
     'Hakintu way qarisaa wax walba ilaa aad dib u gasho. Tirtiriddu waa mid rasmi ah 30 maalmood kadib.',
+  // SO needs native review
   'settings.accountStatusHelp':
-    'Hakin iskaa ah ayaa soo socota. Hadda, kooxda Xidig kala soo xiriir iimaylka akoonkaaga — 30 maalmood gudahood ayaan ku qabanaynaa.',
+    'Hakintu waxay qarisaa boggaaga iyo nuxurkaaga ilaa aad dib u gasho — waxba lama tirtiro. Codsashada tirtiridda waxay bilawdaa muddo 30 maalmood ah oo aad joojin karto waqti kasta; kadib akoonkaaga si joogto ah ayaa loo tirtiraa.',
   'settings.accountStatusLink': 'Aad dejinta akoonka',
+  // Phase 6 (§19) xakamaynta akoonka iskaa ah.
+  // SO needs native review
+  'settings.accountStatusSectionTitle': 'Xaaladda akoonka',
+  'settings.deactivateButton': 'Haki akoonka',
+  'settings.deactivateConfirm':
+    'Ma hakinaysaa akoonkaaga? Boggaaga iyo nuxurkaaga waa la qarinayaa ilaa aad dib u gasho. Waxba lama tirtiro.',
+  'settings.requestDeletionButton': 'Codso tirtirid',
+  'settings.cancelDeletionButton': 'Jooji tirtiridda',
+  'settings.requestDeletionConfirm':
+    'Ma codsanaysaa in akoonka la tirtiro? Waxaad haysataa 30 maalmood aad joojin karto ka hor inta aan wax walba si joogto ah loo tirtirin.',
+  'settings.deletionPending':
+    'Akoonkaaga waxaa loo qorsheeyay in la tirtiro. {days} maalmood ayaa haray oo aad joojin karto.',
+  // Phase 6 (§14) codsiga xaqiijinta xsubinta.
+  // SO needs native review
+  'settings.verifyTitle': 'Isxaqiiji',
+  'settings.verifyBody':
+    'Wicitaan muuqaal gaaban ayaa xaqiijinaya inaad tahay qof dhab ah. Xubnaha la xaqiijiyay waxay helaan calaamad iyo kalsooni sare guud ahaan Xidig.',
+  'settings.verifyConsentLabel':
+    'Waan ogolahay in wicitaanka muuqaalka xaqiijintayda la duubo lagana keydiyo si ammaan ah dib-u-eegis awgeed.',
+  'settings.verifyRequestButton': 'Codso xaqiijinta aqoonsiga',
+  // Phase 6 (§19) foomka racfaanka xubinta.
+  // SO needs native review
+  'settings.appealTitle': 'Racfaan ka qaado go’aan kormeerid',
+  'settings.appealIntro':
+    'Haddii aad u malaynayso in go’aanku qalad ahaa, noo sheeg wixii dhacay. Kormeere ka duwan kii go’aanka gaaray ayaa racfaankaaga dib u eegi doona 72 saacadood gudahood.',
+  'settings.appealEmpty':
+    'Ma jiraan go’aanno kormeerid oo aad hadda racfaan ka qaadi karto.',
+  'settings.appealActionLabel': 'Go’aanka',
+  'settings.appealReasonLabel': 'Maxaan u dib u eegnaa?',
+  'settings.appealReasonPlaceholder': 'Sharax wixii dhacay…',
+  'settings.appealSubmit': 'Gudbi racfaanka',
+  'settings.appealActionSuspend': 'Akoonka waa la hakiyay',
+  'settings.appealActionWarn': 'Digniin ayaa la bixiyay',
+  'settings.appealActionRemove': 'Nuxurka waa la saaray',
+  'settings.appealActionHide': 'Nuxurka waa la qariyay',
+  'settings.appealActionOther': 'Tallaabo kormeerid',
+  // Phase 6 tilmaamaha bulshada (stub).
+  // SO needs native review
+  'settings.guidelinesTitle': 'Tilmaamaha bulshada',
+  'settings.guidelinesBody':
+    'Xidig waa meel loogu talagalay bulsho Soomaali oo isxushmaysa. Tilmaamahayaga bulshada oo dhamaystiran ayaa la dhamaystirayaa. Inta u dhaxaysa, daacad ahow, naxariis lahow, oo dhammaan u sii ammaan.',
+  'settings.guidelinesLink': 'Wax dheeraad ah ka akhri xidig.net',
   // Account / sessions
   'settings.sessionsTitle': 'Fadhiyada',
   'settings.sessionsIntro': 'Halkan ka bax, ama meel walba ka bax haddii qalab lumo ama la wadaago.',
@@ -787,6 +830,8 @@ export const so = {
   'action.unblock': 'Furfur',
   'action.report': 'Soo sheeg',
   'action.enable': 'Daar',
+  'action.readGuidelines': 'Akhri hagaha',
+  'action.manageAccount': 'Maamul akoonka',
 
   // DMs / Fariimo errors (§27)
   'error.dmBlocked': 'Ma fariimi kartid xubintan — waxay xaddiday fariimahooda.',
@@ -818,6 +863,25 @@ export const so = {
   'error.candidateNotSubmittable':
     'Musharraxan lama gudbin karo hadda. Kaliya qabyo ayaa dib-u-eegis loo diri karaa.',
   'error.voteClosed': 'Codbixinta Musharraxan waa xiran tahay.',
+
+  // Habmaamul / akoon (§27 / §19) — SO waxaa loo baahan yahay dib-u-eegis afka hooyo
+  'error.contentRemoved':
+    'Qoraalkan waa la saaray sababtoo ah wuxuu ka hor imanayay siyaasadda nuxurkeena. Akhri hagaheena.',
+  'error.reportDuplicate':
+    'Horay ayaad u soo sheegtay tan — kooxdeennu way eegaysaa. Waad ku mahadsan tahay ilaalinta bulshada.',
+  'error.appealAlreadySubmitted':
+    'Horay ayaad uga racfaan qaadatay go’aankan. Hal racfaan ayaa loo oggol yahay ficil kasta, waxaanad jawaab ka heli doontaa habmaamule sare 72 saacadood gudahood.',
+  'error.appealNotEligible': 'Wax laga racfaan qaato halkan ma jiraan, ama ficilkan adiga kuuma gaar aha.',
+  'error.appealSelfReview':
+    'Adigaa qaaday ficilkan, sidaas darteed racfaankiisa ma eegi kartid — wuxuu tagaa habmaamule kale.',
+  'error.verificationPending':
+    'Horay ayaad u leedahay codsi xaqiijin oo socda. Waan kula soo xiriiri doonnaa si aan u qorsheyno wicitaankaaga.',
+  'error.notAVerifier': 'Kaliya xaqiijiyayaasha ayaa tan samayn kara.',
+  'error.accountAlreadyDeactivated':
+    'Akoonkaagu horay ayuu u damay. Mar kasta ku soo gal si aad dib ugu dhaqaajiso.',
+  'error.deletionAlreadyRequested':
+    'Akoonkaaga horay ayaa loo qorsheeyay in la tirtiro. Waad ka joojin kartaa goobaha akoonka inta lagu jiro muddada nasiinta.',
+
   'notice.capitalRegionGated':
     'Astaamaha maalgelintu waxay diyaar u yihiin xubnaha gobolka Soomaaliya. Waxaad arkaysaa muuqaalka macluumaadka.',
 
@@ -853,6 +917,17 @@ export const so = {
     'Codsigaaga fariinta waa la diray. Way arki doonaan marka xigta ee ay furaan Xidig.',
   'messages.reportSubmitted':
     'Waad ku mahadsan tahay soo-sheegista. Warbixinnada oo dhan waxaan dib u eegnaa 48 saacadood gudahood, waana kula soo socon doonnaa natiijada.',
+  // Habmaamul / akoon (§27 / §19) — SO waxaa loo baahan yahay dib-u-eegis afka hooyo
+  'messages.appealSubmitted':
+    'Racfaankaaga waxaa loo diray habmaamule sare. Waxaan kaaga jawaabi doonnaa 72 saacadood gudahood.',
+  'messages.verificationRequested':
+    'Codsigaaga xaqiijinta waa la helay. Waan kula soo xiriiri doonnaa si aan u qorsheyno wicitaankaaga muuqaalka.',
+  'messages.accountDeactivated':
+    'Akoonkaagu waa damay. Mar kasta ku soo gal si aad dib ugu dhaqaajiso — waxba lama tirtirin.',
+  'messages.deletionRequested':
+    'Akoonkaaga waxaa loo qorsheeyay in la tirtiro 30 maalmood gudahood. Waad joojin kartaa waqti kasta ka hor, waxaanad ka soo dejisan kartaa nuqul xogtaada ah Goobaha.',
+  'messages.deletionCancelled':
+    'Ku soo dhawoow. Codsigaagii tirtiridda waa la joojiyay, akoonkaaguna mar kale wuu firfircoon yahay.',
   'messages.optionsLabel': 'Xulashooyinka sheekada',
   'messages.blockConfirm':
     'Ma xannibaysaa {name}? Kuma fariimi kari doono, sheekadanna waa la qarin doonaa.',

@@ -193,6 +193,35 @@ export const ERROR_DEFS = {
   // Governance vote cast/retract outside the 7-day window.
   vote_closed: { messageKey: 'error.voteClosed' },
 
+  // --- Moderation / account (§27 Moderation block + §19 lifecycle) -------------------
+  // Shown to the author whose content was removed. Deliberately generic — cites
+  // the policy, never the specific rule or the reporter (§19 anti-gaming).
+  content_removed: {
+    messageKey: 'error.contentRemoved',
+    cta: { labelKey: 'action.readGuidelines', href: '/support/guidelines' },
+  },
+  // A member re-reports the same target they already have an open report on.
+  // Phrased so it never leaks that someone ELSE reported it.
+  report_duplicate: { messageKey: 'error.reportDuplicate' },
+  // One appeal per action (§19). The appeals_one_per_action unique constraint
+  // surfaces as this instead of a raw 23505.
+  appeal_already_submitted: { messageKey: 'error.appealAlreadySubmitted' },
+  // Appealing an action that isn't yours to appeal (or no such action).
+  appeal_not_eligible: { messageKey: 'error.appealNotEligible' },
+  // §19 "second mod/admin": a reviewer cannot decide an appeal against their own
+  // action. Mod-facing.
+  appeal_self_review: { messageKey: 'error.appealSelfReview' },
+  // The member already has a verification request in flight.
+  verification_pending: { messageKey: 'error.verificationPending' },
+  // Caller lacks the verifier capability (mod/admin without a verifier grant).
+  not_a_verifier: { messageKey: 'error.notAVerifier' },
+  // Self-service lifecycle guards.
+  account_already_deactivated: { messageKey: 'error.accountAlreadyDeactivated' },
+  deletion_already_requested: {
+    messageKey: 'error.deletionAlreadyRequested',
+    cta: { labelKey: 'action.manageAccount', href: '/settings/account' },
+  },
+
   // --- Request hygiene ---------------------------------------------------------------
   rate_limited: { messageKey: 'error.rateLimited' },
   invalid_request: { messageKey: 'error.invalidRequest' },
@@ -242,6 +271,13 @@ export const NOTICE_KEYS = {
   // informational view — a success-path notice, never an error. The Maalgeli
   // UI reads capital.regionGatedNotice; the API returns this on invest/gate.
   capital_region_gated: 'notice.capitalRegionGated',
+  // Phase 6 (Moderation / Verification / Account lifecycle) — §27 success-path
+  // plain-language copy.
+  appeal_submitted: 'messages.appealSubmitted',
+  verification_requested: 'messages.verificationRequested',
+  account_deactivated: 'messages.accountDeactivated',
+  deletion_requested: 'messages.deletionRequested',
+  deletion_cancelled: 'messages.deletionCancelled',
 } as const satisfies Record<string, MessageKey>;
 
 export type NoticeCode = keyof typeof NOTICE_KEYS;

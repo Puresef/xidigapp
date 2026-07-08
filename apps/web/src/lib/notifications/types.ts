@@ -38,6 +38,20 @@ export const NOTIFICATION_TYPES = [
   'lab_skill_gap',
   'lab_collab_invite',
   'lab_collab_response',
+  // Phase 6 (Admin / Moderation / Verification / Account) — all in-app only.
+  // Trust surfaces: the copy must never reveal a reporter's identity or the
+  // internal rule triggered (§19). Account-critical events (suspension,
+  // verification outcome) are in-app; email templating is Alpha Hardening Debt.
+  'report_resolved', // to the reporter: outcome of a report they filed
+  'account_warned', // to a warned member
+  'account_suspended', // to a suspended member
+  'account_unsuspended', // to a reinstated member
+  'appeal_decided', // to the appellant: upheld / overturned
+  'verification_scheduled', // to the member: a call was booked
+  'verification_approved', // to the member: badge/status awarded
+  'verification_declined', // to the member: request declined
+  'verification_more_info', // to the member: verifier needs more info
+  'community_verified', // to the member: 3rd vouch → Community Verified badge
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -77,4 +91,14 @@ export const NOTIFICATION_CHANNELS: Record<NotificationType, NotificationChannel
   lab_skill_gap: { inApp: true, email: false, push: false },
   lab_collab_invite: { inApp: true, email: false, push: false },
   lab_collab_response: { inApp: true, email: false, push: false },
+  report_resolved: { inApp: true, email: false, push: false },
+  account_warned: { inApp: true, email: false, push: false },
+  account_suspended: { inApp: true, email: false, push: false },
+  account_unsuspended: { inApp: true, email: false, push: false },
+  appeal_decided: { inApp: true, email: false, push: false },
+  verification_scheduled: { inApp: true, email: false, push: false },
+  verification_approved: { inApp: true, email: false, push: false },
+  verification_declined: { inApp: true, email: false, push: false },
+  verification_more_info: { inApp: true, email: false, push: false },
+  community_verified: { inApp: true, email: false, push: false },
 };

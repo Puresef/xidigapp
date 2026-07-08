@@ -259,6 +259,13 @@ main {
   border-color: color-mix(in srgb, var(--x-ok) 30%, white);
 }
 
+/* Phase 6: SLA-breach badges in the mod/verifier queues (red = overdue). */
+.xidig-tag--danger {
+  color: var(--x-danger);
+  background: var(--x-danger-bg);
+  border-color: color-mix(in srgb, var(--x-danger) 30%, white);
+}
+
 .xidig-auth__meta {
   margin-top: 1rem;
   font-size: 0.92rem;
