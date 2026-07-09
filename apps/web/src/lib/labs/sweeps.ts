@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { insertNotification } from '@/lib/notifications/notify';
 
 /**
@@ -36,7 +38,7 @@ export async function markDormantAndNudge(admin: Admin): Promise<number> {
   for (const labId of labIds) {
     const { data: members } = await admin
       .from('lab_members')
-      .select('user_id')
+      .select('user_id, role')
       .eq('lab_id', labId)
       .eq('status', 'active');
     await Promise.all(
@@ -50,6 +52,12 @@ export async function markDormantAndNudge(admin: Admin): Promise<number> {
         }),
       ),
     );
+    // §23 lab_marked_dormant: one event per Lab, attributed to its lead (the
+    // consent-bearing subject). Fire-and-forget; consent-gated like all capture.
+    const lead = (members ?? []).find((m) => m.role === 'lead')?.user_id;
+    if (lead) {
+      emitServer(event('lab_marked_dormant', {}), { distinctId: lead, userId: lead });
+    }
   }
   return labIds.length;
 }
@@ -92,6 +100,14 @@ export async function alertSkillGaps(admin: Admin): Promise<number> {
         }),
       ),
     );
+    // §23 skills_gap_alert_sent: one per notified member (the consent subject).
+    // Skill is a taxonomy slug (PII-free). Fire-and-forget, consent-gated.
+    for (const userId of recipients) {
+      emitServer(event('skills_gap_alert_sent', { skill: gap.skill }), {
+        distinctId: userId,
+        userId,
+      });
+    }
     sent += recipients.length;
   }
   return sent;

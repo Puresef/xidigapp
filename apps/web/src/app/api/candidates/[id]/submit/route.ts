@@ -1,3 +1,5 @@
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import {
@@ -48,7 +50,11 @@ export async function POST(_request: Request, context: Ctx): Promise<Response> {
       .eq('status', 'draft'); // guard against a concurrent double-submit
     if (error) throw new Error(`candidate submit failed: ${error.message}`);
 
-    // Phase 7: analytics (candidate_submitted).
+    emitServer(event('candidate_submitted', {}), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+
     const view = await getCandidateView(ctx.supabase, admin, id, ctx.appUser.id);
     if (!view) throw new ApiError('not_found', 404);
     return apiOk({ candidate: view });

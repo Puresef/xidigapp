@@ -64,6 +64,15 @@ export const LAUNCH_FLOOR_NAMESPACES = [
   // `notice.*` — informational success-path copy the API returns (region gate,
   // etc.); a trust surface alongside `error.*`.
   'notice',
+  // Phase 7 member-facing surfaces:
+  //   matching = "looking-for" Labs; awards = Community Awards voting;
+  //   mentor = Mentor-in-Residence featured slot; reputation = scores/badges.
+  // Growth + recognition surfaces — Somali ships complete; native review is
+  // tracked as Alpha Hardening Debt.
+  'matching',
+  'awards',
+  'mentor',
+  'reputation',
 ] as const;
 
 export interface NamespaceCoverage {

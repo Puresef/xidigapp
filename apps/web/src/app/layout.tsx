@@ -1,19 +1,23 @@
 import './globals.css';
 
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { LocaleProvider } from '@xidig/i18n/react';
 
 import { AppNav } from '../components/app-nav';
+import { LiteAutoPrompt } from '../components/lite/lite-auto-prompt';
 import { BadgeProvider } from '../components/nav/badge-provider';
 import { HeaderSearch } from '../components/nav/header-search';
 import { NotificationBell } from '../components/nav/notification-bell';
 import { UserMenu } from '../components/nav/user-menu';
 import { SiteFooter } from '../components/site-footer';
 import { getHeaderViewer } from '../lib/auth/header-viewer';
+import { getGeoCountry } from '../lib/capital/region-gate';
+import { isLiteActive } from '../lib/lite/prefs';
+import { regionSuggestsLite } from '../lib/lite/connection';
 import { getLitePrefs } from '../lib/lite/server';
 import { getLocale, getT } from '../lib/locale';
 import {
@@ -60,6 +64,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   const viewer = await getHeaderViewer();
 
+  // §22 low-bandwidth auto-prompt: the region heuristic is resolved server-side
+  // from the trusted edge geo header; the client component additionally checks
+  // the live connection (2G/3G/Save-Data) before offering Lite.
+  const geoSuggestsLite = regionSuggestsLite(getGeoCountry({ headers: await headers() }));
+
   return (
     // suppressHydrationWarning: the inline script (and the appearance settings
     // page) legitimately mutate html attributes before/after hydration.
@@ -92,6 +101,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             </header>
           </BadgeProvider>
           {children}
+          <LiteAutoPrompt
+            signedIn={viewer.signedIn}
+            liteActive={isLiteActive(lite)}
+            regionSuggestsLite={geoSuggestsLite}
+          />
           <SiteFooter />
         </LocaleProvider>
       </body>

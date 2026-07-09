@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireRole } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
@@ -149,6 +151,11 @@ export async function PATCH(
       targetType: 'report',
       targetId: report.id,
       metadata: { action: decision.action, targetType: report.target_type, targetId: report.target_id },
+    });
+
+    emitServer(event('report_resolved', { action: decision.action }), {
+      distinctId: mod.appUser.id,
+      userId: mod.appUser.id,
     });
 
     return apiOk({ report: { id: report.id, status: nextStatus } });

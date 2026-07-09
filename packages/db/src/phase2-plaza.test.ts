@@ -562,21 +562,26 @@ describe('phase 1 locks unchanged', () => {
     ).rejects.toThrow(/permission denied/);
   });
 
-  it('reputation_events / reputation_scores: still locked, even for the row owner', async () => {
+  it('reputation_events / reputation_scores: client WRITES still locked (reads opened in Phase 7)', async () => {
+    // Phase 7 (migration 20260709000000) opened the reputation READS — own-rows
+    // on reputation_events, all-rows on reputation_scores — and those policies
+    // are asserted in phase7-reputation-awards.test.ts. The invariant that stays
+    // true here: a member can never WRITE these tables (scores are earned via
+    // the service-role award engine, never a direct client insert/update).
     const member = await seedMember('rep_owner');
-    await db.admin.query(
-      `insert into reputation_events (user_id, event_type, points) values ($1, 'ask_credited', 10)`,
-      [member],
-    );
-    await db.admin.query(`insert into reputation_scores (user_id, helper_score) values ($1, 10)`, [
-      member,
-    ]);
-
-    const events = await db.asUser(member, (tx) => tx.query(`select * from reputation_events`));
-    expect(events.rows).toEqual([]);
-
-    const scores = await db.asUser(member, (tx) => tx.query(`select * from reputation_scores`));
-    expect(scores.rows).toEqual([]);
+    await expect(
+      db.asUser(member, (tx) =>
+        tx.query(
+          `insert into reputation_events (user_id, event_type, points) values ($1, 'ask_credited', 10)`,
+          [member],
+        ),
+      ),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      db.asUser(member, (tx) =>
+        tx.query(`insert into reputation_scores (user_id, helper_score) values ($1, 10)`, [member]),
+      ),
+    ).rejects.toThrow(/permission denied/);
   });
 });
 

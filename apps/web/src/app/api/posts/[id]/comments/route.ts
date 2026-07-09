@@ -1,9 +1,12 @@
 import { after } from 'next/server';
 import { z } from 'zod';
 
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser, type AuthContext } from '@/lib/auth/guards';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { awardReputation } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { notify } from '@/lib/notifications/notify';
 import { notifyMentions } from '@/lib/notifications/mentions';
@@ -184,13 +187,31 @@ export async function POST(
     // `reply`, so skip a duplicate mention ping for them. Plaza is
     // member-visible → no access gate. Link to the post permalink (payload +
     // post entity) so the notification opens the right content.
-    await notifyMentions(admin, {
+    const mentioned = await notifyMentions(admin, {
       text: input.body,
       actorUserId: ctx.appUser.id,
       entityType: 'post',
       entityId: postId,
       bundleKey: `mention:post:${postId}`,
       alreadyNotified: new Set([post.author_user_id]),
+    });
+
+    emitServer(event('comment_created', { on: 'post' }), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+    // Only when the comment actually mentioned someone (§23 mention_sent).
+    if (mentioned.length > 0) {
+      emitServer(event('mention_sent', { source: 'comment' }), {
+        distinctId: ctx.appUser.id,
+        userId: ctx.appUser.id,
+      });
+    }
+    await awardReputation(admin, {
+      userId: ctx.appUser.id,
+      eventType: 'comment_created',
+      entityType: 'comment',
+      entityId: row.id,
     });
 
     const [comment] = await hydrateComments(admin, ctx.appUser.id, [row]);

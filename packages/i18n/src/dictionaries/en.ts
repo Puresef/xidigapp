@@ -32,6 +32,8 @@ export const en = {
   'nav.search': 'Search',
   'nav.searchPlaceholder': 'Search Xidig',
   'nav.settings': 'Settings',
+  'nav.awards': 'Awards',
+  'nav.leaderboard': 'Top Helpers',
 
   // Canonical product terms used inside sentences and on buttons
   'term.lab': 'Lab',
@@ -253,6 +255,10 @@ export const en = {
     'Your account is already deactivated. Sign in again anytime to reactivate it.',
   'error.deletionAlreadyRequested':
     'Your account is already scheduled for deletion. You can cancel it from account settings during the grace period.',
+  'error.awardNoOpenCycle':
+    "Voting isn't open right now. Community Awards run each quarter — check back soon.",
+  'error.awardAlreadyVoted':
+    "You've already voted in this category. Each member gets one vote per category.",
 
   // Informational notice (non-error): non-Somalia invest attempt falls back to
   // the informational view. Returned via apiNotice, never thrown.
@@ -266,6 +272,55 @@ export const en = {
   'onboarding.firstPost': 'Write your first post',
   'onboarding.setPassword': 'Add a backup password',
   'onboarding.title': 'Welcome to Xidig — let’s get you set up',
+  'onboarding.checklistTitle': 'Get set up',
+  'onboarding.progress': '{completed} of {total} done',
+  'onboarding.dismiss': 'Dismiss',
+  'onboarding.done': 'You’re all set',
+
+  // Looking-for matching (PRD §20)
+  'matching.labsSeekingTitle': 'Labs looking for your skills',
+  'matching.labsSeekingBody': 'These Labs are seeking a skill you have.',
+  'matching.matchedSkills': 'Looking for:',
+
+  // Community Awards (PRD §20)
+  'awards.title': 'Community Awards',
+  'awards.subtitle': "Vote for this quarter's standouts. One vote per category — {quarter}.",
+  'awards.emptyTitle': 'No awards open right now',
+  'awards.emptyBody':
+    "Community Awards run each quarter. When voting opens, you'll pick the best Lab, the best Win, and the members who helped most. Check back soon.",
+  'awards.categoryBestLab': 'Best Lab',
+  'awards.categoryBestWin': 'Best Win',
+  'awards.categoryMostHelpful': 'Most Helpful',
+  'awards.categoryRisingBuilder': 'Rising Builder',
+  'awards.descBestLab': 'The Lab that shipped and inspired the most this quarter.',
+  'awards.descBestWin': 'The Win that moved the community forward.',
+  'awards.descMostHelpful': 'The member who helped others the most.',
+  'awards.descRisingBuilder': 'A newer builder making real progress.',
+  'awards.pickTargetLabel': 'Choose your pick',
+  'awards.pickTargetPlaceholder': 'Select…',
+  'awards.castVote': 'Cast vote',
+  'awards.yourVote': 'Your vote',
+  'awards.noTargets':
+    'Nothing to vote for here yet — follow members or explore Labs and Wins first.',
+
+  // Mentor-in-Residence (PRD §20)
+  'mentor.featuredTitle': 'Mentor in Residence',
+  'mentor.focusLabel': 'Focus:',
+  'mentor.asksAnswered': {
+    one: 'Answered {count} Ask this week',
+    other: 'Answered {count} Asks this week',
+  },
+  'mentor.periodTaken': 'A mentor is already appointed for that period. Pick a different period.',
+
+  // Reputation scores + Top Helper leaderboard (PRD §14)
+  'reputation.scoresSection': 'Reputation',
+  'reputation.contributionChip': 'Contribution {count}',
+  'reputation.helperChip': 'Helper {count}',
+  'reputation.leaderboardTitle': 'Top Helpers',
+  'reputation.leaderboardSubtitle':
+    'Members whose answers landed and earned the most Helper score.',
+  'reputation.topHelpersHeading': 'Top Helpers',
+  'reputation.leaderboardEmpty': 'No Helper scores yet. Answer an open Ask to earn credit.',
 
   // Home screen
   'home.welcome': 'Welcome to Xidig.',
@@ -1242,6 +1297,10 @@ export const en = {
   'lite.loadFull': 'Load full image',
   'lite.embedLabel': 'Video',
   'lite.mapLabel': 'Map',
+  'lite.promptTitle': 'Slow connection?',
+  'lite.promptBody': 'Switch to Lite to save data — images and maps load only when you tap Show.',
+  'lite.promptAccept': 'Use Lite',
+  'lite.promptDismiss': 'Not now',
 
   // Saved — bookmarks (§13 social). New launch-floor namespace.
   'saved.title': 'Saved',

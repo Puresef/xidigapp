@@ -92,7 +92,7 @@ export async function ProfileViewCard({
 }) {
   const t = await getT();
   const locale = await getLocale();
-  const { profile, badges, counts, media, openTo, pins } = view;
+  const { profile, badges, counts, reputation, media, openTo, pins } = view;
   const litePrefs = prefs ?? LITE_BUNDLES.everything;
 
   const verificationKey = VERIFICATION_KEYS[profile.verification_status];
@@ -140,6 +140,18 @@ export async function ProfileViewCard({
       </p>
 
       {actions ? <div className="xidig-profile__actions">{actions}</div> : null}
+
+      {/* Reputation (§14): aggregate contribution/helper totals as stat chips.
+          Always shown (0 until the member earns points) — public, no gating. */}
+      <section className="xidig-section">
+        <h2 className="xidig-section__title">{t('reputation.scoresSection')}</h2>
+        <ul className="xidig-chip-row">
+          <li className="xidig-tag">
+            {t('reputation.contributionChip', { count: reputation.contribution })}
+          </li>
+          <li className="xidig-tag">{t('reputation.helperChip', { count: reputation.helper })}</li>
+        </ul>
+      </section>
 
       {badges.length > 0 ? (
         <section className="xidig-section">

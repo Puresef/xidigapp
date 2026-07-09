@@ -222,6 +222,15 @@ export const ERROR_DEFS = {
     cta: { labelKey: 'action.manageAccount', href: '/settings/account' },
   },
 
+  // --- Community Awards / §20 (Phase 7) -----------------------------------------------
+  // No award cycle is open for voting right now. Voting only happens inside the
+  // quarterly window; the server resolves the open cycle (never trusts a client
+  // quarter). Also the safety net if the DB open-cycle trigger fires on a race.
+  no_open_cycle: { messageKey: 'error.awardNoOpenCycle' as MessageKey },
+  // The member already cast a vote in this category this quarter (one vote per
+  // category — the award_votes unique constraint surfaces as this, not raw 23505).
+  already_voted: { messageKey: 'error.awardAlreadyVoted' as MessageKey },
+
   // --- Request hygiene ---------------------------------------------------------------
   rate_limited: { messageKey: 'error.rateLimited' },
   invalid_request: { messageKey: 'error.invalidRequest' },

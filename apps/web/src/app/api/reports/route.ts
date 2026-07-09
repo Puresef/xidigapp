@@ -1,3 +1,5 @@
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiNotice, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { reportSchema } from '@/lib/moderation/schemas';
@@ -106,6 +108,11 @@ export async function POST(request: Request): Promise<Response> {
       targetType: input.targetType,
       targetId: input.targetId,
       messageSnapshot,
+    });
+
+    emitServer(event('report_submitted', { target_type: input.targetType, reason: input.reason }), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
     });
 
     return apiNotice('report_submitted');

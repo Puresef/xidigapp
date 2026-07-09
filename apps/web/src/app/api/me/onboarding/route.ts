@@ -11,6 +11,9 @@ import { requireUser } from '@/lib/auth/guards';
 
 const bodySchema = z.object({
   passwordNudgeDismissed: z.boolean().optional(),
+  // §20 first-session checklist: hide the whole card once the member dismisses
+  // it (it also auto-hides when every step is done).
+  checklistDismissed: z.boolean().optional(),
 });
 
 export async function PATCH(request: Request): Promise<Response> {

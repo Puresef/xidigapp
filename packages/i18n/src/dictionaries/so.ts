@@ -37,6 +37,8 @@ export const so = {
   'nav.search': 'Raadi',
   'nav.searchPlaceholder': 'Raadi Xidig',
   'nav.settings': 'Dejinta',
+  'nav.awards': 'Abaalmarin',
+  'nav.leaderboard': 'Caawiyayaasha',
 
   // Canonical product terms
   'term.lab': 'Warshad',
@@ -208,6 +210,53 @@ export const so = {
   'onboarding.firstPost': 'Qor qoraalkaaga ugu horreeya',
   'onboarding.setPassword': 'Ku dar fure sirta dheeri ah',
   'onboarding.title': 'Ku soo dhawoow Xidig — aan ku diyaarinno',
+  'onboarding.checklistTitle': 'Diyaargarow',
+  'onboarding.progress': '{completed} / {total} la dhammeeyay',
+  'onboarding.dismiss': 'Xir',
+  'onboarding.done': 'Waad diyaar tahay',
+
+  // Looking-for matching (PRD §20)
+  'matching.labsSeekingTitle': 'Warshadaha raadinaya xirfadahaaga',
+  'matching.labsSeekingBody': 'Warshadahani waxay raadinayaan xirfad aad leedahay.',
+  'matching.matchedSkills': 'Waxay raadinayaan:',
+
+  // Community Awards (PRD §20)
+  'awards.title': 'Abaalmarinta Bulshada',
+  'awards.subtitle': 'U codee kuwa ugu fiican rubucaan. Hal cod qeyb kasta — {quarter}.',
+  'awards.emptyTitle': 'Wax abaalmarin ah oo furan ma jiraan hadda',
+  'awards.emptyBody':
+    'Abaalmarinta Bulshada waxay socotaa rubuc kasta. Marka codaynta la furo, waxaad dooran doontaa Lab-ka ugu fiican, Guusha ugu weyn, iyo xubnaha ugu caawiyay. Dib u soo eeg.',
+  'awards.categoryBestLab': 'Lab-ka Ugu Fiican',
+  'awards.categoryBestWin': 'Guusha Ugu Fiican',
+  'awards.categoryMostHelpful': 'Kan Ugu Caawiya',
+  'awards.categoryRisingBuilder': 'Dhisaha Soo Kacaya',
+  'awards.descBestLab': 'Lab-ka ugu badan wax soo saaray oo dhiirrigeliyay rubucaan.',
+  'awards.descBestWin': 'Guusha horay u qaadday bulshada.',
+  'awards.descMostHelpful': 'Xubinta ugu caawisay dadka kale.',
+  'awards.descRisingBuilder': 'Dhisaha cusub ee horumar dhab ah sameeya.',
+  'awards.pickTargetLabel': 'Dooro doorashadaada',
+  'awards.pickTargetPlaceholder': 'Xulo…',
+  'awards.castVote': 'Cod dir',
+  'awards.yourVote': 'Codkaaga',
+  'awards.noTargets': 'Wali waxba lagu codeeyo ma jiraan — raac xubno ama baadh Labs iyo Guulo marka hore.',
+
+  // Mentor-in-Residence (PRD §20)
+  'mentor.featuredTitle': 'La-taliyaha Wakhtiga',
+  'mentor.focusLabel': 'Diirada:',
+  'mentor.asksAnswered': {
+    one: "Wuxuu jawaabay {count} Su'aal usbuucan",
+    other: "Wuxuu jawaabay {count} Su'aal usbuucan",
+  },
+  'mentor.periodTaken': 'La-taliye ayaa horeba loo magacaabay xilligaas. Dooro xilli kale.',
+
+  // Reputation scores + Top Helper leaderboard (PRD §14)
+  'reputation.scoresSection': 'Sumcad',
+  'reputation.contributionChip': 'Wax-ku-darsi {count}',
+  'reputation.helperChip': 'Caawiye {count}',
+  'reputation.leaderboardTitle': 'Caawiyayaasha Ugu Sarreeya',
+  'reputation.leaderboardSubtitle': 'Xubnaha jawaabahoodu shaqeeyeen oo kasbaday Helper score-ka ugu badan.',
+  'reputation.topHelpersHeading': 'Caawiyayaasha Ugu Sarreeya',
+  'reputation.leaderboardEmpty': "Weli Helper score ma jiro. Ka jawaab Ask furan si aad u kasbato.",
 
   // Home screen
   'home.welcome': 'Ku soo dhawoow Xidig.',
@@ -881,6 +930,10 @@ export const so = {
     'Akoonkaagu horay ayuu u damay. Mar kasta ku soo gal si aad dib ugu dhaqaajiso.',
   'error.deletionAlreadyRequested':
     'Akoonkaaga horay ayaa loo qorsheeyay in la tirtiro. Waad ka joojin kartaa goobaha akoonka inta lagu jiro muddada nasiinta.',
+  'error.awardNoOpenCycle':
+    'Codayntu ma furna hadda. Abaalmarinta Bulshada waxay socotaa rubuc kasta — dib u soo eeg.',
+  'error.awardAlreadyVoted':
+    'Horeba ayaad ugu codaysay qeybtan. Xubin kasta waxay codaysaa hal cod qeyb kasta.',
 
   'notice.capitalRegionGated':
     'Astaamaha maalgelintu waxay diyaar u yihiin xubnaha gobolka Soomaaliya. Waxaad arkaysaa muuqaalka macluumaadka.',
@@ -1171,6 +1224,10 @@ export const so = {
   'lite.loadFull': 'Soo deji sawirka buuxa',
   'lite.embedLabel': 'Muuqaal',
   'lite.mapLabel': 'Khariidad',
+  'lite.promptTitle': 'Xidhiidh gaabis ah?',
+  'lite.promptBody': 'U beddel Xawli yar si aad xog u badbaadiso — sawirrada iyo khariidadaha waxay soo baxaan markaad taabato Muuji.',
+  'lite.promptAccept': 'Isticmaal Xawli yar',
+  'lite.promptDismiss': 'Hadda maya',
 
   // Saved — bookmarks
   'saved.title': 'Kaydka',

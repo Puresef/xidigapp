@@ -1,8 +1,12 @@
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { apiNotice, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { getProfileCountry } from '@/lib/capital/candidates-api';
 import { evaluateCapitalGate, getGeoCountry } from '@/lib/capital/region-gate';
 import { fundInterestSchema } from '@/lib/capital/schemas';
+import { BADGE_SLUGS } from '@/lib/reputation/constants';
+import { awardBadge } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -46,7 +50,12 @@ export async function POST(request: Request): Promise<Response> {
     });
     if (error && error.code !== '23505') throw new Error(`fund interest insert failed: ${error.message}`);
 
-    // Phase 7: analytics (interest_expressed); Phase 7: Early Backer badge trigger.
+    emitServer(event('interest_expressed', { type: 'invest', scope: 'fund' }), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+    await awardBadge(admin, { userId: ctx.appUser.id, slug: BADGE_SLUGS.earlyBacker });
+
     return apiOk({ registered: true }, 201);
   } catch (error) {
     return handleApiError(error);

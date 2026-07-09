@@ -1,10 +1,13 @@
 import { apiOk, handleApiError } from '@/lib/api';
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { requireUser } from '@/lib/auth/guards';
 import { loadLabForViewer, parseLabId, requireLabContributor } from '@/lib/labs-api';
 import { updateCreateSchema } from '@/lib/labs/schemas';
 import { addUpdate } from '@/lib/labs/service';
 import { attachAuthors, UPDATE_COLUMNS, type UpdateRow } from '@/lib/labs/views';
 import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/pagination';
+import { awardReputation } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { z } from 'zod';
 
@@ -66,6 +69,19 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
     await requireLabContributor(ctx, admin, lab);
 
     const { id: updateId } = await addUpdate(admin, lab, ctx.appUser.id, input);
+
+    emitServer(event('lab_update_published', {}), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+    // Credit the author's contribution score (§14 anti-gaming rules apply).
+    await awardReputation(admin, {
+      userId: ctx.appUser.id,
+      eventType: 'lab_update_published',
+      entityType: 'lab_update',
+      entityId: updateId,
+    });
+
     return apiOk({ id: updateId }, 201);
   } catch (error) {
     return handleApiError(error);

@@ -1,4 +1,6 @@
 import { apiOk, handleApiError } from '@/lib/api';
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { requireUser } from '@/lib/auth/guards';
 import { loadLabForViewer, parseLabId, requireLabManager } from '@/lib/labs-api';
 import { collaborationActionSchema } from '@/lib/labs/schemas';
@@ -53,6 +55,10 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
     switch (input.action) {
       case 'propose': {
         const result = await proposeCollaboration(admin, lab, input.targetLabId, ctx.appUser.id);
+        emitServer(event('lab_collaboration_created', {}), {
+          distinctId: ctx.appUser.id,
+          userId: ctx.appUser.id,
+        });
         return apiOk({ id: result.id }, 201);
       }
       case 'respond': {

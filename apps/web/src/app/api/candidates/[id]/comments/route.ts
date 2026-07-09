@@ -1,5 +1,7 @@
 import { after } from 'next/server';
 
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { loadCandidateForViewer, parseCandidateId } from '@/lib/capital/candidates-api';
@@ -21,6 +23,7 @@ import {
   type Cursor,
 } from '@/lib/pagination';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { awardReputation } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { z } from 'zod';
 
@@ -134,13 +137,31 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
     }
 
     // @mention pings (§13); dedup the creator who already got a reply.
-    await notifyMentions(admin, {
+    const mentioned = await notifyMentions(admin, {
       text: input.body,
       actorUserId: ctx.appUser.id,
       entityType: 'candidate',
       entityId: id,
       bundleKey: `mention:candidate:${id}`,
       alreadyNotified: new Set([cand.created_by_user_id]),
+    });
+
+    emitServer(event('comment_created', { on: 'candidate' }), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+    // Only when the comment actually mentioned someone (§23 mention_sent).
+    if (mentioned.length > 0) {
+      emitServer(event('mention_sent', { source: 'comment' }), {
+        distinctId: ctx.appUser.id,
+        userId: ctx.appUser.id,
+      });
+    }
+    await awardReputation(admin, {
+      userId: ctx.appUser.id,
+      eventType: 'comment_created',
+      entityType: 'comment',
+      entityId: row.id,
     });
 
     const [comment] = await hydrateComments(admin, ctx.appUser.id, [row]);

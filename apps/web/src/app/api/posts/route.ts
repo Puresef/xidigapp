@@ -1,6 +1,8 @@
 import { after } from 'next/server';
 import { z } from 'zod';
 
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { scanTextContent } from '@/lib/moderation/scan';
@@ -15,6 +17,7 @@ import { feedQuerySchema, postCreateSchema } from '@/lib/plaza/schemas';
 import { hydratePosts, POST_COLUMNS } from '@/lib/plaza/views';
 import { hydrateOnePost, isSupporter, postScanText } from '@/lib/posts-api';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { awardReputation } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 import type { TablesInsert } from '@xidig/db';
@@ -221,6 +224,17 @@ export async function POST(request: Request): Promise<Response> {
         bundleKey: `mention:post:${post.id}`,
       }),
     );
+
+    emitServer(event('post_created', { type: input.type }), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+    await awardReputation(admin, {
+      userId: ctx.appUser.id,
+      eventType: 'post_created',
+      entityType: 'post',
+      entityId: post.id,
+    });
 
     const view = await hydrateOnePost(admin, ctx.appUser.id, post);
     return apiOk({ post: view }, 201);

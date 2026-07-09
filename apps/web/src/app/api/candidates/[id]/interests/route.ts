@@ -1,3 +1,5 @@
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { apiNotice, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import {
@@ -8,6 +10,8 @@ import {
 import { getGeoCountry, evaluateCapitalGate } from '@/lib/capital/region-gate';
 import { candidateInterestSchema, interestTypeSchema } from '@/lib/capital/schemas';
 import type { InterestCounts } from '@/lib/capital/views';
+import { BADGE_SLUGS } from '@/lib/reputation/constants';
+import { awardBadge } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -84,7 +88,15 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
     );
     if (error) throw new Error(`interest upsert failed: ${error.message}`);
 
-    // Phase 7: analytics (interest_expressed); Phase 7: Early Backer badge trigger.
+    emitServer(event('interest_expressed', { type: input.type, scope: 'candidate' }), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+    // A real "backing" (cosign/invest, not help) earns the Early Backer badge once.
+    if (input.type === 'cosign' || input.type === 'invest') {
+      await awardBadge(admin, { userId: ctx.appUser.id, slug: BADGE_SLUGS.earlyBacker });
+    }
+
     return apiOk({ counts: await readCounts(admin, id), type: input.type });
   } catch (error) {
     return handleApiError(error);

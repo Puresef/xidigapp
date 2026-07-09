@@ -6,10 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useT } from '@xidig/i18n/react';
 
 import { trackClient } from '@/lib/analytics/client';
-import { apiPatch } from '@/lib/api-client';
-import { serializeLowBandwidthCookie } from '@/lib/bandwidth';
-import { LITE_BUNDLES, serializeLitePrefsCookie } from '@/lib/lite/prefs';
-import { MOTION_COOKIE, serializeAppearanceCookie } from '@/lib/settings/appearance';
+import { applyLiteBundle } from '@/lib/lite/apply';
 
 /**
  * Low-bandwidth mode toggle (§22 — Phase 1 acceptance; Phase 4.5 Lite). The
@@ -36,18 +33,10 @@ export function LowBandwidthToggle({
   function toggle() {
     const next = !enabled;
     setEnabled(next);
-    const bundle = next ? LITE_BUNDLES.essentials : LITE_BUNDLES.everything;
-    document.cookie = serializeLowBandwidthCookie(next);
-    document.cookie = serializeLitePrefsCookie(bundle);
-    // Drive the data-motion kill-switch from the bundle's animations pref —
-    // essentials defers animations (→ 'off'), everything loads them (→ system).
-    document.cookie = serializeAppearanceCookie(MOTION_COOKIE, bundle.animations ? 'system' : 'off');
+    // Shared write sequence (cookies + best-effort server mirror) — on =
+    // `essentials`, off = `everything`; identical to the auto-prompt's Accept.
+    applyLiteBundle(next ? 'essentials' : 'everything', signedIn);
     trackClient('low_bandwidth_enabled', { enabled: next });
-    if (signedIn) {
-      // Best-effort — the cookie already took effect; a failed column write
-      // only loses cross-device continuity.
-      void apiPatch('/api/me/bandwidth', { enabled: next }).catch(() => undefined);
-    }
     router.refresh();
   }
 

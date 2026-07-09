@@ -32,13 +32,50 @@ export type SignupMethod = 'password' | 'magic_link' | 'sms_otp';
 export interface AnalyticsEventMap {
   // --- Activation (§23) ---------------------------------------------------
   signup_completed: { method: SignupMethod; invited: boolean; founding_member: boolean };
+  low_bandwidth_prompt_shown: { reason: 'connection' | 'region' };
+  low_bandwidth_prompt_dismissed: Record<string, never>;
   profile_completed: { has_location: boolean; skills_count: number; lanes_count: number };
   lane_selected: { lane: string };
   verification_started: { type: Enums<'verification_type'> };
   verification_completed: { type: Enums<'verification_type'>; outcome: 'approved' | 'rejected' };
 
+  // --- Plaza (§23) --------------------------------------------------------
+  post_created: { type: Enums<'post_type'> };
+  comment_created: { on: 'post' | 'candidate' };
+  // Ask closed by its asker: credited = an answer was credited (helper paid),
+  // false = closed without crediting.
+  ask_resolved: { credited: boolean };
+  report_submitted: { target_type: Enums<'entity_type'>; reason: Enums<'report_reason'> };
+  report_resolved: { action: string };
+
   // --- Social (§23) -------------------------------------------------------
   follow_created: { target_type: Enums<'follow_target_type'> };
+  dm_request_sent: Record<string, never>;
+  dm_sent: Record<string, never>;
+  // Where the @mention was authored (a taxonomy slug, never the handle).
+  mention_sent: { source: 'post' | 'comment' | 'message' };
+
+  // --- Labs (§23) ---------------------------------------------------------
+  lab_created: { mode: Enums<'space_mode'> };
+  lab_joined: Record<string, never>;
+  lab_update_published: Record<string, never>;
+  lab_marked_dormant: Record<string, never>;
+  lab_revived: Record<string, never>;
+
+  // --- Capital (§23) ------------------------------------------------------
+  candidate_submitted: Record<string, never>;
+  candidate_reviewed: Record<string, never>;
+  // interest_expressed by type (help / cosign / invest) + where it was placed.
+  interest_expressed: { type: Enums<'interest_type'>; scope: 'candidate' | 'fund' };
+  venture_timeline_viewed: Record<string, never>;
+
+  // --- Community (§23) ----------------------------------------------------
+  lab_collaboration_created: Record<string, never>;
+  skills_gap_alert_sent: { skill: string };
+  skills_gap_alert_clicked: { skill: string };
+  mentor_ask_answered: Record<string, never>;
+  reaction_added: { type: Enums<'reaction_type'> };
+  governance_log_viewed: Record<string, never>;
 
   // --- Directory / Map (§23) ---------------------------------------------
   listing_created: { category: string; has_coordinates: boolean };
@@ -110,6 +147,16 @@ export const CLIENT_EVENT_NAMES = [
   // the ingest route accepts it if a future client path emits it directly.
   'media_revealed',
   'search_performed',
+  // Phase 7: view/click + reaction + lite-prompt events that genuinely originate
+  // in the browser (no server route owns them). reaction_added fires client-side
+  // because reactions are written via a direct column-scoped PostgREST insert,
+  // not an API route.
+  'reaction_added',
+  'venture_timeline_viewed',
+  'governance_log_viewed',
+  'skills_gap_alert_clicked',
+  'low_bandwidth_prompt_shown',
+  'low_bandwidth_prompt_dismissed',
 ] as const;
 
 export type ClientAnalyticsEventName = (typeof CLIENT_EVENT_NAMES)[number];

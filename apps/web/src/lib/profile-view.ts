@@ -57,6 +57,15 @@ export interface ProfileCounts {
   vouches: number;
 }
 
+/**
+ * Aggregate reputation totals (§14). Public/non-sensitive — shown as stat chips
+ * on the profile and driving the Top Helper leaderboard. Absent row = all zero.
+ */
+export interface ProfileReputation {
+  contribution: number;
+  helper: number;
+}
+
 interface ProfileViewRow {
   user_id: string;
   display_name: string;
@@ -100,6 +109,8 @@ export interface ProfileView {
   profile: ProfileViewRow;
   badges: ProfileBadge[];
   counts: ProfileCounts;
+  /** Aggregate reputation totals (§14); zeroes when no score row exists. */
+  reputation: ProfileReputation;
   media: ProfileMediaView;
   /** open_to_kinds slugs in lookup sort order. */
   openTo: string[];
@@ -141,6 +152,27 @@ async function loadCounts(userId: string): Promise<ProfileCounts> {
       .eq('vouchee_user_id', userId),
   ]);
   return { followers: followers ?? 0, vouches: vouches ?? 0 };
+}
+
+/**
+ * Aggregate reputation totals (§14). reputation_scores is member-readable
+ * (RLS `select_all`), so the signed-in view reads it under the caller's RLS
+ * client and the public view passes the service role. No row yet = all zero
+ * (a member only materialises a score once they earn points).
+ */
+export async function loadReputation(
+  client: AnyClient,
+  userId: string,
+): Promise<ProfileReputation> {
+  const { data } = await client
+    .from('reputation_scores')
+    .select('contribution_score, helper_score')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return {
+    contribution: data?.contribution_score ?? 0,
+    helper: data?.helper_score ?? 0,
+  };
 }
 
 /**
@@ -366,9 +398,10 @@ export async function getMemberProfileView(
 
   const rawRow = profile as unknown as ProfileViewRow;
   const isOwner = viewerId !== undefined && viewerId === rawRow.user_id;
-  const [badges, counts, openTo, pins, settings] = await Promise.all([
+  const [badges, counts, reputation, openTo, pins, settings] = await Promise.all([
     loadBadges(supabase, rawRow.user_id),
     loadCounts(rawRow.user_id),
+    loadReputation(supabase, rawRow.user_id),
     loadOpenTo(supabase, rawRow.user_id),
     hydrateProfilePins(supabase, rawRow.user_id),
     // Owners bypass the fold entirely — skip the settings read for them.
@@ -378,7 +411,7 @@ export async function getMemberProfileView(
   ]);
   const row = isOwner ? rawRow : applyLocationGranularity(rawRow, settings.locationGranularity);
 
-  return { profile: row, badges, counts, media: profileMediaView(row), openTo, pins };
+  return { profile: row, badges, counts, reputation, media: profileMediaView(row), openTo, pins };
 }
 
 /**
@@ -398,13 +431,14 @@ export async function getPublicProfileView(handle: string): Promise<ProfileView 
   if (!profile) return null;
 
   let row = profile as unknown as ProfileViewRow;
-  const [badges, counts, openTo, settings] = await Promise.all([
+  const [badges, counts, reputation, openTo, settings] = await Promise.all([
     loadBadges(admin, row.user_id),
     loadCounts(row.user_id),
+    loadReputation(admin, row.user_id),
     loadOpenTo(admin, row.user_id),
     loadPublicSettings(row.user_id),
   ]);
   row = applyLocationGranularity(row, settings.locationGranularity);
 
-  return { profile: row, badges, counts, media: profileMediaView(row), openTo, pins: [] };
+  return { profile: row, badges, counts, reputation, media: profileMediaView(row), openTo, pins: [] };
 }

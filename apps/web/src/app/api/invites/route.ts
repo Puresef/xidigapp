@@ -1,3 +1,5 @@
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { apiOk, handleApiError } from '@/lib/api';
 import { INVITES_PER_DAY } from '@/lib/auth/constants';
 import { requireUser } from '@/lib/auth/guards';
@@ -52,6 +54,11 @@ export async function POST(): Promise<Response> {
       action: 'invite.created',
       targetType: 'invite',
       targetId: invite.id,
+    });
+
+    emitServer(event('invite_sent', {}), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
     });
 
     return apiOk({ invite }, 201);

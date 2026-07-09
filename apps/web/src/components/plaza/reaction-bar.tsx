@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
+import { trackClient } from '@/lib/analytics/client';
 import { ApiRequestError, apiDelete, apiPut } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import { REACTION_TYPES, type ReactionCounts, type ReactionType } from '@/lib/plaza/views';
@@ -64,7 +65,10 @@ export function ReactionBar({
     const path = `/api/${targetKind === 'post' ? 'posts' : 'comments'}/${targetId}/reactions/${type}`;
     try {
       if (hadIt) await apiDelete<{ reacted: boolean }>(path);
-      else await apiPut<{ reacted: boolean }>(path);
+      else {
+        await apiPut<{ reacted: boolean }>(path);
+        trackClient('reaction_added', { type });
+      }
     } catch (cause) {
       setLocalCounts(previousCounts);
       setLocalMine(previousMine);

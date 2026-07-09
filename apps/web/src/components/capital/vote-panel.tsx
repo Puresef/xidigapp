@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { Enums } from '@xidig/db';
 import { useT } from '@xidig/i18n/react';
 
+import { trackClient } from '@/lib/analytics/client';
 import { ApiRequestError, apiDelete, apiPost } from '@/lib/api-client';
 import type { VoteTally } from '@/lib/capital/views';
 import type { PlainError } from '@/lib/errors';
@@ -41,6 +42,11 @@ export function VotePanel({
   const [myVote, setMyVote] = useState<VoteChoice | null>(initialVote);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
+
+  // §23 governance_log_viewed — fire once per mount of the governance surface.
+  useEffect(() => {
+    trackClient('governance_log_viewed', {});
+  }, []);
 
   function cast(vote: VoteChoice) {
     if (pending) return;

@@ -1,3 +1,5 @@
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiNotice, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import {
@@ -85,6 +87,10 @@ export async function POST(request: Request): Promise<Response> {
     // §27: a freshly sent / re-opened request returns the "message request has
     // been sent" notice; opening an existing/accepted thread is a plain OK.
     if (result.state === 'requested' || result.state === 'reopened') {
+      emitServer(event('dm_request_sent', {}), {
+        distinctId: ctx.appUser.id,
+        userId: ctx.appUser.id,
+      });
       return apiNotice('dm_request_sent', payload);
     }
     return apiOk(payload);

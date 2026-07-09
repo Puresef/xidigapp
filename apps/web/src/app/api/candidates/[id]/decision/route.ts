@@ -1,5 +1,7 @@
 import type { TablesUpdate } from '@xidig/db';
 
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import {
@@ -60,7 +62,11 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
     const { error } = await admin.from('venture_candidates').update(patch).eq('id', id);
     if (error) throw new Error(`candidate decision failed: ${error.message}`);
 
-    // Phase 7: analytics (candidate_reviewed).
+    emitServer(event('candidate_reviewed', {}), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+
     const view = await getCandidateView(ctx.supabase, admin, id, ctx.appUser.id);
     if (!view) throw new ApiError('not_found', 404);
     return apiOk({ candidate: view });

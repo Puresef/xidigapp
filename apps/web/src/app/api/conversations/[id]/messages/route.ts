@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import {
@@ -84,6 +86,7 @@ export async function POST(
     if (!convo) throw new ApiError('not_found', 404);
 
     const message = await sendMessage(admin, ctx.appUser.id, convo, body);
+    emitServer(event('dm_sent', {}), { distinctId: ctx.appUser.id, userId: ctx.appUser.id });
     return apiOk({ message: toMessageView(message, ctx.appUser.id) }, 201);
   } catch (error) {
     return handleApiError(error);

@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      advisor_grants: {
+        Row: {
+          granted_at: string
+          granted_by_user_id: string | null
+          note: string | null
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by_user_id?: string | null
+          note?: string | null
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by_user_id?: string | null
+          note?: string | null
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advisor_grants_granted_by_user_id_fkey"
+            columns: ["granted_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "advisor_grants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_keys: {
         Row: {
           created_at: string
@@ -214,6 +253,44 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      award_cycles: {
+        Row: {
+          closes_at: string
+          created_at: string
+          opens_at: string
+          published_at: string | null
+          quarter: string
+          results_post_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          closes_at: string
+          created_at?: string
+          opens_at: string
+          published_at?: string | null
+          quarter: string
+          results_post_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          closes_at?: string
+          created_at?: string
+          opens_at?: string
+          published_at?: string | null
+          quarter?: string
+          results_post_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_cycles_results_post_id_fkey"
+            columns: ["results_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
             referencedColumns: ["id"]
           },
         ]
@@ -1859,6 +1936,54 @@ export type Database = {
         }
         Relationships: []
       }
+      mentor_residencies: {
+        Row: {
+          advisor_user_id: string
+          created_at: string
+          created_by_user_id: string | null
+          ends_on: string
+          focus: string | null
+          id: string
+          period: string
+          starts_on: string
+        }
+        Insert: {
+          advisor_user_id: string
+          created_at?: string
+          created_by_user_id?: string | null
+          ends_on: string
+          focus?: string | null
+          id?: string
+          period: string
+          starts_on: string
+        }
+        Update: {
+          advisor_user_id?: string
+          created_at?: string
+          created_by_user_id?: string | null
+          ends_on?: string
+          focus?: string | null
+          id?: string
+          period?: string
+          starts_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentor_residencies_advisor_user_id_fkey"
+            columns: ["advisor_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_residencies_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string
@@ -2895,6 +3020,7 @@ export type Database = {
           event_type: string
           id: string
           points: number
+          score_class: string | null
           user_id: string
         }
         Insert: {
@@ -2904,6 +3030,7 @@ export type Database = {
           event_type: string
           id?: string
           points: number
+          score_class?: string | null
           user_id: string
         }
         Update: {
@@ -2913,6 +3040,7 @@ export type Database = {
           event_type?: string
           id?: string
           points?: number
+          score_class?: string | null
           user_id?: string
         }
         Relationships: [
@@ -3797,6 +3925,31 @@ export type Database = {
     }
     Functions: {
       author_is_active: { Args: { author_id: string }; Returns: boolean }
+      award_badge: {
+        Args: { p_context?: string; p_slug: string; p_user_id: string }
+        Returns: boolean
+      }
+      award_cycle_is_open: { Args: { p_quarter: string }; Returns: boolean }
+      award_reputation: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["entity_type"]
+          p_event_type: string
+          p_points: number
+          p_score_class: string
+          p_user_id: string
+        }
+        Returns: number
+      }
+      award_vote_tally: {
+        Args: { p_quarter: string }
+        Returns: {
+          category: Database["public"]["Enums"]["award_category"]
+          target_id: string
+          target_type: Database["public"]["Enums"]["entity_type"]
+          votes: number
+        }[]
+      }
       can_read_candidate: { Args: { cand: string }; Returns: boolean }
       can_read_lab: { Args: { p_lab_id: string }; Returns: boolean }
       can_read_lab_roster: { Args: { p_lab_id: string }; Returns: boolean }
@@ -3856,6 +4009,7 @@ export type Database = {
       has_password: { Args: never; Returns: boolean }
       is_active_account: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
+      is_advisor: { Args: never; Returns: boolean }
       is_candidate_lab_member: { Args: { cand: string }; Returns: boolean }
       is_lab_member: { Args: { p_lab_id: string }; Returns: boolean }
       is_mod: { Args: never; Returns: boolean }
@@ -3872,6 +4026,10 @@ export type Database = {
         }[]
       }
       mark_dormant_labs: { Args: never; Returns: string[] }
+      mentor_asks_answered: {
+        Args: { p_since: string; p_user_id: string }
+        Returns: number
+      }
       normalize_auth_phone: { Args: { p: string }; Returns: string }
       pgp_armor_headers: {
         Args: { "": string }
@@ -3883,6 +4041,10 @@ export type Database = {
           poll_option_id: string
           votes: number
         }[]
+      }
+      recompute_reputation_scores: {
+        Args: { p_user_id?: string }
+        Returns: undefined
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }

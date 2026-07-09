@@ -1,3 +1,5 @@
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import {
@@ -101,7 +103,11 @@ export async function PUT(request: Request, context: Ctx): Promise<Response> {
       .eq('id', id);
     if (aggError) throw new Error(`rubric aggregate write failed: ${aggError.message}`);
 
-    // Phase 7: analytics (candidate_reviewed).
+    emitServer(event('candidate_reviewed', {}), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+
     const { data: review, error: readError } = await ctx.supabase
       .from('candidate_reviews')
       .select(REVIEW_COLUMNS)

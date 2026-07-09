@@ -1,7 +1,12 @@
+'use client';
+
+import { useEffect } from 'react';
+
 import { formatRelativeTime } from '@xidig/i18n';
 import type { MessageKey } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
+import { trackClient } from '@/lib/analytics/client';
 import type { TimelineMilestone } from '@/lib/capital/views';
 
 /**
@@ -20,6 +25,11 @@ const MILESTONE_KEYS: Record<TimelineMilestone['key'], MessageKey> = {
 export function Timeline({ milestones }: { milestones: TimelineMilestone[] }) {
   const t = useT();
   const { locale } = useLocale();
+
+  // §23 venture_timeline_viewed — fire once per mount of the build-log surface.
+  useEffect(() => {
+    trackClient('venture_timeline_viewed', {});
+  }, []);
 
   if (milestones.length === 0) return null;
 

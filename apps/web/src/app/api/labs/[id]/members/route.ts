@@ -1,4 +1,6 @@
 import { apiNotice, apiOk, handleApiError } from '@/lib/api';
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { requireUser } from '@/lib/auth/guards';
 import { loadLabForViewer, parseLabId, requireLabManager } from '@/lib/labs-api';
 import { memberActionSchema } from '@/lib/labs/schemas';
@@ -58,6 +60,11 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
       case 'join': {
         const result = await joinLab(admin, lab, ctx.appUser.id);
         if (result.status === 'requested') return apiNotice('lab_join_requested');
+        // Fire only when the caller actually became active (open join / accepted invite).
+        emitServer(event('lab_joined', {}), {
+          distinctId: ctx.appUser.id,
+          userId: ctx.appUser.id,
+        });
         return apiOk({ status: result.status });
       }
       case 'leave': {
@@ -67,6 +74,13 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
       case 'respond': {
         requireLabManager(ctx, lab);
         await respondToRequest(admin, lab, ctx.appUser.id, input.userId, input.decision);
+        // An accepted request is the moment the requester becomes an active member.
+        if (input.decision === 'accept') {
+          emitServer(event('lab_joined', {}), {
+            distinctId: input.userId,
+            userId: input.userId,
+          });
+        }
         return apiOk({ ok: true });
       }
       case 'invite': {

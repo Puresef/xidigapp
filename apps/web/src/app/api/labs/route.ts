@@ -1,4 +1,6 @@
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
+import { emitServer } from '@/lib/analytics/emit';
+import { event } from '@/lib/analytics/events';
 import { requireUser } from '@/lib/auth/guards';
 import { LAB_CREATE_LIMIT, RATE_WINDOW_DAY_SECONDS } from '@/lib/labs/constants';
 import { labCreateSchema, labListQuerySchema } from '@/lib/labs/schemas';
@@ -7,6 +9,8 @@ import { hydrateLabs, LAB_COLUMNS, type LabRow } from '@/lib/labs/views';
 import { isSupporter } from '@/lib/posts-api';
 import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/pagination';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { BADGE_SLUGS } from '@/lib/reputation/constants';
+import { awardBadge } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -110,6 +114,14 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const lab = await createLab(admin, ctx.appUser.id, input);
+
+    emitServer(event('lab_created', { mode: lab.space_mode }), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+    // The creator is the Lab Lead (§20 milestone badge).
+    await awardBadge(admin, { userId: ctx.appUser.id, slug: BADGE_SLUGS.labLead });
+
     const [view] = await hydrateLabs(admin, ctx.appUser.id, [lab]);
     return apiOk({ lab: view }, 201);
   } catch (error) {
