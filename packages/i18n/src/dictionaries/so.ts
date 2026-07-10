@@ -1507,6 +1507,15 @@ export const so = {
   'marketing.eventNextTitle': 'Waxa xiga',
   'marketing.eventNextCta': 'Arag munaasabadda',
 
+  // Summado qurxin ah oo ku dhex jira muuqaallada astaamaha bogga hore
+  // (aria-hidden, guud oo aan magacyo lahayn — xeerka daacadnimada waa taagan
+  // yahay).
+  'marketing.vigSuuqQuery': 'dawaarle · Hargeysa',
+  'marketing.vigSkillOne': 'Naqshad',
+  'marketing.vigSkillTwo': 'Ganacsi',
+  'marketing.vigSkillThree': 'Dawaarnimo',
+  'marketing.vigBaitLabel': 'Kala-horreyn dabin-jiidasho',
+
   // /product
   'marketing.productTitle': 'Waxa Xidig maanta ku siinayo',
   'marketing.productIntro':

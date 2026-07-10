@@ -1585,6 +1585,14 @@ export const en = {
   'marketing.eventNextTitle': 'Next up',
   'marketing.eventNextCta': 'See the event',
 
+  // Decorative labels inside the front-door feature vignettes (aria-hidden
+  // schematic scenes — generic and nameless; the no-fabrication rule holds).
+  'marketing.vigSuuqQuery': 'tailor · Hargeisa',
+  'marketing.vigSkillOne': 'Design',
+  'marketing.vigSkillTwo': 'Trade',
+  'marketing.vigSkillThree': 'Tailoring',
+  'marketing.vigBaitLabel': 'Engagement-bait ranking',
+
   // /product
   'marketing.productTitle': 'What Xidig gives you today',
   'marketing.productIntro':

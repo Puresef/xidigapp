@@ -105,21 +105,28 @@ export function Starfield() {
           </radialGradient>
         </defs>
 
-        <g>
-          {STARS.map((star, i) => (
-            <circle
-              key={`s${star.x}-${star.y}-${i}`}
-              cx={star.x}
-              cy={star.y}
-              r={star.r}
-              fill={star.fill}
-              opacity={star.opacity}
-              className={star.twinkle ? `xf-tw xf-tw--${star.twinkle}` : undefined}
-            />
-          ))}
-        </g>
+        {/* Three depth layers (small/medium/large radii) — FrontMotion drives
+            --xf-scroll and CSS translates each layer at a different rate for
+            subtle parallax; motion-off leaves them exactly in place. */}
+        {([1, 2, 3] as const).map((depth) => (
+          <g key={depth} className={`xf-sf-d${depth}`}>
+            {STARS.filter((star) => 1 + (star.r > 0.9 ? 1 : 0) + (star.r > 1.3 ? 1 : 0) === depth).map(
+              (star, i) => (
+                <circle
+                  key={`s${star.x}-${star.y}-${i}`}
+                  cx={star.x}
+                  cy={star.y}
+                  r={star.r}
+                  fill={star.fill}
+                  opacity={star.opacity}
+                  className={star.twinkle ? `xf-tw xf-tw--${star.twinkle}` : undefined}
+                />
+              ),
+            )}
+          </g>
+        ))}
 
-        <g>
+        <g className="xf-sf-d2">
           <polygon
             points={CONSTELLATION_POINTS}
             fill="rgba(0, 119, 204, 0.05)"

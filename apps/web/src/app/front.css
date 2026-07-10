@@ -206,7 +206,7 @@ main.xidig-front .xidig-front__hero--home p {
   max-width: 34rem;
 }
 
-.xidig-starfield {
+main.xidig-front .xidig-starfield {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -215,7 +215,7 @@ main.xidig-front .xidig-front__hero--home p {
   mask-image: linear-gradient(180deg, #000 55%, transparent 98%);
 }
 
-.xidig-starfield svg {
+main.xidig-front .xidig-starfield svg {
   display: block;
   width: 100%;
   height: 100%;
@@ -862,4 +862,1352 @@ body:has(main.xidig-front) .xidig-footer__list a {
 
 body:has(main.xidig-front) .xidig-footer__list a:hover {
   color: var(--xf-text);
+}
+
+/* ============================================================================
+ * Motion v2 — "the guiding star" (approved 10 Jul).
+ *
+ * Rich is the default; Lite is complete. Every animated element's BASE style
+ * below is its FINAL frame, and every animation/transition is double-gated
+ * behind (prefers-reduced-motion: no-preference) + html:not([data-motion=
+ * 'off']) — most also require `.xf-motion` (added by FrontMotion only when
+ * both gates pass and JS runs), so no-JS visitors always get the finished
+ * static page. Dawn-gold (--xf-gold) is reserved for the star-path, flares,
+ * and star-moments; sunset-orange stays the CTA; blue stays structural.
+ * Gold is decoration/large-display only — never body text on light surfaces.
+ * ========================================================================== */
+
+main.xidig-front,
+body:has(main.xidig-front) {
+  --xf-gold: #ffd9a0;
+}
+
+/* ── Display scale-up: the hero goes bigger, tighter ─────────────────── */
+
+main.xidig-front .xidig-front__hero--home h1 {
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  line-height: 1.02;
+  letter-spacing: -0.028em;
+}
+
+/* ── Hero page-load choreography (staggered rise; base = settled) ─────── */
+
+@keyframes xf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes xf-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes xf-spark-pop {
+  0% {
+    transform: scale(0.2) rotate(-40deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.7);
+    opacity: 1;
+    filter: drop-shadow(0 0 7px var(--xf-gold));
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) main.xidig-front .xidig-front__hero--home h1 {
+    animation: xf-rise 0.8s cubic-bezier(0.22, 0.9, 0.32, 1) 0.08s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xidig-front__hero--home .xidig-front__hero-inner > p {
+    animation: xf-rise 0.8s cubic-bezier(0.22, 0.9, 0.32, 1) 0.26s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xidig-front__hero--home .xidig-front__cta-row {
+    animation: xf-rise 0.8s cubic-bezier(0.22, 0.9, 0.32, 1) 0.44s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xidig-front__hero--home .xidig-banner--notice {
+    animation: xf-rise 0.8s cubic-bezier(0.22, 0.9, 0.32, 1) 0.66s backwards;
+  }
+
+  /* The counter pill's star sparks last. */
+  html:not([data-motion='off'])
+    main.xidig-front
+    .xidig-front__hero--home
+    .xidig-banner--notice::before {
+    animation: xf-spark-pop 0.7s ease 1.15s backwards;
+  }
+
+  /* Starfield twinkles in by depth layer… */
+  html:not([data-motion='off']) main.xidig-front .xf-sf-d1 {
+    animation: xf-fade-in 1.4s ease 0.1s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xf-sf-d2 {
+    animation: xf-fade-in 1.4s ease 0.35s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xf-sf-d3 {
+    animation: xf-fade-in 1.4s ease 0.6s backwards;
+  }
+
+  /* …and drifts gently with scroll (JS sets --xf-scroll; <30px, deeper =
+     slower). transform-only: zero layout shift. */
+  html:not([data-motion='off']) main.xidig-front.xf-motion .xf-sf-d1 {
+    transform: translate3d(0, calc(var(--xf-scroll, 0) * 6px), 0);
+  }
+
+  html:not([data-motion='off']) main.xidig-front.xf-motion .xf-sf-d2 {
+    transform: translate3d(0, calc(var(--xf-scroll, 0) * 14px), 0);
+  }
+
+  html:not([data-motion='off']) main.xidig-front.xf-motion .xf-sf-d3 {
+    transform: translate3d(0, calc(var(--xf-scroll, 0) * 26px), 0);
+  }
+}
+
+/* ── Scroll reveal: hidden state ONLY under .xf-motion (JS on + motion on),
+      so content is never lost without JS. Base = fully visible. ─────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) main.xidig-front.xf-motion [data-reveal] {
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s cubic-bezier(0.22, 0.9, 0.32, 1);
+  }
+
+  html:not([data-motion='off']) main.xidig-front.xf-motion [data-reveal]:not(.is-inview) {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+}
+
+/* ── The journey: aurora depth + the star-path layer ─────────────────── */
+
+main.xidig-front .xf-journey {
+  position: relative;
+  /* Aurora washes: very-low-opacity deep blue→teal radials alternating down
+     the spine — depth without noise. */
+  background-image:
+    radial-gradient(48rem 30rem at 88% 10%, rgba(0, 119, 204, 0.09), transparent 62%),
+    radial-gradient(44rem 28rem at 6% 34%, rgba(0, 170, 165, 0.06), transparent 60%),
+    radial-gradient(50rem 30rem at 92% 60%, rgba(0, 119, 204, 0.07), transparent 62%),
+    radial-gradient(44rem 26rem at 8% 86%, rgba(0, 170, 165, 0.05), transparent 60%);
+}
+
+main.xidig-front .xf-journey > section {
+  position: relative;
+  z-index: 1;
+}
+
+/* The rail rule is child-scoped; re-apply the prose measure inside the journey. */
+main.xidig-front .xf-journey .xidig-front__prose {
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+main.xidig-front .xf-path-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+main.xidig-front .xf-path-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+main.xidig-front .xf-path-track {
+  fill: none;
+  stroke: rgba(151, 173, 214, 0.14);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 5;
+  stroke-linecap: round;
+}
+
+/* Base = fully drawn (the static final frame). Motion mode re-draws it from
+   the top as --path-progress climbs with scroll. */
+main.xidig-front .xf-path-draw {
+  fill: none;
+  stroke: var(--xf-gold);
+  stroke-opacity: 0.5;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+/* The travelling star: hidden at rest — the assembled star at the final CTA
+   is the static ending. FrontMotion positions it along the real geometry. */
+main.xidig-front .xf-path-star {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, var(--xf-gold) 30%, rgba(255, 217, 160, 0) 72%);
+  opacity: 0;
+  will-change: transform;
+}
+
+@keyframes xf-star-breathe {
+  from {
+    filter: drop-shadow(0 0 3px var(--xf-gold));
+  }
+  to {
+    filter: drop-shadow(0 0 10px var(--xf-gold));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) main.xidig-front.xf-motion .xf-path-draw {
+    stroke-dashoffset: calc(1 - var(--path-progress, 0));
+  }
+
+  html:not([data-motion='off']) main.xidig-front.xf-motion .xf-path-star {
+    opacity: min(1, calc(var(--path-progress, 0) * 24));
+    animation: xf-star-breathe 1.8s ease-in-out infinite alternate;
+  }
+}
+
+/* Mobile: the path becomes a slim left rail inside the journey gutter. */
+@media (max-width: 879px) {
+  main.xidig-front .xf-path-layer {
+    right: auto;
+    width: 1rem;
+  }
+}
+
+/* ── Path stations: the six social blocks zigzag down the spine ───────── */
+
+main.xidig-front .xf-stations {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3.25rem, 8vw, 5.5rem);
+}
+
+main.xidig-front .xf-station {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.4rem;
+  align-items: center;
+  justify-items: start;
+}
+
+main.xidig-front .xf-station__text h3 {
+  font-family: var(--xf-display);
+  font-weight: 700;
+  font-size: clamp(1.35rem, 2.6vw, 1.8rem);
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+  margin: 0 0 0.7rem;
+}
+
+main.xidig-front .xf-station__text p {
+  color: var(--xf-muted);
+  font-size: clamp(0.98rem, 1.4vw, 1.05rem);
+  line-height: 1.7;
+  max-width: 32rem;
+  margin: 0;
+}
+
+/* The station's flare: a dawn-gold star that bursts as the block enters the
+   viewport (the travelling star "lighting" this stop). Base = lit. */
+main.xidig-front .xf-station__spark {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.45em;
+  vertical-align: baseline;
+  background: var(--xf-gold);
+  clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+  filter: drop-shadow(0 0 4px rgba(255, 217, 160, 0.7));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) main.xidig-front .xf-station.is-inview .xf-station__spark {
+    animation: xf-spark-pop 0.9s ease 0.2s backwards;
+  }
+}
+
+@media (min-width: 880px) {
+  main.xidig-front .xf-station {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  main.xidig-front .xf-station .xf-vig {
+    justify-self: center;
+  }
+
+  main.xidig-front .xf-station:nth-child(even) .xf-station__text {
+    order: 2;
+  }
+
+  main.xidig-front .xf-station:nth-child(even) .xf-vig {
+    order: 1;
+  }
+}
+
+/* Cards that embed a compact vignette (trust row / product tour). */
+main.xidig-front .xidig-front-card--vig .xf-vig {
+  margin-bottom: 1.15rem;
+}
+
+/* ── Final CTA: the five-pointed star assembles where the path ends ───── */
+
+main.xidig-front .xf-home-final {
+  padding-bottom: 1rem;
+}
+
+main.xidig-front .xf-asm {
+  width: clamp(3.5rem, 8vw, 5rem);
+  margin: 0 auto 1.4rem;
+}
+
+main.xidig-front .xf-asm svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+main.xidig-front .xf-asm__glow {
+  fill: var(--xf-gold);
+  opacity: 0.14;
+  filter: blur(10px);
+}
+
+/* Base = assembled. Motion draws each chord staggered on arrival. */
+main.xidig-front .xf-asm__stroke {
+  fill: none;
+  stroke: var(--xf-gold);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+@keyframes xf-asm-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes xf-asm-glow {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) main.xidig-front .xf-home-final.is-inview .xf-asm__stroke--1 {
+    animation: xf-asm-draw 0.45s ease 0.15s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xf-home-final.is-inview .xf-asm__stroke--2 {
+    animation: xf-asm-draw 0.45s ease 0.5s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xf-home-final.is-inview .xf-asm__stroke--3 {
+    animation: xf-asm-draw 0.45s ease 0.85s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xf-home-final.is-inview .xf-asm__stroke--4 {
+    animation: xf-asm-draw 0.45s ease 1.2s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xf-home-final.is-inview .xf-asm__stroke--5 {
+    animation: xf-asm-draw 0.45s ease 1.55s backwards;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xf-home-final.is-inview .xf-asm__glow {
+    animation: xf-asm-glow 0.9s ease 1.9s backwards;
+  }
+}
+
+/* ============================================================================
+ * Vignettes — schematic, nameless feature scenes (vignettes.tsx).
+ * Base styles = final frame; all animation lives in the gated block at the
+ * bottom, triggered by `.is-inview` on the station/card ancestor.
+ * ========================================================================== */
+
+main.xidig-front .xf-vig {
+  position: relative;
+  width: 100%;
+  max-width: 26rem;
+  aspect-ratio: 16 / 10;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, var(--xf-card-hi), var(--xf-card-lo)) padding-box,
+    linear-gradient(
+        155deg,
+        rgba(77, 166, 232, 0.45),
+        rgba(77, 166, 232, 0.1) 45%,
+        rgba(151, 173, 214, 0.14)
+      )
+      border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.85rem, 3vw, 1.35rem);
+  overflow: hidden;
+}
+
+main.xidig-front .xf-vig--compact {
+  max-width: none;
+  aspect-ratio: 16 / 8;
+}
+
+/* Shared schematic atoms */
+main.xidig-front .xf-vg-card {
+  width: 100%;
+  max-width: 19rem;
+  border: 1px solid var(--xf-line);
+  border-radius: 12px;
+  background: rgba(151, 173, 214, 0.05);
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+main.xidig-front .xf-vg-scene {
+  position: relative;
+  width: 100%;
+  max-width: 19rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+main.xidig-front .xf-vg-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+main.xidig-front .xf-vg-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  flex: 1;
+  min-width: 0;
+}
+
+main.xidig-front .xf-vg-dot {
+  flex: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(77, 166, 232, 0.6), rgba(0, 119, 204, 0.35));
+}
+
+main.xidig-front .xf-vg-dot--sm {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+main.xidig-front .xf-vg-bar {
+  display: block;
+  height: 0.48rem;
+  border-radius: 4px;
+  background: rgba(151, 173, 214, 0.28);
+}
+
+main.xidig-front .xf-vg-bar--thin {
+  height: 0.34rem;
+}
+
+main.xidig-front .xf-vg-bar--w30 { width: 30%; }
+main.xidig-front .xf-vg-bar--w35 { width: 35%; }
+main.xidig-front .xf-vg-bar--w40 { width: 40%; }
+main.xidig-front .xf-vg-bar--w45 { width: 45%; }
+main.xidig-front .xf-vg-bar--w50 { width: 50%; }
+main.xidig-front .xf-vg-bar--w55 { width: 55%; }
+main.xidig-front .xf-vg-bar--w60 { width: 60%; }
+main.xidig-front .xf-vg-bar--w70 { width: 70%; }
+main.xidig-front .xf-vg-bar--w75 { width: 75%; }
+main.xidig-front .xf-vg-bar--w80 { width: 80%; }
+main.xidig-front .xf-vg-bar--w90 { width: 90%; }
+
+main.xidig-front .xf-vg-tag {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--xf-display);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--xf-blue-bright);
+  border: 1px solid rgba(77, 166, 232, 0.45);
+  border-radius: 999px;
+  padding: 0.08rem 0.45rem;
+  white-space: nowrap;
+}
+
+main.xidig-front .xf-vg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  font-size: 0.74rem;
+  line-height: 1;
+  padding: 0.24rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--xf-line-strong);
+  background: rgba(151, 173, 214, 0.08);
+  color: var(--xf-text);
+  white-space: nowrap;
+}
+
+main.xidig-front .xf-vg-count {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  color: var(--xf-muted);
+}
+
+main.xidig-front .xf-vg-count__strip {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--n, 0) * -1em));
+}
+
+main.xidig-front .xf-vg-count__strip span {
+  display: block;
+  height: 1em;
+  line-height: 1;
+}
+
+/* 1 ── Feed */
+main.xidig-front .xf-vg-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+}
+
+main.xidig-front .xf-vg-chip__emoji {
+  font-size: 0.82em;
+}
+
+/* 2 ── Profile */
+main.xidig-front .xf-vg-avatar {
+  flex: none;
+  width: 2.9rem;
+  height: 2.9rem;
+}
+
+main.xidig-front .xf-vg-avatar__ring {
+  fill: none;
+  stroke: var(--xf-blue-bright);
+  stroke-width: 2;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+main.xidig-front .xf-vg-avatar__head,
+main.xidig-front .xf-vg-avatar__body {
+  fill: rgba(151, 173, 214, 0.45);
+}
+
+main.xidig-front .xf-vg-badge {
+  flex: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-left: auto;
+  fill: var(--xf-gold);
+  filter: drop-shadow(0 0 3px rgba(255, 217, 160, 0.55));
+}
+
+main.xidig-front .xf-vg-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+}
+
+main.xidig-front .xf-vg-chip--skill {
+  color: var(--xf-blue-bright);
+  border-color: rgba(77, 166, 232, 0.4);
+  background: rgba(0, 119, 204, 0.1);
+}
+
+/* 3 ── Suuq */
+main.xidig-front .xf-vg-search {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--xf-line-strong);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  background: rgba(151, 173, 214, 0.06);
+}
+
+main.xidig-front .xf-vg-search__icon {
+  flex: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  fill: none;
+  stroke: var(--xf-blue-bright);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+main.xidig-front .xf-vg-search__q {
+  font-size: 0.8rem;
+  color: var(--xf-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  clip-path: inset(-20% 0 -20% 0);
+}
+
+main.xidig-front .xf-vg-search__caret {
+  flex: none;
+  width: 1.5px;
+  height: 0.95em;
+  background: var(--xf-gold);
+  opacity: 0;
+}
+
+main.xidig-front .xf-vg-map {
+  position: relative;
+  height: 5.1rem;
+  border: 1px solid var(--xf-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 119, 204, 0.05);
+}
+
+main.xidig-front .xf-vig--compact .xf-vg-map {
+  height: 4.2rem;
+}
+
+main.xidig-front .xf-vg-map__grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: rgba(151, 173, 214, 0.12);
+  stroke-width: 1;
+}
+
+main.xidig-front .xf-vg-pin {
+  position: absolute;
+  left: 26%;
+  top: 30%;
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+main.xidig-front .xf-vg-pin__glyph {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--xf-orange);
+}
+
+main.xidig-front .xf-vg-pin__ring {
+  position: absolute;
+  inset: -0.3rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--xf-gold);
+  opacity: 0;
+}
+
+main.xidig-front .xf-vg-result {
+  position: absolute;
+  right: 0.5rem;
+  width: 54%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--xf-line);
+  border-radius: 8px;
+  background: var(--xf-card-hi);
+  padding: 0.32rem 0.45rem;
+}
+
+main.xidig-front .xf-vg-result--1 {
+  top: 0.45rem;
+  transform: rotate(-2deg);
+}
+
+main.xidig-front .xf-vg-result--2 {
+  bottom: 0.45rem;
+  transform: rotate(1.6deg);
+}
+
+/* 4 ── DM */
+main.xidig-front .xf-vg-scene--dm {
+  gap: 0.45rem;
+}
+
+main.xidig-front .xf-vg-bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  border-radius: 13px;
+  padding: 0.5rem 0.6rem;
+}
+
+main.xidig-front .xf-vg-bubble--in {
+  align-self: flex-start;
+  width: 66%;
+  background: rgba(151, 173, 214, 0.12);
+  border-bottom-left-radius: 4px;
+}
+
+main.xidig-front .xf-vg-bubble--out {
+  align-self: flex-end;
+  width: 54%;
+  background: rgba(0, 119, 204, 0.28);
+  border-bottom-right-radius: 4px;
+}
+
+main.xidig-front .xf-vg-bubble .xf-vg-bar {
+  background: rgba(238, 242, 249, 0.3);
+}
+
+main.xidig-front .xf-vg-gate {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--xf-display);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--xf-text);
+  border: 1px solid rgba(122, 208, 160, 0.5);
+  border-radius: 999px;
+  padding: 0.22rem 0.6rem;
+  background: rgba(122, 208, 160, 0.1);
+}
+
+main.xidig-front .xf-vg-gate__icons {
+  position: relative;
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+main.xidig-front .xf-vg-gate__lock,
+main.xidig-front .xf-vg-gate__check {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+main.xidig-front .xf-vg-gate__lock {
+  stroke: var(--xf-muted);
+  fill: rgba(151, 173, 214, 0.3);
+  opacity: 0;
+}
+
+main.xidig-front .xf-vg-gate__check {
+  stroke: #7ad0a0;
+  fill: none;
+  opacity: 1;
+}
+
+main.xidig-front .xf-vg-shield {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: rgba(77, 166, 232, 0.3);
+}
+
+main.xidig-front .xf-vg-shield__tick {
+  stroke: var(--xf-blue-bright);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 5 ── Labs */
+main.xidig-front .xf-vg-scene--labs {
+  min-height: 7rem;
+  justify-content: center;
+}
+
+main.xidig-front .xf-vg-tag--club {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin-left: 0;
+  opacity: 0;
+}
+
+main.xidig-front .xf-vg-blob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin: -0.65rem;
+  border-radius: 50% 50% 50% 20%;
+  background: rgba(77, 166, 232, 0.35);
+  border: 1px solid rgba(77, 166, 232, 0.45);
+  opacity: 0;
+  transform: translate(0, 0) scale(0.3);
+}
+
+main.xidig-front .xf-vg-blob--2,
+main.xidig-front .xf-vg-blob--4 {
+  width: 1rem;
+  height: 1rem;
+  margin: -0.5rem;
+  border-radius: 50% 50% 20% 50%;
+}
+
+main.xidig-front .xf-vg-room {
+  border: 1px solid var(--xf-line);
+  border-radius: 12px;
+  background: rgba(151, 173, 214, 0.05);
+  padding: 0.6rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+main.xidig-front .xf-vg-room__head {
+  display: flex;
+}
+
+main.xidig-front .xf-vg-tag--lab {
+  margin-left: 0;
+  color: var(--xf-gold);
+  border-color: rgba(255, 217, 160, 0.5);
+}
+
+main.xidig-front .xf-vg-slot {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+main.xidig-front .xf-vg-slot__mark {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 3px;
+  background: var(--xf-blue-bright);
+}
+
+main.xidig-front .xf-vg-slot--2 .xf-vg-slot__mark {
+  background: var(--xf-gold);
+}
+
+main.xidig-front .xf-vg-slot--3 .xf-vg-slot__mark {
+  background: rgba(151, 173, 214, 0.6);
+}
+
+main.xidig-front .xf-vg-slot__label {
+  font-family: var(--xf-display);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--xf-muted);
+  white-space: nowrap;
+}
+
+main.xidig-front .xf-vg-slot .xf-vg-bar {
+  margin-left: auto;
+}
+
+/* 6 ── Capital */
+main.xidig-front .xf-vg-scene--capital {
+  align-items: stretch;
+}
+
+main.xidig-front .xf-vg-timeline {
+  width: 100%;
+  height: 3.2rem;
+}
+
+main.xidig-front .xf-vg-timeline__track {
+  fill: none;
+  stroke: rgba(151, 173, 214, 0.22);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 2 6;
+}
+
+main.xidig-front .xf-vg-timeline__draw {
+  fill: none;
+  stroke: var(--xf-gold);
+  stroke-opacity: 0.8;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+main.xidig-front .xf-vg-ms {
+  position: absolute;
+  top: calc(1.6rem - 5px);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--xf-blue-bright);
+}
+
+main.xidig-front .xf-vg-ms--1 { left: 18%; }
+main.xidig-front .xf-vg-ms--2 { left: 48%; }
+main.xidig-front .xf-vg-ms--3 { left: 82%; }
+
+main.xidig-front .xf-vg-ms--gold {
+  background: var(--xf-gold);
+  filter: drop-shadow(0 0 4px rgba(255, 217, 160, 0.7));
+}
+
+main.xidig-front .xf-vg-cosign {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  border: 1px solid var(--xf-line-strong);
+  border-radius: 999px;
+  padding: 0.26rem 0.65rem;
+  background: rgba(151, 173, 214, 0.08);
+  color: var(--xf-text);
+}
+
+main.xidig-front .xf-vg-cosign__label {
+  font-family: var(--xf-display);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--xf-muted);
+}
+
+/* 7 ── Lite */
+main.xidig-front .xf-vg-meter {
+  width: 100%;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: rgba(151, 173, 214, 0.14);
+  overflow: hidden;
+}
+
+main.xidig-front .xf-vg-meter__fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--xf-blue-bright), var(--xf-gold));
+  transform: scaleX(0.3);
+  transform-origin: left center;
+}
+
+main.xidig-front .xf-vg-tilewrap {
+  position: relative;
+  height: 5.2rem;
+  border: 1px solid var(--xf-line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+main.xidig-front .xf-vig--compact .xf-vg-tilewrap {
+  height: 4.3rem;
+}
+
+/* Abstract tile — deliberately NOT a photo (no fabricated imagery). */
+main.xidig-front .xf-vg-tile {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(70% 90% at 28% 72%, rgba(0, 119, 204, 0.5), transparent 70%),
+    radial-gradient(55% 70% at 72% 26%, rgba(255, 140, 0, 0.35), transparent 70%),
+    #101a2e;
+  filter: blur(0);
+}
+
+main.xidig-front .xf-vg-muuji {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--xf-display);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--xf-ink);
+  background: var(--xf-orange);
+  border-radius: 999px;
+  padding: 0.26rem 0.7rem;
+}
+
+main.xidig-front .xf-vg-muuji__ring {
+  position: absolute;
+  inset: -0.28rem;
+  border-radius: inherit;
+  border: 2px solid var(--xf-gold);
+  opacity: 0;
+}
+
+/* 8 ── Community-owned */
+main.xidig-front .xf-vg-dial {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+main.xidig-front .xf-vg-dial__label {
+  font-family: var(--xf-display);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--xf-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+main.xidig-front .xf-vg-switch {
+  flex: none;
+  position: relative;
+  width: 2.05rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--xf-line-strong);
+  background: rgba(151, 173, 214, 0.12);
+}
+
+main.xidig-front .xf-vg-switch__knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: var(--xf-faint);
+}
+
+main.xidig-front .xf-vg-dial__state {
+  flex: none;
+  font-family: var(--xf-display);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--xf-gold);
+}
+
+main.xidig-front .xf-vg-lines {
+  width: 100%;
+  height: 2.8rem;
+}
+
+main.xidig-front .xf-vg-lines__scribble {
+  fill: none;
+  stroke: rgba(255, 140, 0, 0.55);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  opacity: 0;
+}
+
+main.xidig-front .xf-vg-lines__straight {
+  fill: none;
+  stroke: var(--xf-blue-bright);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+main.xidig-front .xf-vg-ticks {
+  display: flex;
+  justify-content: space-between;
+  padding-inline: 6%;
+  margin-top: -1.5rem;
+}
+
+main.xidig-front .xf-vg-tick {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--xf-gold);
+}
+
+/* ── Vignette choreography (gated; triggered by .is-inview ancestors) ──── */
+
+@keyframes xf-vg-slide {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+
+@keyframes xf-vg-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  70% {
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes xf-vg-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes xf-vg-roll {
+  from {
+    transform: translateY(0);
+  }
+}
+
+@keyframes xf-vg-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes xf-vg-type {
+  from {
+    clip-path: inset(-20% 100% -20% 0);
+  }
+}
+
+@keyframes xf-vg-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes xf-vg-ping {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes xf-vg-fan-1 {
+  from {
+    opacity: 0;
+    transform: translateY(12px) rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-2deg);
+  }
+}
+
+@keyframes xf-vg-fan-2 {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(1.6deg);
+  }
+}
+
+@keyframes xf-vg-hold-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes xf-vg-converge {
+  from {
+    opacity: 0.9;
+    transform: translate(var(--bx, 0), var(--by, 0)) scale(1);
+  }
+  70% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes xf-vg-pulse-once {
+  0% {
+    transform: scale(0.85);
+  }
+  55% {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 6px rgba(77, 166, 232, 0.8));
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes xf-vg-shrink {
+  from {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes xf-vg-unblur {
+  from {
+    filter: blur(12px) saturate(0.65);
+  }
+}
+
+@keyframes xf-vg-knob-off {
+  from {
+    transform: translateX(0.88rem);
+    background: var(--xf-orange);
+  }
+}
+
+@keyframes xf-vg-switch-off {
+  from {
+    background: rgba(255, 140, 0, 0.22);
+    border-color: rgba(255, 140, 0, 0.55);
+  }
+}
+
+@keyframes xf-vg-untangle {
+  0% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) main.xidig-front {
+    /* 1 ── Feed: card assembles, chips pop, counts roll. */
+    & .is-inview .xf-vig--feed .xf-vg-a1 { animation: xf-vg-slide 0.45s ease 0.15s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-tag { animation: xf-vg-pop 0.4s ease 0.3s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-a2 { animation: xf-vg-slide 0.45s ease 0.3s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-a3 { animation: xf-vg-slide 0.45s ease 0.42s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-a4 { animation: xf-vg-slide 0.45s ease 0.54s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-chip--r1 { animation: xf-vg-pop 0.4s ease 0.75s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-chip--r2 { animation: xf-vg-pop 0.4s ease 0.87s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-chip--r3 { animation: xf-vg-pop 0.4s ease 0.99s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-chip--r4 { animation: xf-vg-pop 0.4s ease 1.11s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-chip--r5 { animation: xf-vg-pop 0.4s ease 1.23s backwards; }
+    & .is-inview .xf-vig--feed .xf-vg-count__strip { animation: xf-vg-roll 1s cubic-bezier(0.2, 0.8, 0.3, 1) 1.2s backwards; }
+
+    /* 2 ── Profile: ring draws, bars/chips slot in, badge sparks. */
+    & .is-inview .xf-vig--profile .xf-vg-avatar__ring { animation: xf-vg-draw 0.9s ease 0.15s backwards; }
+    & .is-inview .xf-vig--profile .xf-vg-avatar__head,
+    & .is-inview .xf-vig--profile .xf-vg-avatar__body { animation: xf-fade-in 0.5s ease 0.7s backwards; }
+    & .is-inview .xf-vig--profile .xf-vg-a1 { animation: xf-vg-slide 0.45s ease 0.5s backwards; }
+    & .is-inview .xf-vig--profile .xf-vg-a2 { animation: xf-vg-slide 0.45s ease 0.62s backwards; }
+    & .is-inview .xf-vig--profile .xf-vg-chip--s1 { animation: xf-vg-rise 0.4s ease 0.9s backwards; }
+    & .is-inview .xf-vig--profile .xf-vg-chip--s2 { animation: xf-vg-rise 0.4s ease 1.05s backwards; }
+    & .is-inview .xf-vig--profile .xf-vg-chip--s3 { animation: xf-vg-rise 0.4s ease 1.2s backwards; }
+    & .is-inview .xf-vig--profile .xf-vg-badge { animation: xf-spark-pop 0.7s ease 1.45s backwards; }
+
+    /* 3 ── Suuq: query types, pin pulses, results fan out. */
+    & .is-inview .xf-vig--suuq .xf-vg-search__q { animation: xf-vg-type 1s steps(14, end) 0.25s backwards; }
+    & .is-inview .xf-vig--suuq .xf-vg-search__caret { animation: xf-vg-blink 1.1s steps(1, end) infinite; opacity: 1; }
+    & .is-inview .xf-vig--suuq .xf-vg-pin__glyph { animation: xf-vg-pop 0.45s ease 1.05s backwards; }
+    & .is-inview .xf-vig--suuq .xf-vg-pin__ring { animation: xf-vg-ping 2.2s ease-out 1.3s infinite; }
+    & .is-inview .xf-vig--suuq .xf-vg-result--1 { animation: xf-vg-fan-1 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) 1.35s backwards; }
+    & .is-inview .xf-vig--suuq .xf-vg-result--2 { animation: xf-vg-fan-2 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) 1.5s backwards; }
+
+    /* 4 ── DM: request gate flips locked→accepted, reply lands, shield pulses. */
+    & .is-inview .xf-vig--dm .xf-vg-b1 { animation: xf-vg-pop 0.4s ease 0.15s backwards; }
+    & .is-inview .xf-vig--dm .xf-vg-gate { animation: xf-vg-pop 0.4s ease 0.5s backwards; }
+    & .is-inview .xf-vig--dm .xf-vg-gate__lock { animation: xf-vg-hold-fade 1s ease 0.5s backwards; }
+    & .is-inview .xf-vig--dm .xf-vg-gate__check { animation: xf-vg-pop 0.35s ease 1.4s backwards; }
+    & .is-inview .xf-vig--dm .xf-vg-b2 { animation: xf-vg-pop 0.4s ease 1.75s backwards; }
+    & .is-inview .xf-vig--dm .xf-vg-b3 { animation: xf-vg-pop 0.4s ease 2.15s backwards; }
+    & .is-inview .xf-vig--dm .xf-vg-shield { animation: xf-vg-pulse-once 0.8s ease 2.55s backwards; }
+
+    /* 5 ── Labs: the Koox cluster converges into the Warshad room. */
+    & .is-inview .xf-vig--labs .xf-vg-tag--club { animation: xf-vg-hold-fade 1.1s ease 0.1s backwards; }
+    & .is-inview .xf-vig--labs .xf-vg-blob { animation: xf-vg-converge 0.95s cubic-bezier(0.5, 0, 0.3, 1) 0.25s backwards; }
+    & .is-inview .xf-vig--labs .xf-vg-blob--2 { animation-delay: 0.32s; }
+    & .is-inview .xf-vig--labs .xf-vg-blob--3 { animation-delay: 0.39s; }
+    & .is-inview .xf-vig--labs .xf-vg-blob--4 { animation-delay: 0.46s; }
+    & .is-inview .xf-vig--labs .xf-vg-blob--5 { animation-delay: 0.53s; }
+    & .is-inview .xf-vig--labs .xf-vg-room { animation: xf-vg-pop 0.5s ease 1.1s backwards; }
+    & .is-inview .xf-vig--labs .xf-vg-tag--lab { animation: xf-vg-pop 0.4s ease 1.35s backwards; }
+    & .is-inview .xf-vig--labs .xf-vg-slot--1 { animation: xf-vg-rise 0.4s ease 1.5s backwards; }
+    & .is-inview .xf-vig--labs .xf-vg-slot--2 { animation: xf-vg-rise 0.4s ease 1.65s backwards; }
+    & .is-inview .xf-vig--labs .xf-vg-slot--3 { animation: xf-vg-rise 0.4s ease 1.8s backwards; }
+
+    /* 6 ── Capital: timeline draws, milestones light, co-signs climb. */
+    & .is-inview .xf-vig--capital .xf-vg-timeline__draw { animation: xf-vg-draw 1.15s ease 0.2s backwards; }
+    & .is-inview .xf-vig--capital .xf-vg-ms--1 { animation: xf-vg-pop 0.4s ease 0.45s backwards; }
+    & .is-inview .xf-vig--capital .xf-vg-ms--2 { animation: xf-vg-pop 0.4s ease 0.8s backwards; }
+    & .is-inview .xf-vig--capital .xf-vg-ms--3 { animation: xf-spark-pop 0.6s ease 1.2s backwards; }
+    & .is-inview .xf-vig--capital .xf-vg-cosign { animation: xf-vg-rise 0.45s ease 1.4s backwards; }
+    & .is-inview .xf-vig--capital .xf-vg-count__strip { animation: xf-vg-roll 1.1s cubic-bezier(0.2, 0.8, 0.3, 1) 1.6s backwards; }
+
+    /* 7 ── Lite: the meter shrinks; Muuji reveals the deferred tile. */
+    & .is-inview .xf-vig--lite .xf-vg-meter__fill { animation: xf-vg-shrink 1.1s cubic-bezier(0.2, 0.8, 0.3, 1) 0.3s backwards; }
+    & .is-inview .xf-vig--lite .xf-vg-muuji { animation: xf-vg-pop 0.4s ease 0.9s backwards; }
+    & .is-inview .xf-vig--lite .xf-vg-muuji__ring { animation: xf-vg-ping 0.7s ease-out 1.35s backwards; }
+    & .is-inview .xf-vig--lite .xf-vg-tile { animation: xf-vg-unblur 0.8s ease 1.5s backwards; }
+
+    /* 8 ── Owned: the bait dial switches off; the scribble untangles into a
+       straight chronological line. */
+    & .is-inview .xf-vig--owned .xf-vg-switch__knob { animation: xf-vg-knob-off 0.5s ease 0.6s backwards; }
+    & .is-inview .xf-vig--owned .xf-vg-switch { animation: xf-vg-switch-off 0.5s ease 0.6s backwards; }
+    & .is-inview .xf-vig--owned .xf-vg-dial__state { animation: xf-fade-in 0.4s ease 1.1s backwards; }
+    & .is-inview .xf-vig--owned .xf-vg-lines__scribble { animation: xf-vg-untangle 1.5s ease 0.3s backwards; }
+    & .is-inview .xf-vig--owned .xf-vg-lines__straight { animation: xf-vg-draw 0.8s ease 1.6s backwards; }
+    & .is-inview .xf-vig--owned .xf-vg-tick--1 { animation: xf-vg-pop 0.35s ease 2.3s backwards; }
+    & .is-inview .xf-vig--owned .xf-vg-tick--2 { animation: xf-vg-pop 0.35s ease 2.4s backwards; }
+    & .is-inview .xf-vig--owned .xf-vg-tick--3 { animation: xf-vg-pop 0.35s ease 2.5s backwards; }
+    & .is-inview .xf-vig--owned .xf-vg-tick--4 { animation: xf-vg-pop 0.35s ease 2.6s backwards; }
+  }
 }

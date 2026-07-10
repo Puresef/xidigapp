@@ -9,35 +9,78 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 import { formatEventStart } from '@/components/events/event-list';
 
+import { FrontMotion } from './front-motion';
+import { StarAssembly, StarPath } from './star-path';
 import { Starfield } from './starfield';
+import { Vignette, type VignetteKind, type VignetteLabels } from './vignettes';
 
 /**
  * Signed-out landing (docs/front-door-plan.md §4; social-app-first reframe of
- * 9 Jul). Positioning: the Somali social app first — casual visitors come for
- * the feed/people/businesses/DMs, then funnel into Labs → Capital →
- * governance. Every block describes a LIVE feature; the honesty rules hold:
- * no fake metrics, no mock posts with invented names (illustrative UI panels
- * wait for Phase B, built from real consented content). The one number shown
- * is the Founding Member counter — real, is_ai-excluded, and silently absent
- * on failure.
+ * 9 Jul; motion v2 of 10 Jul). Positioning: the Somali social app first —
+ * casual visitors come for the feed/people/businesses/DMs, then funnel into
+ * Labs → Capital → governance. Every block describes a LIVE feature; the
+ * honesty rules hold: no fake metrics, no mock posts with invented names —
+ * the vignettes are schematic, nameless scenes built from real product
+ * vocabulary. The one number shown is the Founding Member counter — real,
+ * is_ai-excluded, and silently absent on failure.
+ *
+ * Motion v2: the six social blocks are PATH STATIONS along the guiding
+ * star-path (see star-path.tsx) — a constellation drawn on scroll that ends
+ * where the five-pointed star assembles above the final CTA ("Come home").
+ * All motion is double-gated; Lite/reduced-motion visitors get the complete
+ * static final frame.
  */
 
-const SOCIAL_BLOCKS: ReadonlyArray<{ titleKey: MessageKey; bodyKey: MessageKey }> = [
-  { titleKey: 'marketing.blockPlazaTitle', bodyKey: 'marketing.blockPlazaBody' },
-  { titleKey: 'marketing.blockProfilesTitle', bodyKey: 'marketing.blockProfilesBody' },
-  { titleKey: 'marketing.blockSuuqTitle', bodyKey: 'marketing.blockSuuqBody' },
-  { titleKey: 'marketing.blockDmTitle', bodyKey: 'marketing.blockDmBody' },
-  { titleKey: 'marketing.blockLabsTitle', bodyKey: 'marketing.blockLabsBody' },
-  { titleKey: 'marketing.blockCapitalTitle', bodyKey: 'marketing.blockCapitalBody' },
+const SOCIAL_BLOCKS: ReadonlyArray<{
+  titleKey: MessageKey;
+  bodyKey: MessageKey;
+  vignette: VignetteKind;
+}> = [
+  { titleKey: 'marketing.blockPlazaTitle', bodyKey: 'marketing.blockPlazaBody', vignette: 'feed' },
+  {
+    titleKey: 'marketing.blockProfilesTitle',
+    bodyKey: 'marketing.blockProfilesBody',
+    vignette: 'profile',
+  },
+  { titleKey: 'marketing.blockSuuqTitle', bodyKey: 'marketing.blockSuuqBody', vignette: 'suuq' },
+  { titleKey: 'marketing.blockDmTitle', bodyKey: 'marketing.blockDmBody', vignette: 'dm' },
+  { titleKey: 'marketing.blockLabsTitle', bodyKey: 'marketing.blockLabsBody', vignette: 'labs' },
+  {
+    titleKey: 'marketing.blockCapitalTitle',
+    bodyKey: 'marketing.blockCapitalBody',
+    vignette: 'capital',
+  },
 ];
 
-const TRUST_BLOCKS: ReadonlyArray<{ titleKey: MessageKey; bodyKey: MessageKey }> = [
-  { titleKey: 'marketing.blockLiteTitle', bodyKey: 'marketing.blockLiteBody' },
-  { titleKey: 'marketing.blockOwnedTitle', bodyKey: 'marketing.blockOwnedBody' },
+const TRUST_BLOCKS: ReadonlyArray<{
+  titleKey: MessageKey;
+  bodyKey: MessageKey;
+  vignette: VignetteKind;
+}> = [
+  { titleKey: 'marketing.blockLiteTitle', bodyKey: 'marketing.blockLiteBody', vignette: 'lite' },
+  { titleKey: 'marketing.blockOwnedTitle', bodyKey: 'marketing.blockOwnedBody', vignette: 'owned' },
 ];
+
+/** Decorative vignette labels — existing product vocabulary + marketing.vig*. */
+export function buildVignetteLabels(t: (key: MessageKey) => string): VignetteLabels {
+  return {
+    ask: t('plaza.typeAsk'),
+    skills: [t('marketing.vigSkillOne'), t('marketing.vigSkillTwo'), t('marketing.vigSkillThree')],
+    suuqQuery: t('marketing.vigSuuqQuery'),
+    accept: t('action.accept'),
+    club: t('term.club'),
+    lab: t('term.lab'),
+    rooms: [t('lab.tabUpdates'), t('lab.tabDecisions'), t('lab.tabMembers')],
+    garab: t('term.garab'),
+    show: t('lite.show'),
+    off: t('settings.toggleOff'),
+    bait: t('marketing.vigBaitLabel'),
+  };
+}
 
 export async function FrontHome() {
   const [t, locale] = await Promise.all([getT(), getLocale()]);
+  const vigLabels = buildVignetteLabels(t);
 
   let foundingSpotsLeft: number | null = null;
   try {
@@ -62,6 +105,7 @@ export async function FrontHome() {
 
   return (
     <main className="xidig-front">
+      <FrontMotion />
       <section className="xidig-front__hero xidig-front__hero--home">
         <Starfield />
         <div className="xidig-front__hero-inner">
@@ -84,7 +128,11 @@ export async function FrontHome() {
       </section>
 
       {nextEvent ? (
-        <section className="xidig-front__section" aria-label={t('marketing.eventNextTitle')}>
+        <section
+          className="xidig-front__section"
+          aria-label={t('marketing.eventNextTitle')}
+          data-reveal
+        >
           <div className="xidig-front-card">
             <h3>{t('marketing.eventNextTitle')}</h3>
             <p>
@@ -97,62 +145,83 @@ export async function FrontHome() {
         </section>
       ) : null}
 
-      <section className="xidig-front__section xidig-front__prose">
+      <section className="xidig-front__section xidig-front__prose" data-reveal>
         <h2>{t('marketing.groupsTitle')}</h2>
         <p>{t('marketing.groupsBody')}</p>
       </section>
 
-      <section className="xidig-front__section" aria-label={t('marketing.productTitle')}>
-        <div className="xidig-front__grid xidig-front__grid--numbered">
+      {/* The journey: the guiding star-path layer runs behind everything from
+          the first station to the final CTA, where the star assembles. */}
+      <div className="xf-journey">
+        <StarPath />
+
+        <section
+          className="xidig-front__section xf-stations"
+          aria-label={t('marketing.productTitle')}
+        >
           {SOCIAL_BLOCKS.map((block) => (
-            <div key={block.bodyKey} className="xidig-front-card">
-              <h3>{t(block.titleKey)}</h3>
-              <p>{t(block.bodyKey)}</p>
+            <div key={block.bodyKey} className="xf-station" data-reveal>
+              <div className="xf-station__text">
+                <h3>
+                  <span className="xf-station__spark" aria-hidden="true" />
+                  {t(block.titleKey)}
+                </h3>
+                <p>{t(block.bodyKey)}</p>
+              </div>
+              <Vignette kind={block.vignette} labels={vigLabels} />
             </div>
           ))}
-        </div>
-      </section>
+        </section>
 
-      <section className="xidig-front__section">
-        <div className="xidig-front__grid">
-          {TRUST_BLOCKS.map((block) => (
-            <div key={block.bodyKey} className="xidig-front-card">
-              <h3>{t(block.titleKey)}</h3>
-              <p>{t(block.bodyKey)}</p>
+        <section className="xidig-front__section" data-reveal>
+          <div className="xidig-front__grid">
+            {TRUST_BLOCKS.map((block) => (
+              <div key={block.bodyKey} className="xidig-front-card xidig-front-card--vig">
+                <Vignette kind={block.vignette} labels={vigLabels} compact />
+                <h3>{t(block.titleKey)}</h3>
+                <p>{t(block.bodyKey)}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section
+          className="xidig-front__section xidig-front__prose xidig-front__section--woven"
+          data-reveal
+        >
+          <h2>{t('marketing.honestyTitle')}</h2>
+          <p>{t('marketing.honestyBody')}</p>
+          <p>{t('marketing.groupsKeep')}</p>
+        </section>
+
+        <section className="xidig-front__section" data-reveal>
+          <div className="xidig-front__grid">
+            <div className="xidig-front-card">
+              <h3>{t('marketing.navReports')}</h3>
+              <p>{t('marketing.reportsTeaserBody')}</p>
+              <Link href="/reports">{t('marketing.reportsAll')} →</Link>
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="xidig-front__section xidig-front__prose xidig-front__section--woven">
-        <h2>{t('marketing.honestyTitle')}</h2>
-        <p>{t('marketing.honestyBody')}</p>
-        <p>{t('marketing.groupsKeep')}</p>
-      </section>
-
-      <section className="xidig-front__section">
-        <div className="xidig-front__grid">
-          <div className="xidig-front-card">
-            <h3>{t('marketing.navReports')}</h3>
-            <p>{t('marketing.reportsTeaserBody')}</p>
-            <Link href="/reports">{t('marketing.reportsAll')} →</Link>
+            <div className="xidig-front-card">
+              <h3>{t('marketing.navMembership')}</h3>
+              <p>{t('marketing.membershipTeaserBody')}</p>
+              <Link href="/membership">{t('marketing.navMembership')} →</Link>
+            </div>
           </div>
-          <div className="xidig-front-card">
-            <h3>{t('marketing.navMembership')}</h3>
-            <p>{t('marketing.membershipTeaserBody')}</p>
-            <Link href="/membership">{t('marketing.navMembership')} →</Link>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="xidig-front__section xidig-front__prose xidig-front__section--center xidig-front__section--woven">
-        <h2>{t('marketing.finalCta')}</h2>
-        <div className="xidig-front__cta-row">
-          <Link href="/waitlist?from=home-footer" className="xidig-button xidig-button--primary">
-            {t('marketing.requestAccess')}
-          </Link>
-        </div>
-      </section>
+        <section
+          className="xidig-front__section xidig-front__prose xidig-front__section--center xidig-front__section--woven xf-home-final"
+          data-reveal
+        >
+          <StarAssembly />
+          <h2>{t('marketing.finalCta')}</h2>
+          <div className="xidig-front__cta-row">
+            <Link href="/waitlist?from=home-footer" className="xidig-button xidig-button--primary">
+              {t('marketing.requestAccess')}
+            </Link>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
