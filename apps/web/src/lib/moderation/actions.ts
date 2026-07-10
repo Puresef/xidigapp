@@ -155,6 +155,20 @@ async function mutateTarget(admin: Admin, input: ModActionInput): Promise<string
       if (error) throw new Error(`listing ${action} failed: ${error.message}`);
       return data?.owner_user_id ?? null;
     }
+    case 'event': {
+      // Events keep lifecycle (draft/published/cancelled) and moderation
+      // state in separate columns — mod actions drive moderation_status only
+      // (a removed event is not "cancelled"; restore never resurrects a
+      // cancelled event into the calendar).
+      const { data, error } = await admin
+        .from('events')
+        .update({ moderation_status: status })
+        .eq('id', targetId)
+        .select('host_user_id')
+        .maybeSingle();
+      if (error) throw new Error(`event ${action} failed: ${error.message}`);
+      return data?.host_user_id ?? null;
+    }
     case 'message': {
       // §19 anonymise-not-erase: soft-delete via deleted_at; the body is
       // tombstoned in the DM view, never hard-deleted.
@@ -207,6 +221,7 @@ export async function resolveSubjectUser(
     listing: { table: 'business_listings', column: 'owner_user_id' },
     message: { table: 'messages', column: 'sender_user_id' },
     candidate: { table: 'venture_candidates', column: 'created_by_user_id' },
+    event: { table: 'events', column: 'host_user_id' },
   };
   const entry = lookup[targetType];
   if (!entry) return null;

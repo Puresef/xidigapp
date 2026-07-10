@@ -1,6 +1,5 @@
-import Link from 'next/link';
-
 import { FollowingFeed } from '@/components/feed/following-feed';
+import { FrontHome } from '@/components/front/front-home';
 import { LabsSeekingYou } from '@/components/matching/labs-seeking-you';
 import { MentorInResidence } from '@/components/mentor/mentor-in-residence';
 import { OnboardingChecklist } from '@/components/onboarding/onboarding-checklist';
@@ -42,13 +41,7 @@ export default async function HomePage() {
     );
   }
 
-  return (
-    <main>
-      <h1>{t('home.welcome')}</h1>
-      <p>{t('app.tagline')}</p>
-      <Link href="/signup" className="xidig-button xidig-button--primary">
-        {t('action.getStarted')}
-      </Link>
-    </main>
-  );
+  // Signed-out: the front-door landing (docs/front-door-plan.md §4) —
+  // proof-first marketing content, not an app dashboard.
+  return <FrontHome />;
 }

@@ -1,15 +1,16 @@
 'use client';
 
+import Link from 'next/link';
+
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
 import { MARKETING_LINKS } from '@/lib/external-links';
 
 /**
- * Site footer — the app half of the xidig.net ↔ app.xidig.net unified
- * experience. Legal + about pages live on the marketing site (xidig.net), so
- * the app links out to them rather than duplicating the content. Plain anchors
- * (not next/link) because these leave the app to another origin.
+ * Site footer. Since the Phase A front door (docs/front-door-plan.md) the
+ * legal + about pages live INSIDE this app, so these are internal routes via
+ * next/link (they used to be plain anchors out to the old marketing site).
  *
  * Client component so the labels re-render on a language toggle without a page
  * reload, matching the header nav.
@@ -18,6 +19,7 @@ const FOOTER_LINKS: ReadonlyArray<{ labelKey: MessageKey; href: string }> = [
   { labelKey: 'footer.about', href: MARKETING_LINKS.about },
   { labelKey: 'footer.privacy', href: MARKETING_LINKS.privacy },
   { labelKey: 'footer.terms', href: MARKETING_LINKS.terms },
+  { labelKey: 'marketing.contactTitle', href: '/contact' },
 ];
 
 export function SiteFooter() {
@@ -28,7 +30,7 @@ export function SiteFooter() {
         <ul className="xidig-footer__list">
           {FOOTER_LINKS.map((link) => (
             <li key={link.href}>
-              <a href={link.href}>{t(link.labelKey)}</a>
+              <Link href={link.href}>{t(link.labelKey)}</Link>
             </li>
           ))}
         </ul>

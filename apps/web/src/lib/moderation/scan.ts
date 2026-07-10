@@ -22,7 +22,7 @@ import { getModerationProvider, type ModerationVerdict } from './provider';
  */
 
 export interface ScanTarget {
-  entityType: 'post' | 'comment';
+  entityType: 'post' | 'comment' | 'event';
   entityId: string;
   authorUserId: string;
   text: string;
@@ -89,13 +89,21 @@ export async function scanTextContent(
     if (verdict.decision !== 'flag') return;
 
     // Auto-hide pending the human decision — but never resurrect content a
-    // mod/author already removed.
-    const table = target.entityType === 'post' ? 'posts' : 'comments';
-    const { error } = await admin
-      .from(table)
-      .update({ status: 'hidden' })
-      .eq('id', target.entityId)
-      .eq('status', 'published');
+    // mod/author already removed. Events keep lifecycle (draft/published/
+    // cancelled) and moderation state in separate columns, so their hide
+    // targets moderation_status; posts/comments use the single status column.
+    const { error } =
+      target.entityType === 'event'
+        ? await admin
+            .from('events')
+            .update({ moderation_status: 'hidden' })
+            .eq('id', target.entityId)
+            .eq('moderation_status', 'published')
+        : await admin
+            .from(target.entityType === 'post' ? 'posts' : 'comments')
+            .update({ status: 'hidden' })
+            .eq('id', target.entityId)
+            .eq('status', 'published');
     if (error) {
       console.error('[moderation] failed to hide flagged content:', error.message);
       return;

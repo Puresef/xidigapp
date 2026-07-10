@@ -7,7 +7,11 @@
 export const LANES = [
   'fintech',
   'logistics',
-  'import/export',
+  // Canonical dash form: shared with the tags seed, the listing category, and
+  // the playbook venture type — all 'import-export'. The old 'import/export'
+  // could never be a tag (tags_name_format forbids '/'), so it silently failed
+  // to match across surfaces. Reconciled in Phase 8.
+  'import-export',
   'agri-food',
   'e-commerce',
   'real-estate',

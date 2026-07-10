@@ -746,3 +746,142 @@ describe('following_listings view + claim idempotency (20260705020000)', () => {
     ).rejects.toThrow(/duplicate key|listing_claims_one_pending_per_member/);
   });
 });
+
+describe('phase 8 — API keys, seed registry, digest (20260709100000)', () => {
+  it('seed_runs / seed_entities / digest_editions are admin-select only, no client writes', async () => {
+    const member = await seedMember('p8_member');
+    const admin = await seedMember('p8_admin');
+    await db.admin.query(`update users set role = 'admin' where id = $1`, [admin]);
+
+    await db.withRole('service_role', null, (tx) =>
+      tx.query(`insert into seed_runs (label, source) values ('t-run', 'seed')`),
+    );
+
+    // Member sees nothing; admin sees the run; writes are revoked for members.
+    const memberView = await db.asUser(member, (tx) => tx.query(`select * from seed_runs`));
+    expect(memberView.rows).toEqual([]);
+
+    const adminView = await db.asUser(admin, (tx) =>
+      tx.query(`select label from seed_runs where label = 't-run'`),
+    );
+    expect(adminView.rows).toHaveLength(1);
+
+    await expect(
+      db.asUser(member, (tx) => tx.query(`insert into seed_runs (label) values ('hack')`)),
+    ).rejects.toThrow(/permission denied|row-level security/);
+  });
+
+  it('seed_entities unique (entity_type, dedup_key) blocks duplicate registration', async () => {
+    await db.withRole('service_role', null, (tx) =>
+      tx.query(
+        `insert into seed_entities (dedup_key, entity_type, source) values ('dk1', 'post', 'seed')`,
+      ),
+    );
+    // Same (type, key) → rejected (the idempotency guarantee).
+    await expect(
+      db.withRole('service_role', null, (tx) =>
+        tx.query(
+          `insert into seed_entities (dedup_key, entity_type, source) values ('dk1', 'post', 'seed')`,
+        ),
+      ),
+    ).rejects.toThrow(/duplicate key|seed_entities_dedup_uq/);
+    // Same key under a different entity_type is independent.
+    await db.withRole('service_role', null, (tx) =>
+      tx.query(
+        `insert into seed_entities (dedup_key, entity_type, source) values ('dk1', 'listing', 'seed')`,
+      ),
+    );
+  });
+
+  it('seed sources can never be member (check constraint)', async () => {
+    await expect(
+      db.withRole('service_role', null, (tx) =>
+        tx.query(`insert into seed_runs (label, source) values ('m', 'member')`),
+      ),
+    ).rejects.toThrow(/seed_runs_source_not_member|violates check/);
+  });
+
+  it('api_keys are RLS-locked to clients (hash never client-readable) + write-locked', async () => {
+    const owner = await seedMember('p8_keyowner');
+    await db.withRole('service_role', null, (tx) =>
+      tx.query(
+        `insert into api_keys (owner_user_id, name, key_hash, key_prefix, scopes)
+         values ($1, 'k', 'secret-hash', 'xdg_test_a', array['read'])`,
+        [owner],
+      ),
+    );
+    // Even the owner cannot read the row (so key_hash never leaks).
+    const own = await db.asUser(owner, (tx) => tx.query(`select * from api_keys`));
+    expect(own.rows).toEqual([]);
+    // And cannot mint keys directly (must go through the audited API route).
+    await expect(
+      db.asUser(owner, (tx) =>
+        tx.query(
+          `insert into api_keys (owner_user_id, name, key_hash, key_prefix) values ($1, 'x', 'h2', 'p')`,
+          [owner],
+        ),
+      ),
+    ).rejects.toThrow(/permission denied|row-level security/);
+  });
+
+  it('audit_logs records api_key_id and stays admin-readable', async () => {
+    const admin = await seedMember('p8_auditadmin');
+    await db.admin.query(`update users set role = 'admin' where id = $1`, [admin]);
+    const key = await db.withRole('service_role', null, (tx) =>
+      tx.query(
+        `insert into api_keys (owner_user_id, name, key_hash, key_prefix, scopes)
+         values ($1, 'k', 'hk', 'xdg_test_k', array['read']) returning id`,
+        [admin],
+      ),
+    );
+    const keyId = key.rows[0].id as string;
+    await db.withRole('service_role', null, (tx) =>
+      tx.query(
+        `insert into audit_logs (actor_user_id, api_key_id, action) values ($1, $2, 'external.test')`,
+        [admin, keyId],
+      ),
+    );
+    const view = await db.asUser(admin, (tx) =>
+      tx.query(`select api_key_id from audit_logs where action = 'external.test'`),
+    );
+    expect(view.rows[0].api_key_id).toBe(keyId);
+  });
+
+  it('digest_editions period_key is unique (idempotent per week)', async () => {
+    await db.withRole('service_role', null, (tx) =>
+      tx.query(
+        `insert into digest_editions (period_key, period_start, period_end)
+         values ('2026-W28', '2026-07-02', '2026-07-09')`,
+      ),
+    );
+    await expect(
+      db.withRole('service_role', null, (tx) =>
+        tx.query(
+          `insert into digest_editions (period_key, period_start, period_end)
+           values ('2026-W28', '2026-07-02', '2026-07-09')`,
+        ),
+      ),
+    ).rejects.toThrow(/duplicate key|digest_editions_period_key/);
+  });
+
+  it('a seeded/AI post carries a non-member source and AI accounts earn no Helper score', async () => {
+    const ai = await seedMember('p8_ai');
+    await db.admin.query(`update users set is_ai = true where id = $1`, [ai]);
+
+    const post = await db.admin.query(
+      `insert into posts (author_user_id, type, body, source) values ($1, 'win', 'seeded win', 'seed')
+       returning source`,
+      [ai],
+    );
+    expect(post.rows[0].source).toBe('seed');
+
+    // §14 fairness: the AI account cannot accrue Helper score (Phase 7 rule
+    // preserved) — award_reputation returns 0 for is_ai + helper.
+    const awarded = await db.withRole('service_role', null, (tx) =>
+      tx.query(`select public.award_reputation($1, 'ask_credited', 'helper', 10, 'post', gen_random_uuid()) as pts`, [
+        ai,
+      ]),
+    );
+    expect(Number(awarded.rows[0].pts)).toBe(0);
+  });
+});

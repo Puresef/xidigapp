@@ -106,6 +106,12 @@ export const ERROR_DEFS = {
     cta: { labelKey: 'action.signIn', href: '/signin' },
   },
   phone_invalid: { messageKey: 'error.phoneInvalid' },
+  // Front door (Phase A): the contact intake fails safely when no inbox is
+  // configured (CONTACT_INBOX unset) — same fail-safe posture as CRON_SECRET.
+  contact_unavailable: {
+    messageKey: 'marketing.contactUnavailable',
+    cta: { labelKey: 'action.joinWaitlist', href: '/waitlist?from=contact' },
+  },
   sms_unavailable: {
     messageKey: 'error.smsUnavailable',
     cta: { labelKey: 'action.useMagicLink', href: '/signin?method=magic-link' },
@@ -231,9 +237,27 @@ export const ERROR_DEFS = {
   // category — the award_votes unique constraint surfaces as this, not raw 23505).
   already_voted: { messageKey: 'error.awardAlreadyVoted' as MessageKey },
 
+  // --- Events + RSVP (extras item 8) ---------------------------------------------------
+  // Soft capacity reached: 'going' is blocked, 'interested' keeps working.
+  event_full: { messageKey: 'error.eventFull' },
+  // RSVP against a draft/cancelled/finished event.
+  event_not_open: { messageKey: 'error.eventNotOpen' },
+  // Category slug doesn't resolve to an active event category.
+  event_category_invalid: { messageKey: 'error.eventCategoryInvalid' },
+  // Caller isn't a Lab organizer / verified listing owner / mod-admin — the
+  // locked alpha creation rights (never Supporter-paywalled).
+  event_creation_not_allowed: { messageKey: 'error.eventCreationNotAllowed' },
+
   // --- Request hygiene ---------------------------------------------------------------
   rate_limited: { messageKey: 'error.rateLimited' },
   invalid_request: { messageKey: 'error.invalidRequest' },
+
+  // --- External API / MCP keys (§21/§27) ----------------------------------------------
+  // Returned to trusted integrations, not members: missing/invalid/revoked key
+  // (401), expired key (401), and a valid key lacking the required scope (403).
+  invalid_api_key: { messageKey: 'error.invalidApiKey' },
+  api_key_expired: { messageKey: 'error.apiKeyExpired' },
+  insufficient_scope: { messageKey: 'error.insufficientScope' },
 } as const satisfies Record<string, PlainErrorDef>;
 
 export type ErrorCode = keyof typeof ERROR_DEFS;
@@ -287,6 +311,8 @@ export const NOTICE_KEYS = {
   account_deactivated: 'messages.accountDeactivated',
   deletion_requested: 'messages.deletionRequested',
   deletion_cancelled: 'messages.deletionCancelled',
+  // Front door (Phase A) — contact intake success.
+  contact_sent: 'notice.contactSent',
 } as const satisfies Record<string, MessageKey>;
 
 export type NoticeCode = keyof typeof NOTICE_KEYS;

@@ -161,15 +161,19 @@ Local dev: `cp .env.example apps/web/.env.local` and fill in. Prod: step 5.
 5. **Deploy.** First deploy builds and boots; if a required env var is missing the
    runtime logs show the single aggregated "Invalid or missing environment
    variables" error naming each key.
-6. **Cron** — `vercel.json` declares `/api/cron/labs` (daily 03:00; Vercel
-   auto-registers it and sends `Authorization: Bearer $CRON_SECRET`). The
-   `/api/cron/plaza` hourly sweep is **not** in `vercel.json` — Hobby-plan
-   Vercel Cron only allows daily+ schedules and fails the deploy on an hourly
-   entry. Set up a free external scheduler instead (runbook §Scheduled sweeps
-   has exact steps: [cron-job.org](https://cron-job.org), GET
+6. **Cron** — `vercel.json` declares four daily+ jobs (Vercel auto-registers
+   them and sends `Authorization: Bearer $CRON_SECRET`):
+   - `/api/cron/labs` — daily 03:00 (dormancy nudges + skill-gap alerts)
+   - `/api/cron/lifecycle` — daily 03:30 (account anonymisation + verification-recording purge)
+   - `/api/cron/reputation` — daily 03:45 (reputation 90-day decay recompute, Phase 7/8)
+   - `/api/cron/digest` — **Mondays 08:00** (weekly digest pinned post, Phase 8)
+
+   The `/api/cron/plaza` **hourly** sweep is deliberately **not** in `vercel.json`
+   — Hobby-plan Vercel Cron only allows daily+ schedules and fails the deploy on
+   an hourly entry. Set up a free external scheduler instead (runbook §Scheduled
+   sweeps: [cron-job.org](https://cron-job.org), GET
    `https://app.xidig.net/api/cron/plaza` hourly, header
-   `Authorization: Bearer <CRON_SECRET>`). Just make sure `CRON_SECRET` is set
-   either way.
+   `Authorization: Bearer <CRON_SECRET>`). Ensure `CRON_SECRET` is set either way.
 
 CLI alternative for env (🖥️): `vercel env add APP_URL production` (repeat per var),
 then `vercel --prod`.
@@ -215,11 +219,20 @@ then `vercel --prod`.
 
 ## 9. What is deliberately NOT live yet (tracked, not blockers)
 
-- **Analytics events** (§23) fire from **Phase 7**; PostHog is provisioned but the
-  Capital/experience events aren't emitted yet.
-- **Candidate reporting / mod queue** and a dedicated verifier role → **Phase 6**
-  (v1.0 reviewers = mod/admin, with recusal).
-- **REST/MCP API** exposure → **Phase 8**.
-- Native Somali copy review of new strings; WhatsApp OTP (v1.1); the v1.0
-  experience backlog (Events+RSVP, business trust fields, tasks, page-block
-  editor) — see the project notes.
+Phases 1–8 are all **build-complete** (Phase 6 admin/mod/verification, Phase 7
+reputation/badges/analytics, Phase 8 AI seeding/REST/MCP/digest have shipped
+since this runbook was first written). What remains is provisioning + hardening,
+consolidated in [alpha-hardening.md](alpha-hardening.md). The main deliberately-
+deferred items:
+
+- **Analytics pipeline stays dark** until the consent-capture UI ships — the §23
+  events are all emitted server-side but the consent gate is fail-closed, so
+  nothing sends until a member opts in (even after `POSTHOG_KEY` is set).
+- **Biometric DPIA sign-off** is required before enabling real verification-call
+  recording ([dpia-verification.md](dpia-verification.md)) — a compliance gate.
+- **Digest bulk email** — the weekly digest pins a Plaza post; member email
+  sending is deferred until a safe bulk sender + per-member consent/quiet-hours.
+- **Meilisearch** — search runs on Postgres trgm; the Meili sync stays deferred.
+- Native Somali copy review of Phase 4→8 draft strings; WhatsApp OTP (v1.1); the
+  v1.0 experience backlog (Events+RSVP, business trust fields, tasks, page-block
+  editor) — see the project notes / [alpha-hardening.md](alpha-hardening.md).

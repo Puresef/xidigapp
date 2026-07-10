@@ -1,7 +1,11 @@
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { ConsentPreferences } from '@/components/consent/consent-preferences';
 import { DataSettings } from '@/components/settings/data-settings';
 import { getAuthContext } from '@/lib/auth/guards';
+import { CONSENT_COOKIE } from '@/lib/consent/model';
+import { getConsentChoice } from '@/lib/consent/server';
 import { getLitePrefs } from '@/lib/lite/server';
 import { getT } from '@/lib/locale';
 
@@ -21,10 +25,20 @@ export default async function DataSettingsPage() {
 
   const t = await getT();
   const prefs = await getLitePrefs();
+  // §12 privacy choices — same resolution the layout banner uses (cookie fast
+  // path, consent_records fallback), so the toggles show the live state.
+  const consent = await getConsentChoice(
+    ctx.appUser.id,
+    (await cookies()).get(CONSENT_COOKIE)?.value,
+  );
 
   return (
     <main className="xidig-auth">
       <h1 className="xidig-auth__title">{t('settings.dataTitle')}</h1>
+      <ConsentPreferences
+        initialAnalytics={consent.analytics}
+        initialErrorMonitoring={consent.errorMonitoring}
+      />
       <DataSettings initialPrefs={prefs} />
     </main>
   );

@@ -25,7 +25,7 @@ import type { Json } from '@xidig/db';
  */
 
 const SELECT =
-  'id, owner_user_id, business_name, category_id, short_description, address, landmark, latitude, longitude, city, country, contact_links, verification_status, status, created_at, opening_hours, price_range, primary_photo_path, primary_photo_blurhash, primary_photo_alt, photo_count';
+  'id, owner_user_id, business_name, category_id, short_description, address, landmark, latitude, longitude, city, country, contact_links, verification_status, status, source, created_at, opening_hours, price_range, primary_photo_path, primary_photo_blurhash, primary_photo_alt, photo_count';
 
 const bboxSchema = z
   .string()
@@ -42,6 +42,10 @@ const querySchema = z.object({
   // §7 journey-3 filter: businesses.verification_status is a single 'verified'
   // tier (no community/identity split, unlike profiles).
   verification: z.enum(['verified']).optional(),
+  // Extras item 5: price-range filter, exact level match ($..$$$$). Listings
+  // with no price set are excluded when the filter is active (eq on a null
+  // column never matches) — "any" is the absent param.
+  price: z.coerce.number().int().min(1).max(4).optional(),
   bbox: bboxSchema.optional(),
   cursor: z.string().max(512).optional(),
   limit: pageSizeSchema,
@@ -63,6 +67,7 @@ export async function GET(request: Request): Promise<Response> {
     if (params.city) query = query.ilike('city', params.city);
     if (params.country) query = query.ilike('country', params.country);
     if (params.verification === 'verified') query = query.eq('verification_status', 'verified');
+    if (params.price !== undefined) query = query.eq('price_range', params.price);
     if (params.q) {
       const term = params.q.replace(/[%,()]/g, ' ');
       query = query.or(`business_name.ilike.%${term}%,short_description.ilike.%${term}%`);

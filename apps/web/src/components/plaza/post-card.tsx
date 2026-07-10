@@ -7,6 +7,7 @@ import { formatRelativeTime, type MessageKey } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
 import { Banner } from '@/components/banner';
+import { ContentSourceBadge } from '@/components/content-source-badge';
 import { MediaSlot } from '@/components/media/media-slot';
 import { ShareActions } from '@/components/share-actions';
 import { BookmarkButton } from '@/components/social/bookmark-button';
@@ -109,6 +110,7 @@ export function PostCard({
 
       <p className="xidig-chip-row">
         <span className="xidig-tag">{t(TYPE_KEYS[post.type])}</span>
+        <ContentSourceBadge source={post.source} />
         {post.pinned_at ? <span className="xidig-tag">{t('plaza.pinned')}</span> : null}
         {post.ask_status ? (
           <span className="xidig-tag">{t(ASK_STATUS_KEYS[post.ask_status])}</span>

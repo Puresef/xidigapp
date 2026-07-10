@@ -297,3 +297,14 @@ Events wired to the actions that fire them:
 | `map_view`, `listing_view`, `contact_click`                       | client → `POST /api/analytics`     |
 | `language_switched`, `low_bandwidth_enabled`                      | client → `POST /api/analytics`     |
 | `signup_completed`, `verification_*`, `badge_awarded`, `invite_*` | emitted server-side by their flows |
+
+## Phase 8 — External REST API + MCP + seeding + digest (§21)
+
+The trusted-agent surface lives under `/api/external/*` and is **scoped-API-key**
+authenticated (not member sessions). It reuses the service layer; every write is
+labelled seeded/AI, idempotent, and audited with the key. Full reference:
+[external-api.md](external-api.md) (REST + security model + errors),
+[seeding.md](seeding.md) (seeding + weekly digest), and the MCP server at
+`apps/web/mcp/` ([README](../apps/web/mcp/README.md)). New Phase-8 analytics
+events (`external_api_*`, `seeded_content_*`, `mcp_tool_called`,
+`weekly_digest_*`, `ai_content_created`) live in the same typed registry.

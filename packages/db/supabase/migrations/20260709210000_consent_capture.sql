@@ -1,0 +1,27 @@
+-- ============================================================================
+-- Consent capture (§12 cookie/analytics consent UI — the piece that finally
+-- lets hasAnalyticsConsent() return true for someone).
+--
+-- Consent categories after this migration:
+--   * essential        — always-on; not a consent_type row. Session cookies,
+--                        security, preference cookies (locale/theme/Lite) and
+--                        BASIC error capture (plain Sentry error events) are
+--                        strictly necessary to run the service and need no
+--                        opt-in.
+--   * analytics        — PostHog product analytics (existing enum value).
+--                        Opt-in; gated fail-closed by
+--                        apps/web/src/lib/analytics/consent.ts.
+--   * error_monitoring — Sentry session-replay / performance traces (added
+--                        here). Opt-in extras on top of basic error capture:
+--                        replay records the member's screen interactions, so
+--                        it is NOT essential. Basic error capture stays
+--                        essential and is never gated by this row.
+--
+-- Storage model is unchanged (20260704000000_schema.sql consent_records):
+-- grant = active row (withdrawn_at null), decline = absence of a row,
+-- withdrawal = withdrawn_at set, re-grant / new document version = new row.
+-- The unique-active index per (user_id, consent_type) already covers the new
+-- value. See docs/consent-capture.md for the capture UI + cookie fast path.
+-- ============================================================================
+
+alter type consent_type add value if not exists 'error_monitoring';

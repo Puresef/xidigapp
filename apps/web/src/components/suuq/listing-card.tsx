@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { useT } from '@xidig/i18n/react';
 
+import { ContentSourceBadge } from '@/components/content-source-badge';
 import { MediaSlot } from '@/components/media/media-slot';
 import { BookmarkButton } from '@/components/social/bookmark-button';
 import { LOW_BANDWIDTH_COOKIE, parseLowBandwidthCookieValue } from '@/lib/bandwidth';
@@ -40,6 +41,8 @@ export interface ListingRow {
   verification_status: string;
   status: string;
   created_at: string;
+  /** content_source ('member' | 'seed' | 'ai') — drives the seeded/AI label. */
+  source?: string;
   /** Phase 4.5 columns — optional: older call sites select narrower rows. */
   opening_hours?: unknown;
   price_range?: number | null;
@@ -138,6 +141,7 @@ export function ListingCard({
           {listing.owner_user_id === null ? (
             <span className="xidig-tag">{t('suuq.unclaimed')}</span>
           ) : null}
+          {listing.source ? <ContentSourceBadge source={listing.source} /> : null}
           <PriceRangeDisplay level={listing.price_range} />
           {listing.opening_hours !== undefined && listing.opening_hours !== null ? (
             <OpenNowChip hours={listing.opening_hours} />

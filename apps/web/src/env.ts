@@ -72,6 +72,11 @@ export const envSchema = z.object({
   // "whsec_..."). Empty = webhook endpoint disabled (returns 503).
   EMAIL_WEBHOOK_SECRET: z.string().default(''),
 
+  // Front-door contact intake destination (docs/front-door-plan.md §3).
+  // Optional: unset ⇒ /contact renders a waitlist fallback and the API
+  // refuses with contact_unavailable — fail-safe, never a hard error page.
+  CONTACT_INBOX: optionalKey(),
+
   // Maps (optional — the map degrades / uses OSM tiles without it)
   MAPTILER_KEY: optionalKey(),
 

@@ -33,6 +33,7 @@ export const en = {
   'nav.searchPlaceholder': 'Search Xidig',
   'nav.settings': 'Settings',
   'nav.awards': 'Awards',
+  'nav.events': 'Events',
   'nav.leaderboard': 'Top Helpers',
 
   // Canonical product terms used inside sentences and on buttons
@@ -40,6 +41,28 @@ export const en = {
   'term.club': 'Club',
   'term.garab': 'Co-sign',
   'term.maalgeli': 'Invest',
+
+  // Seeded / AI content labels (§21) — shown on cards for non-member content.
+  'content.seededLabel': 'Seeded',
+  'content.aiLabel': 'AI-assisted',
+  'content.aiAccount': 'AI assistant',
+  'content.seededTooltip': 'Platform-provided starter content, not a member post.',
+  'content.aiTooltip': 'Created with Xidig AI. Labelled so you can tell it apart from member content.',
+  'content.aiAccountTooltip': 'A clearly-labelled AI assistant account, not a human member.',
+
+  // Admin — seed content review (§21)
+  'admin.seedTitle': 'Seeded content',
+  'admin.seedSubtitle': 'AI-assisted and seeded content — labelled, auditable, and never shown as member content.',
+  'admin.seedRunsHeading': 'Seed runs',
+  'admin.seedContentHeading': 'Seeded content counts',
+  'admin.seedNoRuns': 'No seed runs yet. Run the seed job to populate launch density.',
+  'admin.seedColLabel': 'Label',
+  'admin.seedColSource': 'Source',
+  'admin.seedColCreated': 'Created',
+  'admin.seedPosts': 'Plaza posts',
+  'admin.seedListings': 'Listings',
+  'admin.seedPlaybooks': 'Lab templates',
+  'admin.seedTags': 'Tags',
 
   // Core actions
   'action.getStarted': 'Get started',
@@ -167,6 +190,14 @@ export const en = {
   'error.invalidRequest':
     'Something about that request didn’t look right. Refresh the page and try again.',
 
+  // --- External API / MCP keys (§21/§27) — returned to trusted integrations ---
+  'error.invalidApiKey':
+    'That API key isn’t valid. Check the key, or create a new one in your Xidig settings.',
+  'error.apiKeyExpired':
+    'That API key has expired. Create a new one in your Xidig settings to continue.',
+  'error.insufficientScope':
+    'That API key doesn’t have permission for this action. Create a key with the right scope.',
+
   // --- Profile & directory (§27) ---
   'error.handleTaken': 'That handle is taken. Try a different one.',
   'error.handleInvalid':
@@ -282,6 +313,23 @@ export const en = {
   'matching.labsSeekingBody': 'These Labs are seeking a skill you have.',
   'matching.matchedSkills': 'Looking for:',
 
+  // Interest-based follow suggestions (extras plan item 4) — every card names
+  // its declared-field reason; the reason IS the ranking, nothing hidden.
+  'matching.reasonSharesLane': 'Shares your {lane} lane',
+  'matching.reasonSharesSkill': 'Also into {skill}',
+  'matching.reasonSameCity': 'Same city as you',
+  'matching.reasonSameCountry': 'Same country as you',
+  'matching.reasonSharesOpenTo': 'Also open to {label}',
+  'matching.reasonTheyHiring': 'Hiring — you’re open to work',
+  'matching.reasonYouHiring': 'Open to work — you’re hiring',
+  'matching.reasonLabSeeking': 'Looking for your {skill} skill',
+  'matching.skip': 'Skip',
+  'matching.viewLab': 'Visit this Lab',
+  'matching.suggestEmptyTitle': 'No matches yet',
+  'matching.suggestEmptyBody':
+    'Your people aren’t on Xidig yet — invite them, and fill in your lanes, skills and city so matches can find you.',
+  'matching.suggestEmptyCta': 'Invite your people',
+
   // Community Awards (PRD §20)
   'awards.title': 'Community Awards',
   'awards.subtitle': "Vote for this quarter's standouts. One vote per category — {quarter}.",
@@ -390,6 +438,9 @@ export const en = {
     other: '{count} Founding Member spots left — the first 500 members carry the badge for life.',
   },
   'waitlist.haveCode': 'Have an invite code?',
+  // Front door (Phase A): the waitlist doubles as the updates-capture lane
+  // until the digest email rail ships — this flag keeps the two honest.
+  'waitlist.updatesOnly': 'Just send me updates — I’m not requesting a membership spot.',
 
   // Account settings (Phase 1 scaffold)
   'settings.accountTitle': 'Account & sign-in',
@@ -1342,6 +1393,25 @@ export const en = {
   'search.teachBody':
     'One box for the whole community: find people by any spelling (Maxamed or Mohamed), businesses by name or what they do, Spaces to join, and Madal posts.',
   'search.teachExample': 'Try a name, a trade, or a topic — “Maxamed”, “tailor”, “halal export”.',
+  // Search polish (extras item 3): entity tabs, transparent sort labels,
+  // per-tab teaching empty states.
+  'search.tabAll': 'All',
+  'search.sortTransparency': 'Plain text matching only — no hidden ranking.',
+  'search.sortNewest': 'Newest first',
+  'search.sortActivity': 'Latest activity first',
+  'search.emptyPeople':
+    'No people matched. People results are member profiles — try any spelling of a name (Maxamed, Mohamed) or a handle.',
+  'search.emptyPeopleCta': 'Browse the directory',
+  'search.emptyBusinesses':
+    'No businesses matched. Businesses are member-run listings in the directory — shops, services and trades.',
+  'search.emptyBusinessesCta': 'Browse businesses',
+  'search.emptySpaces':
+    'No Spaces matched. Spaces are Clubs and Labs where members learn and build together.',
+  'search.emptySpacesCta': 'Explore Spaces',
+  'search.emptyPosts':
+    'No posts matched. Posts are Plaza conversations — intros, asks, wins and updates.',
+  'search.emptyPostsCta': 'Go to the Plaza',
+  'search.postsMembersOnly': 'Plaza posts are members-only. Sign in to search them.',
 
   // Capital / Maal (§6/§17/§27). New launch-floor namespace — a trust surface.
   // Canonical terms Maalgeli (Invest) / Garab (Co-sign) are NOT redefined here;
@@ -1454,6 +1524,288 @@ export const en = {
   'capital.commentsHeading': 'Discussion',
   'capital.commentLabel': 'Add a comment',
   'capital.commentsEmpty': 'No comments yet. Start the conversation.',
+
+  // ── Front door (Phase A) ──────────────────────────────────────────────
+  // Public marketing surfaces served by the app itself (docs/front-door-plan.md).
+  // Proof-first: no fabricated numbers or social proof anywhere in this copy.
+  // SO is plain register; native review tracked as Alpha Hardening Debt.
+
+  // Signed-out chrome
+  'marketing.navProduct': 'Product',
+  'marketing.navReports': 'Reports',
+  'marketing.navMembership': 'Membership',
+  'marketing.requestAccess': 'Request Access',
+
+  // Landing (/ signed-out) — social-app-first positioning (9 Jul reframe):
+  // the casual visitor comes for the social home; Labs/Capital reveal deeper.
+  'marketing.heroTitle': 'The Somali social app for connection, discovery, and building.',
+  'marketing.heroSub':
+    'Post wins, ask for help, find people and businesses, follow Labs, message members, and back what the community is building — in one bilingual, low-data app.',
+  'marketing.seeProduct': 'Explore what’s inside',
+  'marketing.groupsTitle': 'Everything your groups are missing',
+  'marketing.groupsBody':
+    'WhatsApp is great for quick messages — Xidig gives the community memory. Profiles, search, public posts, business listings, project spaces, and DMs that don’t disappear into the scroll.',
+  'marketing.groupsKeep':
+    'Keep WhatsApp for family chats. Xidig is the Somali community you can search, follow, build with, and come back to.',
+  'marketing.blockPlazaTitle': 'A feed with purpose',
+  'marketing.blockPlazaBody':
+    'Post intros, asks, wins, and polls — and react in a way that feels like us. Conversations become community memory, not scroll-past noise.',
+  'marketing.blockProfilesTitle': 'Your Somali internet profile',
+  'marketing.blockProfilesBody':
+    'Show your skills, city, links, Labs, badges, and what you’re open to. Share one link instead of explaining yourself every time.',
+  'marketing.blockSuuqTitle': 'Find people and businesses',
+  'marketing.blockSuuqBody':
+    'Search Somali talent, services, shops, and businesses by city, skill, or category — then reach them on WhatsApp when you’re ready.',
+  'marketing.blockDmTitle': 'DMs with boundaries',
+  'marketing.blockDmBody':
+    'Message requests, blocks, reports, and calm notifications keep conversations useful — without group-chat chaos.',
+  'marketing.blockLabsTitle': 'Turn ideas into rooms',
+  'marketing.blockLabsBody':
+    'Start a casual Club; promote it to a Lab when it gets serious. Updates, decisions, links, and members stay in one place.',
+  'marketing.blockCapitalTitle': 'Back what’s being built',
+  'marketing.blockCapitalBody':
+    'Co-sign promising ventures, offer help, and follow build-in-public timelines. Investment-intent features are region-gated and intent-only — no live financial flows.',
+  'marketing.blockLiteTitle': 'Built for our internet',
+  'marketing.blockLiteBody':
+    'Somali and English from day one. Lite mode for slow connections — images, maps, and embeds load only when you tap.',
+  'marketing.blockOwnedTitle': 'Community-owned, not algorithm-owned',
+  'marketing.blockOwnedBody':
+    'Transparent moderation, visible rules, member governance — and no engagement-bait ranking. What you follow is what you see.',
+  'marketing.finalCta': 'Come home to the Somali social app.',
+  'marketing.honestyTitle': 'Real by default',
+  'marketing.honestyBody':
+    'No invented members, no fake numbers, no staged screenshots. What Xidig shows is real member activity — and any number on this page is a real one.',
+  'marketing.reportsTeaserBody':
+    'Community-compiled research on the Somali economy and diaspora — cited, honest, and free to read.',
+  'marketing.membershipTeaserBody':
+    'Free to join. Supporter membership — around $1/month — unlocks Lab creation and governance votes.',
+
+  // Homepage "next up" event card (extras item 8) — renders only when a real
+  // upcoming public event exists.
+  'marketing.eventNextTitle': 'Next up',
+  'marketing.eventNextCta': 'See the event',
+
+  // /product
+  'marketing.productTitle': 'What Xidig gives you today',
+  'marketing.productIntro':
+    'Everything below is built and live — this is the product founding members use today, not a roadmap.',
+  'marketing.productTrustTitle': 'Trust & verification',
+  'marketing.productTrustBody':
+    'Identity, community, and business verification badges; human moderation with appeals; and a low-bandwidth Lite mode that respects every connection.',
+  'marketing.productBetaNote': 'Xidig is in private beta. Request access and we’ll save your founding spot.',
+
+  // /labs and /capital signed-out teasers (replaced by live public
+  // directories in Phase B — until then these explain, never fake)
+  'marketing.labsTeaserTitle': 'Labs — build in public',
+  'marketing.labsTeaserBody':
+    'A Lab is a small team building openly: a charter, weekly updates, milestones, and an honest dormant flag when life happens. Strong Labs can put a venture candidate before the community.',
+  'marketing.labsTeaserNote':
+    'Every public Lab already has a shareable page. The full Lab directory opens here soon.',
+  'marketing.capitalTeaserTitle': 'Capital — community-backed ventures',
+  'marketing.capitalTeaserBody':
+    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Today Xidig captures intent only — there are no live financial flows.',
+
+  // /about
+  'marketing.aboutTitle': 'About Xidig',
+  'marketing.aboutStory1':
+    'Xidig means star. We are building the place where the Somali nation’s builders — at home and across the diaspora — find each other and build together.',
+  'marketing.aboutStory2':
+    'Talent is everywhere in our community; trust and discovery are not. Xidig is member-owned infrastructure for both: a public square, build-in-public workshops, a business directory, and a community that backs its own.',
+  'marketing.aboutStory3':
+    'We build in public, we don’t fake numbers, and we design for a 2G connection in Mogadishu first.',
+  'marketing.aboutCapitalTitle': 'How Capital works',
+  'marketing.aboutCapitalBody':
+    'Ventures start as Labs, become candidates, and are reviewed and voted on by members in the open. Today this is a pipeline and intent capture — not a fund, and not an offer of investment.',
+  'marketing.aboutRolesTitle': 'Roles, not careers',
+  'marketing.aboutRolesBody':
+    'Xidig has no hiring page. Community roles — moderators, verifiers, mentors — are earned and appointed from within the membership.',
+  'marketing.aboutContactBody': 'Questions, press, or partnerships: reach us through the contact page.',
+
+  // /membership
+  'marketing.memberTitle': 'Membership',
+  'marketing.memberIntro': 'One community, two levels. Pricing is confirmed with members — not imposed on them.',
+  'marketing.memberFreeTitle': 'Member — free',
+  'marketing.memberFreeBody':
+    'A profile and business listing, the Plaza, the directory, messages, and joining Clubs. Free stays free.',
+  'marketing.memberSupporterTitle': 'Supporter — around $1/month',
+  'marketing.memberSupporterBody':
+    'Everything in free, plus creating Labs, putting candidates forward, and voting in community governance.',
+  'marketing.memberBillingNote':
+    'Billing isn’t live yet. The exact price is confirmed with members before anyone is charged.',
+
+  // /contact
+  'marketing.contactTitle': 'Contact',
+  'marketing.contactIntro': 'Questions, press, partnerships, or feedback — we read everything.',
+  'marketing.contactNameLabel': 'Your name',
+  'marketing.contactMessageLabel': 'Your message',
+  'marketing.contactSend': 'Send message',
+  'marketing.contactUnavailable':
+    'The contact form isn’t wired up yet. Join the waitlist and we’ll reach out instead.',
+
+  // Legal (drafts — legal sign-off gates the domain cutover, not this build)
+  'marketing.legalDraftNotice':
+    'Draft — under legal review before public launch. This page describes intent and may change.',
+  'marketing.privacyTitle': 'Privacy Policy',
+  'marketing.privacyIntro':
+    'This policy covers everything on Xidig — browsing these pages and using the app with an account.',
+  'marketing.privacyCollectTitle': 'What we collect',
+  'marketing.privacyCollectBody':
+    'Account details you give us (name, email or phone, profile fields), the content you post, and the technical minimum needed to run the service securely — such as IP-derived region and session cookies.',
+  'marketing.privacyUseTitle': 'How we use it',
+  'marketing.privacyUseBody':
+    'To run Xidig: accounts, feeds, messages, moderation, and safety. We don’t sell personal data, and we don’t run third-party advertising.',
+  'marketing.privacyAnalyticsTitle': 'Analytics',
+  'marketing.privacyAnalyticsBody':
+    'Product analytics is opt-in. Without your consent, events about your account aren’t recorded — and anonymous visitors aren’t individually tracked on these pages.',
+  'marketing.privacyVerificationTitle': 'Verification',
+  'marketing.privacyVerificationBody':
+    'Identity and business verification are optional and consent-based. Full details of what verification processes and stores will be published before verification opens to members.',
+  'marketing.privacyRightsTitle': 'Your rights',
+  'marketing.privacyRightsBody':
+    'You can export your data and delete your account from Settings. Deletion is real: after the grace period your data is removed, not archived.',
+  'marketing.privacyContactBody': 'Privacy questions: use the contact page and we’ll respond.',
+  'marketing.termsTitle': 'Terms of Service',
+  'marketing.termsIntro': 'Using Xidig — these pages or the app — means agreeing to these terms.',
+  'marketing.termsAccountsTitle': 'Accounts',
+  'marketing.termsAccountsBody':
+    'One person, one account. You’re responsible for what happens under your sign-in, and membership is currently by invitation or waitlist.',
+  'marketing.termsContentTitle': 'Your content',
+  'marketing.termsContentBody':
+    'What you post stays yours. You give Xidig the licence needed to show it to the members and visitors you chose to share it with — nothing more.',
+  'marketing.termsConductTitle': 'Conduct',
+  'marketing.termsConductBody':
+    'Be honest, be lawful, keep it safe. Content that breaks the community guidelines can be removed, and decisions can be appealed.',
+  'marketing.termsFeesTitle': 'Fees',
+  'marketing.termsFeesBody':
+    'Joining is free. Supporter membership will cost around $1/month once billing goes live; the confirmed price is announced to members before anyone is charged.',
+  'marketing.termsCapitalTitle': 'Capital',
+  'marketing.termsCapitalBody':
+    'Capital features record interest and intent only. Nothing on Xidig is an offer of securities or investment advice. Full terms for any financial feature will ship before that feature goes live.',
+  'marketing.termsChangesTitle': 'Changes',
+  'marketing.termsChangesBody':
+    'We’ll tell members about material changes to these terms before they take effect.',
+
+  // /reports chrome (report bodies are community-compiled content, not UI copy)
+  'marketing.reportsTitle': 'Reports',
+  'marketing.reportsIntro':
+    'Community-compiled research on the Somali economy and diaspora. Cited where possible, honest about uncertainty, free to read.',
+  'marketing.reportsCompiledLabel': 'Community-compiled',
+  'marketing.reportsDisclaimer':
+    'Compiled by community contributors from public sources. Figures may be estimates — verify independently before relying on them.',
+  'marketing.reportsAll': 'All reports',
+  'marketing.reportsFaqTitle': 'Frequently asked questions',
+
+  // Success-path notice (§27) for the contact intake
+  'notice.contactSent': 'Message sent — thank you. We’ll get back to you soon.',
+
+  // Consent capture (§12 — signed-in banner + Settings › Data privacy choices)
+  'consent.regionAria': 'Privacy choices',
+  'consent.bannerTitle': 'Your privacy choices',
+  'consent.bannerBody':
+    'Xidig asks first. Choose whether optional product analytics and error-monitoring extras may run for your account — essential cookies are always on. You can change this any time in Settings.',
+  'consent.privacyLink': 'Privacy Policy',
+  'consent.acceptAll': 'Accept all',
+  'consent.rejectAll': 'Reject all',
+  'consent.manage': 'Manage choices',
+  'consent.save': 'Save choices',
+  'consent.analyticsLabel': 'Product analytics',
+  'consent.analyticsHint':
+    'Usage events that help us improve Xidig — never your messages, names, or contact details.',
+  'consent.errorMonitoringLabel': 'Error-monitoring extras',
+  'consent.errorMonitoringHint':
+    'Session replays and performance traces that help us fix problems faster. Basic error reports stay on — they keep Xidig running.',
+  'consent.settingsTitle': 'Privacy choices',
+  'consent.settingsIntro':
+    'Control the optional data Xidig may collect about your account. Changes apply right away.',
+  'consent.saved': 'Choices saved.',
+
+  // Events + RSVP (extras item 8 — design locked 10 Jul)
+  'events.indexTitle': 'Events',
+  'events.indexIntro':
+    'Community meetups, talks, demo days, workshops and business events — hosted by members.',
+  'events.publicIndexIntro':
+    'Public events from the Xidig community. Members see more and can RSVP.',
+  'events.empty':
+    'No upcoming events yet. Lab organizers, verified businesses and moderators can host one.',
+  'events.categoryAll': 'All',
+  'events.newEvent': 'Host an event',
+  'events.upcomingTitle': 'Upcoming events',
+  'events.hostedBy': 'Hosted by {name}',
+  'events.partOf': 'Part of {name}',
+  'events.modeOnline': 'Online',
+  'events.modeInPerson': 'In person',
+  'events.modeHybrid': 'Hybrid',
+  'events.statusCancelled': 'This event was cancelled.',
+  'events.statusDraft': 'Draft — only you can see this event.',
+  'events.awaitingReview': 'This event is awaiting review.',
+  'events.venueLabel': 'Venue',
+  'events.addressForAttendees': 'The exact address is shared with confirmed attendees.',
+  'events.onlineForAttendees': 'The online link is shared with confirmed attendees.',
+  'events.joinOnline': 'Join online',
+  'events.goingCount': '{count} going',
+  'events.interestedCount': '{count} interested',
+  'events.fullLabel': 'Full — you can still mark yourself interested.',
+  'events.capacityGoing': '{count} of {capacity} going',
+  'events.rsvpGoing': 'Going',
+  'events.rsvpInterested': 'Interested',
+  'events.rsvpRemove': 'Remove RSVP',
+  'events.showPubliclyLabel': 'Show me as attending to other members',
+  'events.attendeesTitle': 'Attendees',
+  'events.attendeesHostNote':
+    'Only you see the full list. Other members only see people who opted in.',
+  'events.attendeesMemberNote': 'Members who chose to appear publicly.',
+  'events.addToCalendar': 'Add to calendar (.ics)',
+  'events.googleCalendar': 'Google Calendar',
+  'events.shareText': 'Join "{title}" on Xidig',
+  'events.requestAccessCta': 'Request access to RSVP',
+  'events.signedOutNote':
+    'Xidig members can RSVP, see who else is going, and get the full details.',
+  'events.autopostLead': 'New event — details and RSVP:',
+  'events.newTitle': 'Host an event',
+  'events.formTitle': 'Title',
+  'events.formDescription': 'Description',
+  'events.formCategory': 'Category',
+  'events.formStartsAt': 'Starts',
+  'events.formEndsAt': 'Ends (optional)',
+  'events.formTimezone': 'Timezone',
+  'events.formMode': 'Format',
+  'events.formVenueName': 'Venue name',
+  'events.formVenueAddress': 'Venue address',
+  'events.formAddressVisibility': 'Who can see the address?',
+  'events.addressEveryone': 'Everyone who can see the event',
+  'events.addressAttendees': 'Confirmed attendees only',
+  'events.formOnlineUrl': 'Online link',
+  'events.formOnlineUrlHint': 'Only confirmed attendees see this link.',
+  'events.formContainer': 'Host as',
+  'events.containerCommunity': 'Community event',
+  'events.formVisibility': 'Who can see this event?',
+  'events.visibilityPublic': 'Public — anyone with the link',
+  'events.visibilityMembers': 'Members only',
+  'events.visibilitySpaceOnly': 'Space members only',
+  'events.formCapacity': 'Capacity (optional)',
+  'events.formSubmit': 'Publish event',
+  'events.notEligible':
+    'Event hosting is open to Lab organizers, verified businesses and moderators for now.',
+  'events.cancelEvent': 'Cancel event',
+  'events.cancelConfirm': 'Cancel this event? Everyone who RSVPed will be told.',
+
+  // Events — §27 plain-language errors
+  'error.eventFull': 'This event is full. You can still mark yourself as interested.',
+  'error.eventNotOpen': 'RSVPs are closed for this event.',
+  'error.eventCategoryInvalid': 'Pick a valid event category.',
+  'error.eventCreationNotAllowed':
+    'Event hosting is open to Lab organizers, verified businesses and moderators for now.',
+
+  // Events — notification copy
+  'notif.eventRsvp': '{name} RSVPed to your event',
+  'notif.eventRsvpBundle': '{count} people RSVPed to your event',
+  'notif.eventCancelled': 'An event you RSVPed to was cancelled',
+  'notif.eventReminder': 'An event you RSVPed to starts within 24 hours',
+
+  // Front door — homepage "next up" featured event card (renders only when a
+  // real upcoming public event exists; zero events = block absent)
+  'marketing.nextEventTitle': 'Next up',
+  'marketing.nextEventCta': 'See the event',
 } as const satisfies Record<string, Message>;
 
 /** Every valid message key, derived from the English dictionary. */

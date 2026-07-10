@@ -15,17 +15,21 @@ import { isClientEventName, type AnalyticsEventMap, type ClientAnalyticsEventNam
 
 const ANON_STORAGE_KEY = 'xidig_anon_id';
 
-/** A stable per-browser anonymous id for pre-auth funnels (§4 activation). */
+/**
+ * READ-ONLY legacy anonymous id. This used to mint-and-persist a UUID on
+ * first touch, which planted a persistent identifier on signed-out visitors
+ * before any consent existed — while the server dropped their events at the
+ * consent gate anyway (/api/analytics). Front-door rule (docs/front-door-plan
+ * §5): anonymous visitors carry NO identifiers. So: return an id only if one
+ * already exists from the legacy behavior; never create one. Revisit if an
+ * anonymous cookie-consent mechanism ever ships (§12).
+ */
 function anonymousId(): string | undefined {
   if (typeof window === 'undefined') return undefined;
   try {
-    const existing = window.localStorage.getItem(ANON_STORAGE_KEY);
-    if (existing) return existing;
-    const id = crypto.randomUUID();
-    window.localStorage.setItem(ANON_STORAGE_KEY, id);
-    return id;
+    return window.localStorage.getItem(ANON_STORAGE_KEY) ?? undefined;
   } catch {
-    // Private mode / storage disabled — fall back to a session-only id.
+    // Private mode / storage disabled.
     return undefined;
   }
 }

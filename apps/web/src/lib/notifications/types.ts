@@ -52,6 +52,11 @@ export const NOTIFICATION_TYPES = [
   'verification_declined', // to the member: request declined
   'verification_more_info', // to the member: verifier needs more info
   'community_verified', // to the member: 3rd vouch → Community Verified badge
+  // Events + RSVP (extras item 8) — in-app only; email joins with the
+  // notification-email-templating item (14).
+  'event_rsvp', // to the host: someone RSVPed (bundled per event)
+  'event_cancelled', // to RSVPed members: the event was cancelled
+  'event_reminder', // to RSVPed members: the event starts within 24h (cron)
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -101,4 +106,7 @@ export const NOTIFICATION_CHANNELS: Record<NotificationType, NotificationChannel
   verification_declined: { inApp: true, email: false, push: false },
   verification_more_info: { inApp: true, email: false, push: false },
   community_verified: { inApp: true, email: false, push: false },
+  event_rsvp: { inApp: true, email: false, push: false },
+  event_cancelled: { inApp: true, email: false, push: false },
+  event_reminder: { inApp: true, email: false, push: false },
 };

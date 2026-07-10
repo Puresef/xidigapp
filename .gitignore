@@ -32,3 +32,6 @@ pnpm-debug.log*
 
 # Supabase CLI transient state (linked project ref, pooler cache)
 packages/db/supabase/.temp/
+
+# Old-site salvage crate (temporary; deploy via xidig/DEPLOY-TOURNIQUET.md, delete after port)
+/xidig/

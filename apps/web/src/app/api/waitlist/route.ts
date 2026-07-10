@@ -15,6 +15,15 @@ const bodySchema = z
   .object({
     email: emailSchema.optional(),
     phone: z.string().trim().min(4).optional(),
+    // Front-door attribution (docs/front-door-plan.md §5): the CTA's
+    // ?from=<page> token. Route-ish shape only — never PII, never free text.
+    from: z
+      .string()
+      .trim()
+      .regex(/^[a-z0-9/_-]{1,64}$/)
+      .optional(),
+    // Updates-only lane: the contact wants product updates, not a spot.
+    updatesOnly: z.boolean().optional(),
   })
   .refine((v) => Boolean(v.email) !== Boolean(v.phone), {
     message: 'exactly one of email or phone',
@@ -41,6 +50,8 @@ export async function POST(request: Request): Promise<Response> {
       const { error } = await admin.from('waitlist_entries').insert({
         email: body.email ?? null,
         phone,
+        source_page: body.from ?? null,
+        updates_only: body.updatesOnly ?? false,
       });
       // 23505 = unique_violation: already on the list — that's a success story.
       if (error && error.code !== '23505') {

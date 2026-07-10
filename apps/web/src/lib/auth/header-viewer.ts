@@ -10,6 +10,8 @@ import { profileMediaView } from '@/lib/profile-view';
  */
 export interface HeaderViewer {
   signedIn: boolean;
+  /** App user id (users.id) — null when signed out. The consent banner keys off it. */
+  userId: string | null;
   displayName: string;
   handle: string;
   avatarThumbUrl: string | null;
@@ -18,6 +20,7 @@ export interface HeaderViewer {
 
 const SIGNED_OUT: HeaderViewer = {
   signedIn: false,
+  userId: null,
   displayName: '',
   handle: '',
   avatarThumbUrl: null,
@@ -39,6 +42,7 @@ export async function getHeaderViewer(): Promise<HeaderViewer> {
     const emailLocal = ctx.appUser.email?.split('@')[0] ?? 'You';
     return {
       signedIn: true,
+      userId: ctx.appUser.id,
       displayName: data?.display_name ?? emailLocal,
       handle: data?.handle ?? '',
       avatarThumbUrl: media.avatarThumbUrl,

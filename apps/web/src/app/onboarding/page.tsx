@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { OnboardingChecklist } from '@/components/onboarding/onboarding-checklist';
+import { SuggestedFollows } from '@/components/profile/suggested-follows';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getT } from '@/lib/locale';
 import { getOnboardingProgress } from '@/lib/onboarding/progress';
@@ -12,6 +13,11 @@ export const dynamic = 'force-dynamic';
  * same checklist also rides on Home until dismissed/complete. Done-state is
  * computed live per step (profile / lanes / follow-3 / first-post), plus the
  * set-a-password item for passwordless (magic-link / OTP) signups.
+ *
+ * Below the checklist: interest-based follow suggestions (extras plan item 4)
+ * — the "follow 3" rung with people/Labs matched on declared fields only,
+ * each carrying its visible reason. Sparse declared data shows the
+ * invite-your-people card instead of filler.
  */
 export default async function OnboardingPage() {
   const ctx = await getAuthContext();
@@ -29,6 +35,7 @@ export default async function OnboardingPage() {
       ) : (
         <OnboardingChecklist progress={{ ...progress, dismissed: false }} />
       )}
+      <SuggestedFollows showLabs showEmptyState />
     </main>
   );
 }

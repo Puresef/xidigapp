@@ -23,7 +23,26 @@ export default async function LabsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const ctx = await getAuthContext();
-  if (!ctx) redirect('/signin?next=/labs');
+  if (!ctx) {
+    // Front-door teaser (Phase A): anonymous visitors get an honest
+    // explanation instead of a signin wall — replaced by the real public
+    // Labs directory in Phase B (docs/front-door-plan.md §3/§4).
+    const t = await getT();
+    return (
+      <main className="xidig-front">
+        <section className="xidig-front__hero">
+          <h1>{t('marketing.labsTeaserTitle')}</h1>
+          <p>{t('marketing.labsTeaserBody')}</p>
+          <p>{t('marketing.labsTeaserNote')}</p>
+          <div className="xidig-front__cta-row">
+            <Link href="/waitlist?from=labs" className="xidig-button xidig-button--primary">
+              {t('marketing.requestAccess')}
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
   if (ctx.appUser.status === 'suspended') redirect('/auth/error?reason=account_suspended');
 
   const params = await searchParams;

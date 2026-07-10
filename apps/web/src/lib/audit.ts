@@ -17,10 +17,13 @@ export async function writeAudit(
     targetType?: Enums<'entity_type'> | undefined;
     targetId?: string | undefined;
     metadata?: Record<string, unknown> | undefined;
+    // §21: external REST/MCP writes are audited WITH the key that made them.
+    apiKeyId?: string | undefined;
   },
 ): Promise<void> {
   const { error } = await admin.from('audit_logs').insert({
     actor_user_id: entry.actorUserId,
+    api_key_id: entry.apiKeyId ?? null,
     action: entry.action,
     target_type: entry.targetType ?? null,
     target_id: entry.targetId ?? null,

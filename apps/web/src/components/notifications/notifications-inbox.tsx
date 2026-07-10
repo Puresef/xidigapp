@@ -29,6 +29,9 @@ interface NotifResponse {
 function bundleHref(b: NotificationBundle): string | null {
   if (b.entityType === 'conversation' && b.entityId) return `/messages/${b.entityId}`;
   if (b.entityType === 'post' && b.entityId) return `/p/${b.entityId}`;
+  if (b.entityType === 'event' && typeof b.payload?.eventSlug === 'string') {
+    return `/events/${b.payload.eventSlug}`;
+  }
   const postId = b.payload?.postId;
   if (typeof postId === 'string') return `/p/${postId}`;
   return null;
@@ -95,6 +98,14 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
         return t('notif.moderationRemoved');
       case 'candidate_status':
         return t('notif.candidateStatus');
+      case 'event_rsvp':
+        return b.count > 1
+          ? t('notif.eventRsvpBundle', { count: b.count })
+          : t('notif.eventRsvp', { name });
+      case 'event_cancelled':
+        return t('notif.eventCancelled');
+      case 'event_reminder':
+        return t('notif.eventReminder');
       default:
         return t('notif.generic');
     }

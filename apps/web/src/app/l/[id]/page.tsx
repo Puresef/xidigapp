@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { z } from 'zod';
 
+import { UpcomingEventsSection } from '@/components/events/upcoming-events-section';
 import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { ReportControl } from '@/components/report-control';
@@ -217,6 +218,13 @@ export default async function ListingPermalinkPage({
               />
             ) : null}
           </div>
+
+          {/* Merged discovery (extras item 8): the business's upcoming events.
+              Anonymous visitors get PUBLIC + organic rows only. */}
+          <UpcomingEventsSection
+            target={{ listingId: listing.id }}
+            publicOnly={viewerId === null}
+          />
 
           <OpeningHoursDisplay hours={listing.opening_hours} />
 

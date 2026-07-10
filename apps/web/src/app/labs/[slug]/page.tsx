@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import type { MessageKey } from '@xidig/i18n';
 
+import { UpcomingEventsSection } from '@/components/events/upcoming-events-section';
 import { ContentComposer } from '@/components/labs/content-composer';
 import { MembershipActions } from '@/components/labs/membership-actions';
 import { ShareActions } from '@/components/share-actions';
@@ -156,7 +157,15 @@ export default async function LabDetailPage({
         ) : null}
       </div>
 
-      {tab === 'overview' ? <Overview view={view} /> : null}
+      {tab === 'overview' ? (
+        <>
+          <Overview view={view} />
+          {/* Merged discovery (extras item 8): the Space's upcoming events.
+              Member surface — public + members visibility rows (space_only
+              events stay on their own page, see lib/events/views.ts). */}
+          <UpcomingEventsSection target={{ labId: lab.id }} publicOnly={false} />
+        </>
+      ) : null}
       {tab === 'updates' ? (
         <TabUpdates labId={lab.id} isContributor={isContributor} />
       ) : null}
@@ -466,6 +475,9 @@ async function PublicLabView({ slug }: { slug: string }) {
           ))}
         </ul>
       </section>
+
+      {/* Signed-out surface: PUBLIC events only + organic-proof filters. */}
+      <UpcomingEventsSection target={{ labId: lab.id as string }} publicOnly />
 
       <ShareActions path={`/labs/${slug}`} text={t('share.labText', { name: lab.name ?? '' })} />
 

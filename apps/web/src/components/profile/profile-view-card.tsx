@@ -92,7 +92,7 @@ export async function ProfileViewCard({
 }) {
   const t = await getT();
   const locale = await getLocale();
-  const { profile, badges, counts, reputation, media, openTo, pins } = view;
+  const { profile, badges, counts, reputation, media, openTo, pins, isAi } = view;
   const litePrefs = prefs ?? LITE_BUNDLES.everything;
 
   const verificationKey = VERIFICATION_KEYS[profile.verification_status];
@@ -128,6 +128,11 @@ export async function ProfileViewCard({
         <span className="xidig-profile__handle">@{profile.handle}</span>
         {verificationKey && profile.verification_status !== 'unverified' ? (
           <span className="xidig-tag xidig-tag--ok">{t(verificationKey)}</span>
+        ) : null}
+        {isAi ? (
+          <span className="xidig-tag xidig-tag--seeded" title={t('content.aiAccountTooltip')}>
+            {t('content.aiAccount')}
+          </span>
         ) : null}
       </header>
 

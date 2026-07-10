@@ -1,19 +1,15 @@
 /**
- * Links to the public marketing site (xidig.net) — a separate, live property,
- * not part of this app (see memory: xidig-net-live-site-status). The app
- * (app.xidig.net) and the marketing site form one experience: legal pages and
- * the About page live on xidig.net, so the app links out to them rather than
- * duplicating the content.
+ * Legal/about link targets, kept behind one indirection so every consumer
+ * (footer, signup terms notice) stays in sync.
  *
- * Centralised here so the footer, the signup terms notice, and any future
- * caller stay in sync if the marketing site's URL scheme changes.
+ * History: these used to point at the OLD external marketing site
+ * (https://xidig.net). Phase A of the front door (docs/front-door-plan.md)
+ * moved those pages INTO this app, so the targets are now internal routes —
+ * the app no longer links out to the old site anywhere.
  */
-const MARKETING_ORIGIN = 'https://xidig.net';
-
 export const MARKETING_LINKS = {
-  privacy: `${MARKETING_ORIGIN}/privacy`,
-  terms: `${MARKETING_ORIGIN}/terms`,
-  about: `${MARKETING_ORIGIN}/about`,
-  // Phase 6: the community-guidelines stub links out here for the full policy.
-  guidelines: `${MARKETING_ORIGIN}/guidelines`,
+  privacy: '/privacy',
+  terms: '/terms',
+  about: '/about',
+  guidelines: '/support/guidelines',
 } as const;

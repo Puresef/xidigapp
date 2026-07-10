@@ -38,6 +38,7 @@ export const so = {
   'nav.searchPlaceholder': 'Raadi Xidig',
   'nav.settings': 'Dejinta',
   'nav.awards': 'Abaalmarin',
+  'nav.events': 'Munaasabado',
   'nav.leaderboard': 'Caawiyayaasha',
 
   // Canonical product terms
@@ -45,6 +46,30 @@ export const so = {
   'term.club': 'Koox',
   'term.garab': 'Garab',
   'term.maalgeli': 'Maalgeli',
+
+  // Calaamadaha nuxurka la beeray / AI (§21) — SO drafts, need native review
+  'content.seededLabel': 'La beeray',
+  'content.aiLabel': 'AI la kaashaday',
+  'content.aiAccount': 'Kaaliye AI',
+  'content.seededTooltip': 'Nuxur bilow ah oo madasha ka yimid, maaha qoraal xubin.',
+  'content.aiTooltip':
+    'Waxaa sameeyay Xidig AI. Waa la calaamadeeyay si aad uga kala saarto nuxurka xubnaha.',
+  'content.aiAccountTooltip': 'Akoon kaaliye AI ah oo si cad loo calaamadeeyay, maaha xubin bini-aadam ah.',
+
+  // Maamul — dib u eegista nuxurka la beeray (§21) — SO drafts, native review
+  'admin.seedTitle': 'Nuxurka la beeray',
+  'admin.seedSubtitle':
+    'Nuxur AI-caawiyay iyo mid la beeray — la calaamadeeyay, la hubin karo, marnaba looma tuso sida nuxur xubin.',
+  'admin.seedRunsHeading': 'Wareegyada beerista',
+  'admin.seedContentHeading': 'Tirooyinka nuxurka la beeray',
+  'admin.seedNoRuns': 'Wali ma jiraan wareegyo beeris ah. Orod shaqada beerista si aad u buuxiso cufnaanta bilowga.',
+  'admin.seedColLabel': 'Summad',
+  'admin.seedColSource': 'Isha',
+  'admin.seedColCreated': 'La abuuray',
+  'admin.seedPosts': 'Qoraallada Madal',
+  'admin.seedListings': 'Liisaska',
+  'admin.seedPlaybooks': 'Qaabab Warshad',
+  'admin.seedTags': 'Sumadaha',
 
   // Core actions
   'action.getStarted': 'Bilow',
@@ -162,6 +187,14 @@ export const so = {
   'error.invalidRequest':
     'Codsigaas wax khaldan ayaa ku jiray. Bogga cusboonaysii oo mar kale isku day.',
 
+  // --- Furayaasha API-ga dibadda / MCP (§21/§27) — native review needed ---
+  'error.invalidApiKey':
+    'Furahaas API sax maaha. Hubi furaha, ama mid cusub ka samayso goobaha Xidig.',
+  'error.apiKeyExpired':
+    'Furahaas API wuu dhacay. Mid cusub ka samayso goobaha Xidig si aad u sii wadato.',
+  'error.insufficientScope':
+    'Furahaas API oggolaansho uma laha ficilkan. Samee fure leh awoodda saxda ah.',
+
   // Bogga & tusmada (PRD §27)
   'error.handleTaken': 'Magacan hore ayaa loo qaatay. Isku day mid kale.',
   'error.handleInvalid':
@@ -219,6 +252,22 @@ export const so = {
   'matching.labsSeekingTitle': 'Warshadaha raadinaya xirfadahaaga',
   'matching.labsSeekingBody': 'Warshadahani waxay raadinayaan xirfad aad leedahay.',
   'matching.matchedSkills': 'Waxay raadinayaan:',
+
+  // Interest-based follow suggestions (extras plan item 4)
+  'matching.reasonSharesLane': 'Waxaad wadaagtaan waddada {lane}',
+  'matching.reasonSharesSkill': 'Waxaad wadaagtaan xirfadda {skill}',
+  'matching.reasonSameCity': 'Isku magaalo baad tihiin',
+  'matching.reasonSameCountry': 'Isku waddan baad tihiin',
+  'matching.reasonSharesOpenTo': 'Labadiinaba waxaad u furan tihiin {label}',
+  'matching.reasonTheyHiring': 'Shaqaale bay raadinayaan — adna shaqo baad u furan tahay',
+  'matching.reasonYouHiring': 'Shaqo bay u furan yihiin — adna shaqaale baad raadinaysaa',
+  'matching.reasonLabSeeking': 'Waxay raadinaysaa xirfaddaada {skill}',
+  'matching.skip': 'Iska dhaaf',
+  'matching.viewLab': 'Booqo Warshaddan',
+  'matching.suggestEmptyTitle': 'Weli wax kuu dhigma lama helin',
+  'matching.suggestEmptyBody':
+    'Dadkaagu weli Xidig ma joogaan — casuum, oo buuxi waddooyinkaaga, xirfadahaaga iyo magaaladaada si laguu helo.',
+  'matching.suggestEmptyCta': 'Casuum dadkaaga',
 
   // Community Awards (PRD §20)
   'awards.title': 'Abaalmarinta Bulshada',
@@ -327,6 +376,8 @@ export const so = {
       '{count} boos oo Xubin Aasaasi ah ayaa hadhay — 500-ka xubnood ee ugu horreeya waxay weligood sitaan sumadda.',
   },
   'waitlist.haveCode': 'Koodh martiqaad ma haysaa?',
+  // Front door (Phase A)
+  'waitlist.updatesOnly': 'Kaliya ii soo dir wararka — ma codsanayo boos xubinnimo.',
 
   // Account settings
   'settings.accountTitle': 'Akoonka & gelitaanka',
@@ -1268,6 +1319,25 @@ export const so = {
   'search.teachBody':
     'Hal sanduuq oo dhan: ku hel dadka higgaad kasta (Maxamed ama Mohamed), ganacsiyada, meelaha aad ku biiri karto, iyo qoraallada Madasha.',
   'search.teachExample': 'Isku day magac, xirfad ama mawduuc — “Maxamed”, “dawaarle”, “dhoofinta xalaasha”.',
+  // Search polish (extras item 3): tab-yada, calaamadaha kala-soocidda,
+  // iyo bogagga faaruqa ah ee wax bara.
+  'search.tabAll': 'Dhammaan',
+  'search.sortTransparency': 'Waa qoraal-raadin toos ah keliya — kala saarid qarsoon ma jirto.',
+  'search.sortNewest': 'Kuwa ugu cusub marka hore',
+  'search.sortActivity': 'Dhaqdhaqaaqii u dambeeyay marka hore',
+  'search.emptyPeople':
+    'Qof lama helin. Natiijada dadku waa bogagga xubnaha — isku day higgaad kasta oo magac (Maxamed, Mohamed) ama handle.',
+  'search.emptyPeopleCta': 'Fiiri Suuqa',
+  'search.emptyBusinesses':
+    'Ganacsi lama helin. Ganacsiyadu waa liisaska xubnuhu ku hayaan Suuqa — dukaammo, adeegyo iyo xirfado.',
+  'search.emptyBusinessesCta': 'Fiiri ganacsiyada',
+  'search.emptySpaces':
+    'Meel lama helin. Meelahu waa Kooxo iyo Warshado ay xubnuhu wax ku bartaan kuna dhisaan.',
+  'search.emptySpacesCta': 'Fiiri Meelaha',
+  'search.emptyPosts':
+    'Qoraal lama helin. Qoraalladu waa wadahadallada Madasha — is-barasho, weydiimo, guulo iyo war-bixinno.',
+  'search.emptyPostsCta': 'Tag Madasha',
+  'search.postsMembersOnly': 'Qoraallada Madashu waxay u muuqdaan xubnaha keliya. Gal si aad u raadiso.',
 
   // Capital / Maal (§6/§17/§27). Launch-floor — trust surface, full SO.
   // Maalgeli (Invest) / Garab (Co-sign) reuse term.maalgeli / term.garab /
@@ -1379,4 +1449,284 @@ export const so = {
   'capital.commentsHeading': 'Doodda',
   'capital.commentLabel': 'Ku dar faallo',
   'capital.commentsEmpty': 'Weli ma jiro faallo. Bilow wadahadalka.',
+
+  // ── Front door (Phase A) ──────────────────────────────────────────────
+  // SO qabyo (plain register) — dib-u-eegis Soomaali hooyo waa Alpha Hardening Debt.
+
+  // Signed-out chrome
+  'marketing.navProduct': 'Adeegga',
+  'marketing.navReports': 'Warbixinno',
+  'marketing.navMembership': 'Xubinnimo',
+  'marketing.requestAccess': 'Codso gelitaan',
+
+  // Landing (/ signed-out) — social-app-first (9 Jul reframe)
+  'marketing.heroTitle': 'Barnaamijka bulshada Soomaalida ee xiriir, is-helid, iyo dhisme.',
+  'marketing.heroSub':
+    'Qor guulahaaga, weydii caawimaad, hel dad iyo ganacsiyo, raac Warshadaha, la fariiso xubnaha, taageerna waxa bulshadu dhisayso — hal barnaamij oo laba-luqadle ah, xog-yarna ku shaqeeya.',
+  'marketing.seeProduct': 'Arag waxa gudaha ku jira',
+  'marketing.groupsTitle': 'Wax kasta oo grupyadaadu maqan yihiin',
+  'marketing.groupsBody':
+    'WhatsApp waxa uu ku fiican yahay fariimo degdeg ah — Xidig se wuxuu bulshada siiyaa xusuus. Boggag shakhsi, raadin, qoraallo dadweyne, diiwaanka ganacsiga, goobo mashruuc, iyo fariimo aan ku lumin qulqulka.',
+  'marketing.groupsKeep':
+    'WhatsApp u hay sheekada qoyska. Xidig waa bulshada Soomaalida ee aad raadin karto, raaci karto, wax la dhisan karto, kuna soo laaban karto.',
+  'marketing.blockPlazaTitle': 'Quudin ujeeddo leh',
+  'marketing.blockPlazaBody':
+    'Qor is-barasho, codsiyo, guulo, iyo ra’yi-ururin — kuna fal-celi si inoo eg. Wadahadaladu waxay noqdaan xusuusta bulshada, ma aha buuq la dhaafo.',
+  'marketing.blockProfilesTitle': 'Boggaaga internetka Soomaalida',
+  'marketing.blockProfilesBody':
+    'Muuji xirfadahaaga, magaaladaada, xiriiriyayaashaada, Warshadahaaga, sumadahaaga, iyo waxa aad u furan tahay. Wadaag hal xiriiriye halkii aad mar walba is-sharxi lahayd.',
+  'marketing.blockSuuqTitle': 'Hel dad iyo ganacsiyo',
+  'marketing.blockSuuqBody':
+    'Raadi tayada Soomaalida, adeegyo, dukaammo, iyo ganacsiyo — magaalo, xirfad, ama qayb ahaan — kadibna kula xiriir WhatsApp marka aad diyaar tahay.',
+  'marketing.blockDmTitle': 'Fariimo xudduud leh',
+  'marketing.blockDmBody':
+    'Codsiyada fariimaha, xannibaadda, warbixinta, iyo digniino deggan ayaa wadahadalka faa’iido ku haya — buuqa grupyada la’aantiis.',
+  'marketing.blockLabsTitle': 'Fikradaha ka dhig qolal',
+  'marketing.blockLabsBody':
+    'Ku bilow Koox fudud; u dallacsii Warshad marka ay fikraddu culus noqoto. Warbixinno, go’aanno, xiriiriyayaal, iyo xubno — hal meel ayay ku wada jiraan.',
+  'marketing.blockCapitalTitle': 'Taageer waxa la dhisayo',
+  'marketing.blockCapitalBody':
+    'Garab sii mashaariicda mustaqbalka leh, caawimaad fidi, raacna jadwallada si furan loo dhisayo. Adeegyada ujeeddada maalgashigu waa kuwo gobol ku xaddidan oo ujeeddo-keliya ah — ma jiraan lacago socda.',
+  'marketing.blockLiteTitle': 'Loo dhisay internetkeenna',
+  'marketing.blockLiteBody':
+    'Soomaali iyo Ingiriisi maalinta koowaad. Hab Lite ah oo loogu talagalay xiriirrada gaabis ah — sawirrada, khariidadaha, iyo lifaaqyadu waxay soo baxaan kaliya marka aad taabato.',
+  'marketing.blockOwnedTitle': 'Bulshadaa leh, algorithm-ku ma leh',
+  'marketing.blockOwnedBody':
+    'Maamul hufan, xeerar muuqda, maamul xubneed — iyo kala-horreyn aan ku salaysnayn dabin-jiidasho. Waxa aad raacdo ayaa ah waxa aad aragto.',
+  'marketing.finalCta': 'Ku soo laabo gurigaaga — barnaamijka bulshada Soomaalida.',
+  'marketing.honestyTitle': 'Run ayaa aasaas ah',
+  'marketing.honestyBody':
+    'Ma jiraan xubno la been-abuuray, tiro been ah, ama sawirro la sameeyay. Waxa Xidig muujiyo waa dhaqdhaqaaq xubnood oo run ah — tiro kasta oo boggan ku taalna waa mid run ah.',
+  'marketing.reportsTeaserBody':
+    'Cilmi-baaris ay bulshadu isu keentay oo ku saabsan dhaqaalaha Soomaalida iyo qurbajoogta — la xigtay, daacad ah, lacag la’aanna la akhrisan karo.',
+  'marketing.membershipTeaserBody':
+    'Ku biirid lacag la’aan ah. Xubinnimada Taageeraha — qiyaastii $1/bishii — waxay furtaa abuurista Warshadaha iyo codaynta maamulka.',
+
+  // Kaadhka "xiga" ee bogga hore (extras item 8) — wuxuu soo baxaa kaliya
+  // marka munaasabad dadweyne oo soo socota jirto.
+  'marketing.eventNextTitle': 'Waxa xiga',
+  'marketing.eventNextCta': 'Arag munaasabadda',
+
+  // /product
+  'marketing.productTitle': 'Waxa Xidig maanta ku siinayo',
+  'marketing.productIntro':
+    'Waxa hoos ku qoran oo dhan waa la dhisay wayna shaqeeyaan — kani waa adeegga ay xubnaha aasaasigu maanta isticmaalaan, ma aha qorshe mustaqbal.',
+  'marketing.productTrustTitle': 'Kalsooni & xaqiijin',
+  'marketing.productTrustBody':
+    'Calaamado xaqiijin ah oo aqoonsi, bulsho, iyo ganacsi; maamul bini’aadam ah oo racfaan leh; iyo hab Lite ah oo xushmeeya xiriir kasta oo internet.',
+  'marketing.productBetaNote':
+    'Xidig wuxuu ku jiraa beta gaar ah. Codso gelitaan, waxaanu kuu haynaa booskaaga aasaasiga ah.',
+
+  // /labs iyo /capital teasers
+  'marketing.labsTeaserTitle': 'Warshad — si furan wax u dhis',
+  'marketing.labsTeaserBody':
+    'Warshaddu waa koox yar oo si furan wax u dhisaysa: axdi, warbixin toddobaadle, horumar, iyo calaamad daacad ah marka hawshu hakato. Warshadaha xooggan waxay bulshada hor keeni karaan musharrax mashruuc.',
+  'marketing.labsTeaserNote':
+    'Warshad kasta oo dadweyne horeba waxay u leedahay bog la wadaagi karo. Buugga Warshadaha oo dhammaystiran ayaa halkan ku furmaya dhawaan.',
+  'marketing.capitalTeaserTitle': 'Maal — mashaariic ay bulshadu taageerto',
+  'marketing.capitalTeaserBody':
+    'Musharraxiinta mashaariicdu waxay ka soo baxaan Warshadaha, si furan ayaa dib loogu eegaa, xubnuhuna way u codeeyaan. Maanta Xidig wuxuu diiwaangeliyaa ujeeddo keliya — ma jiraan lacago socda.',
+
+  // /about
+  'marketing.aboutTitle': 'Ku saabsan Xidig',
+  'marketing.aboutStory1':
+    'Xidig macnihiisu waa xiddig. Waxaanu dhisaynaa meesha ay dhisayaasha ummadda Soomaaliyeed — gudaha iyo qurbaha — isku helaan oo ay wax wada dhisaan.',
+  'marketing.aboutStory2':
+    'Tayo iyo karti meel walba ayay bulshadeenna ka jiraan; kalsooni iyo is-helid se way yar yihiin. Xidig waa kaabayaal ay xubnuhu leeyihiin oo labadaba xalliya: madal dadweyne, warshado si furan wax loogu dhiso, buug ganacsi, iyo bulsho taageerta dadkeeda.',
+  'marketing.aboutStory3':
+    'Si furan ayaanu wax u dhisnaa, tiro been ah ma sameyno, waxaanuna marka hore u naqshadeynaa xiriirka 2G ee Muqdisho.',
+  'marketing.aboutCapitalTitle': 'Sida Maal u shaqeeyo',
+  'marketing.aboutCapitalBody':
+    'Mashaariicdu waxay ku bilaabmaan Warshad, waxay noqdaan musharrax, si furanna xubnaha ayaa dib u eega oo u codeeya. Maanta tani waa hab-socod iyo diiwaangelin ujeeddo — ma aha sanduuq maalgashi, mana aha dalab maalgashi.',
+  'marketing.aboutRolesTitle': 'Doorar, ma aha shaqooyin',
+  'marketing.aboutRolesBody':
+    'Xidig ma laha bog shaqo. Doorarka bulshada — maamulayaal, xaqiijiyayaal, la-taliyayaal — waxaa laga soo doortaa xubnaha gudahooda.',
+  'marketing.aboutContactBody': 'Su’aalo, saxaafad, ama iskaashi: nagala soo xiriir bogga xiriirka.',
+
+  // /membership
+  'marketing.memberTitle': 'Xubinnimo',
+  'marketing.memberIntro': 'Hal bulsho, laba heer. Qiimaha waxaa lala xaqiijiyaa xubnaha — laguma soo rogo.',
+  'marketing.memberFreeTitle': 'Xubin — lacag la’aan',
+  'marketing.memberFreeBody':
+    'Bog shakhsi iyo diiwaan ganacsi, Madasha, buugga, fariimaha, iyo ku biirista Kooxaha. Lacag la’aantu waa joogto.',
+  'marketing.memberSupporterTitle': 'Taageere — qiyaastii $1/bishii',
+  'marketing.memberSupporterBody':
+    'Dhammaan waxa bilaashka ah, oo lagu daray abuurista Warshadaha, soo bandhigista musharraxiinta, iyo codaynta maamulka bulshada.',
+  'marketing.memberBillingNote':
+    'Lacag-bixintu weli ma shaqeyso. Qiimaha rasmiga ah waxaa lala xaqiijiyaa xubnaha ka hor inta aan qofna lacag laga qaadin.',
+
+  // /contact
+  'marketing.contactTitle': 'Xiriir',
+  'marketing.contactIntro': 'Su’aalo, saxaafad, iskaashi, ama fikrado — dhammaan waanu akhrinaa.',
+  'marketing.contactNameLabel': 'Magacaaga',
+  'marketing.contactMessageLabel': 'Fariintaada',
+  'marketing.contactSend': 'Dir fariinta',
+  'marketing.contactUnavailable':
+    'Foomka xiriirku weli ma diyaarsana. Ku biir safka sugitaanka, annagaa kula soo xiriiri doonna.',
+
+  // Legal (qabyo)
+  'marketing.legalDraftNotice':
+    'Qabyo — waxaa ku socda dib-u-eegis sharci ka hor furitaanka guud. Boggani wuxuu sharxayaa ujeeddo, wuuna is beddeli karaa.',
+  'marketing.privacyTitle': 'Siyaasadda Arrimaha Gaarka ah',
+  'marketing.privacyIntro':
+    'Siyaasaddani waxay khusaysaa wax kasta oo Xidig ah — daalacashada boggagan iyo isticmaalka barnaamijka adigoo akoon leh.',
+  'marketing.privacyCollectTitle': 'Waxa aanu ururinno',
+  'marketing.privacyCollectBody':
+    'Xogta akoonka ee aad na siiso (magac, email ama taleefan, xogta bogga), waxa aad soo qorto, iyo ugu yaraan farsamada loo baahan yahay si adeeggu u shaqeeyo si ammaan ah — sida gobolka laga soo qiyaaso IP-ga iyo cookies-ka fadhiga.',
+  'marketing.privacyUseTitle': 'Sida aanu u isticmaalno',
+  'marketing.privacyUseBody':
+    'In lagu shaqeysiiyo Xidig: akoonno, quudin, fariimo, maamul, iyo badbaado. Xog shakhsi ma iibinno, xayeysiis dhinac saddexaadna ma wadno.',
+  'marketing.privacyAnalyticsTitle': 'Falanqayn',
+  'marketing.privacyAnalyticsBody':
+    'Falanqaynta adeeggu waa ikhtiyaari (opt-in). Ogolaanshahaaga la’aantiis, dhacdooyinka akoonkaaga lama diiwaangeliyo — booqdayaasha aan magaca lahaynna shakhsi ahaan looma raaco boggagan.',
+  'marketing.privacyVerificationTitle': 'Xaqiijin',
+  'marketing.privacyVerificationBody':
+    'Xaqiijinta aqoonsiga iyo ganacsigu waa ikhtiyaari, waxayna ku salaysan tahay ogolaansho. Faahfaahinta buuxda ee waxa xaqiijintu farsameyso oo kaydiso waxaa la daabici doonaa ka hor inta aan xaqiijintu u furmin xubnaha.',
+  'marketing.privacyRightsTitle': 'Xuquuqdaada',
+  'marketing.privacyRightsBody':
+    'Xogtaada waad soo dejisan kartaa, akoonkaagana waad ka tirtiri kartaa Dejinta. Tirtiriddu waa run: muddada nasashada ka dib xogtaadu waa la saaraa, lama kaydiyo.',
+  'marketing.privacyContactBody': 'Su’aalo arrimaha gaarka ah: isticmaal bogga xiriirka, waanu kuu jawaabi doonnaa.',
+  'marketing.termsTitle': 'Shuruudaha Adeegga',
+  'marketing.termsIntro': 'Isticmaalka Xidig — boggagan ama barnaamijka — waxay ka dhigan tahay inaad ogolaatay shuruudahan.',
+  'marketing.termsAccountsTitle': 'Akoonno',
+  'marketing.termsAccountsBody':
+    'Hal qof, hal akoon. Adigaa mas’uul ka ah waxa ku dhaca gelitaankaaga, xubinnimaduna hadda waa martiqaad ama saf sugitaan.',
+  'marketing.termsContentTitle': 'Waxa aad qorto',
+  'marketing.termsContentBody':
+    'Waxa aad soo qortaa adigaa iska leh. Waxaad Xidig siinaysaa oggolaanshaha loo baahan yahay oo keliya si loogu muujiyo xubnaha iyo booqdayaasha aad dooratay — wax intaas dhaafsiisan ma jiro.',
+  'marketing.termsConductTitle': 'Dhaqan',
+  'marketing.termsConductBody':
+    'Daacad ahow, sharciga raac, badbaadana ilaali. Waxa jebiya tilmaamaha bulshada waa la saari karaa, go’aannadana racfaan baa laga qaadan karaa.',
+  'marketing.termsFeesTitle': 'Khidmado',
+  'marketing.termsFeesBody':
+    'Ku biiriddu waa lacag la’aan. Xubinnimada Taageeruhu waxay qiimi doontaa qiyaastii $1/bishii marka lacag-bixintu shaqeyso; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin.',
+  'marketing.termsCapitalTitle': 'Maal',
+  'marketing.termsCapitalBody':
+    'Adeegyada Maal waxay diiwaangeliyaan xiise iyo ujeeddo oo keliya. Waxba Xidig kuma jiraan dalab dammaanado ama talo maalgashi. Shuruudaha buuxa ee adeeg kasta oo lacageed waa la daabici doonaa ka hor inta uusan shaqayn.',
+  'marketing.termsChangesTitle': 'Isbeddello',
+  'marketing.termsChangesBody':
+    'Isbeddel weyn oo shuruudahan ku yimaadda waxaanu xubnaha u sheegnaa ka hor inta uusan dhaqan-gelin.',
+
+  // /reports chrome
+  'marketing.reportsTitle': 'Warbixinno',
+  'marketing.reportsIntro':
+    'Cilmi-baaris ay bulshadu isu keentay oo ku saabsan dhaqaalaha Soomaalida iyo qurbajoogta. La xigtay meesha suurtogal ah, daacad ka ah hubanti-la’aanta, lacag la’aanna la akhrisan karo.',
+  'marketing.reportsCompiledLabel': 'Bulshadaa isu keentay',
+  'marketing.reportsDisclaimer':
+    'Waxaa isu keenay wax-ku-biiriyayaal bulsho iyagoo ka duulaya ilo dadweyne. Tirooyinku waxay noqon karaan qiyaaso — si madax-bannaan u xaqiiji ka hor inta aadan ku tiirsan.',
+  'marketing.reportsAll': 'Dhammaan warbixinnada',
+  'marketing.reportsFaqTitle': 'Su’aalaha inta badan la isweydiiyo',
+
+  // Success-path notice (§27)
+  'notice.contactSent': 'Fariinta waa la diray — mahadsanid. Dhawaan ayaanu kula soo xiriiri doonnaa.',
+
+  // Consent capture (§12 — qabyo, dib-u-eegis af Soomaali ah ayaa la sugayaa)
+  'consent.regionAria': 'Doorashooyinka sirta',
+  'consent.bannerTitle': 'Doorashooyinkaaga sirta',
+  'consent.bannerBody':
+    'Xidig horta ayuu ku weydiinayaa. Dooro in falanqayn adeeg iyo la-socod khaladaad oo ikhtiyaari ah ay u shaqeeyaan akoonkaaga — cookies-ka lagama maarmaanka ah had iyo jeer way shaqeeyaan. Goor kasta waad ka beddeli kartaa Dejinta.',
+  'consent.privacyLink': 'Siyaasadda Arrimaha Gaarka ah',
+  'consent.acceptAll': 'Ogolow dhammaan',
+  'consent.rejectAll': 'Diid dhammaan',
+  'consent.manage': 'Maamul doorashooyinka',
+  'consent.save': 'Kaydi doorashooyinka',
+  'consent.analyticsLabel': 'Falanqaynta adeegga',
+  'consent.analyticsHint':
+    'Dhacdooyin isticmaal oo naga caawiya horumarinta Xidig — waligeed fariimahaaga, magacyada, ama xogta xiriirka ma aha.',
+  'consent.errorMonitoringLabel': 'La-socodka khaladaadka (dheeraad)',
+  'consent.errorMonitoringHint':
+    'Dib-u-ciyaarid fadhi iyo raad-raac waxqabad oo naga caawiya inaanu dhibaatooyinka si dhaqso ah u hagaajinno. Warbixinnada aasaasiga ah ee khaladaadku way sii shaqeeyaan — waxay ilaaliyaan Xidig.',
+  'consent.settingsTitle': 'Doorashooyinka sirta',
+  'consent.settingsIntro':
+    'Xakamee xogta ikhtiyaariga ah ee Xidig ka ururin karo akoonkaaga. Isbeddeladu isla markiiba way dhaqan galaan.',
+  'consent.saved': 'Doorashooyinka waa la kaydiyay.',
+
+  // Munaasabado + ka-qaybgal (extras item 8 — qabyo, dib-u-eegis af Soomaali ah ayaa la sugayaa)
+  'events.indexTitle': 'Munaasabado',
+  'events.indexIntro':
+    'Kulamo bulsho, hadallo, maalmo bandhig, tababarro iyo munaasabado ganacsi — ay martigeliyaan xubnaha.',
+  'events.publicIndexIntro':
+    'Munaasabadaha dadweynaha ee bulshada Xidig. Xubnuhu waxay arkaan wax dheeraad ah, wayna ka qaybgeli karaan.',
+  'events.empty':
+    'Weli ma jiraan munaasabado soo socda. Hoggaamiyeyaasha Labs-ka, ganacsiyada la xaqiijiyay iyo maamulayaashu way martigelin karaan.',
+  'events.categoryAll': 'Dhammaan',
+  'events.newEvent': 'Martigeli munaasabad',
+  'events.upcomingTitle': 'Munaasabado soo socda',
+  'events.hostedBy': 'Waxaa martigelinaya {name}',
+  'events.partOf': 'Qayb ka mid ah {name}',
+  'events.modeOnline': 'Onlayn',
+  'events.modeInPerson': 'Fool-ka-fool',
+  'events.modeHybrid': 'Isku-dhaf',
+  'events.statusCancelled': 'Munaasabaddan waa la joojiyay.',
+  'events.statusDraft': 'Qabyo — adiga kaliya ayaa arki kara.',
+  'events.awaitingReview': 'Munaasabaddan dib-u-eegis ayay sugaysaa.',
+  'events.venueLabel': 'Goobta',
+  'events.addressForAttendees':
+    'Cinwaanka saxda ah waxaa la wadaagaa dadka xaqiijiyay inay imanayaan.',
+  'events.onlineForAttendees':
+    'Linkiga onlaynka waxaa la wadaagaa dadka xaqiijiyay inay imanayaan.',
+  'events.joinOnline': 'Ku soo biir onlayn',
+  'events.goingCount': '{count} ayaa imanaya',
+  'events.interestedCount': '{count} ayaa xiiseynaya',
+  'events.fullLabel': 'Waa buuxdaa — weli waxaad calaamadin kartaa inaad xiiseynayso.',
+  'events.capacityGoing': '{count} oo ka mid ah {capacity} ayaa imanaya',
+  'events.rsvpGoing': 'Waan imanayaa',
+  'events.rsvpInterested': 'Waan xiiseynayaa',
+  'events.rsvpRemove': 'Ka noqo',
+  'events.showPubliclyLabel': 'Xubnaha kale ha arkeen inaan imanayo',
+  'events.attendeesTitle': 'Ka-qaybgalayaasha',
+  'events.attendeesHostNote':
+    'Adiga kaliya ayaa arka liiska oo dhan. Xubnaha kale waxay arkaan kuwa ogolaaday oo keliya.',
+  'events.attendeesMemberNote': 'Xubnaha doortay inay si fagaare ah u muuqdaan.',
+  'events.addToCalendar': 'Ku dar kalandarka (.ics)',
+  'events.googleCalendar': 'Google Calendar',
+  'events.shareText': 'Kaalay "{title}" gudaha Xidig',
+  'events.requestAccessCta': 'Codso gelitaan si aad uga qaybgasho',
+  'events.signedOutNote':
+    'Xubnaha Xidig way ka qaybgeli karaan, arki karaan cidda kale ee imanaysa, helina faahfaahinta oo dhan.',
+  'events.autopostLead': 'Munaasabad cusub — faahfaahin iyo ka-qaybgal:',
+  'events.newTitle': 'Martigeli munaasabad',
+  'events.formTitle': 'Cinwaan',
+  'events.formDescription': 'Faahfaahin',
+  'events.formCategory': 'Qayb',
+  'events.formStartsAt': 'Bilaw',
+  'events.formEndsAt': 'Dhammaad (ikhtiyaari)',
+  'events.formTimezone': 'Waqti-goboleed',
+  'events.formMode': 'Qaab',
+  'events.formVenueName': 'Magaca goobta',
+  'events.formVenueAddress': 'Cinwaanka goobta',
+  'events.formAddressVisibility': 'Yaa arki kara cinwaanka?',
+  'events.addressEveryone': 'Qof kasta oo arki kara munaasabadda',
+  'events.addressAttendees': 'Kuwa xaqiijiyay inay imanayaan oo keliya',
+  'events.formOnlineUrl': 'Link onlayn',
+  'events.formOnlineUrlHint': 'Kuwa xaqiijiyay inay imanayaan oo keliya ayaa arka linkigan.',
+  'events.formContainer': 'Ku martigeli magaca',
+  'events.containerCommunity': 'Munaasabad bulsho',
+  'events.formVisibility': 'Yaa arki kara munaasabaddan?',
+  'events.visibilityPublic': 'Dadweyne — qof kasta oo linkiga haysta',
+  'events.visibilityMembers': 'Xubnaha oo keliya',
+  'events.visibilitySpaceOnly': 'Xubnaha Space-ka oo keliya',
+  'events.formCapacity': 'Tirada ugu badan (ikhtiyaari)',
+  'events.formSubmit': 'Daabac munaasabadda',
+  'events.notEligible':
+    'Martigelinta munaasabadaha waxaa hadda u furan hoggaamiyeyaasha Labs-ka, ganacsiyada la xaqiijiyay iyo maamulayaasha.',
+  'events.cancelEvent': 'Jooji munaasabadda',
+  'events.cancelConfirm': 'Ma joojinaysaa munaasabaddan? Qof kasta oo ka qaybgalay waa loo sheegi doonaa.',
+
+  // Munaasabado — khaladaadka §27
+  'error.eventFull': 'Munaasabaddan waa buuxdaa. Weli waxaad calaamadin kartaa inaad xiiseynayso.',
+  'error.eventNotOpen': 'Ka-qaybgalka munaasabaddan waa xidhan yahay.',
+  'error.eventCategoryInvalid': 'Dooro qayb munaasabadeed oo sax ah.',
+  'error.eventCreationNotAllowed':
+    'Martigelinta munaasabadaha waxaa hadda u furan hoggaamiyeyaasha Labs-ka, ganacsiyada la xaqiijiyay iyo maamulayaasha.',
+
+  // Munaasabado — ogeysiisyada
+  'notif.eventRsvp': '{name} ayaa ka jawaabay munaasabaddaada',
+  'notif.eventRsvpBundle': '{count} qof ayaa ka jawaabay munaasabaddaada',
+  'notif.eventCancelled': 'Munaasabad aad ka qaybgashay waa la joojiyay',
+  'notif.eventReminder': 'Munaasabad aad ka qaybgalayso waxay bilaabanaysaa 24 saacadood gudahood',
+
+  // Albaabka hore — kaadhka "kan xiga"
+  'marketing.nextEventTitle': 'Kan xiga',
+  'marketing.nextEventCta': 'Arag munaasabadda',
 } satisfies SomaliDictionary;

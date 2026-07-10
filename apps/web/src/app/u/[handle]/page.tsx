@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { UpcomingEventsSection } from '@/components/events/upcoming-events-section';
 import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { FollowButton } from '@/components/profile/follow-button';
@@ -159,6 +160,12 @@ export default async function ProfilePermalinkPage({
               </Link>
             )
           }
+        />
+        {/* Merged discovery (extras item 8): events this member hosts.
+            Anonymous visitors get PUBLIC + organic rows only. */}
+        <UpcomingEventsSection
+          target={{ hostUserId: view.profile.user_id }}
+          publicOnly={viewer === 'anon'}
         />
       </LiteMediaProvider>
     </main>

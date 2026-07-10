@@ -73,6 +73,23 @@ export const LAUNCH_FLOOR_NAMESPACES = [
   'awards',
   'mentor',
   'reputation',
+  // Phase 8: seeded / AI-content labels shown on every card (§21). A trust
+  // surface — members must understand what "Seeded"/"AI-assisted" means — so
+  // Somali ships complete (drafts; native review tracked as Alpha Hardening Debt).
+  'content',
+  // Front door (Phase A): the public marketing surfaces served by the app —
+  // Somali is a primary register on the acquisition layer, not a localization
+  // afterthought (docs/front-door-plan.md §6). Plain-register SO ships now;
+  // native review tracked as Alpha Hardening Debt.
+  'marketing',
+  // Consent capture (§12): the privacy-choices banner + settings section is a
+  // trust surface by definition. Plain-register SO ships now; native review
+  // tracked as Alpha Hardening Debt.
+  'consent',
+  // Events + RSVP (extras item 8): the events surface is public-facing
+  // acquisition + a privacy-sensitive trust surface (addresses, attendance).
+  // Plain-register SO ships now; native review tracked as Alpha Hardening Debt.
+  'events',
 ] as const;
 
 export interface NamespaceCoverage {

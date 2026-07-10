@@ -7,14 +7,15 @@ import { useT } from '@xidig/i18n/react';
 import { ApiRequestError, apiGet } from '@/lib/api-client';
 import type { CategoryOption } from '@/lib/categories';
 import type { PlainError } from '@/lib/errors';
-import { listingOpenNow } from '@/lib/listings';
+import { formatPriceRange, listingOpenNow } from '@/lib/listings';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { emptyBusinessesKey } from './directory-empty';
 import { ListingCard, type ListingRow } from './listing-card';
 
 /**
- * Business directory tab (§18): q + category + city/country filters over
- * GET /api/listings. Same explicit-fetch discipline as the people tab (§22).
+ * Business directory tab (§18): q + category + city/country + verified +
+ * price filters over GET /api/listings. Same explicit-fetch discipline as the
+ * people tab (§22).
  *
  * Phase 4.5: "Open now" is a CLIENT-SIDE toggle over the loaded page(s) only
  * (viewer-clock computation, same v1 caveat as the detail chip) — it does not
@@ -35,6 +36,8 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
   const [country, setCountry] = useState('');
   const [openNowOnly, setOpenNowOnly] = useState(false);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  /** '' = any; '1'..'4' = exact price level (extras item 5). */
+  const [price, setPrice] = useState('');
 
   const [rows, setRows] = useState<ListingRow[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -71,6 +74,7 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
     if (city.trim()) params.set('city', city.trim());
     if (country.trim()) params.set('country', country.trim());
     if (verifiedOnly) params.set('verification', 'verified');
+    if (price) params.set('price', price);
     return params.toString();
   }
 
@@ -147,6 +151,24 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
             value={country}
             onChange={(e) => setCountry(e.target.value)}
           />
+        </div>
+        <div className="xidig-field">
+          <label className="xidig-field__label" htmlFor="biz-price">
+            {t('suuq.priceRangeLabel')}
+          </label>
+          <select
+            id="biz-price"
+            className="xidig-field__input"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          >
+            <option value="">{t('suuq.anyOption')}</option>
+            {[1, 2, 3, 4].map((level) => (
+              <option key={level} value={String(level)}>
+                {formatPriceRange(level)}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="xidig-field">
           <label className="xidig-field__label" htmlFor="biz-verified">

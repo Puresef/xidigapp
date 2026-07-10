@@ -15,10 +15,9 @@ import { insertNotification } from '@/lib/notifications/notify';
  * but NEVER demotes (the SQL function touches only dormant_since + a history
  * event), and the skills-gap alert is informational and non-blocking.
  *
- * NOTE (Alpha Hardening Debt): mark_dormant_labs() / flag_skill_gaps() ship in
- * migration 20260706200000 but are not yet in the generated Database types
- * (regenerate database.types.ts after `supabase db push`), hence the `as never`
- * on the rpc names below.
+ * mark_dormant_labs() / flag_skill_gaps() ship in migration 20260706200000 and
+ * are now present in the generated Database types (regenerated offline via
+ * `pnpm --filter @xidig/db gen-types:local`), so the rpc names are typed.
  */
 
 type Admin = SupabaseClient<Database>;
@@ -31,7 +30,7 @@ const SKILL_MATCH_CAP = 25;
  * Returns the count newly marked. Never demotes (see module doc).
  */
 export async function markDormantAndNudge(admin: Admin): Promise<number> {
-  const { data, error } = await admin.rpc('mark_dormant_labs' as never);
+  const { data, error } = await admin.rpc('mark_dormant_labs');
   if (error) throw new Error(`mark_dormant_labs failed: ${error.message}`);
   const labIds = (data as unknown as string[]) ?? [];
 
@@ -67,7 +66,7 @@ export async function markDormantAndNudge(admin: Admin): Promise<number> {
  * whose profile.skills match. Returns the number of alerts sent. Non-blocking.
  */
 export async function alertSkillGaps(admin: Admin): Promise<number> {
-  const { data, error } = await admin.rpc('flag_skill_gaps' as never);
+  const { data, error } = await admin.rpc('flag_skill_gaps');
   if (error) throw new Error(`flag_skill_gaps failed: ${error.message}`);
   const gaps = (data as unknown as { lab_id: string; skill: string }[]) ?? [];
 

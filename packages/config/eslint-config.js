@@ -113,6 +113,10 @@ export default tseslint.config(
       '**/coverage/**',
       '**/next-env.d.ts',
       '**/database.types.ts',
+      // Salvage crate of the OLD xidig.net marketing site (has its own,
+      // broken eslint setup) — deleted entirely once the reports port lands
+      // (docs/front-door-plan.md §7).
+      'xidig/**',
     ],
   },
   ...tseslint.configs.recommended,

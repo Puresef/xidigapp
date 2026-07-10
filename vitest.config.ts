@@ -10,7 +10,11 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['{apps,packages}/*/src/**/*.{test,spec}.{ts,tsx}'],
+    include: [
+      '{apps,packages}/*/src/**/*.{test,spec}.{ts,tsx}',
+      // Phase 8 MCP server lives outside src (a standalone stdio entrypoint).
+      'apps/web/mcp/**/*.test.mjs',
+    ],
     environment: 'node',
     passWithNoTests: false,
     // The web env module validates on import; skip that during tests so the

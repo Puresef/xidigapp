@@ -37,7 +37,26 @@ export default async function CapitalIndexPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const ctx = await getAuthContext();
-  if (!ctx) redirect('/signin?next=/capital');
+  if (!ctx) {
+    // Front-door teaser (Phase A): honest pipeline explanation, never invest
+    // language (matches the /c/[id] public projection rule) — replaced by the
+    // real public candidates list in Phase B (docs/front-door-plan.md §3/§4).
+    const t = await getT();
+    return (
+      <main className="xidig-front">
+        <section className="xidig-front__hero">
+          <h1>{t('marketing.capitalTeaserTitle')}</h1>
+          <p>{t('marketing.capitalTeaserBody')}</p>
+          <p className="xidig-banner xidig-banner--notice">{t('capital.securitiesDisclaimer')}</p>
+          <div className="xidig-front__cta-row">
+            <Link href="/waitlist?from=capital" className="xidig-button xidig-button--primary">
+              {t('marketing.requestAccess')}
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
   if (ctx.appUser.status === 'suspended') redirect('/auth/error?reason=account_suspended');
 
   const params = await searchParams;

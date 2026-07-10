@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "SKIP_ENV_VALIDATION=true next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed": "node scripts/seed.mjs",
+    "mcp": "node mcp/server.mjs"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.63.0",
@@ -19,6 +21,8 @@
     "next": "^16.2.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "sharp": "^0.35.3",
     "zod": "^4.4.3"
   },

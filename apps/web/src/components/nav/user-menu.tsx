@@ -21,6 +21,7 @@ import { createClient } from '@/lib/supabase-browser';
 
 const LINKS: ReadonlyArray<{ labelKey: MessageKey; href: string }> = [
   { labelKey: 'nav.profile', href: '/profile' },
+  { labelKey: 'nav.events', href: '/events' },
   { labelKey: 'nav.saved', href: '/saved' },
   { labelKey: 'nav.leaderboard', href: '/leaderboard' },
   { labelKey: 'nav.awards', href: '/awards' },

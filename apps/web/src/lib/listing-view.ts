@@ -17,7 +17,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  */
 
 export const LISTING_COLUMNS =
-  'id, owner_user_id, business_name, category_id, short_description, address, landmark, latitude, longitude, city, country, contact_links, verification_status, status, created_at, opening_hours, price_range, primary_photo_path, primary_photo_blurhash, primary_photo_alt, photo_count';
+  'id, owner_user_id, business_name, category_id, short_description, address, landmark, latitude, longitude, city, country, contact_links, verification_status, status, source, created_at, opening_hours, price_range, primary_photo_path, primary_photo_blurhash, primary_photo_alt, photo_count';
 
 export interface ListingViewRow {
   id: string;
@@ -34,6 +34,7 @@ export interface ListingViewRow {
   contact_links: unknown;
   verification_status: string;
   status: string;
+  source: string;
   created_at: string;
   opening_hours: unknown;
   price_range: number | null;

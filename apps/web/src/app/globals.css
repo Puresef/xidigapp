@@ -259,6 +259,20 @@ main {
   border-color: color-mix(in srgb, var(--x-ok) 30%, white);
 }
 
+/* Phase 8: seeded / AI-assisted content + AI-account chips (§21). A distinct
+   violet so seeded/AI content is unmistakable and never reads as member content. */
+.xidig-tag--seeded {
+  color: #6d28d9;
+  background: color-mix(in srgb, #6d28d9 10%, white);
+  border-color: color-mix(in srgb, #6d28d9 30%, white);
+}
+
+[data-theme='dark'] .xidig-tag--seeded {
+  color: #c4b5fd;
+  background: color-mix(in srgb, #6d28d9 25%, black);
+  border-color: color-mix(in srgb, #6d28d9 45%, black);
+}
+
 /* Phase 6: SLA-breach badges in the mod/verifier queues (red = overdue). */
 .xidig-tag--danger {
   color: var(--x-danger);
@@ -1260,6 +1274,14 @@ a.xidig-settings-card:hover {
   margin: 0;
 }
 
+/* Follow/skip action row on suggestion cards (extras plan item 4) */
+
+.xidig-suggest-card__actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
 /* Compact pinned-item cards */
 
 .xidig-pin-card__excerpt {
@@ -1767,4 +1789,208 @@ a.xidig-settings-card:hover {
 .xidig-footer__list a:hover {
   color: var(--x-fg);
   text-decoration: underline;
+}
+
+/* ── Front door (Phase A, docs/front-door-plan.md) ──────────────────────
+   Signed-out marketing surfaces. Same tokens as the app — the front door is
+   the product, not a parallel theme. Proof-first: layout carries copy and
+   real content, never counter/chart chrome. */
+
+.xidig-brand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  color: var(--x-fg);
+  text-decoration: none;
+  margin-right: 1rem;
+}
+
+.xidig-front {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+}
+
+.xidig-front__hero {
+  padding: 3rem 0 2rem;
+  max-width: 44rem;
+}
+
+.xidig-front__hero h1 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  line-height: 1.2;
+  margin: 0 0 0.75rem;
+}
+
+.xidig-front__hero p {
+  color: var(--x-muted);
+  font-size: 1.05rem;
+  margin: 0 0 1.25rem;
+}
+
+.xidig-front__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.xidig-front__section {
+  margin-top: 2.5rem;
+}
+
+.xidig-front__section > h2 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+}
+
+.xidig-front__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+}
+
+.xidig-front-card {
+  border: 1px solid var(--x-border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: var(--x-bg);
+}
+
+.xidig-front-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+}
+
+.xidig-front-card p {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.xidig-front-card a {
+  display: inline-block;
+  margin-top: 0.6rem;
+}
+
+.xidig-front__prose {
+  max-width: 44rem;
+}
+
+.xidig-front__prose h2 {
+  font-size: 1.2rem;
+  margin: 1.75rem 0 0.5rem;
+}
+
+.xidig-front__prose p {
+  line-height: 1.6;
+  margin: 0 0 0.9rem;
+}
+
+.xidig-nav {
+  display: flex;
+  align-items: center;
+}
+
+.xidig-report-meta {
+  color: var(--x-muted);
+  font-size: 0.85rem;
+  margin: 0.35rem 0 0;
+}
+
+.xidig-report-body {
+  overflow-x: auto;
+}
+
+.xidig-report-body table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.xidig-report-body th,
+.xidig-report-body td {
+  border: 1px solid var(--x-border);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.xidig-report-faq {
+  border-bottom: 1px solid var(--x-border);
+  padding: 0.6rem 0;
+}
+
+.xidig-report-faq summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Consent banner */
+.xidig-consent {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 50; /* under .xidig-modal (60) — a modal may open above it */
+  margin: 0 auto;
+  max-width: 42rem;
+  padding: 0.9rem 1rem;
+  background: var(--x-bg);
+  border: 1px solid var(--x-border);
+  border-bottom: none;
+  border-radius: var(--x-radius) var(--x-radius) 0 0;
+  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
+}
+
+.xidig-consent__title {
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+}
+
+.xidig-consent__body {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  color: var(--x-muted);
+}
+
+.xidig-consent__link {
+  text-decoration: underline;
+}
+
+.xidig-consent__options {
+  margin: 0 0 0.6rem;
+}
+
+.xidig-consent__hint {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--x-muted);
+}
+
+.xidig-consent__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Motion-safe fade only: the global kills (prefers-reduced-motion media query
+   + html[data-motion='off']) already zero all animation, and this gate keeps
+   the banner from ever declaring one in those modes. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) .xidig-consent {
+    animation: xidig-consent-in 0.2s ease-out;
+  }
+}
+
+@keyframes xidig-consent-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }

@@ -58,6 +58,7 @@ export type Database = {
           last_used_at: string | null
           name: string
           owner_user_id: string
+          rate_limit_per_minute: number | null
           revoked_at: string | null
           scopes: string[]
         }
@@ -70,6 +71,7 @@ export type Database = {
           last_used_at?: string | null
           name: string
           owner_user_id: string
+          rate_limit_per_minute?: number | null
           revoked_at?: string | null
           scopes?: string[]
         }
@@ -82,6 +84,7 @@ export type Database = {
           last_used_at?: string | null
           name?: string
           owner_user_id?: string
+          rate_limit_per_minute?: number | null
           revoked_at?: string | null
           scopes?: string[]
         }
@@ -809,6 +812,108 @@ export type Database = {
           },
         ]
       }
+      digest_editions: {
+        Row: {
+          created_by: string | null
+          generated_at: string
+          id: string
+          payload: Json
+          period_end: string
+          period_key: string
+          period_start: string
+          pinned_post_id: string | null
+          published_at: string | null
+          status: string
+        }
+        Insert: {
+          created_by?: string | null
+          generated_at?: string
+          id?: string
+          payload?: Json
+          period_end: string
+          period_key: string
+          period_start: string
+          pinned_post_id?: string | null
+          published_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_by?: string | null
+          generated_at?: string
+          id?: string
+          payload?: Json
+          period_end?: string
+          period_key?: string
+          period_start?: string
+          pinned_post_id?: string | null
+          published_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digest_editions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "digest_editions_pinned_post_id_fkey"
+            columns: ["pinned_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      digest_email_sends: {
+        Row: {
+          claimed_at: string
+          edition_id: string
+          email: string
+          error: string | null
+          id: string
+          sent_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          edition_id: string
+          email: string
+          error?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          edition_id?: string
+          email?: string
+          error?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digest_email_sends_edition_id_fkey"
+            columns: ["edition_id"]
+            isOneToOne: false
+            referencedRelation: "digest_editions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "digest_email_sends_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_suppressions: {
         Row: {
           created_at: string
@@ -838,6 +943,198 @@ export type Database = {
           source?: string | null
         }
         Relationships: []
+      }
+      event_categories: {
+        Row: {
+          created_at: string
+          is_active: boolean
+          name_en: string
+          name_so: string | null
+          position: number
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          is_active?: boolean
+          name_en: string
+          name_so?: string | null
+          position?: number
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          is_active?: boolean
+          name_en?: string
+          name_so?: string | null
+          position?: number
+          slug?: string
+        }
+        Relationships: []
+      }
+      event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          show_publicly: boolean
+          status: Database["public"]["Enums"]["event_rsvp_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          show_publicly?: boolean
+          status: Database["public"]["Enums"]["event_rsvp_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          show_publicly?: boolean
+          status?: Database["public"]["Enums"]["event_rsvp_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_rsvps_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          address_visibility: Database["public"]["Enums"]["event_address_visibility"]
+          candidate_id: string | null
+          capacity: number | null
+          category_id: string
+          created_at: string
+          description: string
+          ends_at: string | null
+          featured_at: string | null
+          host_user_id: string
+          id: string
+          lab_id: string | null
+          listing_id: string | null
+          mode: Database["public"]["Enums"]["event_mode"]
+          moderation_status: Database["public"]["Enums"]["content_status"]
+          online_url: string | null
+          reminded_at: string | null
+          slug: string
+          source: Database["public"]["Enums"]["content_source"]
+          starts_at: string
+          status: Database["public"]["Enums"]["event_status"]
+          timezone: string
+          title: string
+          updated_at: string
+          venue_address: string | null
+          venue_name: string | null
+          visibility: Database["public"]["Enums"]["event_visibility"]
+        }
+        Insert: {
+          address_visibility?: Database["public"]["Enums"]["event_address_visibility"]
+          candidate_id?: string | null
+          capacity?: number | null
+          category_id: string
+          created_at?: string
+          description?: string
+          ends_at?: string | null
+          featured_at?: string | null
+          host_user_id: string
+          id?: string
+          lab_id?: string | null
+          listing_id?: string | null
+          mode: Database["public"]["Enums"]["event_mode"]
+          moderation_status?: Database["public"]["Enums"]["content_status"]
+          online_url?: string | null
+          reminded_at?: string | null
+          slug: string
+          source?: Database["public"]["Enums"]["content_source"]
+          starts_at: string
+          status?: Database["public"]["Enums"]["event_status"]
+          timezone?: string
+          title: string
+          updated_at?: string
+          venue_address?: string | null
+          venue_name?: string | null
+          visibility?: Database["public"]["Enums"]["event_visibility"]
+        }
+        Update: {
+          address_visibility?: Database["public"]["Enums"]["event_address_visibility"]
+          candidate_id?: string | null
+          capacity?: number | null
+          category_id?: string
+          created_at?: string
+          description?: string
+          ends_at?: string | null
+          featured_at?: string | null
+          host_user_id?: string
+          id?: string
+          lab_id?: string | null
+          listing_id?: string | null
+          mode?: Database["public"]["Enums"]["event_mode"]
+          moderation_status?: Database["public"]["Enums"]["content_status"]
+          online_url?: string | null
+          reminded_at?: string | null
+          slug?: string
+          source?: Database["public"]["Enums"]["content_source"]
+          starts_at?: string
+          status?: Database["public"]["Enums"]["event_status"]
+          timezone?: string
+          title?: string
+          updated_at?: string
+          venue_address?: string | null
+          venue_name?: string | null
+          visibility?: Database["public"]["Enums"]["event_visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "venture_candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "event_categories"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "events_host_user_id_fkey"
+            columns: ["host_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "business_listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       follows: {
         Row: {
@@ -3091,6 +3388,89 @@ export type Database = {
           },
         ]
       }
+      seed_entities: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          dedup_key: string
+          entity_id: string | null
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          id: string
+          seed_run_id: string | null
+          source: Database["public"]["Enums"]["content_source"]
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          dedup_key: string
+          entity_id?: string | null
+          entity_type: Database["public"]["Enums"]["entity_type"]
+          id?: string
+          seed_run_id?: string | null
+          source?: Database["public"]["Enums"]["content_source"]
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          dedup_key?: string
+          entity_id?: string | null
+          entity_type?: Database["public"]["Enums"]["entity_type"]
+          id?: string
+          seed_run_id?: string | null
+          source?: Database["public"]["Enums"]["content_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seed_entities_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seed_entities_seed_run_id_fkey"
+            columns: ["seed_run_id"]
+            isOneToOne: false
+            referencedRelation: "seed_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seed_runs: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          label: string
+          source: Database["public"]["Enums"]["content_source"]
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          label: string
+          source?: Database["public"]["Enums"]["content_source"]
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          label?: string
+          source?: Database["public"]["Enums"]["content_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seed_runs_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       signup_grants: {
         Row: {
           consumed_at: string | null
@@ -3785,7 +4165,9 @@ export type Database = {
           invite_id: string | null
           invited_at: string | null
           phone: string | null
+          source_page: string | null
           status: Database["public"]["Enums"]["waitlist_status"]
+          updates_only: boolean
         }
         Insert: {
           created_at?: string
@@ -3794,7 +4176,9 @@ export type Database = {
           invite_id?: string | null
           invited_at?: string | null
           phone?: string | null
+          source_page?: string | null
           status?: Database["public"]["Enums"]["waitlist_status"]
+          updates_only?: boolean
         }
         Update: {
           created_at?: string
@@ -3803,7 +4187,9 @@ export type Database = {
           invite_id?: string | null
           invited_at?: string | null
           phone?: string | null
+          source_page?: string | null
           status?: Database["public"]["Enums"]["waitlist_status"]
+          updates_only?: boolean
         }
         Relationships: [
           {
@@ -4078,6 +4464,7 @@ export type Database = {
         | "privacy_policy"
         | "cookies"
         | "analytics"
+        | "error_monitoring"
       content_source: "member" | "seed" | "ai"
       content_status: "published" | "hidden" | "removed"
       conversation_status: "pending" | "accepted" | "declined" | "blocked"
@@ -4115,6 +4502,12 @@ export type Database = {
         | "consent_record"
         | "capital_gate_evaluation"
         | "media_upload"
+        | "event"
+      event_address_visibility: "everyone" | "attendees"
+      event_mode: "online" | "in_person" | "hybrid"
+      event_rsvp_status: "going" | "interested"
+      event_status: "draft" | "published" | "cancelled"
+      event_visibility: "public" | "members" | "space_only"
       follow_target_type: "user" | "lab" | "candidate" | "tag"
       interest_type: "help" | "cosign" | "invest"
       lab_collaboration_status: "proposed" | "accepted" | "declined" | "ended"
@@ -4341,6 +4734,7 @@ export const Constants = {
         "privacy_policy",
         "cookies",
         "analytics",
+        "error_monitoring",
       ],
       content_source: ["member", "seed", "ai"],
       content_status: ["published", "hidden", "removed"],
@@ -4379,7 +4773,13 @@ export const Constants = {
         "consent_record",
         "capital_gate_evaluation",
         "media_upload",
+        "event",
       ],
+      event_address_visibility: ["everyone", "attendees"],
+      event_mode: ["online", "in_person", "hybrid"],
+      event_rsvp_status: ["going", "interested"],
+      event_status: ["draft", "published", "cancelled"],
+      event_visibility: ["public", "members", "space_only"],
       follow_target_type: ["user", "lab", "candidate", "tag"],
       interest_type: ["help", "cosign", "invest"],
       lab_collaboration_status: ["proposed", "accepted", "declined", "ended"],

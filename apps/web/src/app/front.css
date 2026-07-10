@@ -1,0 +1,865 @@
+/* ============================================================================
+ * Xidig front door — night-sky design layer (Phase A visual pass).
+ *
+ * Scope discipline: EVERY rule here is anchored under `main.xidig-front` or
+ * `body:has(main.xidig-front)` so nothing leaks into app surfaces. The app
+ * stays light/utilitarian; the front door is the night sky the app's star
+ * rises out of. Ink #0a0e1a, somali-blue #0077cc, sunset-orange #ff8c00
+ * (scarce — it is the star), Space Grotesk display via --font-display
+ * (next/font, self-hosted at build).
+ *
+ * Motion: every transform/animation is double-gated behind
+ * (prefers-reduced-motion: no-preference) AND html:not([data-motion='off']);
+ * globals.css additionally hard-kills animation/transition under both.
+ * Progressive enhancement: without :has() support the header/footer keep the
+ * default light chrome (accepted) — main.xidig-front itself is always ink.
+ * ========================================================================== */
+
+main.xidig-front,
+body:has(main.xidig-front) {
+  --xf-ink: #0a0e1a;
+  --xf-ink-deep: #070b14;
+  --xf-card-hi: #101828;
+  --xf-card-lo: #0c1220;
+  --xf-line: rgba(151, 173, 214, 0.16);
+  --xf-line-strong: rgba(151, 173, 214, 0.3);
+  --xf-text: #eef2f9;
+  --xf-muted: #a7b3c9; /* ~9:1 on ink */
+  --xf-faint: #8b98b0; /* ~6.6:1 on ink */
+  --xf-blue: #0077cc;
+  --xf-blue-bright: #4da6e8; /* ~7.2:1 on ink — link/accent text */
+  --xf-orange: #ff8c00; /* ~8.3:1 vs ink — ink text on orange passes AA */
+  --xf-orange-soft: #ffbe70;
+  --xf-display: var(--font-display, 'Space Grotesk'), system-ui, sans-serif;
+}
+
+/* ── Page canvas ─────────────────────────────────────────────────────── */
+
+body:has(main.xidig-front) {
+  background: var(--xf-ink);
+  color: var(--xf-text);
+}
+
+main.xidig-front {
+  position: relative;
+  max-width: none;
+  margin: 0;
+  padding: 0 0 clamp(4rem, 8vw, 6.5rem);
+  background:
+    radial-gradient(60rem 32rem at 85% -4rem, rgba(0, 119, 204, 0.14), transparent 65%),
+    radial-gradient(44rem 26rem at 8% 0, rgba(0, 119, 204, 0.07), transparent 60%),
+    var(--xf-ink);
+  color: var(--xf-text);
+  color-scheme: dark;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient star dust across the whole page: layered single-dot tiles at
+   co-prime sizes so no repeat grid is ever visible; densest near the top. */
+main.xidig-front::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.2px 1.2px at 18% 12%, rgba(232, 240, 255, 0.8) 50%, rgba(232, 240, 255, 0) 51%),
+    radial-gradient(1px 1px at 62% 34%, rgba(232, 240, 255, 0.6) 50%, rgba(232, 240, 255, 0) 51%),
+    radial-gradient(1.4px 1.4px at 83% 8%, rgba(143, 195, 240, 0.7) 50%, rgba(143, 195, 240, 0) 51%),
+    radial-gradient(0.9px 0.9px at 38% 68%, rgba(232, 240, 255, 0.5) 50%, rgba(232, 240, 255, 0) 51%),
+    radial-gradient(1.1px 1.1px at 92% 56%, rgba(232, 240, 255, 0.55) 50%, rgba(232, 240, 255, 0) 51%),
+    radial-gradient(0.8px 0.8px at 8% 44%, rgba(232, 240, 255, 0.45) 50%, rgba(232, 240, 255, 0) 51%);
+  background-size:
+    530px 530px,
+    467px 467px,
+    641px 641px,
+    383px 383px,
+    719px 719px,
+    307px 307px;
+  background-repeat: repeat;
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.35) 34rem, rgba(0, 0, 0, 0.12));
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.35) 34rem, rgba(0, 0, 0, 0.12));
+}
+
+/* Content rail: direct children get the measure; the home hero opts out to
+   run full-bleed and re-constrains via its inner wrapper. */
+main.xidig-front > * {
+  max-width: 74rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 3rem);
+}
+
+main.xidig-front > .xidig-front__prose {
+  max-width: 46rem;
+}
+
+main.xidig-front ::selection {
+  background: rgba(0, 119, 204, 0.5);
+  color: #fff;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────── */
+
+main.xidig-front h1,
+main.xidig-front h2,
+main.xidig-front h3 {
+  font-family: var(--xf-display);
+  color: var(--xf-text);
+}
+
+main.xidig-front h1 {
+  font-weight: 700;
+  font-size: clamp(2rem, 4.5vw, 2.9rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.1rem;
+}
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  main.xidig-front h1 {
+    background: linear-gradient(180deg, #ffffff 55%, #c3d4ee);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+main.xidig-front h2 {
+  font-weight: 700;
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  margin: 0 0 1rem;
+}
+
+/* Orange spark rule above section headings — the signature accent, thin. */
+main.xidig-front .xidig-front__section > h2::before,
+main.xidig-front .xidig-front__prose > h2::before,
+main.xidig-front .xidig-front__prose > section > h2::before {
+  content: '';
+  display: block;
+  width: 2.25rem;
+  height: 2px;
+  border-radius: 2px;
+  margin-bottom: 1.1rem;
+  background: linear-gradient(90deg, var(--xf-orange), rgba(255, 140, 0, 0));
+}
+
+main.xidig-front a {
+  color: var(--xf-blue-bright);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+main.xidig-front a:hover {
+  color: #7cc0f2;
+}
+
+/* ── Hero (shared: product/membership/reports/labs/capital teasers) ───── */
+
+main.xidig-front .xidig-front__hero {
+  max-width: none; /* within its rail — the rail handles the measure */
+  padding-block: clamp(3.5rem, 9vw, 6rem) clamp(1.5rem, 4vw, 2.5rem);
+}
+
+main.xidig-front .xidig-front__hero h1 {
+  font-size: clamp(2.1rem, 5vw, 3.1rem);
+  max-width: 22ch;
+}
+
+main.xidig-front .xidig-front__hero p {
+  color: var(--xf-muted);
+  font-size: clamp(1.02rem, 1.6vw, 1.18rem);
+  line-height: 1.65;
+  max-width: 38rem;
+  margin: 0 0 1.25rem;
+}
+
+/* ── Home hero: full-bleed night sky with the constellation ──────────── */
+
+main.xidig-front > .xidig-front__hero--home {
+  position: relative;
+  max-width: none;
+  margin-inline: 0;
+  padding: 0;
+  overflow: hidden;
+  background: radial-gradient(52rem 30rem at 78% 20%, rgba(0, 119, 204, 0.16), transparent 65%);
+}
+
+main.xidig-front .xidig-front__hero--home .xidig-front__hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 74rem;
+  margin-inline: auto;
+  padding: clamp(5rem, 16vh, 9rem) clamp(1.25rem, 5vw, 3rem) clamp(4rem, 11vh, 6.5rem);
+}
+
+main.xidig-front .xidig-front__hero--home h1 {
+  font-size: clamp(2.5rem, 6.5vw, 4rem);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  max-width: 17ch;
+  margin-bottom: 1.4rem;
+}
+
+main.xidig-front .xidig-front__hero--home p {
+  max-width: 34rem;
+}
+
+.xidig-starfield {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 98%);
+  mask-image: linear-gradient(180deg, #000 55%, transparent 98%);
+}
+
+.xidig-starfield svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes xf-twinkle {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) main.xidig-front .xf-tw {
+    animation: xf-twinkle 3.4s ease-in-out infinite alternate;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xf-tw--2 {
+    animation-duration: 4.6s;
+    animation-delay: 1.3s;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xf-tw--3 {
+    animation-duration: 5.7s;
+    animation-delay: 2.2s;
+  }
+}
+
+/* ── CTAs ─────────────────────────────────────────────────────────────
+   Primary = sunset-orange with ink text (8.3:1); glow on FOCUS only. */
+
+main.xidig-front .xidig-button,
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button {
+  font-family: var(--xf-display);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border-radius: 999px;
+  padding: 0.62rem 1.4rem;
+  border: 1px solid transparent;
+}
+
+main.xidig-front .xidig-button--primary,
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button--primary {
+  background: var(--xf-orange);
+  border-color: var(--xf-orange);
+  color: var(--xf-ink);
+}
+
+main.xidig-front .xidig-button--primary:hover,
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button--primary:hover {
+  background: #ffa22e;
+  border-color: #ffa22e;
+}
+
+main.xidig-front .xidig-button--secondary,
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button--secondary {
+  background: rgba(151, 173, 214, 0.07);
+  border-color: var(--xf-line-strong);
+  color: var(--xf-text);
+}
+
+main.xidig-front .xidig-button--secondary:hover,
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button--secondary:hover {
+  background: rgba(151, 173, 214, 0.13);
+  border-color: rgba(151, 173, 214, 0.45);
+}
+
+main.xidig-front .xidig-button--primary:focus-visible,
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button--primary:focus-visible {
+  outline: 2px solid #ffd9a8;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(255, 140, 0, 0.3);
+}
+
+main.xidig-front .xidig-button--secondary:focus-visible,
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button--secondary:focus-visible {
+  outline: 2px solid var(--xf-blue-bright);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(0, 119, 204, 0.3);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) main.xidig-front .xidig-button,
+  html:not([data-motion='off']) body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button {
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xidig-button:hover,
+  html:not([data-motion='off'])
+    body:has(main.xidig-front)
+    .xidig-header:has(.xidig-brand)
+    .xidig-button:hover {
+    transform: translateY(-1px);
+  }
+}
+
+main.xidig-front .xidig-front__cta-row {
+  gap: 0.9rem;
+  margin: 1.9rem 0 1rem;
+}
+
+/* ── Founding-member counter: refined pill with a spark ──────────────── */
+
+main.xidig-front .xidig-front__hero--home .xidig-banner--notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1.6rem 0 0;
+  padding: 0.5rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 140, 0, 0.38);
+  background: rgba(255, 140, 0, 0.09);
+  color: var(--xf-orange-soft); /* ~7:1 on its tinted ground */
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+main.xidig-front .xidig-front__hero--home .xidig-banner--notice::before {
+  content: '';
+  flex: none;
+  width: 0.6em;
+  height: 0.6em;
+  background: var(--xf-orange);
+  clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+}
+
+/* ── Notices/banners on ink (legal drafts, disclaimers, form results) ── */
+
+main.xidig-front .xidig-banner {
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+main.xidig-front .xidig-banner--notice {
+  background: rgba(151, 173, 214, 0.07);
+  border: 1px solid var(--xf-line-strong);
+  color: var(--xf-muted);
+}
+
+main.xidig-front .xidig-banner--error {
+  background: rgba(255, 99, 88, 0.1);
+  border: 1px solid rgba(255, 122, 110, 0.4);
+  color: #ff9d94;
+}
+
+main.xidig-front .xidig-banner a {
+  color: inherit;
+}
+
+/* ── Section rhythm ──────────────────────────────────────────────────── */
+
+main.xidig-front .xidig-front__section {
+  margin-top: clamp(4rem, 9vw, 6.5rem);
+}
+
+main.xidig-front .xidig-front__section--center {
+  text-align: center;
+}
+
+main.xidig-front .xidig-front__section--center > h2::before {
+  margin-inline: auto;
+  background: linear-gradient(90deg, rgba(255, 140, 0, 0), var(--xf-orange), rgba(255, 140, 0, 0));
+}
+
+main.xidig-front .xidig-front__section--center .xidig-front__cta-row {
+  justify-content: center;
+}
+
+/* Somali-textile-inspired woven divider: a strip of alternating blue/orange
+   diamonds (tiny inline SVG tile), fading at both ends. Subtle, not kitsch. */
+main.xidig-front .xidig-front__section--woven::before {
+  content: '';
+  display: block;
+  height: 10px;
+  width: min(16rem, 60%);
+  margin: 0 auto clamp(3rem, 7vw, 4.5rem);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='10' viewBox='0 0 28 10'%3E%3Cpath d='M7 1l4 4-4 4-4-4z' fill='%234da6e8' fill-opacity='0.55'/%3E%3Cpath d='M21 3l2 2-2 2-2-2z' fill='%23ff8c00' fill-opacity='0.6'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 28px 10px;
+  background-position: center;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 20% 80%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 20% 80%, transparent);
+}
+
+/* ── Cards ("blocks"): raised ink, 1px blue→transparent gradient border ── */
+
+main.xidig-front .xidig-front__grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+  gap: 1.1rem;
+}
+
+main.xidig-front .xidig-front-card {
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  padding: 1.75rem 1.6rem;
+  background:
+    linear-gradient(180deg, var(--xf-card-hi), var(--xf-card-lo)) padding-box,
+    linear-gradient(
+        155deg,
+        rgba(77, 166, 232, 0.5),
+        rgba(77, 166, 232, 0.1) 45%,
+        rgba(151, 173, 214, 0.14)
+      )
+      border-box;
+}
+
+main.xidig-front .xidig-front-card:hover {
+  background:
+    linear-gradient(180deg, #131c30, #0d1424) padding-box,
+    linear-gradient(
+        155deg,
+        rgba(77, 166, 232, 0.75),
+        rgba(77, 166, 232, 0.18) 45%,
+        rgba(151, 173, 214, 0.2)
+      )
+      border-box;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) main.xidig-front .xidig-front-card {
+    transition: transform 0.22s ease;
+  }
+
+  html:not([data-motion='off']) main.xidig-front .xidig-front-card:hover {
+    transform: translateY(-3px);
+  }
+}
+
+main.xidig-front .xidig-front-card h3 {
+  font-weight: 700;
+  font-size: 1.12rem;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.55rem;
+}
+
+main.xidig-front .xidig-front-card h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+main.xidig-front .xidig-front-card h3 a:hover {
+  color: var(--xf-blue-bright);
+}
+
+main.xidig-front .xidig-front-card p {
+  color: var(--xf-muted);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+main.xidig-front .xidig-front-card > a {
+  font-family: var(--xf-display);
+  font-weight: 500;
+  font-size: 0.92rem;
+  text-decoration: none;
+  margin-top: 0.9rem;
+}
+
+main.xidig-front .xidig-front-card > a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Numbered feature grids: CSS counters, hidden from AT where supported. */
+main.xidig-front .xidig-front__grid--numbered {
+  counter-reset: xf-card;
+}
+
+main.xidig-front .xidig-front__grid--numbered > .xidig-front-card {
+  counter-increment: xf-card;
+}
+
+main.xidig-front .xidig-front__grid--numbered > .xidig-front-card h3::before {
+  content: counter(xf-card, decimal-leading-zero);
+  content: counter(xf-card, decimal-leading-zero) / '';
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  font-variant-numeric: tabular-nums;
+  color: var(--xf-blue-bright);
+  margin-bottom: 0.85rem;
+}
+
+/* Accent card (Supporter tier): the one orange-edged block. */
+main.xidig-front .xidig-front-card--accent {
+  background:
+    linear-gradient(180deg, #141a2b, var(--xf-card-lo)) padding-box,
+    linear-gradient(
+        155deg,
+        rgba(255, 140, 0, 0.6),
+        rgba(255, 140, 0, 0.14) 45%,
+        rgba(151, 173, 214, 0.16)
+      )
+      border-box;
+}
+
+main.xidig-front .xidig-front-card--accent:hover {
+  background:
+    linear-gradient(180deg, #171e31, #0d1424) padding-box,
+    linear-gradient(
+        155deg,
+        rgba(255, 140, 0, 0.8),
+        rgba(255, 140, 0, 0.22) 45%,
+        rgba(151, 173, 214, 0.22)
+      )
+      border-box;
+}
+
+/* ── Prose (about/contact/privacy/terms/report bodies) ───────────────── */
+
+main.xidig-front .xidig-front__prose {
+  max-width: 46rem;
+}
+
+main.xidig-front .xidig-front__prose h2 {
+  font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+  margin: 2.75rem 0 0.9rem;
+}
+
+main.xidig-front .xidig-front__prose p {
+  color: var(--xf-muted);
+  font-size: 1.02rem;
+  line-height: 1.75;
+  margin: 0 0 1rem;
+}
+
+main.xidig-front .xidig-front__prose strong {
+  color: var(--xf-text);
+}
+
+/* ── Reports: editorial article styling ──────────────────────────────── */
+
+main.xidig-front p.xidig-report-meta {
+  color: var(--xf-faint);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin: 0.6rem 0 0;
+}
+
+main.xidig-front .xidig-report-body {
+  color: var(--xf-muted);
+}
+
+main.xidig-front .xidig-report-body h2 {
+  font-size: 1.45rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--xf-line);
+}
+
+main.xidig-front .xidig-report-body h3 {
+  font-size: 1.15rem;
+  margin: 2rem 0 0.6rem;
+}
+
+main.xidig-front .xidig-report-body li {
+  margin: 0.35rem 0;
+  line-height: 1.7;
+}
+
+main.xidig-front .xidig-report-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-variant-numeric: tabular-nums;
+}
+
+main.xidig-front .xidig-report-body th,
+main.xidig-front .xidig-report-body td {
+  border: 1px solid var(--xf-line);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.92rem;
+}
+
+main.xidig-front .xidig-report-body th {
+  background: rgba(151, 173, 214, 0.08);
+  color: var(--xf-text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+main.xidig-front .xidig-report-body blockquote {
+  margin: 1.5rem 0;
+  padding: 0.25rem 0 0.25rem 1.25rem;
+  border-left: 2px solid var(--xf-orange);
+  color: var(--xf-text);
+}
+
+main.xidig-front .xidig-report-body code {
+  background: rgba(151, 173, 214, 0.12);
+  border-radius: 6px;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+}
+
+main.xidig-front .xidig-report-body pre {
+  background: var(--xf-card-lo);
+  border: 1px solid var(--xf-line);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  overflow-x: auto;
+}
+
+main.xidig-front .xidig-report-body pre code {
+  background: none;
+  padding: 0;
+}
+
+main.xidig-front .xidig-report-body hr {
+  border: 0;
+  height: 1px;
+  margin: 2.5rem 0;
+  background: linear-gradient(90deg, var(--xf-line-strong), rgba(151, 173, 214, 0));
+}
+
+/* FAQ accordion: quiet raised rows with a plus/minus cue. */
+main.xidig-front .xidig-report-faq {
+  border: 1px solid var(--xf-line);
+  border-radius: 12px;
+  background: rgba(151, 173, 214, 0.04);
+  padding: 0;
+  margin: 0.75rem 0;
+  overflow: hidden;
+}
+
+main.xidig-front .xidig-report-faq summary {
+  position: relative;
+  list-style: none;
+  padding: 0.95rem 2.75rem 0.95rem 1.15rem;
+  font-family: var(--xf-display);
+  font-weight: 500;
+  color: var(--xf-text);
+}
+
+main.xidig-front .xidig-report-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+main.xidig-front .xidig-report-faq summary::after {
+  content: '+';
+  content: '+' / '';
+  position: absolute;
+  right: 1.15rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--xf-blue-bright);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+main.xidig-front .xidig-report-faq[open] summary::after {
+  content: '−';
+  content: '−' / '';
+}
+
+main.xidig-front .xidig-report-faq summary:hover {
+  background: rgba(151, 173, 214, 0.06);
+}
+
+main.xidig-front .xidig-report-faq p {
+  padding: 0 1.15rem 1rem;
+  margin: 0;
+}
+
+/* ── Forms on ink (contact) ──────────────────────────────────────────── */
+
+main.xidig-front .xidig-form {
+  max-width: 30rem;
+  gap: 1.1rem;
+}
+
+main.xidig-front .xidig-field__label {
+  color: var(--xf-text);
+  font-size: 0.9rem;
+}
+
+main.xidig-front .xidig-field__input {
+  background: rgba(151, 173, 214, 0.06);
+  border: 1px solid var(--xf-line-strong);
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  color: var(--xf-text);
+}
+
+main.xidig-front textarea.xidig-field__input {
+  resize: vertical;
+}
+
+main.xidig-front .xidig-field__input:focus {
+  outline: 2px solid var(--xf-blue-bright);
+  outline-offset: 2px;
+  border-color: transparent;
+}
+
+main.xidig-front .xidig-field__hint {
+  color: var(--xf-faint);
+}
+
+/* ── Focus visibility everywhere on ink ──────────────────────────────── */
+
+main.xidig-front :is(a, summary):focus-visible,
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) a:focus-visible,
+body:has(main.xidig-front) .xidig-footer a:focus-visible {
+  outline: 2px solid var(--xf-blue-bright);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ── Header: dark-translucent chrome over the sky (front header only —
+      :has(.xidig-brand) keeps the signed-in app header untouched) ─────── */
+
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) {
+  border-bottom: 1px solid var(--xf-line);
+  background: rgba(10, 14, 26, 0.88);
+  padding: 0.7rem clamp(1rem, 4vw, 2rem);
+  column-gap: 1.25rem;
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  body:has(main.xidig-front) .xidig-header:has(.xidig-brand) {
+    background: rgba(10, 14, 26, 0.68);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3);
+    backdrop-filter: blur(14px) saturate(1.3);
+  }
+}
+
+@media (min-width: 721px) {
+  body:has(main.xidig-front) .xidig-header:has(.xidig-brand) {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+}
+
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-nav {
+  flex-wrap: wrap;
+  column-gap: 1.25rem;
+  row-gap: 0.35rem;
+  min-width: 0;
+}
+
+body:has(main.xidig-front) .xidig-header .xidig-brand {
+  font-family: var(--xf-display);
+  font-weight: 700;
+  font-size: 1.12rem;
+  letter-spacing: 0.015em;
+  color: var(--xf-text);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Brand spark: a small orange four-point star before the wordmark. */
+body:has(main.xidig-front) .xidig-header .xidig-brand::before {
+  content: '';
+  width: 0.68em;
+  height: 0.68em;
+  margin-right: 0.45em;
+  background: var(--xf-orange);
+  clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+}
+
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-nav__list {
+  gap: 0.3rem 1.15rem;
+}
+
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-nav__item a {
+  color: var(--xf-muted);
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+}
+
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-nav__item a:hover {
+  color: var(--xf-text);
+}
+
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-nav__item a[aria-current='page'] {
+  color: var(--xf-text);
+  text-decoration: underline;
+  text-decoration-color: var(--xf-orange);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-language-toggle {
+  border-color: var(--xf-line-strong);
+}
+
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-language-toggle__option {
+  color: var(--xf-muted);
+}
+
+body:has(main.xidig-front)
+  .xidig-header:has(.xidig-brand)
+  .xidig-language-toggle__option[aria-pressed='true'] {
+  background: rgba(151, 173, 214, 0.16);
+  color: var(--xf-text);
+}
+
+/* Small screens: compact chrome; wrapping is the graceful degradation. */
+@media (max-width: 480px) {
+  body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button {
+    padding: 0.5rem 0.95rem;
+    font-size: 0.88rem;
+  }
+
+  body:has(main.xidig-front) .xidig-header .xidig-brand {
+    font-size: 1.02rem;
+  }
+
+  body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-header__actions {
+    gap: 0.5rem;
+  }
+}
+
+/* ── Footer: deep-ink close ──────────────────────────────────────────── */
+
+body:has(main.xidig-front) .xidig-footer {
+  margin-top: 0;
+  border-top: 1px solid var(--xf-line);
+  background: var(--xf-ink-deep);
+  padding: 2.25rem clamp(1.25rem, 5vw, 3rem) 2.75rem;
+}
+
+body:has(main.xidig-front) .xidig-footer__list {
+  max-width: 74rem;
+}
+
+body:has(main.xidig-front) .xidig-footer__list a {
+  color: var(--xf-faint);
+}
+
+body:has(main.xidig-front) .xidig-footer__list a:hover {
+  color: var(--xf-text);
+}

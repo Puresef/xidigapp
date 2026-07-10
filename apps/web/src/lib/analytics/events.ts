@@ -111,6 +111,39 @@ export interface AnalyticsEventMap {
   search_performed: { result_count: number };
   // Lite "Show" taps — which media category the member chose to load.
   media_revealed: { kind: 'image' | 'embed' | 'map' };
+
+  // --- Phase 8 external API / MCP / seeding / digest / AI (§21/§23) --------
+  // All PII-free: scope/entity/tool/reason are closed taxonomy slugs, counts
+  // are numbers, and no name/handle/key/query ever appears.
+  external_api_key_created: { scope_count: number };
+  external_api_key_revoked: Record<string, never>;
+  // route is a STATIC path template (e.g. '/api/external/plaza/posts'), never
+  // a concrete URL with ids/query; scope is the closed scope slug.
+  external_api_request_received: { route: string; scope: string };
+  external_api_request_rejected: {
+    reason: 'invalid_key' | 'expired' | 'revoked' | 'insufficient_scope' | 'rate_limited' | 'invalid_request';
+  };
+  // Seeded/AI content: what kind, and which non-member source flag it carries.
+  seeded_content_created: { entity_type: 'post' | 'listing' | 'lab' | 'tag'; source: 'seed' | 'ai' };
+  seeded_content_updated: { entity_type: 'post' | 'listing' | 'lab' };
+  // MCP tool invocation — the static tool name only.
+  mcp_tool_called: { tool: string };
+  // Weekly digest lifecycle (§21).
+  weekly_digest_generated: Record<string, never>;
+  weekly_digest_published: Record<string, never>;
+  // AI-assistant authored content (labelled AI, §21).
+  ai_content_created: { kind: 'post' | 'digest' | 'summary' };
+
+  // --- Events + RSVP (extras item 8) ---------------------------------------
+  // Taxonomy slugs + enums only — never a title, venue, or attendee identity.
+  event_created: {
+    category: string;
+    mode: Enums<'event_mode'>;
+    visibility: Enums<'event_visibility'>;
+    container: 'none' | 'lab' | 'listing' | 'candidate';
+  };
+  event_rsvp: { status: Enums<'event_rsvp_status'> };
+  event_cancelled: Record<string, never>;
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventMap;

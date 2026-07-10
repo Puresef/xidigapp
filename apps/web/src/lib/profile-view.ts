@@ -116,6 +116,8 @@ export interface ProfileView {
   openTo: string[];
   /** Hydrated pins (empty on the login-free view — see module header). */
   pins: ProfilePinItem[];
+  /** Badged AI-assistant account (§21) — drives the "AI assistant" chip. */
+  isAi: boolean;
 }
 
 type AnyClient = SupabaseClient<Database>;
@@ -181,6 +183,15 @@ export async function loadReputation(
  * view passes the service role (open-to is public identity, same class as
  * lanes).
  */
+/**
+ * Is this account a badged AI assistant (§21)? Read via the service role
+ * because users.is_ai is not readable through another member's RLS client.
+ */
+export async function loadIsAi(userId: string): Promise<boolean> {
+  const { data } = await getSupabaseAdmin().from('users').select('is_ai').eq('id', userId).maybeSingle();
+  return data?.is_ai ?? false;
+}
+
 export async function loadOpenTo(client: AnyClient, userId: string): Promise<string[]> {
   const { data, error } = await client
     .from('profile_open_to')
@@ -398,7 +409,7 @@ export async function getMemberProfileView(
 
   const rawRow = profile as unknown as ProfileViewRow;
   const isOwner = viewerId !== undefined && viewerId === rawRow.user_id;
-  const [badges, counts, reputation, openTo, pins, settings] = await Promise.all([
+  const [badges, counts, reputation, openTo, pins, settings, isAi] = await Promise.all([
     loadBadges(supabase, rawRow.user_id),
     loadCounts(rawRow.user_id),
     loadReputation(supabase, rawRow.user_id),
@@ -408,10 +419,11 @@ export async function getMemberProfileView(
     isOwner
       ? Promise.resolve({ locationGranularity: 'city', searchEngines: true })
       : loadPublicSettings(rawRow.user_id),
+    loadIsAi(rawRow.user_id),
   ]);
   const row = isOwner ? rawRow : applyLocationGranularity(rawRow, settings.locationGranularity);
 
-  return { profile: row, badges, counts, reputation, media: profileMediaView(row), openTo, pins };
+  return { profile: row, badges, counts, reputation, media: profileMediaView(row), openTo, pins, isAi };
 }
 
 /**
@@ -431,14 +443,15 @@ export async function getPublicProfileView(handle: string): Promise<ProfileView 
   if (!profile) return null;
 
   let row = profile as unknown as ProfileViewRow;
-  const [badges, counts, reputation, openTo, settings] = await Promise.all([
+  const [badges, counts, reputation, openTo, settings, isAi] = await Promise.all([
     loadBadges(admin, row.user_id),
     loadCounts(row.user_id),
     loadReputation(admin, row.user_id),
     loadOpenTo(admin, row.user_id),
     loadPublicSettings(row.user_id),
+    loadIsAi(row.user_id),
   ]);
   row = applyLocationGranularity(row, settings.locationGranularity);
 
-  return { profile: row, badges, counts, reputation, media: profileMediaView(row), openTo, pins: [] };
+  return { profile: row, badges, counts, reputation, media: profileMediaView(row), openTo, pins: [], isAi };
 }
