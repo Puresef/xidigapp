@@ -3,7 +3,6 @@
     { "path": "/api/cron/labs", "schedule": "0 3 * * *" },
     { "path": "/api/cron/lifecycle", "schedule": "30 3 * * *" },
     { "path": "/api/cron/reputation", "schedule": "45 3 * * *" },
-    { "path": "/api/cron/digest", "schedule": "0 8 * * 1" },
-    { "path": "/api/cron/events", "schedule": "15 * * * *" }
+    { "path": "/api/cron/digest", "schedule": "0 8 * * 1" }
   ]
 }

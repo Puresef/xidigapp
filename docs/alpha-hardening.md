@@ -28,6 +28,31 @@ Gates (local): typecheck ✅ · lint ✅ · unit 749 ✅ · DB/RLS 64 ✅ · i18
 
 ---
 
+## Post-cutover status (10 Jul)
+
+The Xidig domain cutover is **DONE**. The app serves the apex `https://xidig.net`;
+`APP_URL` = the apex; the old marketing site's apex DNS is decommissioned;
+front-door indexing is ON. A host-level `app.xidig.net` → `xidig.net` **308**
+ships in code (`src/proxy.ts` via `src/lib/apex-redirect.ts`, inert until on the
+apex, excludes `/api/*`). One-time side effects: members re-auth once (host-scoped
+cookies) and web-push subscribers re-opt-in (endpoints on the old origin).
+
+**Still owed** (unchanged by the cutover):
+- 👤 Legal fill-ins — replace `[XIDIG LEGAL ENTITY]` / `[GOVERNING JURISDICTION]`
+  placeholders on the privacy policy + terms.
+- 🌐 Resend sending domain verified + `EMAIL_API_KEY` set — required for auth
+  email delivery (and the digest bulk-email go-live switch).
+- 🌐 `CRON_SECRET` set + the **two** external cron-job.org jobs
+  (`/api/cron/plaza`, `/api/cron/events`, both hourly; events moved out of
+  `vercel.json` because Hobby rejects hourly).
+- 👤 Biometric DPIA sign-off before enabling verification-call recording.
+- 👤 Native Somali review of the marketing/consent copy.
+
+Google Search Console registration (add `https://xidig.net`, verify, submit
+`sitemap.xml`) is Warya-manual — steps in GO-LIVE §6.
+
+---
+
 ## Launch blockers (must clear before inviting real members)
 
 1. **🌐 DB push** — apply all 16 migrations to the live Supabase project
@@ -38,8 +63,8 @@ Gates (local): typecheck ✅ · lint ✅ · unit 749 ✅ · DB/RLS 64 ✅ · i18
    `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`,
    `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Set in
    Vercel (GO-LIVE §4).
-3. **🌐 Supabase auth config** — Site URL = `https://app.xidig.net`, redirect
-   URLs, email/SMS providers, `signup_mode`. Seed the first admin via the
+3. **🌐 Supabase auth config** — Site URL = `https://xidig.net` (the apex; done
+   at cutover), redirect URLs, email/SMS providers, `signup_mode`. Seed the first admin via the
    `signup_grants` path (NOT `xidig_gate_bypass` — 500s on real GoTrue).
 4. **👤 Biometric DPIA sign-off** — required before enabling real
    verification-call **recording** (UK GDPR, §14/§22). Until signed, do not
@@ -78,8 +103,9 @@ Gates (local): typecheck ✅ · lint ✅ · unit 749 ✅ · DB/RLS 64 ✅ · i18
 ### Cron setup (🌐)
 - [ ] Vercel auto-registers the 4 daily+ jobs from `vercel.json` (labs, lifecycle,
       reputation, digest). Confirm they appear under Project → Cron.
-- [ ] External hourly scheduler for `/api/cron/plaza` (Hobby plan can't do hourly)
-      — cron-job.org GET with the `CRON_SECRET` bearer (GO-LIVE §5).
+- [ ] External hourly scheduler for the **two** hourly jobs — `/api/cron/plaza`
+      and `/api/cron/events` (Hobby plan can't do hourly; events was moved out of
+      `vercel.json`) — cron-job.org GET with the `CRON_SECRET` bearer (GO-LIVE §5).
 
 ### Seed / digest verification (🌐 live, after push)
 - [ ] Run `pnpm --filter @xidig/web seed`; re-run → no duplicates (`/admin/seed`).

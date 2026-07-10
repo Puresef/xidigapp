@@ -1650,48 +1650,86 @@ export const en = {
   'marketing.contactUnavailable':
     'The contact form isn’t wired up yet. Join the waitlist and we’ll reach out instead.',
 
-  // Legal (drafts — legal sign-off gates the domain cutover, not this build)
-  'marketing.legalDraftNotice':
-    'Draft — under legal review before public launch. This page describes intent and may change.',
+  // Legal — live, indexed, founder-reviewed. Bracketed placeholders
+  // ([XIDIG LEGAL ENTITY], [GOVERNING JURISDICTION]) are the ONLY facts the
+  // founder must fill; every other statement matches a shipped app capability.
+  'marketing.privacyUpdatedNotice':
+    'Last updated 10 July 2026. We may update this policy; members are notified before any material change takes effect.',
+  'marketing.termsUpdatedNotice':
+    'Last updated 10 July 2026. We may update these terms; members are notified before any material change takes effect.',
+  'marketing.legalEntityNote':
+    'Xidig is operated by [XIDIG LEGAL ENTITY]. Governing law: [GOVERNING JURISDICTION].',
+
   'marketing.privacyTitle': 'Privacy Policy',
   'marketing.privacyIntro':
-    'This policy covers everything on Xidig — browsing these pages and using the app with an account.',
+    'This policy explains what Xidig collects, why, and the control you have over it. It covers both browsing these public pages and using the app with an account. Xidig — operated by [XIDIG LEGAL ENTITY] — is the controller responsible for your personal data.',
   'marketing.privacyCollectTitle': 'What we collect',
   'marketing.privacyCollectBody':
-    'Account details you give us (name, email or phone, profile fields), the content you post, and the technical minimum needed to run the service securely — such as IP-derived region and session cookies.',
+    'Account identifiers you give us when you join (name, email or phone number, and a password managed by our authentication provider). Profile information you choose to add (city, skills, links, bio). The content you post — public posts, polls, listings, messages, and reactions. Optional, consent-based identity and business verification details, if you choose to get verified. Contact-form submissions when you write to us. And the technical minimum needed to run the service securely, such as IP-derived region, device and browser information, and session cookies.',
+  'marketing.privacyBasisTitle': 'Why we can use it',
+  'marketing.privacyBasisBody':
+    'We process most of your data because it is necessary to provide a service you asked for — running your account, showing your posts to the people you shared them with, delivering messages, and keeping the platform safe. Optional features such as product analytics and verification rely on your explicit consent, which you can give or withdraw at any time. We keep the amount of data we collect to what each feature actually needs.',
   'marketing.privacyUseTitle': 'How we use it',
   'marketing.privacyUseBody':
-    'To run Xidig: accounts, feeds, messages, moderation, and safety. We don’t sell personal data, and we don’t run third-party advertising.',
-  'marketing.privacyAnalyticsTitle': 'Analytics',
+    'To run Xidig: creating and securing accounts, building your feed, delivering messages, powering search and the directory, moderating content, and protecting members from abuse and fraud. We do not sell personal data, we do not share it for others’ advertising, and we do not run third-party advertising on Xidig.',
+  'marketing.privacyAnalyticsTitle': 'Analytics is opt-in',
   'marketing.privacyAnalyticsBody':
-    'Product analytics is opt-in. Without your consent, events about your account aren’t recorded — and anonymous visitors aren’t individually tracked on these pages.',
+    'Product analytics is off by default. Nothing about your account is recorded until you turn analytics on through the consent banner or your privacy settings. If you never opt in, no analytics events about you are collected, and anonymous visitors to these public pages are not individually tracked. You can change your choice at any time in Settings.',
+  'marketing.privacyCookiesTitle': 'Cookies',
+  'marketing.privacyCookiesBody':
+    'We use a small number of essential cookies that are required to sign you in, keep your session secure, and remember your language and privacy choices — these cannot be switched off because the app cannot work without them. Optional cookies, such as those used for product analytics, are only set after you opt in through the consent banner. We do not use advertising or cross-site tracking cookies.',
   'marketing.privacyVerificationTitle': 'Verification',
   'marketing.privacyVerificationBody':
-    'Identity and business verification are optional and consent-based. Full details of what verification processes and stores will be published before verification opens to members.',
-  'marketing.privacyRightsTitle': 'Your rights',
+    'Identity and business verification are optional and consent-based — you are never required to verify to use Xidig. Because verification can involve sensitive information, the full detail of what each process reviews and stores is published in a dedicated notice before verification opens to members, and you will be asked to consent at that point.',
+  'marketing.privacyRetentionTitle': 'How long we keep it',
+  'marketing.privacyRetentionBody':
+    'We keep your account data for as long as your account is active. When you delete your account there is a short grace period in which you can change your mind; after it passes, your personal data is removed rather than archived. Some records may be kept longer only where we are legally required to, or to resolve a safety report or dispute — and only for as long as that purpose lasts.',
+  'marketing.privacyRightsTitle': 'Your rights and controls',
   'marketing.privacyRightsBody':
-    'You can export your data and delete your account from Settings. Deletion is real: after the grace period your data is removed, not archived.',
-  'marketing.privacyContactBody': 'Privacy questions: use the contact page and we’ll respond.',
+    'You can access and review your information, export a copy of your data, correct your profile, and delete your account — all from Settings, under the data and privacy section. You can also opt in or out of analytics at any time. If you would like help exercising any of these rights, contact us and we will respond.',
+  'marketing.privacyTransfersTitle': 'Where your data is handled',
+  'marketing.privacyTransfersBody':
+    'Xidig serves a global Somali community, at home and across the diaspora, so your data may be processed on servers located outside your own country by us and by the service providers who help us run the platform. Wherever it is handled, we apply the protections described in this policy.',
+  'marketing.privacyChildrenTitle': 'Age',
+  'marketing.privacyChildrenBody':
+    'Xidig is not intended for children. You must meet the minimum age set in our Terms of Service to hold an account. If we learn that an underage person has created an account, we will remove it.',
+  'marketing.privacyContactTitle': 'Contact us about privacy',
+  'marketing.privacyContactBody':
+    'For any question about this policy, your data, or your rights, use the contact page and we will respond. Xidig is operated by [XIDIG LEGAL ENTITY], the controller of your personal data.',
+
   'marketing.termsTitle': 'Terms of Service',
-  'marketing.termsIntro': 'Using Xidig — these pages or the app — means agreeing to these terms.',
-  'marketing.termsAccountsTitle': 'Accounts',
+  'marketing.termsIntro':
+    'These terms are the agreement between you and [XIDIG LEGAL ENTITY], which operates Xidig. Using Xidig — these public pages or the app — means you accept them. Please read them alongside our Privacy Policy.',
+  'marketing.termsEligibilityTitle': 'Who can join',
+  'marketing.termsEligibilityBody':
+    'Xidig is currently a private, invite-only beta: access is by invitation or from the waitlist. You must be at least the minimum age required by [GOVERNING JURISDICTION] — and no younger than 16 — to hold an account, and you must be able to enter into a binding agreement. We may add, limit, or withdraw access during the beta.',
+  'marketing.termsAccountsTitle': 'Your account',
   'marketing.termsAccountsBody':
-    'One person, one account. You’re responsible for what happens under your sign-in, and membership is currently by invitation or waitlist.',
+    'One person, one account. Keep your sign-in details secure and don’t share them; you are responsible for everything that happens under your account. Give us accurate information and keep it current. Tell us promptly if you think your account has been accessed without your permission.',
   'marketing.termsContentTitle': 'Your content',
   'marketing.termsContentBody':
-    'What you post stays yours. You give Xidig the licence needed to show it to the members and visitors you chose to share it with — nothing more.',
-  'marketing.termsConductTitle': 'Conduct',
+    'What you post stays yours — you keep ownership of your content. To operate the platform, you grant Xidig a non-exclusive, worldwide, royalty-free licence to host, store, display, and distribute your content to the members and visitors you chose to share it with, and to make the technical copies needed to run and back up the service. This licence exists only so Xidig can show your content the way you intended; it ends when you delete the content or your account, except for copies we must retain briefly for backups or legal reasons.',
+  'marketing.termsConductTitle': 'Acceptable use',
   'marketing.termsConductBody':
-    'Be honest, be lawful, keep it safe. Content that breaks the community guidelines can be removed, and decisions can be appealed.',
-  'marketing.termsFeesTitle': 'Fees',
+    'Be honest, be lawful, and keep Xidig safe. Don’t harass, deceive, impersonate, spam, or post unlawful or harmful content, and don’t abuse or attack the platform. The full standards live in our Community Guidelines, which form part of these terms. Content that breaks them can be removed.',
+  'marketing.termsFeesTitle': 'Membership and fees',
   'marketing.termsFeesBody':
-    'Joining is free. Supporter membership will cost around $1/month once billing goes live; the confirmed price is announced to members before anyone is charged.',
+    'Joining and core membership are free, and free stays free. Supporter membership — which unlocks creating Labs, putting candidates forward, and voting in community governance — will cost around $1 per month once billing goes live. Billing is not active yet; the confirmed price is announced to members before anyone is charged, and nothing is billed without your agreement.',
   'marketing.termsCapitalTitle': 'Capital',
   'marketing.termsCapitalBody':
-    'Capital features record interest and intent only. Nothing on Xidig is an offer of securities or investment advice. Full terms for any financial feature will ship before that feature goes live.',
-  'marketing.termsChangesTitle': 'Changes',
+    'Capital features record interest and intent only. Nothing here is an offer of securities; v1.0 is intent capture only. Nothing on Xidig is investment advice or a solicitation to invest, and there are no live financial flows. Full terms for any financial feature will ship before that feature goes live.',
+  'marketing.termsModerationTitle': 'Moderation and enforcement',
+  'marketing.termsModerationBody':
+    'Xidig is moderated by people, not just automation. We may remove content, or warn, suspend, or close accounts that break these terms or the Community Guidelines. Where we act against your account or content, you can appeal the decision through the in-app process, and a moderator will review it.',
+  'marketing.termsDisclaimerTitle': 'Disclaimers and liability',
+  'marketing.termsDisclaimerBody':
+    'Xidig is a private beta and is provided “as is”, without warranties of any kind. We work hard to keep it running and safe, but we can’t promise it will always be available, error-free, or that content posted by members is accurate. To the fullest extent the law allows, [XIDIG LEGAL ENTITY] is not liable for indirect or consequential losses, or for content posted by members. Nothing in these terms limits any liability that cannot be limited by law.',
+  'marketing.termsChangesTitle': 'Changes to these terms',
   'marketing.termsChangesBody':
-    'We’ll tell members about material changes to these terms before they take effect.',
+    'We may update these terms as Xidig grows. We will tell members about material changes before they take effect, so you can review them. Continuing to use Xidig after a change takes effect means you accept the updated terms.',
+  'marketing.termsGoverningTitle': 'Governing law',
+  'marketing.termsGoverningBody':
+    'These terms are governed by the laws of [GOVERNING JURISDICTION], and any dispute relating to them will be handled under that jurisdiction, without affecting any mandatory rights you have under the law where you live.',
 
   // /reports chrome (report bodies are community-compiled content, not UI copy)
   'marketing.reportsTitle': 'Reports',

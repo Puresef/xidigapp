@@ -1573,48 +1573,86 @@ export const so = {
   'marketing.contactUnavailable':
     'Foomka xiriirku weli ma diyaarsana. Ku biir safka sugitaanka, annagaa kula soo xiriiri doonna.',
 
-  // Legal (qabyo)
-  'marketing.legalDraftNotice':
-    'Qabyo — waxaa ku socda dib-u-eegis sharci ka hor furitaanka guud. Boggani wuxuu sharxayaa ujeeddo, wuuna is beddeli karaa.',
+  // Legal — nool, la indeksay, sahmiyaha aasaasaha dib u eegay. Meelaha
+  // xigmadaysan ([XIDIG LEGAL ENTITY], [GOVERNING JURISDICTION]) ayaa ah wax
+  // kaliya oo aasaasuhu buuxiyo.
+  'marketing.privacyUpdatedNotice':
+    'Markii ugu dambeysay la cusboonaysiiyay 10 Luulyo 2026. Siyaasaddan waanu cusboonaysiin karnaa; xubnaha waa loo sheegaa ka hor inta uusan isbeddel muhiim ah dhaqan-gelin.',
+  'marketing.termsUpdatedNotice':
+    'Markii ugu dambeysay la cusboonaysiiyay 10 Luulyo 2026. Shuruudahan waanu cusboonaysiin karnaa; xubnaha waa loo sheegaa ka hor inta uusan isbeddel muhiim ah dhaqan-gelin.',
+  'marketing.legalEntityNote':
+    'Xidig waxaa maamula [XIDIG LEGAL ENTITY]. Sharciga xukuma: [GOVERNING JURISDICTION].',
+
   'marketing.privacyTitle': 'Siyaasadda Arrimaha Gaarka ah',
   'marketing.privacyIntro':
-    'Siyaasaddani waxay khusaysaa wax kasta oo Xidig ah — daalacashada boggagan iyo isticmaalka barnaamijka adigoo akoon leh.',
+    'Siyaasaddani waxay sharxaysaa waxa Xidig ururiyo, sababta, iyo xakamaynta aad ku leedahay. Waxay khusaysaa daalacashada boggagan guud iyo isticmaalka barnaamijka adigoo akoon leh. Xidig — oo ay maamusho [XIDIG LEGAL ENTITY] — ayaa mas’uul ka ah xogtaada shakhsiga ah.',
   'marketing.privacyCollectTitle': 'Waxa aanu ururinno',
   'marketing.privacyCollectBody':
-    'Xogta akoonka ee aad na siiso (magac, email ama taleefan, xogta bogga), waxa aad soo qorto, iyo ugu yaraan farsamada loo baahan yahay si adeeggu u shaqeeyo si ammaan ah — sida gobolka laga soo qiyaaso IP-ga iyo cookies-ka fadhiga.',
+    'Aqoonsiyada akoonka ee aad na siiso markaad biirto (magac, email ama taleefan, iyo furaha sirta ah ee uu maamulo bixiyahayaga xaqiijinta). Xogta bogga ee aad dooratid inaad ku darto (magaalo, xirfado, xiriirro, faah-faahin). Waxa aad soo qorto — qoraallo dadweyne, codbixinno, liisas, fariimo, iyo falcelinno. Faah-faahinta xaqiijinta aqoonsiga iyo ganacsiga ee ikhtiyaariga ah, ku salaysan ogolaansho, haddii aad dooratid inaad xaqiijiso. Waxa aad soo dirto foomka xiriirka markaad noo qorto. Iyo ugu yaraan farsamada loo baahan yahay si adeeggu si ammaan ah u shaqeeyo — sida gobolka laga soo qiyaaso IP-ga, xogta qalabka iyo browser-ka, iyo cookies-ka fadhiga.',
+  'marketing.privacyBasisTitle': 'Sababta aanu u isticmaali karno',
+  'marketing.privacyBasisBody':
+    'Inta badan xogtaada waxaanu u shaqeynaa sababtoo ah waa lagama maarmaan si aanu kuu siinno adeeg aad codsatay — maamulka akoonkaaga, muujinta qoraalladaada dadka aad la wadaagto, gaarsiinta fariimaha, iyo ilaalinta ammaanka goobta. Sifooyinka ikhtiyaariga ah sida falanqaynta iyo xaqiijinta waxay ku tiirsan yihiin ogolaanshahaaga cad, oo aad bixin karto ama laga noqon karto wakhti kasta. Waxaanu ku koobnaa in aan ururinno waxa sifo kasta dhab ahaan u baahan tahay.',
   'marketing.privacyUseTitle': 'Sida aanu u isticmaalno',
   'marketing.privacyUseBody':
-    'In lagu shaqeysiiyo Xidig: akoonno, quudin, fariimo, maamul, iyo badbaado. Xog shakhsi ma iibinno, xayeysiis dhinac saddexaadna ma wadno.',
-  'marketing.privacyAnalyticsTitle': 'Falanqayn',
+    'Si aanu Xidig ku shaqeysiinno: abuurista iyo ammaanka akoonnada, dhisidda quudintaada, gaarsiinta fariimaha, shaqaynta raadinta iyo tusmada, maamulka waxyaabaha la qoro, iyo ilaalinta xubnaha xadgudubka iyo khiyaanada. Xog shakhsi ma iibinno, ujeeddo xayeysiis dadka kalena ma wadaagno, xayeysiis dhinac saddexaadna kuma wadno Xidig.',
+  'marketing.privacyAnalyticsTitle': 'Falanqayntu waa ikhtiyaari (opt-in)',
   'marketing.privacyAnalyticsBody':
-    'Falanqaynta adeeggu waa ikhtiyaari (opt-in). Ogolaanshahaaga la’aantiis, dhacdooyinka akoonkaaga lama diiwaangeliyo — booqdayaasha aan magaca lahaynna shakhsi ahaan looma raaco boggagan.',
+    'Falanqaynta adeeggu si caadi ah way damsan tahay. Wax akoonkaaga ku saabsan lama diiwaangeliyo ilaa aad ka shideyso falanqaynta oo aad ka marto banaanka ogolaanshaha ama dejintaada arrimaha gaarka ah. Haddii aadan waligaa ogolaan, dhacdo falanqayn oo adiga ku saabsan lama ururiyo, booqdayaasha aan magaca lahayn ee boggagan guudna shakhsi ahaan looma raaco. Doorashadaada wakhti kasta waad ka beddeli kartaa Dejinta.',
+  'marketing.privacyCookiesTitle': 'Cookies',
+  'marketing.privacyCookiesBody':
+    'Waxaanu isticmaalnaa tiro yar oo cookies lagama maarmaan ah oo loo baahan yahay in lagugu geliyo, la ammaaniyo fadhigaaga, oo la xasuusto luqaddaada iyo doorashooyinkaaga arrimaha gaarka ah — kuwaas lama demin karo maxaa yeelay barnaamijku ma shaqeyn karo la’aantood. Cookies-ka ikhtiyaariga ah, sida kuwa loo isticmaalo falanqaynta adeegga, waxaa kaliya la dhigaa ka dib markaad ogolaato banaanka ogolaanshaha. Ma isticmaalno cookies xayeysiis ama raadraac goobo-dhexaad ah.',
   'marketing.privacyVerificationTitle': 'Xaqiijin',
   'marketing.privacyVerificationBody':
-    'Xaqiijinta aqoonsiga iyo ganacsigu waa ikhtiyaari, waxayna ku salaysan tahay ogolaansho. Faahfaahinta buuxda ee waxa xaqiijintu farsameyso oo kaydiso waxaa la daabici doonaa ka hor inta aan xaqiijintu u furmin xubnaha.',
-  'marketing.privacyRightsTitle': 'Xuquuqdaada',
+    'Xaqiijinta aqoonsiga iyo ganacsigu waa ikhtiyaari, ku salaysan ogolaansho — weligaa laguma qasbo inaad xaqiijiso si aad Xidig u isticmaasho. Sababtoo ah xaqiijintu waxay ku lug yeelan kartaa xog xasaasi ah, faah-faahinta buuxda ee waxa hab kasta baaro oo kaydiyo waxaa lagu daabacaa ogeysiis gaar ah ka hor inta aan xaqiijintu u furmin xubnaha, waana lagaa codsan doonaa ogolaansho markaas.',
+  'marketing.privacyRetentionTitle': 'Muddada aanu haynno',
+  'marketing.privacyRetentionBody':
+    'Xogta akoonkaaga waxaanu haynaa inta uu akoonkaagu firfircoon yahay. Markaad akoonkaaga tirtirto waxaa jira muddo nasasho oo gaaban oo aad go’aankaaga ku beddeli karto; ka dib markay dhaafto, xogtaada shakhsiga ah waa la saaraa halkii la kaydin lahaa. Xog qaar waa la sii hayn karaa oo kaliya haddii sharci na khasbo, ama si loo xalliyo warbixin ammaan ama muran — oo kaliya inta ay ujeeddadaasi socoto.',
+  'marketing.privacyRightsTitle': 'Xuquuqdaada iyo xakamayntaada',
   'marketing.privacyRightsBody':
-    'Xogtaada waad soo dejisan kartaa, akoonkaagana waad ka tirtiri kartaa Dejinta. Tirtiriddu waa run: muddada nasashada ka dib xogtaadu waa la saaraa, lama kaydiyo.',
-  'marketing.privacyContactBody': 'Su’aalo arrimaha gaarka ah: isticmaal bogga xiriirka, waanu kuu jawaabi doonnaa.',
+    'Waad heli kartaa oo dib u eegi kartaa xogtaada, waad soo dejisan kartaa nuqul xogtaada ah, waad saxi kartaa boggaaga, akoonkaagana waad tirtiri kartaa — dhammaan Dejinta, qaybta xogta iyo arrimaha gaarka ah. Waxa kale oo aad ka geli kartaa ama ka bixi kartaa falanqaynta wakhti kasta. Haddii aad caawimo u baahan tahay adeegsiga xuquuqdan, nala soo xiriir waanu kuu jawaabi doonnaa.',
+  'marketing.privacyTransfersTitle': 'Meesha xogtaada laga maamulo',
+  'marketing.privacyTransfersBody':
+    'Xidig wuxuu u adeegaa bulsho Soomaali oo caalami ah, gudaha iyo qurbaha, sidaas darteed xogtaada waxaa laga maamuli karaa server-o ku yaal dal aan kuu ahayn annaga iyo bixiyayaasha adeegga ee naga caawiya socodsiinta goobta. Meel kasta oo laga maamuloba, waxaanu ku dabaqnaa ilaalinta lagu sharxay siyaasaddan.',
+  'marketing.privacyChildrenTitle': 'Da’',
+  'marketing.privacyChildrenBody':
+    'Xidig looma talagalin carruur. Waa inaad gaartaa da’da ugu yar ee lagu qeexay Shuruudaha Adeeggayaga si aad akoon u haysato. Haddii aanu ogaanno in qof da’diisu ka yar tahay uu akoon abuuray, waanu tirtiri doonnaa.',
+  'marketing.privacyContactTitle': 'Nala soo xiriir arrimaha gaarka ah',
+  'marketing.privacyContactBody':
+    'Su’aal kasta oo ku saabsan siyaasaddan, xogtaada, ama xuquuqdaada, isticmaal bogga xiriirka waanu kuu jawaabi doonnaa. Xidig waxaa maamula [XIDIG LEGAL ENTITY], oo mas’uul ka ah xogtaada shakhsiga ah.',
+
   'marketing.termsTitle': 'Shuruudaha Adeegga',
-  'marketing.termsIntro': 'Isticmaalka Xidig — boggagan ama barnaamijka — waxay ka dhigan tahay inaad ogolaatay shuruudahan.',
-  'marketing.termsAccountsTitle': 'Akoonno',
+  'marketing.termsIntro':
+    'Shuruudahani waa heshiiska adiga iyo [XIDIG LEGAL ENTITY] oo maamula Xidig. Isticmaalka Xidig — boggagan guud ama barnaamijka — waxay ka dhigan tahay inaad aqbashay. Fadlan la akhri Siyaasadda Arrimaha Gaarka ah.',
+  'marketing.termsEligibilityTitle': 'Cidda biiri karta',
+  'marketing.termsEligibilityBody':
+    'Xidig hadda waa tijaabo gaar ah oo martiqaad kaliya ah: gelitaanku waa martiqaad ama saf sugitaan. Waa inaad ugu yaraan gaartaa da’da uu u baahan yahay [GOVERNING JURISDICTION] — oo aanad ka yaraan 16 sano — si aad akoon u haysato, waana inaad awoodid inaad gasho heshiis xujaysan. Waxaanu ku dari karnaa, xaddidi karnaa, ama ka noqon karnaa gelitaanka inta lagu jiro tijaabada.',
+  'marketing.termsAccountsTitle': 'Akoonkaaga',
   'marketing.termsAccountsBody':
-    'Hal qof, hal akoon. Adigaa mas’uul ka ah waxa ku dhaca gelitaankaaga, xubinnimaduna hadda waa martiqaad ama saf sugitaan.',
+    'Hal qof, hal akoon. Xog-gelintaada si ammaan ah u hay oo ha la wadaagin; adigaa mas’uul ka ah wax kasta oo akoonkaaga hoostiisa ka dhaca. Xog sax ah na sii oo cusbooneysii. Degdeg noogu sheeg haddii aad u malaynayso in akoonkaaga la galay ogolaanshahaaga la’aantiis.',
   'marketing.termsContentTitle': 'Waxa aad qorto',
   'marketing.termsContentBody':
-    'Waxa aad soo qortaa adigaa iska leh. Waxaad Xidig siinaysaa oggolaanshaha loo baahan yahay oo keliya si loogu muujiyo xubnaha iyo booqdayaasha aad dooratay — wax intaas dhaafsiisan ma jiro.',
-  'marketing.termsConductTitle': 'Dhaqan',
+    'Waxa aad soo qortaa adigaa iska leh — lahaanshaha waad hayso. Si loo shaqeysiiyo goobta, waxaad Xidig siinaysaa oggolaansho aan gaar ahayn, caalami ah, lacag la’aan ah oo lagu marti-geliyo, kaydiyo, muujiyo, oo lagu gaarsiiyo xubnaha iyo booqdayaasha aad dooratay, iyo in laga sameeyo nuqullada farsamo ee loo baahan yahay socodsiinta iyo kaydinta adeegga. Oggolaanshahani wuxuu u jiraa oo kaliya si Xidig ugu muujiyo waxa aad qorto sidaad u rabtay; wuxuu dhammaadaa markaad tirtirto qoraalka ama akoonkaaga, marka laga reebo nuqullo aanu waajib ku ahayn inaan si gaaban u hayno kayd ama sabab sharci.',
+  'marketing.termsConductTitle': 'Isticmaalka la aqbali karo',
   'marketing.termsConductBody':
-    'Daacad ahow, sharciga raac, badbaadana ilaali. Waxa jebiya tilmaamaha bulshada waa la saari karaa, go’aannadana racfaan baa laga qaadan karaa.',
-  'marketing.termsFeesTitle': 'Khidmado',
+    'Daacad ahow, sharciga raac, Xidigna badbaado. Ha dhibin, ha khiyaanayn, ha is-moodsiin, spam ha dirin, waxyaabo sharci-darro ama waxyeello leh ha qorin, goobtana ha weerarin. Heerarka buuxa waxay ku jiraan Tilmaamaha Bulshadayada, oo qayb ka ah shuruudahan. Waxa jebiya waa la saari karaa.',
+  'marketing.termsFeesTitle': 'Xubinnimo iyo khidmado',
   'marketing.termsFeesBody':
-    'Ku biiriddu waa lacag la’aan. Xubinnimada Taageeruhu waxay qiimi doontaa qiyaastii $1/bishii marka lacag-bixintu shaqeyso; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin.',
+    'Ku biirista iyo xubinnimada aasaasiga ah waa lacag la’aan, lacag la’aantuna way sii jiri doontaa. Xubinnimada Taageeruhu — oo furta abuurista Warshad, hor-dhigista musharraxiin, iyo codbixin maamul-bulsheed — waxay ku kici doontaa qiyaastii $1 bishii marka lacag-bixintu shaqeyso. Lacag-bixintu weli firfircoon ma aha; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin, wax lacag ahna lama qaado ogolaanshahaaga la’aantiis.',
   'marketing.termsCapitalTitle': 'Maal',
   'marketing.termsCapitalBody':
-    'Adeegyada Maal waxay diiwaangeliyaan xiise iyo ujeeddo oo keliya. Waxba Xidig kuma jiraan dalab dammaanado ama talo maalgashi. Shuruudaha buuxa ee adeeg kasta oo lacageed waa la daabici doonaa ka hor inta uusan shaqayn.',
-  'marketing.termsChangesTitle': 'Isbeddello',
+    'Adeegyada Maal waxay diiwaangeliyaan xiise iyo ujeeddo oo keliya. Waxba halkan kuma jiraan dalab dammaanado; v1.0 waa qabashada ujeeddo oo keliya. Waxba Xidig kuma jiraan talo maalgashi ama dalab maalgashi, waxna lacageed oo nool ma socdaan. Shuruudaha buuxa ee adeeg kasta oo lacageed waa la daabici doonaa ka hor inta uusan shaqayn.',
+  'marketing.termsModerationTitle': 'Maamul iyo hirgelin',
+  'marketing.termsModerationBody':
+    'Xidig waxaa maamula dad, ma aha kaliya farsamo. Waxaanu saari karnaa waxa la qoro, ama u digi karnaa, hakin karnaa, ama xidhi karnaa akoonnada jebiya shuruudahan ama Tilmaamaha Bulshada. Marka aanu wax ka qabanno akoonkaaga ama waxa aad qorto, waad racfaan qaadan kartaa go’aanka adigoo maraya habka barnaamijka, maamuluhuna wuu dib u eegi doonaa.',
+  'marketing.termsDisclaimerTitle': 'Ka-fogaansho iyo mas’uuliyad',
+  'marketing.termsDisclaimerBody':
+    'Xidig waa tijaabo gaar ah, waxaana lagu bixiyaa “sida uu yahay”, iyada oo aan dammaanad nooc kasta ah lahayn. Si adag ayaanu ugu shaqeynaa in aanu socodsiinno oo ammaanno, laakiin ma balan qaadi karno inuu had iyo jeer diyaar noqon doono, khalad la’aan ahaan doono, ama in waxa xubnuhu qoraan sax yahiin. Ilaa xadka ugu badan ee sharcigu ogol yahay, [XIDIG LEGAL ENTITY] mas’uul kama aha khasaarooyin dadban ama ka dhasha, ama waxa xubnuhu qoraan. Waxba shuruudahan kuma xaddidayaan mas’uuliyad aan sharciga lagu xaddidi karin.',
+  'marketing.termsChangesTitle': 'Isbeddellada shuruudahan',
   'marketing.termsChangesBody':
-    'Isbeddel weyn oo shuruudahan ku yimaadda waxaanu xubnaha u sheegnaa ka hor inta uusan dhaqan-gelin.',
+    'Waxaanu cusboonaysiin karnaa shuruudahan marka Xidig kobco. Isbeddel muhiim ah waxaanu xubnaha u sheegnaa ka hor inta uusan dhaqan-gelin, si aad dib u eegi karto. Sii wadista isticmaalka Xidig ka dib markuu isbeddelku dhaqan-galo waxay ka dhigan tahay inaad aqbashay shuruudaha cusub.',
+  'marketing.termsGoverningTitle': 'Sharciga xukuma',
+  'marketing.termsGoverningBody':
+    'Shuruudahan waxaa xukuma sharciyada [GOVERNING JURISDICTION], muran kasta oo la xiriirana waxaa lagu maamuli doonaa xukunkaas, iyada oo aan la saameyn xuquuq kasta oo waajib ah oo aad ku leedahay sharciga meesha aad ku nooshahay.',
 
   // /reports chrome
   'marketing.reportsTitle': 'Warbixinno',

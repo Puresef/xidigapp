@@ -65,7 +65,7 @@ paste them into Vercel in step 5.
 | 1 | **Supabase** | supabase.com | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` | Project → Settings → **API Keys**. Use the new **publishable** (`sb_publishable_…`) + **secret** (`sb_secret_…`) keys. URL = `https://<ref>.supabase.co`. Also note the **project ref** and **DB password** (step 3). |
 | 2 | **Resend** | resend.com | `EMAIL_API_KEY` | Verify a **sending subdomain** `mail.xidig.net` (SPF/DKIM/DMARC — see runbook §Deliverability). Set `EMAIL_FROM="Xidig <noreply@mail.xidig.net>"`. |
 | 3 | **MapTiler** | maptiler.com | `MAPTILER_KEY` | Free tier fine for alpha. |
-| 4 | **Meilisearch** | cloud.meilisearch.com (or self-host) | `MEILISEARCH_HOST`, `MEILISEARCH_API_KEY` | Required at boot. (v1.0 directory/global search runs on Postgres trigram; Meilisearch ranking is a later wire-up — but env still requires a reachable instance.) |
+| 4 | **Meilisearch** | cloud.meilisearch.com (or self-host) | `MEILISEARCH_HOST`, `MEILISEARCH_API_KEY` | **Not required.** Both default to empty (`optionalUrl`) with zero runtime consumers — v1.0 directory/global search runs on Postgres trigram. Leave unset; the Meilisearch ranking layer is deferred. |
 | 5 | **PostHog** | posthog.com (EU or US) | `POSTHOG_KEY`, `POSTHOG_HOST` | Analytics gated behind consent; events fire from Phase 7. Host default `https://us.i.posthog.com`. |
 | 6 | **Upstash** | upstash.com | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Redis (REST) for rate limits. Fail-open, but env requires it. URL must be `https://…` (not `tcp://`). |
 | 7 | **Sentry** | sentry.io | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN` (same DSN) | Optional build-time: `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` (source-map upload). |
@@ -99,7 +99,7 @@ git diff --stat packages/db/src/database.types.ts   # should be empty/no-op if i
 The load-bearing ones:
 - **Allow new users to sign up → OFF** (beta gate; the DB trigger is the second layer).
 - Email OTP expiry → **3600 s**; do **not** enable Supabase SMTP (the app sends auth email).
-- **Site URL** → `https://app.xidig.net` (must equal `APP_URL`).
+- **Site URL** → `https://xidig.net` (must equal `APP_URL` — the apex; the app serves the front door). Add the same apex to the **redirect URL allow-list**.
 - Phone provider (Twilio/compatible) → enable for SMS-OTP; SMS OTP expiry **600 s**, length **6**.
 
 **3e. Storage** — nothing to do: the public `post-media` bucket (WebP, 5 MB) is
@@ -121,14 +121,15 @@ boot without real values): `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
 boots with that feature off: `EMAIL_API_KEY` (auth email → logged to server
 console), `SENTRY_DSN` + `NEXT_PUBLIC_SENTRY_DSN` (monitoring off),
 `UPSTASH_REDIS_*` (rate limiting off, fail-open), `POSTHOG_KEY` (analytics off),
-`AI_API_KEY` (moderation skipped, fail-open), `MAPTILER_KEY` / `MEILISEARCH_*`
-(unused today). Set them before inviting real members — a missing key is a
+`AI_API_KEY` (moderation skipped, fail-open), `MAPTILER_KEY` (OSM fallback).
+`MEILISEARCH_*` has no runtime consumer at all — leave it unset (search is
+Postgres trgm). Set the rest before inviting real members — a missing key is a
 disabled feature, not a crash, but you want them all live for launch. Note: a
 NON-empty but malformed URL value (e.g. a typo, or `tcp://` for Upstash) is
 still rejected at boot — only *empty/unset* degrades silently.
 
 **Set for production** (have defaults, but you want real values):
-- `APP_URL=https://app.xidig.net` — **critical**: auth links are built from this.
+- `APP_URL=https://xidig.net` — **critical**: auth links are built from this. (Post-cutover: the app serves the apex; `app.xidig.net` now 308-redirects to the apex at the host level, see step 6.)
 - `AI_MODERATION_PROVIDER=openai` — uses the free OpenAI omni-moderation model
   (with `AI_API_KEY` = your OpenAI key). Leave unset/`auto` only if you're using an
   Anthropic key instead. `console` = ship unscanned (reports + human queue only).
@@ -161,38 +162,64 @@ Local dev: `cp .env.example apps/web/.env.local` and fill in. Prod: step 5.
 5. **Deploy.** First deploy builds and boots; if a required env var is missing the
    runtime logs show the single aggregated "Invalid or missing environment
    variables" error naming each key.
-6. **Cron** — `vercel.json` declares four daily+ jobs (Vercel auto-registers
-   them and sends `Authorization: Bearer $CRON_SECRET`):
+6. **Cron** — two tiers. `vercel.json` declares **four Vercel crons** (Vercel
+   auto-registers them and sends `Authorization: Bearer $CRON_SECRET`):
    - `/api/cron/labs` — daily 03:00 (dormancy nudges + skill-gap alerts)
    - `/api/cron/lifecycle` — daily 03:30 (account anonymisation + verification-recording purge)
    - `/api/cron/reputation` — daily 03:45 (reputation 90-day decay recompute, Phase 7/8)
    - `/api/cron/digest` — **Mondays 08:00** (weekly digest pinned post, Phase 8)
 
-   The `/api/cron/plaza` **hourly** sweep is deliberately **not** in `vercel.json`
-   — Hobby-plan Vercel Cron only allows daily+ schedules and fails the deploy on
-   an hourly entry. Set up a free external scheduler instead (runbook §Scheduled
-   sweeps: [cron-job.org](https://cron-job.org), GET
-   `https://app.xidig.net/api/cron/plaza` hourly, header
-   `Authorization: Bearer <CRON_SECRET>`). Ensure `CRON_SECRET` is set either way.
+   Plus **two external hourly jobs** via a free scheduler
+   ([cron-job.org](https://cron-job.org)), both GET with header
+   `Authorization: Bearer <CRON_SECRET>`:
+   - `https://xidig.net/api/cron/plaza` — hourly (stale-Ask nudge + poll auto-close)
+   - `https://xidig.net/api/cron/events` — hourly (event lifecycle sweep)
+
+   Both hourly jobs are external because Hobby-plan Vercel Cron only allows
+   daily+ schedules and fails the deploy on an hourly entry — the events cron
+   was moved **out** of `vercel.json` for this reason. Ensure `CRON_SECRET` is
+   set either way (unset = every cron route 503s).
 
 CLI alternative for env (🖥️): `vercel env add APP_URL production` (repeat per var),
 then `vercel --prod`.
 
 ---
 
-## 6. DNS — app.xidig.net (🌐, ~5 min + propagation)
+## 6. DNS — xidig.net apex (🌐) — ✅ DONE (cutover, 10 Jul)
 
-- In your DNS provider, add the record Vercel shows under Project → Settings →
-  Domains for `app.xidig.net` (usually a `CNAME` → `cname.vercel-dns.com`).
-- Keep the marketing site on `xidig.net` (unchanged); the app lives at
-  `app.xidig.net` (matches the app-side external-links model).
-- Confirm `APP_URL` and Supabase **Site URL** both equal `https://app.xidig.net`.
+The domain cutover is complete: the app now serves the **apex** `xidig.net`.
+
+- ✅ Apex `xidig.net` points at Vercel (app front door); front-door indexing is ON.
+- ✅ The old marketing site's apex DNS is **decommissioned** — the app absorbed
+  the front door.
+- ✅ `app.xidig.net` → `xidig.net` **308** now ships in code
+  (`src/proxy.ts` via `src/lib/apex-redirect.ts`): a host-level redirect, inert
+  until the app is on the apex, and it **excludes `/api/*`** (so API/webhook/cron
+  callers hitting the old host still resolve).
+- ✅ `APP_URL` and Supabase **Site URL** both equal `https://xidig.net`.
+
+Side effects of the host change (one-time): members are re-authenticated once
+(session cookies were host-scoped) and web-push subscribers must re-opt-in
+(push endpoints were registered against the old origin). See runbook.
+
+### Google Search Console (🌐 👤 — Warya-manual, not yet done)
+
+Now that the apex is indexable, register it so Google can crawl the front door.
+This needs your Google account, so it can't be automated here — do it manually:
+
+1. Go to [search.google.com/search-console](https://search.google.com/search-console)
+   and **Add property** → **URL prefix** → `https://xidig.net`.
+2. **Verify ownership** by either: a **DNS TXT** record (add the `google-site-
+   verification=…` TXT at your DNS provider), or the **HTML tag** method (paste
+   the meta tag — or use Vercel's Search Console integration if offered).
+3. Once verified, **Sitemaps** → submit `https://xidig.net/sitemap.xml`.
+4. Optionally request indexing of the home URL to prime the first crawl.
 
 ---
 
 ## 7. Email + SMS deliverability (🌐)
 
-- Resend → Webhooks → add `https://app.xidig.net/api/webhooks/email`, events
+- Resend → Webhooks → add `https://xidig.net/api/webhooks/email`, events
   `email.bounced` + `email.complained`; copy the signing secret into
   `EMAIL_WEBHOOK_SECRET`.
 - Publish SPF/DKIM/DMARC for `mail.xidig.net` (runbook §DNS authentication).
@@ -203,7 +230,8 @@ then `vercel --prod`.
 
 ## 8. Post-deploy smoke (🖥️/browser, ~15 min)
 
-- App loads at `https://app.xidig.net`; language toggle + dark mode work.
+- App loads at `https://xidig.net`; language toggle + dark mode work. Hitting
+  `https://app.xidig.net` 308-redirects to the apex (but not `/api/*`).
 - **Seed the first admin/ops account** via the `signup_grants` path in
   [runbook.md §Ops/seed accounts](runbook.md#supabase-auth-configuration) — do
   **not** use the `xidig_gate_bypass` shortcut (500s on real GoTrue).

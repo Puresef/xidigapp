@@ -33,6 +33,20 @@ const optionalUrl = (): z.ZodDefault<z.ZodString> =>
 const optionalKey = (): z.ZodDefault<z.ZodString> => z.string().default('');
 
 /**
+ * A URL var that has a sensible fallback default. Crucially, an EMPTY string
+ * (e.g. a blank Vercel env value, or a copied-but-uncommented `.env.example`
+ * line) is treated as UNSET, so the default applies and the app still boots —
+ * rather than hard-failing validation on `''`. A non-empty value must still be
+ * a well-formed URL so a typo is caught. This is the "no hard-fail boot" intent
+ * for optional-with-default URLs (required URLs like SUPABASE_URL stay strict).
+ */
+const urlWithDefault = (fallback: string): z.ZodType<string> =>
+  z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.string().refine(isUrl, { message: 'must be a valid URL' }).default(fallback),
+  ) as z.ZodType<string>;
+
+/**
  * The full set of environment variables the app requires. Every key here must
  * also appear in `.env.example`. Keys with a `.default()` are optional; all
  * others are required and the app will refuse to boot without them.
@@ -43,7 +57,7 @@ export const envSchema = z.object({
   // Canonical origin of this deployment. Used to build auth links (magic
   // links, confirmation, reset) in self-sent emails — never derived from
   // request headers (host-header injection would poison auth links).
-  APP_URL: urlString().default('http://localhost:3000'),
+  APP_URL: urlWithDefault('http://localhost:3000'),
 
   // Supabase (server-only — safe to use the secret key with these)
   SUPABASE_URL: urlString(),
@@ -87,7 +101,7 @@ export const envSchema = z.object({
 
   // PostHog (optional — analytics disables cleanly when POSTHOG_KEY is unset)
   POSTHOG_KEY: optionalKey(),
-  POSTHOG_HOST: urlString().default('https://us.i.posthog.com'),
+  POSTHOG_HOST: urlWithDefault('https://us.i.posthog.com'),
 
   // Upstash (optional — rate limiting disables (fail-open) when unset/not https)
   UPSTASH_REDIS_REST_URL: optionalUrl(),

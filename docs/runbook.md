@@ -77,7 +77,7 @@ the security model — re-apply them on any new environment.
 | Phone provider | **Enabled**, Twilio (or compatible) creds | SMS-OTP sign-in (§9). Without a provider the API degrades to the §27 "We couldn't send a text message" error — email methods keep working. |
 | Phone → **SMS OTP expiry** | **600 s** (10 min) | §26: codes expire after 10 minutes (natively enforced — no app-side ledger needed for SMS). |
 | Phone → SMS OTP length | 6 digits | Matches the `/^[0-9]{4,10}$/` guard + brute-force rate limits in `otp/verify`. |
-| **Site URL** | the deployment's `APP_URL` | Must equal the `APP_URL` env var; auth links are built from `APP_URL` only (host-header injection is a non-issue by construction). |
+| **Site URL** | the deployment's `APP_URL` (= `https://xidig.net`, the apex — post-cutover) | Must equal the `APP_URL` env var; auth links are built from `APP_URL` only (host-header injection is a non-issue by construction). The redirect URL allow-list targets the same apex. |
 | Refresh token rotation | ON (default) | Session persistence + expiry handling. |
 
 Residual risk (documented, accepted for beta): because GoTrue's email OTP
@@ -85,6 +85,14 @@ expiry is global at 60 min, a raw magic-link token POSTed directly to the
 GoTrue verify endpoint remains valid up to 60 min even though our
 `/auth/confirm` rejects it after 10. The advertised path (the emailed link)
 always goes through `/auth/confirm`.
+
+**Domain cutover (10 Jul) — host-change side effects:** the app moved from
+`app.xidig.net` to the apex `https://xidig.net`. `app.xidig.net` now 308-redirects
+to the apex in code (`src/proxy.ts` via `src/lib/apex-redirect.ts`, excludes
+`/api/*`). Two one-time member-facing effects to expect (and to note in any launch
+comms): members are **re-authenticated once** because session cookies were scoped
+to the old host, and web-push subscribers must **re-opt-in** because their push
+endpoints were registered against the old origin (dead endpoints self-prune).
 
 **WhatsApp OTP (v1.1):** the OTP layer is channel-agnostic
 (`apps/web/src/lib/auth/otp.ts`). To enable: configure a WhatsApp-capable
@@ -282,21 +290,26 @@ shared `CRON_SECRET`, sent as `Authorization: Bearer <CRON_SECRET>`. Unset
 `CRON_SECRET` = endpoint disabled (503).
 
 **Not in `vercel.json`** — Vercel's Hobby plan only allows native Cron Jobs to
-run once per day, and an hourly schedule fails the deploy outright. `/api/cron/labs`
-(daily, §Phase 4 below) stays in `vercel.json`; `/api/cron/plaza` needs an
-**external scheduler** instead (any service that can GET a URL with a header on
-a timer works — Vercel Cron was never required, just convenient):
+run once per day, and an hourly schedule fails the deploy outright. The daily+
+jobs (labs, lifecycle, reputation, digest — §Phase 4 below) stay in
+`vercel.json`; the **two hourly jobs** — `/api/cron/plaza` **and**
+`/api/cron/events` (the events cron was moved OUT of `vercel.json` for this
+reason) — each need an **external scheduler** (any service that can GET a URL
+with a header on a timer works — Vercel Cron was never required, just convenient):
 
-- [ ] Free option: [cron-job.org](https://cron-job.org) → create a job:
-      URL `https://app.xidig.net/api/cron/plaza`, schedule **hourly**, method
-      **GET**, custom header `Authorization: Bearer <CRON_SECRET>` (same value
-      as the Vercel env var).
+- [ ] Free option: [cron-job.org](https://cron-job.org) → create **two** jobs,
+      each schedule **hourly**, method **GET**, custom header
+      `Authorization: Bearer <CRON_SECRET>` (same value as the Vercel env var):
+      - `https://xidig.net/api/cron/plaza`
+      - `https://xidig.net/api/cron/events`
 - [ ] Alternative: a scheduled GitHub Actions workflow (`workflow_dispatch` +
-      `schedule: cron:`) running `curl -H "Authorization: Bearer $CRON_SECRET" https://app.xidig.net/api/cron/plaza`
-      (store `CRON_SECRET` as a repo Actions secret).
+      `schedule: cron:`) running
+      `curl -H "Authorization: Bearer $CRON_SECRET" https://xidig.net/api/cron/plaza`
+      (and the same for `/api/cron/events`; store `CRON_SECRET` as a repo Actions
+      secret).
 - [ ] Revisit if/when the project moves to Vercel Pro — hourly can move back
       into `vercel.json` at that point (no code change needed, just re-add the
-      entry removed 7 Jul).
+      entries).
 
 ### AI moderation pre-scan
 
