@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { apexHostRedirect } from '@/lib/apex-redirect';
+import { isApexDeployment } from '@/lib/seo';
 import { updateSession } from '@/lib/supabase/middleware';
 
 /**
@@ -19,6 +21,19 @@ const PROTECTED_PREFIXES = ['/settings', '/admin', '/onboarding'];
 const AUTH_PAGES = ['/signin', '/signup'];
 
 export async function proxy(request: NextRequest) {
+  // Apex canonical 308 (cutover step 7) — inert until this deployment IS the
+  // apex, then moves stale app.xidig.net/www links (shares, in-flight auth
+  // emails) to xidig.net. Runs before the session refresh: a request we're
+  // bouncing to another origin needs no cookie rotation (host-only session
+  // cookies don't transfer anyway — the expected one-time re-auth).
+  const apexUrl = apexHostRedirect({
+    isApex: isApexDeployment(),
+    host: request.headers.get('host'),
+    pathname: request.nextUrl.pathname,
+    search: request.nextUrl.search,
+  });
+  if (apexUrl) return NextResponse.redirect(apexUrl, 308);
+
   const { user, response, hadAuthCookies } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
