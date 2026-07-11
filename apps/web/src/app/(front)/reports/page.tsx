@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 import { getAllReports } from '@/lib/front/reports';
 import { getT } from '@/lib/locale';
-import { frontDoorRobots } from '@/lib/seo';
+import { frontMetadata } from '@/lib/seo';
 
 /**
  * /reports index (docs/front-door-plan.md §3/§7) — the ported SEO/authority
@@ -13,12 +13,11 @@ import { frontDoorRobots } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  const robots = frontDoorRobots();
-  return {
+  return frontMetadata({
     title: t('marketing.reportsTitle'),
-    alternates: { canonical: '/reports' },
-    ...(robots ? { robots } : {}),
-  };
+    description: t('marketing.reportsIntro'),
+    path: '/reports',
+  });
 }
 
 export default async function ReportsIndexPage() {

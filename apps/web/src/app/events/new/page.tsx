@@ -19,7 +19,8 @@ export const dynamic = 'force-dynamic';
  * presentation, not security.
  */
 
-export const metadata: Metadata = { title: 'New event — Xidig' };
+// Brand suffix comes from the root title.template — never inline it here.
+export const metadata: Metadata = { title: 'New event' };
 
 export default async function NewEventPage() {
   const ctx = await getAuthContext();

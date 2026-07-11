@@ -1498,6 +1498,9 @@ export const so = {
     'Ma jiraan xubno la been-abuuray, tiro been ah, ama sawirro la sameeyay. Waxa Xidig muujiyo waa dhaqdhaqaaq xubnood oo run ah — tiro kasta oo boggan ku taalna waa mid run ah.',
   'marketing.reportsTeaserBody':
     'Cilmi-baaris ay bulshadu isu keentay oo ku saabsan dhaqaalaha Soomaalida iyo qurbajoogta — la xigtay, daacad ah, lacag la’aanna la akhrisan karo.',
+  // {count} waxaa laga soo qaataa getAllReports().length — weligaa tiro gacanta
+  // ha ku qorin (way duugoobi lahayd oo been noqon lahayd).
+  'marketing.reportsTeaserCount': 'Akhri dhammaan {count} warbixinnood',
   'marketing.membershipTeaserBody':
     'Ku biirid lacag la’aan ah. Xubinnimada Taageeraha — qiyaastii $1/bishii — waxay furtaa abuurista Warshadaha iyo codaynta maamulka.',
 
@@ -1519,6 +1522,10 @@ export const so = {
   'marketing.productTitle': 'Waxa Xidig maanta ku siinayo',
   'marketing.productIntro':
     'Waxa hoos ku qoran oo dhan waa la dhisay wayna shaqeeyaan — kani waa adeegga ay xubnaha aasaasigu maanta isticmaalaan, ma aha qorshe mustaqbal.',
+  // Sharraxaadda meta ee /product (raadinta + kaadhka wadaagga) — qoraal
+  // madax-bannaan; productIntro ("Waxa hoos ku qoran…") halkaas kuma habboona.
+  'marketing.productDescription':
+    'Adeegga hadda shaqeeya: quudin ujeeddo leh, boggag xubnood, diiwaan la raadin karo oo dad iyo ganacsiyo leh, fariimo xudduud leh, Warshadaha, iyo mashaariic ay bulshadu taageerto.',
   'marketing.productTrustTitle': 'Kalsooni & xaqiijin',
   'marketing.productTrustBody':
     'Calaamado xaqiijin ah oo aqoonsi, bulsho, iyo ganacsi; maamul bini’aadam ah oo racfaan leh; iyo hab Lite ah oo xushmeeya xiriir kasta oo internet.',

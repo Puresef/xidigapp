@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { env } from '@/env';
 import { ReportMarkdown } from '@/components/front/report-markdown';
 import { getReport } from '@/lib/front/reports';
 import { getT } from '@/lib/locale';
-import { frontDoorRobots } from '@/lib/seo';
+import { frontMetadata } from '@/lib/seo';
 
 /**
  * /reports/[slug] (docs/front-door-plan.md §3/§7). Slugs are FROZEN — they
@@ -22,13 +23,14 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const report = getReport(slug);
   if (!report) return {};
-  const robots = frontDoorRobots();
-  return {
+  return frontMetadata({
     title: report.title,
     description: report.preview,
-    alternates: { canonical: `/reports/${slug}` },
-    ...(robots ? { robots } : {}),
-  };
+    path: `/reports/${slug}`,
+    // Article OG (standard §2 F34): reports are dated documents — previews
+    // and crawlers get the publish date, not a generic website card.
+    article: { publishedTime: report.date },
+  });
 }
 
 export default async function ReportPage({ params }: Params) {
@@ -43,7 +45,14 @@ export default async function ReportPage({ params }: Params) {
     '@type': 'Article',
     headline: report.title,
     description: report.preview,
+    // The report data carries a single date — publish and last-modified are
+    // the same fact until an editorial pass gives reports a revision history.
     datePublished: report.date,
+    dateModified: report.date,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${env.APP_URL.replace(/\/+$/, '')}/reports/${slug}`,
+    },
     author: { '@type': 'Organization', name: 'Xidig Community' },
   };
   const faqJsonLd =

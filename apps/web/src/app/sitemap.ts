@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { env } from '../env';
-import { reportSlugs } from '../lib/front/reports';
+import { getAllReports } from '../lib/front/reports';
 import { isApexDeployment } from '../lib/seo';
 
 /**
@@ -29,6 +29,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = env.APP_URL.replace(/\/+$/, '');
   return [
     ...FRONT_DOOR_ROUTES.map((route) => ({ url: `${base}${route}` })),
-    ...reportSlugs().map((slug) => ({ url: `${base}/reports/${slug}` })),
+    // Reports are dated documents — lastModified comes from the report's own
+    // date (front-door standard §2 F34), never a build timestamp.
+    ...getAllReports().map((report) => ({
+      url: `${base}/reports/${report.slug}`,
+      lastModified: new Date(report.date),
+    })),
   ];
 }

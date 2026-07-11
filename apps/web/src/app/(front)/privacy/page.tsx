@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import type { MessageKey } from '@xidig/i18n';
 
 import { getT } from '@/lib/locale';
-import { frontDoorRobots } from '@/lib/seo';
+import { frontMetadata } from '@/lib/seo';
 
 /**
  * /privacy — live, indexed, founder-reviewed (blocker B1). The apex cutover is
@@ -31,12 +31,11 @@ const SECTIONS: ReadonlyArray<{ titleKey: MessageKey; bodyKey: MessageKey }> = [
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  const robots = frontDoorRobots();
-  return {
+  return frontMetadata({
     title: t('marketing.privacyTitle'),
-    alternates: { canonical: '/privacy' },
-    ...(robots ? { robots } : {}),
-  };
+    description: t('marketing.privacyIntro'),
+    path: '/privacy',
+  });
 }
 
 export default async function PrivacyPage() {

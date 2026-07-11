@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { env } from '@/env';
 import { ContactForm } from '@/components/front/contact-form';
 import { getT } from '@/lib/locale';
-import { frontDoorRobots } from '@/lib/seo';
+import { frontMetadata } from '@/lib/seo';
 
 /**
  * /contact (docs/front-door-plan.md §3). The form renders only when an inbox
@@ -14,12 +14,11 @@ import { frontDoorRobots } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  const robots = frontDoorRobots();
-  return {
+  return frontMetadata({
     title: t('marketing.contactTitle'),
-    alternates: { canonical: '/contact' },
-    ...(robots ? { robots } : {}),
-  };
+    description: t('marketing.contactIntro'),
+    path: '/contact',
+  });
 }
 
 export default async function ContactPage() {

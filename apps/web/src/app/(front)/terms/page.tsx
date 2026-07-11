@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import type { MessageKey } from '@xidig/i18n';
 
 import { getT } from '@/lib/locale';
-import { frontDoorRobots } from '@/lib/seo';
+import { frontMetadata } from '@/lib/seo';
 
 /**
  * /terms — live, indexed, founder-reviewed (blocker B1). Severable by design:
@@ -30,12 +30,11 @@ const SECTIONS: ReadonlyArray<{ titleKey: MessageKey; bodyKey: MessageKey }> = [
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  const robots = frontDoorRobots();
-  return {
+  return frontMetadata({
     title: t('marketing.termsTitle'),
-    alternates: { canonical: '/terms' },
-    ...(robots ? { robots } : {}),
-  };
+    description: t('marketing.termsIntro'),
+    path: '/terms',
+  });
 }
 
 export default async function TermsPage() {

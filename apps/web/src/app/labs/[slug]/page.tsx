@@ -60,7 +60,8 @@ export async function generateMetadata({
   const view = await getPublicLabView(slug);
   if (!view) return {};
   return {
-    title: `${view.lab.name} — Xidig`,
+    // Brand suffix comes from the root title.template.
+    title: view.lab.name,
     description: view.lab.short_description ?? view.lab.problem_statement ?? undefined,
   };
 }

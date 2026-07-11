@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { getT } from '@/lib/locale';
-import { frontDoorRobots } from '@/lib/seo';
+import { frontMetadata } from '@/lib/seo';
 
 /**
  * /about — story and mission (docs/front-door-plan.md §3). Severable by
@@ -15,12 +15,13 @@ import { frontDoorRobots } from '@/lib/seo';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  const robots = frontDoorRobots();
-  return {
+  return frontMetadata({
+    // aboutTitle already names the brand ("About Xidig") — skip the suffix.
     title: t('marketing.aboutTitle'),
-    alternates: { canonical: '/about' },
-    ...(robots ? { robots } : {}),
-  };
+    description: t('marketing.aboutStory1'),
+    path: '/about',
+    brandInTitle: true,
+  });
 }
 
 export default async function AboutPage() {

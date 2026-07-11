@@ -8,6 +8,7 @@ import {
   countFoundingSpotsLeftCached,
   getFeaturedUpcomingPublicEventCached,
 } from '@/lib/front/cached';
+import { getAllReports } from '@/lib/front/reports';
 import { getLocale, getT } from '@/lib/locale';
 
 import { formatEventStart } from '@/components/events/event-list';
@@ -124,6 +125,11 @@ export async function FrontHome() {
   const [t, locale] = await Promise.all([getT(), getLocale()]);
   const vigLabels = buildVignetteLabels(t);
 
+  // Static report data (lib/front/reports) — newest-first in the source file;
+  // the teaser shows the top titles and derives its count, never hardcodes it.
+  // (The founding counter and event card are streamed behind Suspense above.)
+  const reports = getAllReports();
+
   return (
     <main className="xidig-front">
       <FrontMotion />
@@ -210,7 +216,20 @@ export async function FrontHome() {
             <div className="xidig-front-card">
               <h3>{t('marketing.navReports')}</h3>
               <p>{t('marketing.reportsTeaserBody')}</p>
-              <Link href="/reports">{t('marketing.reportsAll')} →</Link>
+              {/* Real named titles + a DERIVED count (standard §2 C16): the
+                  number can never go stale into a fake one, on the page that
+                  pledges every number is real. Report titles are
+                  community-compiled data, not UI copy — i18n-exempt. */}
+              <ul className="xf-report-titles">
+                {reports.slice(0, 3).map((report) => (
+                  <li key={report.slug}>
+                    <Link href={`/reports/${report.slug}`}>{report.title}</Link>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/reports">
+                {t('marketing.reportsTeaserCount', { count: reports.length })} →
+              </Link>
             </div>
             <div className="xidig-front-card">
               <h3>{t('marketing.navMembership')}</h3>

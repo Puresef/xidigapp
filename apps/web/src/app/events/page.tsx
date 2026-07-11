@@ -27,7 +27,8 @@ export const dynamic = 'force-dynamic';
  * rule — locked). Lite-friendly: text-only cards, no media.
  */
 
-export const metadata: Metadata = { title: 'Events — Xidig' };
+// Brand suffix comes from the root title.template — never inline it here.
+export const metadata: Metadata = { title: 'Events' };
 
 interface CategoryRow {
   slug: string;

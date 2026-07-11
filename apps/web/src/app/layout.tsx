@@ -28,7 +28,7 @@ import { isLiteActive } from '../lib/lite/prefs';
 import { regionSuggestsLite } from '../lib/lite/connection';
 import { getLitePrefs } from '../lib/lite/server';
 import { getLocale, getT } from '../lib/locale';
-import { isApexDeployment } from '../lib/seo';
+import { isApexDeployment, OG_LOCALES } from '../lib/seo';
 import {
   MOTION_COOKIE,
   parseMotion,
@@ -49,12 +49,16 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
   const t = await getT();
   return {
     // Absolute-URL base for OG images/canonicals. Flips to the apex with the
     // APP_URL env change at cutover — no code edit (docs/front-door-plan.md §3).
     metadataBase: new URL(env.APP_URL),
-    title: t('app.name'),
+    // Every page that sets a title gets the brand suffix from this template.
+    // og:title does NOT inherit it — public front-door routes write their own
+    // suffixed og:title via frontMetadata (lib/seo).
+    title: { default: t('app.name'), template: `%s — ${t('app.name')}` },
     description: t('app.tagline'),
     // §28 WhatsApp-first growth loop: every page gets a default link-preview
     // card (og:image comes from the root opengraph-image.tsx convention);
@@ -66,6 +70,8 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: t('app.name'),
       title: t('app.name'),
       description: t('app.tagline'),
+      locale: OG_LOCALES[locale],
+      alternateLocale: [OG_LOCALES[locale === 'so' ? 'en' : 'so']],
     },
     twitter: { card: 'summary_large_image' },
     // Env-gated indexing: everything is noindex until this deployment IS

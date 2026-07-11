@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -5,8 +6,21 @@ import { LabsFeed } from '@/components/labs/labs-feed';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getLitePrefs } from '@/lib/lite/server';
 import { getT } from '@/lib/locale';
+import { frontMetadata } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  // Dual-mode route: generateMetadata runs for members too, so the teaser
+  // title/description double as the signed-in tab title — the copy is
+  // mode-neutral by design (standard §2 F36).
+  const t = await getT();
+  return frontMetadata({
+    title: t('marketing.labsTeaserTitle'),
+    description: t('marketing.labsTeaserBody'),
+    path: '/labs',
+  });
+}
 
 /**
  * Labs / Spaces Discover (§16). Filter tabs (All / Clubs / Labs / My Spaces) are

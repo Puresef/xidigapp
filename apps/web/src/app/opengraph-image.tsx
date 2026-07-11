@@ -1,17 +1,22 @@
 import { ImageResponse } from 'next/og';
 
-import { getT } from '@/lib/locale';
-
-export const dynamic = 'force-dynamic';
+import { createTranslator } from '@xidig/i18n';
 
 /**
  * Site-default OG card (§28 WhatsApp-first growth loop): the link-preview
- * image for every route that has no OG route of its own — before this file
- * existed, a shared xidig.net link rendered as a bare URL with no card at
- * all. The entity pages (/u/[handle], /labs/[slug], /l/[id], /c/[id]) keep
- * their richer per-entity OG routes, which override this default.
+ * image for every route that has no OG route of its own. The entity pages
+ * (/u/[handle], /labs/[slug], /l/[id], /c/[id]) keep their richer per-entity
+ * OG routes, which override this default.
  *
- * Mirrors those routes' neutral brand fallback: colors are literal hex
+ * Build-time static + bilingual (front-door standard §2 F33): no request
+ * APIs, so Next renders this ONCE at build — preview bots never pay the
+ * dynamic-origin TTFB, and URL-keyed preview caches can't freeze a stale
+ * language variant because both locales ship stacked on the one card
+ * (Somali first — the default locale). Strings come from the locked
+ * dictionaries via locale-pinned translators, never from the request.
+ * No live numbers here, ever: preview caches freeze them into fakes.
+ *
+ * Mirrors the entity routes' neutral brand fallback: colors are literal hex
  * mirrors of the globals.css tokens (Satori has no CSS-variable support).
  * Real brand art lands with the §26 Brand Guide.
  */
@@ -27,8 +32,12 @@ const MUTED = '#5c6470';
 /** The brand domain is a locale-invariant mark, not translatable copy. */
 const BRAND_DOMAIN = 'xidig.net';
 
-export default async function OpengraphImage() {
-  const t = await getT();
+// Locale-pinned translators — a static import of both dictionaries' locked
+// strings, resolved with zero request context.
+const tSo = createTranslator('so');
+const tEn = createTranslator('en');
+
+export default function OpengraphImage() {
   return new ImageResponse(
     (
       <div
@@ -41,21 +50,31 @@ export default async function OpengraphImage() {
           justifyContent: 'center',
           background: BG,
           color: FG,
-          gap: 28,
+          gap: 30,
         }}
       >
-        <div style={{ fontSize: 120, fontWeight: 700 }}>{t('app.name')}</div>
+        <div style={{ fontSize: 116, fontWeight: 700 }}>{tSo('app.name')}</div>
         <div
           style={{
-            fontSize: 40,
+            fontSize: 38,
             color: MUTED,
             textAlign: 'center',
-            maxWidth: 940,
+            maxWidth: 1000,
           }}
         >
-          {t('app.tagline')}
+          {tSo('app.tagline')}
         </div>
-        <div style={{ fontSize: 28, color: MUTED }}>{BRAND_DOMAIN}</div>
+        <div
+          style={{
+            fontSize: 30,
+            color: MUTED,
+            textAlign: 'center',
+            maxWidth: 1000,
+          }}
+        >
+          {tEn('app.tagline')}
+        </div>
+        <div style={{ fontSize: 26, color: MUTED }}>{BRAND_DOMAIN}</div>
       </div>
     ),
     size,

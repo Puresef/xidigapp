@@ -1,14 +1,28 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { WaitlistForm } from '@/components/auth/waitlist-form';
 import { countFoundingSpotsLeftCached } from '@/lib/front/cached';
 import { getT } from '@/lib/locale';
+import { frontMetadata } from '@/lib/seo';
 
 // The page stays dynamic (per-request locale + funnel params); the counter
 // itself comes from the shared cached read (§2-E26) — the SAME cache entry
 // the homepage uses, so the two counters cannot disagree, and a warm request
 // never blocks on Supabase.
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return frontMetadata({
+    // waitlist.title already names the brand ("Join the Xidig waitlist") —
+    // brandInTitle skips the template so "Xidig" doesn't render twice.
+    title: t('waitlist.title'),
+    description: t('waitlist.subtitle'),
+    path: '/waitlist',
+    brandInTitle: true,
+  });
+}
 
 /**
  * Waitlist page (§9 beta gating + §20 Founding Member moment): live counter

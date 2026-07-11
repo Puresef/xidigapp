@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
@@ -8,9 +9,22 @@ import { CandidateCard } from '@/components/capital/candidate-card';
 import { getAuthContext } from '@/lib/auth/guards';
 import { listCandidates } from '@/lib/capital/views';
 import { getT } from '@/lib/locale';
+import { frontMetadata } from '@/lib/seo';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata(): Promise<Metadata> {
+  // Dual-mode route: the teaser title/description are mode-neutral — honest
+  // pipeline framing that fits the member candidates list too (standard §2
+  // F36); never invest language.
+  const t = await getT();
+  return frontMetadata({
+    title: t('marketing.capitalTeaserTitle'),
+    description: t('marketing.capitalTeaserBody'),
+    path: '/capital',
+  });
+}
 
 /**
  * Capital / Maal index (§17). Lists the candidates the viewer can read (RLS

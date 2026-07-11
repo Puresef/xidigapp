@@ -353,9 +353,14 @@ export function Vignette({
 }) {
   const Scene = VIGNETTES[kind];
   return (
+    // aria-hidden keeps the scenes out of the accessibility tree, but does
+    // NOT stop search snippet harvesting — data-nosnippet fences the
+    // decorative labels/digits from snippet synthesis too (front-door
+    // standard §2 F35; honored on div/span/section).
     <div
       className={`xf-vig xf-vig--${kind}${compact ? ' xf-vig--compact' : ''}`}
       aria-hidden="true"
+      data-nosnippet=""
     >
       <Scene labels={labels} />
     </div>

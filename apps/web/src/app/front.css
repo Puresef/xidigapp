@@ -500,6 +500,41 @@ main.xidig-front .xidig-front-card > a:hover {
   text-underline-offset: 3px;
 }
 
+/* Homepage reports teaser: real report titles + derived count (front-door
+   standard §2 C16). Quiet dotted list inside the card. */
+main.xidig-front .xf-report-titles {
+  list-style: none;
+  margin: 0.9rem 0 0.2rem;
+  padding: 0;
+}
+
+main.xidig-front .xf-report-titles li {
+  position: relative;
+  margin: 0.45rem 0;
+  padding-left: 0.95rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+main.xidig-front .xf-report-titles li::before {
+  content: '·';
+  content: '·' / '';
+  position: absolute;
+  left: 0;
+  color: var(--xf-blue-bright);
+}
+
+main.xidig-front .xf-report-titles a {
+  color: var(--xf-text);
+  text-decoration: none;
+}
+
+main.xidig-front .xf-report-titles a:hover {
+  color: var(--xf-blue-bright);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* Numbered feature grids: CSS counters, hidden from AT where supported. */
 main.xidig-front .xidig-front__grid--numbered {
   counter-reset: xf-card;

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import type { MessageKey } from '@xidig/i18n';
 
 import { getT } from '@/lib/locale';
-import { frontDoorRobots } from '@/lib/seo';
+import { frontMetadata } from '@/lib/seo';
 
 import { FrontMotion } from '@/components/front/front-motion';
 import {
@@ -51,12 +51,16 @@ const SECTIONS: ReadonlyArray<{
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  const robots = frontDoorRobots();
-  return {
+  return frontMetadata({
+    // productTitle already names the brand ("What Xidig gives you today") —
+    // skip the suffix so "Xidig" doesn't render twice.
     title: t('marketing.productTitle'),
-    alternates: { canonical: '/product' },
-    ...(robots ? { robots } : {}),
-  };
+    // productIntro says "Everything below…" — deictic copy that reads wrong in
+    // a SERP snippet, so the description is its own key (standard §2 F35).
+    description: t('marketing.productDescription'),
+    path: '/product',
+    brandInTitle: true,
+  });
 }
 
 export default async function ProductPage() {

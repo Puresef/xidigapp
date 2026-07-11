@@ -1576,6 +1576,9 @@ export const en = {
     'No invented members, no fake numbers, no staged screenshots. What Xidig shows is real member activity — and any number on this page is a real one.',
   'marketing.reportsTeaserBody':
     'Community-compiled research on the Somali economy and diaspora — cited, honest, and free to read.',
+  // {count} is DERIVED from getAllReports().length at render — never hardcode
+  // a report count into copy (it would go stale into a fake number).
+  'marketing.reportsTeaserCount': 'Read all {count} reports',
   'marketing.membershipTeaserBody':
     'Free to join. Supporter membership — around $1/month — unlocks Lab creation and governance votes.',
 
@@ -1596,6 +1599,10 @@ export const en = {
   'marketing.productTitle': 'What Xidig gives you today',
   'marketing.productIntro':
     'Everything below is built and live — this is the product founding members use today, not a roadmap.',
+  // Meta description for /product (search snippet + share card) — standalone
+  // copy; productIntro's "Everything below" is deictic and reads wrong there.
+  'marketing.productDescription':
+    'The live product tour: a purposeful feed, member profiles, a searchable directory of people and businesses, DMs with boundaries, Labs, and community-backed ventures.',
   'marketing.productTrustTitle': 'Trust & verification',
   'marketing.productTrustBody':
     'Identity, community, and business verification badges; human moderation with appeals; and a low-bandwidth Lite mode that respects every connection.',

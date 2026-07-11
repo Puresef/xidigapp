@@ -45,7 +45,8 @@ export async function generateMetadata({
   const view = await getPublicEventView(slug);
   if (!view) return {};
   return {
-    title: `${view.event.title} — Xidig`,
+    // Brand suffix comes from the root title.template.
+    title: view.event.title,
     description: view.event.description.slice(0, 160) || undefined,
   };
 }

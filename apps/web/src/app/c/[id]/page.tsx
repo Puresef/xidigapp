@@ -54,7 +54,8 @@ export async function generateMetadata({
   const admin = getSupabaseAdmin();
   const view = await getPublicCandidateView(admin, id);
   if (!view) return {};
-  return { title: `${view.name} — Xidig`, description: view.oneLiner ?? undefined };
+  // Brand suffix comes from the root title.template.
+  return { title: view.name, description: view.oneLiner ?? undefined };
 }
 
 export default async function CandidatePage({ params }: { params: Promise<{ id: string }> }) {
