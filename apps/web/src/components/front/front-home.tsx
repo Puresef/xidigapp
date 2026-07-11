@@ -12,7 +12,7 @@ import { formatEventStart } from '@/components/events/event-list';
 import { FrontMotion } from './front-motion';
 import { StarAssembly, StarPath } from './star-path';
 import { Starfield } from './starfield';
-import { Vignette, type VignetteKind, type VignetteLabels } from './vignettes';
+import { buildVignetteLabels, Vignette, type VignetteKind } from './vignettes';
 
 /**
  * Signed-out landing (docs/front-door-plan.md §4; social-app-first reframe of
@@ -60,23 +60,6 @@ const TRUST_BLOCKS: ReadonlyArray<{
   { titleKey: 'marketing.blockLiteTitle', bodyKey: 'marketing.blockLiteBody', vignette: 'lite' },
   { titleKey: 'marketing.blockOwnedTitle', bodyKey: 'marketing.blockOwnedBody', vignette: 'owned' },
 ];
-
-/** Decorative vignette labels — existing product vocabulary + marketing.vig*. */
-export function buildVignetteLabels(t: (key: MessageKey) => string): VignetteLabels {
-  return {
-    ask: t('plaza.typeAsk'),
-    skills: [t('marketing.vigSkillOne'), t('marketing.vigSkillTwo'), t('marketing.vigSkillThree')],
-    suuqQuery: t('marketing.vigSuuqQuery'),
-    accept: t('action.accept'),
-    club: t('term.club'),
-    lab: t('term.lab'),
-    rooms: [t('lab.tabUpdates'), t('lab.tabDecisions'), t('lab.tabMembers')],
-    garab: t('term.garab'),
-    show: t('lite.show'),
-    off: t('settings.toggleOff'),
-    bait: t('marketing.vigBaitLabel'),
-  };
-}
 
 export async function FrontHome() {
   const [t, locale] = await Promise.all([getT(), getLocale()]);

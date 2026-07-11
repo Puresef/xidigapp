@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 
+import type { MessageKey } from '@xidig/i18n';
+
 /**
  * Front-door feature vignettes — honest schematic animated scenes, one per
  * feature block (front-door-plan Phase B; approved motion v2).
@@ -14,6 +16,12 @@ import type { CSSProperties, ReactNode } from 'react';
  *   so motion-off / no-JS users see the complete finished scene, never an
  *   empty box.
  * - Purely decorative: aria-hidden; the block's heading/body carry meaning.
+ * - NO extractable DOM text (front-door-standard §2-B7): every decorative
+ *   string — labels, emoji, odometer digits — rides a data-* attribute and
+ *   renders via CSS generated content (front.css `content: attr(...)`), so
+ *   tag-stripping extractors (curl, reader mode, preview bots) see nothing
+ *   beside the honesty pledge. Screen-reader-safe only while aria-hidden
+ *   holds (§2-I 52) — both pinned by vignettes.test.tsx.
  */
 
 /* Real Plaza reaction taxonomy (§ Plaza) — module constants so the emoji stay
@@ -42,6 +50,23 @@ export interface VignetteLabels {
   readonly bait: string; // marketing.vigBaitLabel
 }
 
+/** Decorative vignette labels — existing product vocabulary + marketing.vig*. */
+export function buildVignetteLabels(t: (key: MessageKey) => string): VignetteLabels {
+  return {
+    ask: t('plaza.typeAsk'),
+    skills: [t('marketing.vigSkillOne'), t('marketing.vigSkillTwo'), t('marketing.vigSkillThree')],
+    suuqQuery: t('marketing.vigSuuqQuery'),
+    accept: t('action.accept'),
+    club: t('term.club'),
+    lab: t('term.lab'),
+    rooms: [t('lab.tabUpdates'), t('lab.tabDecisions'), t('lab.tabMembers')],
+    garab: t('term.garab'),
+    show: t('lite.show'),
+    off: t('settings.toggleOff'),
+    bait: t('marketing.vigBaitLabel'),
+  };
+}
+
 export type VignetteKind =
   | 'feed'
   | 'profile'
@@ -53,14 +78,15 @@ export type VignetteKind =
   | 'owned';
 
 /** Odometer count: a vertical strip of digits 0..n; base state shows the
- *  final digit, motion rolls up from 0. Single digits only — schematic. */
+ *  final digit, motion rolls up from 0. Single digits only — schematic.
+ *  Digits are data-d attributes rendered by ::before, never text nodes. */
 function Odometer({ n }: { n: number }) {
   const digits = Array.from({ length: n + 1 }, (_, i) => String(i));
   return (
     <span className="xf-vg-count">
       <span className="xf-vg-count__strip" style={{ '--n': n } as CSSProperties}>
         {digits.map((d) => (
-          <span key={d}>{d}</span>
+          <span key={d} data-d={d} />
         ))}
       </span>
     </span>
@@ -75,7 +101,7 @@ function FeedVignette({ labels }: { labels: VignetteLabels }) {
       <div className="xf-vg-row">
         <span className="xf-vg-dot" />
         <span className="xf-vg-bar xf-vg-bar--w35 xf-vg-a1" />
-        <span className="xf-vg-tag">{labels.ask}</span>
+        <span className="xf-vg-tag" data-label={labels.ask} />
       </div>
       <span className="xf-vg-bar xf-vg-bar--w90 xf-vg-a2" />
       <span className="xf-vg-bar xf-vg-bar--w75 xf-vg-a3" />
@@ -83,7 +109,7 @@ function FeedVignette({ labels }: { labels: VignetteLabels }) {
       <div className="xf-vg-reactions">
         {REACTIONS.map((r, i) => (
           <span key={r.emoji} className={`xf-vg-chip xf-vg-chip--r${i + 1}`}>
-            <span className="xf-vg-chip__emoji">{r.emoji}</span>
+            <span className="xf-vg-chip__emoji" data-label={r.emoji} />
             <Odometer n={r.count} />
           </span>
         ))}
@@ -112,9 +138,11 @@ function ProfileVignette({ labels }: { labels: VignetteLabels }) {
       </div>
       <div className="xf-vg-chips">
         {labels.skills.map((skill, i) => (
-          <span key={skill} className={`xf-vg-chip xf-vg-chip--skill xf-vg-chip--s${i + 1}`}>
-            {skill}
-          </span>
+          <span
+            key={skill}
+            className={`xf-vg-chip xf-vg-chip--skill xf-vg-chip--s${i + 1}`}
+            data-label={skill}
+          />
         ))}
       </div>
     </div>
@@ -130,7 +158,7 @@ function SuuqVignette({ labels }: { labels: VignetteLabels }) {
           <circle cx="8.5" cy="8.5" r="5.5" />
           <path d="M13 13l4.5 4.5" />
         </svg>
-        <span className="xf-vg-search__q">{labels.suuqQuery}</span>
+        <span className="xf-vg-search__q" data-label={labels.suuqQuery} />
         <span className="xf-vg-search__caret" />
       </div>
       <div className="xf-vg-map">
@@ -181,7 +209,7 @@ function DmVignette({ labels }: { labels: VignetteLabels }) {
             <path d="M4.5 12.5l5 5 10-11" fill="none" />
           </svg>
         </span>
-        <span className="xf-vg-gate__label">{labels.accept}</span>
+        <span className="xf-vg-gate__label" data-label={labels.accept} />
       </div>
       <div className="xf-vg-bubble xf-vg-bubble--out xf-vg-b2">
         <span className="xf-vg-bar xf-vg-bar--thin xf-vg-bar--w70" />
@@ -210,7 +238,7 @@ function LabsVignette({ labels }: { labels: VignetteLabels }) {
   ];
   return (
     <div className="xf-vg-scene xf-vg-scene--labs">
-      <span className="xf-vg-tag xf-vg-tag--club">{labels.club}</span>
+      <span className="xf-vg-tag xf-vg-tag--club" data-label={labels.club} />
       {scatter.map(([x, y], i) => (
         <span
           key={`${x}${y}`}
@@ -220,12 +248,12 @@ function LabsVignette({ labels }: { labels: VignetteLabels }) {
       ))}
       <div className="xf-vg-room">
         <div className="xf-vg-room__head">
-          <span className="xf-vg-tag xf-vg-tag--lab">{labels.lab}</span>
+          <span className="xf-vg-tag xf-vg-tag--lab" data-label={labels.lab} />
         </div>
         {labels.rooms.map((room, i) => (
           <div key={room} className={`xf-vg-slot xf-vg-slot--${i + 1}`}>
             <span className="xf-vg-slot__mark" />
-            <span className="xf-vg-slot__label">{room}</span>
+            <span className="xf-vg-slot__label" data-label={room} />
             <span className="xf-vg-bar xf-vg-bar--thin xf-vg-bar--w30" />
           </div>
         ))}
@@ -247,9 +275,9 @@ function CapitalVignette({ labels }: { labels: VignetteLabels }) {
       <span className="xf-vg-ms xf-vg-ms--2" />
       <span className="xf-vg-ms xf-vg-ms--3 xf-vg-ms--gold" />
       <div className="xf-vg-cosign">
-        <span className="xf-vg-cosign__emoji">🤲</span>
+        <span className="xf-vg-cosign__emoji" data-label="🤲" />
         <Odometer n={7} />
-        <span className="xf-vg-cosign__label">{labels.garab}</span>
+        <span className="xf-vg-cosign__label" data-label={labels.garab} />
       </div>
     </div>
   );
@@ -265,9 +293,8 @@ function LiteVignette({ labels }: { labels: VignetteLabels }) {
       </div>
       <div className="xf-vg-tilewrap">
         <div className="xf-vg-tile" />
-        <span className="xf-vg-muuji">
+        <span className="xf-vg-muuji" data-label={labels.show}>
           <span className="xf-vg-muuji__ring" />
-          {labels.show}
         </span>
       </div>
     </div>
@@ -280,11 +307,11 @@ function OwnedVignette({ labels }: { labels: VignetteLabels }) {
   return (
     <div className="xf-vg-scene xf-vg-scene--owned">
       <div className="xf-vg-dial">
-        <span className="xf-vg-dial__label">{labels.bait}</span>
+        <span className="xf-vg-dial__label" data-label={labels.bait} />
         <span className="xf-vg-switch">
           <span className="xf-vg-switch__knob" />
         </span>
-        <span className="xf-vg-dial__state">{labels.off}</span>
+        <span className="xf-vg-dial__state" data-label={labels.off} />
       </div>
       <svg viewBox="0 0 200 48" className="xf-vg-lines" preserveAspectRatio="none">
         <path

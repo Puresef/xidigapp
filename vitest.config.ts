@@ -3,6 +3,13 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // apps/web's tsconfig sets jsx:'preserve' (Next transforms it at build);
+  // vitest must compile JSX itself for component tests (*.test.tsx).
+  oxc: {
+    jsx: {
+      runtime: 'automatic',
+    },
+  },
   resolve: {
     alias: {
       // apps/web's "@/*" tsconfig path (only that package uses it).

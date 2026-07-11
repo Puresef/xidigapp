@@ -1393,6 +1393,30 @@ main.xidig-front .xf-vg-count__strip span {
   line-height: 1;
 }
 
+/* De-debris (front-door-standard §2-B7): every decorative vignette string —
+   labels, emoji, odometer digits — lives in a data-* attribute and renders
+   here as generated content, so tag-stripping text extraction (curl, reader
+   mode, preview bots) sees none of it beside the honesty pledge. This is
+   screen-reader-safe ONLY while .xf-vig stays aria-hidden (§2-I 52); both
+   halves are pinned by vignettes.test.tsx. */
+main.xidig-front .xf-vg-count__strip span::before {
+  content: attr(data-d);
+}
+
+main.xidig-front .xf-vg-tag::before,
+main.xidig-front .xf-vg-chip__emoji::before,
+main.xidig-front .xf-vg-chip--skill::before,
+main.xidig-front .xf-vg-search__q::before,
+main.xidig-front .xf-vg-gate__label::before,
+main.xidig-front .xf-vg-slot__label::before,
+main.xidig-front .xf-vg-cosign__emoji::before,
+main.xidig-front .xf-vg-cosign__label::before,
+main.xidig-front .xf-vg-dial__label::before,
+main.xidig-front .xf-vg-dial__state::before,
+main.xidig-front .xf-vg-muuji::before {
+  content: attr(data-label);
+}
+
 /* 1 ── Feed */
 main.xidig-front .xf-vg-reactions {
   display: flex;

@@ -7,8 +7,11 @@ import { getT } from '@/lib/locale';
 import { frontDoorRobots } from '@/lib/seo';
 
 import { FrontMotion } from '@/components/front/front-motion';
-import { buildVignetteLabels } from '@/components/front/front-home';
-import { Vignette, type VignetteKind } from '@/components/front/vignettes';
+import {
+  buildVignetteLabels,
+  Vignette,
+  type VignetteKind,
+} from '@/components/front/vignettes';
 
 /**
  * /product — the present-tense "what you get today" tour (docs/front-door-plan
