@@ -21,6 +21,8 @@ export default defineConfig({
       '{apps,packages}/*/src/**/*.{test,spec}.{ts,tsx}',
       // Phase 8 MCP server lives outside src (a standalone stdio entrypoint).
       'apps/web/mcp/**/*.test.mjs',
+      // Front-door delivery-budget script (CI weight ratchet, §2-E30).
+      'apps/web/scripts/**/*.test.mjs',
     ],
     environment: 'node',
     passWithNoTests: false,

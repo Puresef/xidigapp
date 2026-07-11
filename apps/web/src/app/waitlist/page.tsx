@@ -1,11 +1,13 @@
 import Link from 'next/link';
 
 import { WaitlistForm } from '@/components/auth/waitlist-form';
-import { countFoundingSpotsLeft } from '@/lib/front/organic';
+import { countFoundingSpotsLeftCached } from '@/lib/front/cached';
 import { getT } from '@/lib/locale';
-import { getSupabaseAdmin } from '@/lib/supabase/server';
 
-// Live Founding Member counter — always current, never cached.
+// The page stays dynamic (per-request locale + funnel params); the counter
+// itself comes from the shared cached read (§2-E26) — the SAME cache entry
+// the homepage uses, so the two counters cannot disagree, and a warm request
+// never blocks on Supabase.
 export const dynamic = 'force-dynamic';
 
 /**
@@ -32,7 +34,7 @@ export default async function WaitlistPage({
     // Organic-proof invariant (docs/front-door-plan.md §4): founding spots
     // count real people — the shared counter excludes AI/system accounts and
     // returns null (no counter) if the DB briefly isn't reachable.
-    foundingSpotsLeft = await countFoundingSpotsLeft(getSupabaseAdmin());
+    foundingSpotsLeft = await countFoundingSpotsLeftCached();
   } catch {
     // Counter is a nice-to-have — the form must render even without service
     // credentials.

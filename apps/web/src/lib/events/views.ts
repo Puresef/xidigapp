@@ -482,34 +482,30 @@ export async function listUpcomingEventsFor(
  * Homepage "next up" card (front door): the admin-featured upcoming PUBLIC
  * event first, else the soonest. Null when none exists — the block is then
  * absent entirely (no empty rooms). Full organic-proof treatment.
+ *
+ * ONE round-trip (front-door standard §2-E26): the featured-else-soonest
+ * fallback is the ORDER BY — featured rows first (newest pin wins, NULLs
+ * last), then the soonest of the rest. The window is wider than 1 so the
+ * AI-host drop can fall through to the next organic candidate.
  */
 export async function getFeaturedUpcomingPublicEvent(
   now: Date = new Date(),
 ): Promise<EventListItem | null> {
   const admin = getSupabaseAdmin();
   const nowIso = now.toISOString();
-  const base = () =>
-    admin
-      .from('events')
-      .select('slug, title, category_id, starts_at, timezone, mode, status, host_user_id')
-      .eq('visibility', 'public')
-      .eq('status', 'published')
-      .eq('moderation_status', 'published')
-      .eq('source', 'member')
-      .gte('starts_at', nowIso);
-
-  const featured = await base()
-    .not('featured_at', 'is', null)
-    .order('featured_at', { ascending: false })
-    .limit(5);
-  if (featured.error) throw new Error(`featured event query failed: ${featured.error.message}`);
-  let rows = await dropAiHosted(admin, (featured.data ?? []) as unknown as EventViewRow[]);
-
-  if (rows.length === 0) {
-    const soonest = await base().order('starts_at', { ascending: true }).limit(5);
-    if (soonest.error) throw new Error(`soonest event query failed: ${soonest.error.message}`);
-    rows = await dropAiHosted(admin, (soonest.data ?? []) as unknown as EventViewRow[]);
-  }
+  const result = await admin
+    .from('events')
+    .select('slug, title, category_id, starts_at, timezone, mode, status, host_user_id')
+    .eq('visibility', 'public')
+    .eq('status', 'published')
+    .eq('moderation_status', 'published')
+    .eq('source', 'member')
+    .gte('starts_at', nowIso)
+    .order('featured_at', { ascending: false, nullsFirst: false })
+    .order('starts_at', { ascending: true })
+    .limit(12);
+  if (result.error) throw new Error(`upcoming event query failed: ${result.error.message}`);
+  const rows = await dropAiHosted(admin, (result.data ?? []) as unknown as EventViewRow[]);
 
   const row = rows[0];
   if (!row) return null;

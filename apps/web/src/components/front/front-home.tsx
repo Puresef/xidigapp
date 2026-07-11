@@ -1,11 +1,14 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 
-import type { MessageKey } from '@xidig/i18n';
+import type { Locale, MessageKey, Translator } from '@xidig/i18n';
 
-import { countFoundingSpotsLeft } from '@/lib/front/organic';
-import { getFeaturedUpcomingPublicEvent, type EventListItem } from '@/lib/events/views';
+import type { EventListItem } from '@/lib/events/views';
+import {
+  countFoundingSpotsLeftCached,
+  getFeaturedUpcomingPublicEventCached,
+} from '@/lib/front/cached';
 import { getLocale, getT } from '@/lib/locale';
-import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 import { formatEventStart } from '@/components/events/event-list';
 
@@ -61,30 +64,65 @@ const TRUST_BLOCKS: ReadonlyArray<{
   { titleKey: 'marketing.blockOwnedTitle', bodyKey: 'marketing.blockOwnedBody', vignette: 'owned' },
 ];
 
-export async function FrontHome() {
-  const [t, locale] = await Promise.all([getT(), getLocale()]);
-  const vigLabels = buildVignetteLabels(t);
-
+/**
+ * The founding counter, streamed behind Suspense (§2-E25): the Supabase read
+ * never blocks first byte. The shared organic-proof counter (lib/front/
+ * organic, via the cached wrapper) excludes is_ai and internally degrades to
+ * null on a failed count — never an error.
+ */
+async function FoundingCounter({ t }: { t: Translator }) {
   let foundingSpotsLeft: number | null = null;
   try {
-    // Shared organic-proof counter (lib/front/organic): excludes is_ai, and
-    // internally degrades to null on a failed count — never an error.
-    foundingSpotsLeft = await countFoundingSpotsLeft(getSupabaseAdmin());
+    foundingSpotsLeft = await countFoundingSpotsLeftCached();
   } catch {
     // Resilience rule: a missing service config degrades to no counter.
   }
+  if (foundingSpotsLeft === null || foundingSpotsLeft <= 0) return null;
+  return (
+    <p className="xidig-banner xidig-banner--notice">
+      {t('waitlist.foundingCounter', { count: foundingSpotsLeft })}
+    </p>
+  );
+}
 
-  // "Next up" event card (extras item 8): renders ONLY when at least one
-  // upcoming published PUBLIC organic event exists — admin-featured first,
-  // else the soonest. Zero events → the block is absent entirely (no empty
-  // rooms); a failed lookup degrades the same way. Ships dark until a real
-  // event exists — that is the design.
+/**
+ * "Next up" event card (extras item 8), streamed behind Suspense (§2-E25):
+ * renders ONLY when at least one upcoming published PUBLIC organic event
+ * exists — admin-featured first, else the soonest. Zero events → the block is
+ * absent entirely (no empty rooms); a failed lookup degrades the same way.
+ * Ships dark until a real event exists — that is the design.
+ *
+ * Deliberately NO data-reveal: this section can flush after FrontMotion's
+ * one-shot IntersectionObserver pass has already run, and a late [data-reveal]
+ * element never receives .is-inview — it would stay invisible under
+ * .xf-motion. Base-visible is the only safe state for streamed content.
+ */
+async function NextEventCard({ t, locale }: { t: Translator; locale: Locale }) {
   let nextEvent: EventListItem | null = null;
   try {
-    nextEvent = await getFeaturedUpcomingPublicEvent();
+    nextEvent = await getFeaturedUpcomingPublicEventCached();
   } catch {
     nextEvent = null;
   }
+  if (!nextEvent) return null;
+  return (
+    <section className="xidig-front__section" aria-label={t('marketing.eventNextTitle')}>
+      <div className="xidig-front-card">
+        <h3>{t('marketing.eventNextTitle')}</h3>
+        <p>
+          <strong>{nextEvent.title}</strong>
+          <br />
+          {formatEventStart(nextEvent, locale)}
+        </p>
+        <Link href={`/events/${nextEvent.slug}`}>{t('marketing.eventNextCta')} →</Link>
+      </div>
+    </section>
+  );
+}
+
+export async function FrontHome() {
+  const [t, locale] = await Promise.all([getT(), getLocale()]);
+  const vigLabels = buildVignetteLabels(t);
 
   return (
     <main className="xidig-front">
@@ -102,31 +140,21 @@ export async function FrontHome() {
               {t('marketing.seeProduct')}
             </Link>
           </div>
-          {foundingSpotsLeft !== null && foundingSpotsLeft > 0 ? (
-            <p className="xidig-banner xidig-banner--notice">
-              {t('waitlist.foundingCounter', { count: foundingSpotsLeft })}
-            </p>
-          ) : null}
+          {/* Fixed-height slot: reserves the pill's line-height so the hero
+              never shifts (CLS 0) — streaming, resolved, and silently-absent
+              states are all the same height. fallback=null stays byte-
+              equivalent to the data floor's "silently absent" (§2-E25). */}
+          <div className="xidig-front__counter-slot">
+            <Suspense fallback={null}>
+              <FoundingCounter t={t} />
+            </Suspense>
+          </div>
         </div>
       </section>
 
-      {nextEvent ? (
-        <section
-          className="xidig-front__section"
-          aria-label={t('marketing.eventNextTitle')}
-          data-reveal
-        >
-          <div className="xidig-front-card">
-            <h3>{t('marketing.eventNextTitle')}</h3>
-            <p>
-              <strong>{nextEvent.title}</strong>
-              <br />
-              {formatEventStart(nextEvent, locale)}
-            </p>
-            <Link href={`/events/${nextEvent.slug}`}>{t('marketing.eventNextCta')} →</Link>
-          </div>
-        </section>
-      ) : null}
+      <Suspense fallback={null}>
+        <NextEventCard t={t} locale={locale} />
+      </Suspense>
 
       <section className="xidig-front__section xidig-front__prose" data-reveal>
         <h2>{t('marketing.groupsTitle')}</h2>

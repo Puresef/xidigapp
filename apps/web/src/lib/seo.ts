@@ -8,7 +8,12 @@ import { env } from '@/env';
  * becomes the apex at cutover step 3 — no code change involved.
  */
 export function isApexDeployment(): boolean {
-  return env.APP_URL.replace(/\/+$/, '') === 'https://xidig.net';
+  // Boot-trap guard: under SKIP_ENV_VALIDATION (envless CI/worktree build)
+  // `env` falls back to raw process.env, where APP_URL can be undefined —
+  // treat that as not-apex so robots/sitemap prerender their conservative
+  // non-apex shape instead of crashing the build on `.replace`.
+  const appUrl: string | undefined = env.APP_URL;
+  return (appUrl ?? '').replace(/\/+$/, '') === 'https://xidig.net';
 }
 
 /**

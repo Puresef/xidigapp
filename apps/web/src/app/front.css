@@ -347,6 +347,19 @@ main.xidig-front .xidig-front__hero--home .xidig-banner--notice::before {
   clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
 }
 
+/* The counter streams in behind Suspense (§2-E25), so its slot reserves the
+   pill's one-line height up front: streaming, resolved, and silently-absent
+   (data-floor) states all occupy the same box — the hero never shifts. The
+   pill's top margin moves onto the slot for the same reason. */
+main.xidig-front .xidig-front__hero--home .xidig-front__counter-slot {
+  min-height: 2.6rem;
+  margin-top: 1.6rem;
+}
+
+main.xidig-front .xidig-front__hero--home .xidig-front__counter-slot .xidig-banner--notice {
+  margin: 0;
+}
+
 /* ── Notices/banners on ink (legal drafts, disclaimers, form results) ── */
 
 main.xidig-front .xidig-banner {

@@ -8,6 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "seed": "node scripts/seed.mjs",
+    "weight": "node scripts/front-door-weight.mjs",
     "mcp": "node mcp/server.mjs"
   },
   "dependencies": {
