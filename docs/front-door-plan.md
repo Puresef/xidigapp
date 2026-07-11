@@ -4,6 +4,8 @@
 
 ---
 
+> **Teardown expansion (11 Jul):** the front door's v2 standard — 52 pass/fail items, gap analysis vs the live site, sequenced fixes, locked copy proposals, and the adversarial record of rejected remedies — lives in `docs/front-door-standard.md`. It extends this plan (its FD§n references point here). Two Warya directives are final there: no competitor names in copy (move-on implied only), and the message hierarchy hero = "connect with Somalis everywhere" → member-owned platform → social core/governance/Labs, with the directory as a byproduct that never leads.
+
 > **Positioning update (9 Jul, Warya):** the front door is **social-app-first, proof-first — never dashboard-first**. Public framing: *"The Somali social app for connection, discovery, and building."* The casual visitor comes for the feed/people/businesses/DMs (competing with WhatsApp groups, Instagram, TikTok — by being more useful, searchable, and Somali-first, not by copying engagement bait); the serious user stays for Labs/Capital/governance. Live numbers are optional modules behind the §4 data floor; if numbers are sparse or unsafe, show qualitative proof. Counters/charts never drive the layout. The funnel ladder: casual visitor → feed/people/businesses → profile + follow → first post/Ask/Win → DM/bookmark/share → join Lab / attend event → co-sign / Supporter → governance/Capital. Homepage sections implemented to this framing in Phase A (hero, "everything your groups are missing", Madal/Profiles/Suuq/Fariimo/Labs/Capital blocks, Lite + community-owned, "real by default", final CTA). Extras roadmap reframed in `docs/social-app-extras-plan.md`.
 
 ## 1. Verdict
