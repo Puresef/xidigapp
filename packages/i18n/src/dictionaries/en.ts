@@ -1543,9 +1543,9 @@ export const en = {
   'marketing.seeProduct': 'Explore what’s inside',
   'marketing.groupsTitle': 'Everything your groups are missing',
   'marketing.groupsBody':
-    'WhatsApp is great for quick messages — Xidig gives the community memory. Profiles, search, public posts, business listings, project spaces, and DMs that don’t disappear into the scroll.',
+    'Group chats are great for quick messages — Xidig gives the community memory. Profiles, search, public posts, business listings, project spaces, and DMs that don’t disappear into the scroll.',
   'marketing.groupsKeep':
-    'Keep WhatsApp for family chats. Xidig is the Somali community you can search, follow, build with, and come back to.',
+    'Keep the group chat for family. Xidig is the Somali community you can search, follow, build with, and come back to.',
   'marketing.blockPlazaTitle': 'A feed with purpose',
   'marketing.blockPlazaBody':
     'Post intros, asks, wins, and polls — and react in a way that feels like us. Conversations become community memory, not scroll-past noise.',

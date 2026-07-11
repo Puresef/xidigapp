@@ -1465,9 +1465,9 @@ export const so = {
   'marketing.seeProduct': 'Arag waxa gudaha ku jira',
   'marketing.groupsTitle': 'Wax kasta oo grupyadaadu maqan yihiin',
   'marketing.groupsBody':
-    'WhatsApp waxa uu ku fiican yahay fariimo degdeg ah — Xidig se wuxuu bulshada siiyaa xusuus. Boggag shakhsi, raadin, qoraallo dadweyne, diiwaanka ganacsiga, goobo mashruuc, iyo fariimo aan ku lumin qulqulka.',
+    'Grupyadu waxay ku fiican yihiin fariimo degdeg ah — Xidig se wuxuu bulshada siiyaa xusuus. Boggag shakhsi, raadin, qoraallo dadweyne, diiwaanka ganacsiga, goobo mashruuc, iyo fariimo aan ku lumin qulqulka.',
   'marketing.groupsKeep':
-    'WhatsApp u hay sheekada qoyska. Xidig waa bulshada Soomaalida ee aad raadin karto, raaci karto, wax la dhisan karto, kuna soo laaban karto.',
+    'Grupka qoyska u hay. Xidig waa bulshada Soomaalida ee aad raadin karto, raaci karto, wax la dhisan karto, kuna soo laaban karto.',
   'marketing.blockPlazaTitle': 'Quudin ujeeddo leh',
   'marketing.blockPlazaBody':
     'Qor is-barasho, codsiyo, guulo, iyo ra’yi-ururin — kuna fal-celi si inoo eg. Wadahadaladu waxay noqdaan xusuusta bulshada, ma aha buuq la dhaafo.',
