@@ -2,7 +2,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
-import { env } from '@/env';
 import { IMAGE_MAX_BYTES, MEDIA_BUCKET } from '@/lib/plaza/constants';
 
 /**
@@ -50,8 +49,16 @@ export function derivedThumbPath(storagePath: string): string {
 
 /** Public CDN URL for a stored object path (what posts.image_urls stores). */
 export function publicMediaUrl(storagePath: string): string {
-  // SKIP_ENV_VALIDATION builds may not have SUPABASE_URL — guard like
-  // lib/rate-limit.ts does.
-  const base = typeof env.SUPABASE_URL === 'string' ? env.SUPABASE_URL : '';
+  // Deliberately reads the literal NEXT_PUBLIC var instead of importing
+  // `@/env`: this module reaches CLIENT bundles (post-card → plaza/views →
+  // here), where importing env.ts throws at module evaluation — the full
+  // server schema can never validate in the browser (live incident: signed-in
+  // home + /plaza + /saved crashed to the error boundary, Sentry
+  // JAVASCRIPT-NEXTJS-C). Same rule as supabase-browser.ts: literal property
+  // access only (Next.js inlines it at build), no destructuring, no dynamic
+  // keys. NEXT_PUBLIC_SUPABASE_URL === SUPABASE_URL by env contract
+  // (GO-LIVE §4), and SKIP_ENV_VALIDATION builds may lack it — hence the
+  // same '' guard as before.
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
   return `${base.replace(/\/$/, '')}/storage/v1/object/public/${MEDIA_BUCKET}/${storagePath}`;
 }

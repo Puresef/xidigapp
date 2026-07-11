@@ -47,6 +47,29 @@ const nextConfig: NextConfig = {
       { source: '/social-hub', destination: '/', permanent: true },
     ];
   },
+  // Security response headers (live-site test hardening, 11 Jul). Vercel
+  // already sends HSTS at the edge; these add the browser-side defences the
+  // app was missing. A full script-src CSP is deliberately deferred: it needs
+  // nonce plumbing for the inline THEME_INIT_SCRIPT (layout.tsx) plus source
+  // lists for Sentry/Supabase/MapTiler — `frame-ancestors` alone is safe to
+  // ship now and, with X-Frame-Options, closes the clickjacking gap.
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // No code path uses these device APIs today (verified: zero
+          // getUserMedia/geolocation callers) — loosen per-feature if a
+          // future phase needs them (e.g. in-app verification calls).
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+        ],
+      },
+    ];
+  },
 };
 
 // SENTRY_ORG / SENTRY_PROJECT / SENTRY_AUTH_TOKEN are build-time-only CLI

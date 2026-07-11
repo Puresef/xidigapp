@@ -56,6 +56,18 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(env.APP_URL),
     title: t('app.name'),
     description: t('app.tagline'),
+    // §28 WhatsApp-first growth loop: every page gets a default link-preview
+    // card (og:image comes from the root opengraph-image.tsx convention);
+    // entity routes (/u, /labs, /l, /c) override with their per-entity OG
+    // routes. No `url` here — og:url would wrongly pin every page to the
+    // apex root; canonical is set per-page where it matters.
+    openGraph: {
+      type: 'website',
+      siteName: t('app.name'),
+      title: t('app.name'),
+      description: t('app.tagline'),
+    },
+    twitter: { card: 'summary_large_image' },
     // Env-gated indexing: everything is noindex until this deployment IS
     // xidig.net, so the old marketing site stays the sole indexed owner of
     // its URLs during the overlap (no duplicate-content window). Per-page
