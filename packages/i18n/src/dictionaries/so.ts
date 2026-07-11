@@ -1574,18 +1574,18 @@ export const so = {
     'Foomka xiriirku weli ma diyaarsana. Ku biir safka sugitaanka, annagaa kula soo xiriiri doonna.',
 
   // Legal — nool, la indeksay, sahmiyaha aasaasaha dib u eegay. Meelaha
-  // xigmadaysan ([XIDIG LEGAL ENTITY], [GOVERNING JURISDICTION]) ayaa ah wax
+  // xigmadaysan (Xidig, Somalia) ayaa ah wax
   // kaliya oo aasaasuhu buuxiyo.
   'marketing.privacyUpdatedNotice':
     'Markii ugu dambeysay la cusboonaysiiyay 10 Luulyo 2026. Siyaasaddan waanu cusboonaysiin karnaa; xubnaha waa loo sheegaa ka hor inta uusan isbeddel muhiim ah dhaqan-gelin.',
   'marketing.termsUpdatedNotice':
     'Markii ugu dambeysay la cusboonaysiiyay 10 Luulyo 2026. Shuruudahan waanu cusboonaysiin karnaa; xubnaha waa loo sheegaa ka hor inta uusan isbeddel muhiim ah dhaqan-gelin.',
   'marketing.legalEntityNote':
-    'Xidig waxaa maamula [XIDIG LEGAL ENTITY]. Sharciga xukuma: [GOVERNING JURISDICTION].',
+    'Xidig waxaa laga maamulaa Somalia; shuruudahan iyo siyaasadahanna waxaa xukuma sharciga Soomaaliya.',
 
   'marketing.privacyTitle': 'Siyaasadda Arrimaha Gaarka ah',
   'marketing.privacyIntro':
-    'Siyaasaddani waxay sharxaysaa waxa Xidig ururiyo, sababta, iyo xakamaynta aad ku leedahay. Waxay khusaysaa daalacashada boggagan guud iyo isticmaalka barnaamijka adigoo akoon leh. Xidig — oo ay maamusho [XIDIG LEGAL ENTITY] — ayaa mas’uul ka ah xogtaada shakhsiga ah.',
+    'Siyaasaddani waxay sharxaysaa waxa Xidig ururiyo, sababta, iyo xakamaynta aad ku leedahay. Waxay khusaysaa daalacashada boggagan guud iyo isticmaalka barnaamijka adigoo akoon leh. Xidig, oo fadhigeedu yahay Somalia, ayaa mas’uul ka ah xogtaada shakhsiga ah.',
   'marketing.privacyCollectTitle': 'Waxa aanu ururinno',
   'marketing.privacyCollectBody':
     'Aqoonsiyada akoonka ee aad na siiso markaad biirto (magac, email ama taleefan, iyo furaha sirta ah ee uu maamulo bixiyahayaga xaqiijinta). Xogta bogga ee aad dooratid inaad ku darto (magaalo, xirfado, xiriirro, faah-faahin). Waxa aad soo qorto — qoraallo dadweyne, codbixinno, liisas, fariimo, iyo falcelinno. Faah-faahinta xaqiijinta aqoonsiga iyo ganacsiga ee ikhtiyaariga ah, ku salaysan ogolaansho, haddii aad dooratid inaad xaqiijiso. Waxa aad soo dirto foomka xiriirka markaad noo qorto. Iyo ugu yaraan farsamada loo baahan yahay si adeeggu si ammaan ah u shaqeeyo — sida gobolka laga soo qiyaaso IP-ga, xogta qalabka iyo browser-ka, iyo cookies-ka fadhiga.',
@@ -1618,14 +1618,14 @@ export const so = {
     'Xidig looma talagalin carruur. Waa inaad gaartaa da’da ugu yar ee lagu qeexay Shuruudaha Adeeggayaga si aad akoon u haysato. Haddii aanu ogaanno in qof da’diisu ka yar tahay uu akoon abuuray, waanu tirtiri doonnaa.',
   'marketing.privacyContactTitle': 'Nala soo xiriir arrimaha gaarka ah',
   'marketing.privacyContactBody':
-    'Su’aal kasta oo ku saabsan siyaasaddan, xogtaada, ama xuquuqdaada, isticmaal bogga xiriirka waanu kuu jawaabi doonnaa. Xidig waxaa maamula [XIDIG LEGAL ENTITY], oo mas’uul ka ah xogtaada shakhsiga ah.',
+    'Su’aal kasta oo ku saabsan siyaasaddan, xogtaada, ama xuquuqdaada, isticmaal bogga xiriirka waanu kuu jawaabi doonnaa. Xidig, oo fadhigeedu yahay Somalia, ayaa mas’uul ka ah xogtaada shakhsiga ah.',
 
   'marketing.termsTitle': 'Shuruudaha Adeegga',
   'marketing.termsIntro':
-    'Shuruudahani waa heshiiska adiga iyo [XIDIG LEGAL ENTITY] oo maamula Xidig. Isticmaalka Xidig — boggagan guud ama barnaamijka — waxay ka dhigan tahay inaad aqbashay. Fadlan la akhri Siyaasadda Arrimaha Gaarka ah.',
+    'Shuruudahani waa heshiiska adiga iyo Xidig, oo laga maamulo Somalia. Isticmaalka Xidig — boggagan guud ama barnaamijka — waxay ka dhigan tahay inaad aqbashay. Fadlan la akhri Siyaasadda Arrimaha Gaarka ah.',
   'marketing.termsEligibilityTitle': 'Cidda biiri karta',
   'marketing.termsEligibilityBody':
-    'Xidig hadda waa tijaabo gaar ah oo martiqaad kaliya ah: gelitaanku waa martiqaad ama saf sugitaan. Waa inaad ugu yaraan gaartaa da’da uu u baahan yahay [GOVERNING JURISDICTION] — oo aanad ka yaraan 16 sano — si aad akoon u haysato, waana inaad awoodid inaad gasho heshiis xujaysan. Waxaanu ku dari karnaa, xaddidi karnaa, ama ka noqon karnaa gelitaanka inta lagu jiro tijaabada.',
+    'Xidig hadda waa tijaabo gaar ah oo martiqaad kaliya ah: gelitaanku waa martiqaad ama saf sugitaan. Waa inaad ugu yaraan gaartaa da’da uu u baahan yahay Somalia — oo aanad ka yaraan 16 sano — si aad akoon u haysato, waana inaad awoodid inaad gasho heshiis xujaysan. Waxaanu ku dari karnaa, xaddidi karnaa, ama ka noqon karnaa gelitaanka inta lagu jiro tijaabada.',
   'marketing.termsAccountsTitle': 'Akoonkaaga',
   'marketing.termsAccountsBody':
     'Hal qof, hal akoon. Xog-gelintaada si ammaan ah u hay oo ha la wadaagin; adigaa mas’uul ka ah wax kasta oo akoonkaaga hoostiisa ka dhaca. Xog sax ah na sii oo cusbooneysii. Degdeg noogu sheeg haddii aad u malaynayso in akoonkaaga la galay ogolaanshahaaga la’aantiis.',
@@ -1646,13 +1646,13 @@ export const so = {
     'Xidig waxaa maamula dad, ma aha kaliya farsamo. Waxaanu saari karnaa waxa la qoro, ama u digi karnaa, hakin karnaa, ama xidhi karnaa akoonnada jebiya shuruudahan ama Tilmaamaha Bulshada. Marka aanu wax ka qabanno akoonkaaga ama waxa aad qorto, waad racfaan qaadan kartaa go’aanka adigoo maraya habka barnaamijka, maamuluhuna wuu dib u eegi doonaa.',
   'marketing.termsDisclaimerTitle': 'Ka-fogaansho iyo mas’uuliyad',
   'marketing.termsDisclaimerBody':
-    'Xidig waa tijaabo gaar ah, waxaana lagu bixiyaa “sida uu yahay”, iyada oo aan dammaanad nooc kasta ah lahayn. Si adag ayaanu ugu shaqeynaa in aanu socodsiinno oo ammaanno, laakiin ma balan qaadi karno inuu had iyo jeer diyaar noqon doono, khalad la’aan ahaan doono, ama in waxa xubnuhu qoraan sax yahiin. Ilaa xadka ugu badan ee sharcigu ogol yahay, [XIDIG LEGAL ENTITY] mas’uul kama aha khasaarooyin dadban ama ka dhasha, ama waxa xubnuhu qoraan. Waxba shuruudahan kuma xaddidayaan mas’uuliyad aan sharciga lagu xaddidi karin.',
+    'Xidig waa tijaabo gaar ah, waxaana lagu bixiyaa “sida uu yahay”, iyada oo aan dammaanad nooc kasta ah lahayn. Si adag ayaanu ugu shaqeynaa in aanu socodsiinno oo ammaanno, laakiin ma balan qaadi karno inuu had iyo jeer diyaar noqon doono, khalad la’aan ahaan doono, ama in waxa xubnuhu qoraan sax yahiin. Ilaa xadka ugu badan ee sharcigu ogol yahay, Xidig mas’uul kama aha khasaarooyin dadban ama ka dhasha, ama waxa xubnuhu qoraan. Waxba shuruudahan kuma xaddidayaan mas’uuliyad aan sharciga lagu xaddidi karin.',
   'marketing.termsChangesTitle': 'Isbeddellada shuruudahan',
   'marketing.termsChangesBody':
     'Waxaanu cusboonaysiin karnaa shuruudahan marka Xidig kobco. Isbeddel muhiim ah waxaanu xubnaha u sheegnaa ka hor inta uusan dhaqan-gelin, si aad dib u eegi karto. Sii wadista isticmaalka Xidig ka dib markuu isbeddelku dhaqan-galo waxay ka dhigan tahay inaad aqbashay shuruudaha cusub.',
   'marketing.termsGoverningTitle': 'Sharciga xukuma',
   'marketing.termsGoverningBody':
-    'Shuruudahan waxaa xukuma sharciyada [GOVERNING JURISDICTION], muran kasta oo la xiriirana waxaa lagu maamuli doonaa xukunkaas, iyada oo aan la saameyn xuquuq kasta oo waajib ah oo aad ku leedahay sharciga meesha aad ku nooshahay.',
+    'Shuruudahan waxaa xukuma sharciyada Somalia, muran kasta oo la xiriirana waxaa lagu maamuli doonaa xukunkaas, iyada oo aan la saameyn xuquuq kasta oo waajib ah oo aad ku leedahay sharciga meesha aad ku nooshahay.',
 
   // /reports chrome
   'marketing.reportsTitle': 'Warbixinno',

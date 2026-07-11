@@ -1651,18 +1651,18 @@ export const en = {
     'The contact form isn’t wired up yet. Join the waitlist and we’ll reach out instead.',
 
   // Legal — live, indexed, founder-reviewed. Bracketed placeholders
-  // ([XIDIG LEGAL ENTITY], [GOVERNING JURISDICTION]) are the ONLY facts the
+  // (Xidig, Somalia) are the ONLY facts the
   // founder must fill; every other statement matches a shipped app capability.
   'marketing.privacyUpdatedNotice':
     'Last updated 10 July 2026. We may update this policy; members are notified before any material change takes effect.',
   'marketing.termsUpdatedNotice':
     'Last updated 10 July 2026. We may update these terms; members are notified before any material change takes effect.',
   'marketing.legalEntityNote':
-    'Xidig is operated by [XIDIG LEGAL ENTITY]. Governing law: [GOVERNING JURISDICTION].',
+    'Xidig is operated from Somalia, and these terms and policies are governed by Somali law.',
 
   'marketing.privacyTitle': 'Privacy Policy',
   'marketing.privacyIntro':
-    'This policy explains what Xidig collects, why, and the control you have over it. It covers both browsing these public pages and using the app with an account. Xidig — operated by [XIDIG LEGAL ENTITY] — is the controller responsible for your personal data.',
+    'This policy explains what Xidig collects, why, and the control you have over it. It covers both browsing these public pages and using the app with an account. Xidig, based in Somalia, is the controller responsible for your personal data.',
   'marketing.privacyCollectTitle': 'What we collect',
   'marketing.privacyCollectBody':
     'Account identifiers you give us when you join (name, email or phone number, and a password managed by our authentication provider). Profile information you choose to add (city, skills, links, bio). The content you post — public posts, polls, listings, messages, and reactions. Optional, consent-based identity and business verification details, if you choose to get verified. Contact-form submissions when you write to us. And the technical minimum needed to run the service securely, such as IP-derived region, device and browser information, and session cookies.',
@@ -1695,14 +1695,14 @@ export const en = {
     'Xidig is not intended for children. You must meet the minimum age set in our Terms of Service to hold an account. If we learn that an underage person has created an account, we will remove it.',
   'marketing.privacyContactTitle': 'Contact us about privacy',
   'marketing.privacyContactBody':
-    'For any question about this policy, your data, or your rights, use the contact page and we will respond. Xidig is operated by [XIDIG LEGAL ENTITY], the controller of your personal data.',
+    'For any question about this policy, your data, or your rights, use the contact page and we will respond. Xidig, based in Somalia, is the controller of your personal data.',
 
   'marketing.termsTitle': 'Terms of Service',
   'marketing.termsIntro':
-    'These terms are the agreement between you and [XIDIG LEGAL ENTITY], which operates Xidig. Using Xidig — these public pages or the app — means you accept them. Please read them alongside our Privacy Policy.',
+    'These terms are the agreement between you and Xidig, the service operated from Somalia. Using Xidig — these public pages or the app — means you accept them. Please read them alongside our Privacy Policy.',
   'marketing.termsEligibilityTitle': 'Who can join',
   'marketing.termsEligibilityBody':
-    'Xidig is currently a private, invite-only beta: access is by invitation or from the waitlist. You must be at least the minimum age required by [GOVERNING JURISDICTION] — and no younger than 16 — to hold an account, and you must be able to enter into a binding agreement. We may add, limit, or withdraw access during the beta.',
+    'Xidig is currently a private, invite-only beta: access is by invitation or from the waitlist. You must be at least the minimum age required by Somalia — and no younger than 16 — to hold an account, and you must be able to enter into a binding agreement. We may add, limit, or withdraw access during the beta.',
   'marketing.termsAccountsTitle': 'Your account',
   'marketing.termsAccountsBody':
     'One person, one account. Keep your sign-in details secure and don’t share them; you are responsible for everything that happens under your account. Give us accurate information and keep it current. Tell us promptly if you think your account has been accessed without your permission.',
@@ -1723,13 +1723,13 @@ export const en = {
     'Xidig is moderated by people, not just automation. We may remove content, or warn, suspend, or close accounts that break these terms or the Community Guidelines. Where we act against your account or content, you can appeal the decision through the in-app process, and a moderator will review it.',
   'marketing.termsDisclaimerTitle': 'Disclaimers and liability',
   'marketing.termsDisclaimerBody':
-    'Xidig is a private beta and is provided “as is”, without warranties of any kind. We work hard to keep it running and safe, but we can’t promise it will always be available, error-free, or that content posted by members is accurate. To the fullest extent the law allows, [XIDIG LEGAL ENTITY] is not liable for indirect or consequential losses, or for content posted by members. Nothing in these terms limits any liability that cannot be limited by law.',
+    'Xidig is a private beta and is provided “as is”, without warranties of any kind. We work hard to keep it running and safe, but we can’t promise it will always be available, error-free, or that content posted by members is accurate. To the fullest extent the law allows, Xidig is not liable for indirect or consequential losses, or for content posted by members. Nothing in these terms limits any liability that cannot be limited by law.',
   'marketing.termsChangesTitle': 'Changes to these terms',
   'marketing.termsChangesBody':
     'We may update these terms as Xidig grows. We will tell members about material changes before they take effect, so you can review them. Continuing to use Xidig after a change takes effect means you accept the updated terms.',
   'marketing.termsGoverningTitle': 'Governing law',
   'marketing.termsGoverningBody':
-    'These terms are governed by the laws of [GOVERNING JURISDICTION], and any dispute relating to them will be handled under that jurisdiction, without affecting any mandatory rights you have under the law where you live.',
+    'These terms are governed by the laws of Somalia, and any dispute relating to them will be handled under that jurisdiction, without affecting any mandatory rights you have under the law where you live.',
 
   // /reports chrome (report bodies are community-compiled content, not UI copy)
   'marketing.reportsTitle': 'Reports',
