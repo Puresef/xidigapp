@@ -111,7 +111,6 @@ export const en = {
   'action.delete': 'Delete',
   'action.editProfile': 'Edit profile',
   'action.share': 'Share',
-  'action.shareWhatsApp': 'Share on WhatsApp',
   'action.copyLink': 'Copy link',
   'action.linkCopied': 'Link copied.',
   'action.viewOnMap': 'View on map',
@@ -968,7 +967,7 @@ export const en = {
   'suuq.priceRangeLabel': 'Price range',
   'suuq.priceRangeNone': 'Not set',
   'suuq.priceRangeAria': 'Price range {level} of 4',
-  'suuq.whatsappCta': 'Chat on WhatsApp',
+  'suuq.whatsappCta': 'Message directly',
 
   // Plaza / Madal (§15, §20, §27) — feed, composer, asks, polls, reactions
   'plaza.filterAll': 'All',
@@ -1555,7 +1554,7 @@ export const en = {
     'Show your skills, city, links, Labs, badges, and what you’re open to. Share one link instead of explaining yourself every time.',
   'marketing.blockSuuqTitle': 'Find people and businesses',
   'marketing.blockSuuqBody':
-    'Search Somali talent, services, shops, and businesses by city, skill, or category — then reach them on WhatsApp when you’re ready.',
+    'Search Somali talent, services, shops, and businesses by city, skill, or category — then contact them directly when you’re ready.',
   'marketing.blockDmTitle': 'DMs with boundaries',
   'marketing.blockDmBody':
     'Message requests, blocks, reports, and calm notifications keep conversations useful — without group-chat chaos.',

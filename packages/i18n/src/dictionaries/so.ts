@@ -117,7 +117,6 @@ export const so = {
   'action.delete': 'Tirtir',
   'action.editProfile': 'Wax ka beddel bogga',
   'action.share': 'Wadaag',
-  'action.shareWhatsApp': 'Ku wadaag WhatsApp',
   'action.copyLink': 'Koobiyee linkiga',
   'action.linkCopied': 'Linkiga waa la koobiyeeyay.',
   'action.viewOnMap': 'Ka eeg khariidadda',
@@ -824,7 +823,7 @@ export const so = {
   'suuq.priceRangeLabel': 'Heerka qiimaha',
   'suuq.priceRangeNone': 'Lama dejin',
   'suuq.priceRangeAria': 'Heerka qiimaha {level} ee 4-ta',
-  'suuq.whatsappCta': 'Kula hadal WhatsApp',
+  'suuq.whatsappCta': 'Si toos ah ula hadal',
 
   // Madal / Plaza (§15, §20, §27)
   'plaza.filterAll': 'Dhammaan',
@@ -1477,7 +1476,7 @@ export const so = {
     'Muuji xirfadahaaga, magaaladaada, xiriiriyayaashaada, Warshadahaaga, sumadahaaga, iyo waxa aad u furan tahay. Wadaag hal xiriiriye halkii aad mar walba is-sharxi lahayd.',
   'marketing.blockSuuqTitle': 'Hel dad iyo ganacsiyo',
   'marketing.blockSuuqBody':
-    'Raadi tayada Soomaalida, adeegyo, dukaammo, iyo ganacsiyo — magaalo, xirfad, ama qayb ahaan — kadibna kula xiriir WhatsApp marka aad diyaar tahay.',
+    'Raadi tayada Soomaalida, adeegyo, dukaammo, iyo ganacsiyo — magaalo, xirfad, ama qayb ahaan — kadibna si toos ah ula xiriir marka aad diyaar tahay.',
   'marketing.blockDmTitle': 'Fariimo xudduud leh',
   'marketing.blockDmBody':
     'Codsiyada fariimaha, xannibaadda, warbixinta, iyo digniino deggan ayaa wadahadalka faa’iido ku haya — buuqa grupyada la’aantiis.',

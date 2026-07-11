@@ -6,10 +6,13 @@ import { trackClient } from '@/lib/analytics/client';
 import { asContactLinks, contactHref } from '@/lib/listings';
 
 /**
- * First-class WhatsApp CTA near the top of the listing page (§18, Phase 4.5).
- * WhatsApp is THE Somali business channel (§28), so when the listing has a
- * whatsapp contact it gets a primary button above the fold instead of only a
- * row in the contact list. Fires the same §23 `contact_click` event as
+ * First-class direct-contact CTA near the top of the listing page (§18,
+ * Phase 4.5). WhatsApp is THE Somali business channel (§28), so when the
+ * listing has a whatsapp contact it gets a primary button above the fold
+ * instead of only a row in the contact list — but the LABEL is
+ * channel-nameless by ruling (11 Jul, directive-8 Option B —
+ * docs/front-door-standard.md §5.2); the href still deep-links the listing's
+ * chosen channel. Fires the same §23 `contact_click` event as
  * ListingContacts — the funnel tail doesn't care which affordance was tapped.
  */
 export function WhatsAppCta({
