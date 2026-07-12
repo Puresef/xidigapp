@@ -30,6 +30,13 @@ declare global {
      * module (see the stub's header comment).
      */
     __xidigSentryRouterTransition?: (href: string, navigationType: string) => void;
+    /**
+     * Pre-init error buffer set by the instrumentation-client.ts stub for
+     * signed-in page loads (errors/rejections fired before the AppChrome
+     * chunk lands would otherwise be lost). Drained + detached by
+     * initSentryClient below.
+     */
+    __xidigSentryEarlyErrors?: { errors: unknown[]; detach: () => void };
   }
 }
 
@@ -86,6 +93,18 @@ export function initSentryClient(): (href: string, navigationType: string) => vo
           Sentry.addIntegration(replayIntegration());
         })
         .catch(() => {});
+    }
+
+    // Replay errors the stub buffered before this init ran (the hydration +
+    // chrome-chunk window), then detach its listeners — the SDK's own global
+    // handlers own the page from here.
+    const early = window.__xidigSentryEarlyErrors;
+    if (early) {
+      early.detach();
+      delete window.__xidigSentryEarlyErrors;
+      for (const buffered of early.errors) {
+        Sentry.captureException(buffered);
+      }
     }
   }
 

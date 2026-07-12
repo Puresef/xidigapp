@@ -27,3 +27,36 @@ export const onRouterTransitionStart = (href: string, navigationType: string): v
   if (typeof window === 'undefined') return;
   window.__xidigSentryRouterTransition?.(href, navigationType);
 };
+
+// Early-error buffer for signed-in members (adversarial-review fix): between
+// this module's pre-hydration execution and SentryBoot's init (hydration +
+// the AppChrome chunk fetch — a real window on the slow connections this
+// product targets), window 'error'/'unhandledrejection' events would
+// otherwise be silently lost — the SDK attaches its global handlers only at
+// init, and global-error.tsx sees render-tree errors only. Buffer them here
+// (capped, listeners detached at drain) so initSentryClient can replay them.
+// Signed-out visitors attach nothing: the buffer would never drain.
+if (
+  typeof window !== 'undefined' &&
+  process.env.NEXT_PUBLIC_SENTRY_DSN &&
+  // Signed-in detection is cookie-presence only (the Supabase auth cookie) —
+  // the same signal the shell branches on, re-checked in initSentryClient.
+  /(?:^|;\s*)sb-[^=]*-auth-token[^=]*=/.test(document.cookie)
+) {
+  const errors: unknown[] = [];
+  const onError = (event: ErrorEvent) => {
+    if (errors.length < 20) errors.push(event.error ?? event.message);
+  };
+  const onRejection = (event: PromiseRejectionEvent) => {
+    if (errors.length < 20) errors.push(event.reason);
+  };
+  window.addEventListener('error', onError);
+  window.addEventListener('unhandledrejection', onRejection);
+  window.__xidigSentryEarlyErrors = {
+    errors,
+    detach() {
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onRejection);
+    },
+  };
+}

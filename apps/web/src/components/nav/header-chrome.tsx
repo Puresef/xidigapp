@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { Component, type ReactNode } from 'react';
 
 import { useT } from '@xidig/i18n/react';
 
@@ -27,6 +28,36 @@ const AppChrome = dynamic(
   { ssr: true },
 );
 
+/**
+ * Header-scoped error boundary (adversarial-review fix): without it, an
+ * AppChrome chunk-load failure (network blip, deploy skew) throws in render
+ * and escalates to global-error — replacing a member's ALREADY-RENDERED page
+ * with the full-page error screen over a header-only problem. Catch it here
+ * and degrade to the public nav (the page content beneath is untouched); the
+ * lazy capture mirrors global-error's, best-effort because the likely cause
+ * is "can't load chunks" — in which case the Sentry chunk won't load either.
+ */
+class ChromeBoundary extends Component<
+  { fallback: ReactNode; children: ReactNode },
+  { failed: boolean }
+> {
+  override state = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  override componentDidCatch(error: unknown): void {
+    import('@sentry/nextjs')
+      .then((Sentry) => Sentry.captureException(error))
+      .catch(() => {});
+  }
+
+  override render(): ReactNode {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
 export function HeaderChrome({
   viewer,
   consentNeedsPrompt,
@@ -37,7 +68,17 @@ export function HeaderChrome({
   const t = useT();
 
   if (viewer.signedIn) {
-    return <AppChrome viewer={viewer} consentNeedsPrompt={consentNeedsPrompt} />;
+    return (
+      <ChromeBoundary
+        fallback={
+          <header className="xidig-header">
+            <FrontNav />
+          </header>
+        }
+      >
+        <AppChrome viewer={viewer} consentNeedsPrompt={consentNeedsPrompt} />
+      </ChromeBoundary>
+    );
   }
 
   return (

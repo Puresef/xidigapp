@@ -132,8 +132,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           {/* Viewer-branched shell (docs/front-door-plan.md §2). The branch
               lives in a client boundary (HeaderChrome) so the signed-in app
               chrome — and its supabase-js vendor chunk — loads via
-              next/dynamic({ ssr: false }) and never reaches anonymous
-              visitors. Signed-out visitors render the marketing header. */}
+              next/dynamic({ ssr: true }) written INSIDE that client component
+              (the placement, not the ssr flag, is what keeps the chunk off
+              anonymous routes — see header-chrome.tsx). Signed-out visitors
+              render the marketing header. */}
           <HeaderChrome viewer={viewer} consentNeedsPrompt={consent?.needsPrompt ?? false} />
           {children}
           <LiteAutoPrompt

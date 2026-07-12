@@ -13,8 +13,10 @@ nothing optional runs.
 | **`error_monitoring`** *(new, `20260709210000_consent_capture.sql`)* | Sentry session replay + performance-trace extras | Opt-in consent — replay records screen interactions, so it is not essential |
 
 Client note: today the browser gates **replay** on `error_monitoring`
-(`instrumentation-client.ts`); baseline `tracesSampleRate` (0.1) remains part
-of essential operation. If a stricter reading is wanted later, gate the
+(`src/lib/sentry-client.ts` — booted by `SentryBoot` inside the signed-in app
+chrome; `instrumentation-client.ts` is a no-import forwarding stub since the
+§4.2 anon-bundle eviction, 12 Jul); baseline `tracesSampleRate` (0.1) remains
+part of essential operation. If a stricter reading is wanted later, gate the
 browser trace rate on the same cookie flag — one-line change, flagged as debt
 below.
 
