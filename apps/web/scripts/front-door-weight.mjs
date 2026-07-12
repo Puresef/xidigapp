@@ -35,14 +35,16 @@ import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
 /**
- * RATCHET SEED (11 Jul 2026): worst signed-out route measured 499.4 KB gz
- * (`/`, local prod build, HTML + 15 same-origin js/css/font assets, zero
- * images — consistent with the 484 KB anon JS live-measured for §3-E28);
- * +5% headroom → 524 KB. Ratchet DOWN with every diet PR (§4.1 items 8a/8b
- * are the next two big cuts); floor 100 KB (docs/front-door-plan.md §5's
- * original budget).
+ * RATCHET (floor 100 KB — docs/front-door-plan.md §5's original budget):
+ *   - 11 Jul 2026 seed: worst route `/` measured 499.4 KB gz, +5% → 524 KB.
+ *   - 12 Jul 2026, §4.1 item 8a landed (dynamic-gate the signed-in chrome AND
+ *     the Following feed behind `next/dynamic` inside 'use client' wrappers —
+ *     `header-chrome.tsx`, `following-feed-lazy.tsx` — so supabase-js (~63 KB
+ *     gz) and the feed tree no longer ship to anonymous routes). Worst route
+ *     `/` now 359.8 KB gz; +5% → 378 KB.
+ * Next cut: item 8b (per-locale lazy dictionaries) — lower this again then.
  */
-export const BUDGET_BYTES = 524 * 1024;
+export const BUDGET_BYTES = 378 * 1024;
 
 /** Warm-second-request first-byte ceiling (ms). Generous for CI runners. */
 export const TTFB_BUDGET_MS = Number(process.env.TTFB_BUDGET_MS || 1000);

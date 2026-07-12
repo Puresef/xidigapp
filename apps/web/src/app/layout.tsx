@@ -4,21 +4,13 @@ import './front.css';
 import type { Metadata } from 'next';
 import { Space_Grotesk } from 'next/font/google';
 import { cookies, headers } from 'next/headers';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { LocaleProvider } from '@xidig/i18n/react';
 
 import { env } from '../env';
-import { AppNav } from '../components/app-nav';
-import { ConsentBanner } from '../components/consent/consent-banner';
-import { FrontNav } from '../components/front/front-nav';
-import { LanguageToggle } from '../components/language-toggle';
 import { LiteAutoPrompt } from '../components/lite/lite-auto-prompt';
-import { BadgeProvider } from '../components/nav/badge-provider';
-import { HeaderSearch } from '../components/nav/header-search';
-import { NotificationBell } from '../components/nav/notification-bell';
-import { UserMenu } from '../components/nav/user-menu';
+import { HeaderChrome } from '../components/nav/header-chrome';
 import { SiteFooter } from '../components/site-footer';
 import { getHeaderViewer } from '../lib/auth/header-viewer';
 import { getGeoCountry } from '../lib/capital/region-gate';
@@ -94,7 +86,6 @@ const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const locale = await getLocale();
-  const t = await getT();
 
   const cookieStore = await cookies();
   const theme = parseTheme(cookieStore.get(THEME_COOKIE)?.value);
@@ -138,43 +129,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <LocaleProvider initialLocale={locale}>
-          {/* Viewer-branched shell (docs/front-door-plan.md §2). Signed-in:
-              the app chrome, with one BadgeProvider feeding both the Messages
-              tab and the bell so the unread summary is fetched once
-              (initialSignedIn seeds from the server so the menu doesn't
-              flash). Signed-out: the front-door acquisition header — no badge
-              polling, no supabase-js, no app-only client JS. */}
-          {viewer.signedIn ? (
-            <BadgeProvider initialSignedIn={viewer.signedIn}>
-              <header className="xidig-header">
-                <AppNav />
-                <div className="xidig-header__actions">
-                  <HeaderSearch />
-                  {/* Abuur — the create action (naming review 5 Jul): a header
-                      button, not a nav tab. */}
-                  <Link href="/suuq/new" className="xidig-button xidig-button--primary">
-                    {t('action.abuur')}
-                  </Link>
-                  <NotificationBell />
-                  <UserMenu viewer={viewer} />
-                </div>
-              </header>
-              <ConsentBanner needsPrompt={consent?.needsPrompt ?? false} />
-            </BadgeProvider>
-          ) : (
-            <header className="xidig-header">
-              <FrontNav />
-              <div className="xidig-header__actions">
-                <LanguageToggle />
-                <Link href="/signin" className="xidig-button xidig-button--secondary">
-                  {t('action.signIn')}
-                </Link>
-                <Link href="/waitlist?from=nav" className="xidig-button xidig-button--primary">
-                  {t('marketing.requestAccess')}
-                </Link>
-              </div>
-            </header>
-          )}
+          {/* Viewer-branched shell (docs/front-door-plan.md §2). The branch
+              lives in a client boundary (HeaderChrome) so the signed-in app
+              chrome — and its supabase-js vendor chunk — loads via
+              next/dynamic({ ssr: false }) and never reaches anonymous
+              visitors. Signed-out visitors render the marketing header. */}
+          <HeaderChrome viewer={viewer} consentNeedsPrompt={consent?.needsPrompt ?? false} />
           {children}
           <LiteAutoPrompt
             signedIn={viewer.signedIn}

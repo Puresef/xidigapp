@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { FollowingFeed } from '@/components/feed/following-feed';
+import { FollowingFeedLazy } from '@/components/feed/following-feed-lazy';
 import { FrontHome } from '@/components/front/front-home';
 import { LabsSeekingYou } from '@/components/matching/labs-seeking-you';
 import { MentorInResidence } from '@/components/mentor/mentor-in-residence';
@@ -43,7 +43,7 @@ export default async function HomePage() {
         <MentorInResidence />
         <LabsSeekingYou matches={labMatches} />
         <h2 className="xidig-section__title">{t('feed.title')}</h2>
-        <FollowingFeed viewerId={ctx.appUser.id} prefs={prefs} />
+        <FollowingFeedLazy viewerId={ctx.appUser.id} prefs={prefs} />
       </main>
     );
   }
