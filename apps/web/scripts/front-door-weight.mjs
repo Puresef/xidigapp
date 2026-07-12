@@ -42,9 +42,14 @@ import { gzipSync } from 'node:zlib';
  *     `header-chrome.tsx`, `following-feed-lazy.tsx` — so supabase-js (~63 KB
  *     gz) and the feed tree no longer ship to anonymous routes). Worst route
  *     `/` now 359.8 KB gz; +5% → 378 KB.
- * Next cut: item 8b (per-locale lazy dictionaries) — lower this again then.
+ *   - 12 Jul 2026, §4.2 Sentry eviction landed (instrumentation-client.ts is
+ *     a no-import forwarding stub; the SDK boots via SentryBoot inside the
+ *     signed-in AppChrome chunk; global-error captures via lazy import).
+ *     Worst route `/` now 282.8 KB gz; +5% → 297 KB.
+ * Next cut: item 8b (per-locale lazy dictionaries, ~28 KB) — blocked on the
+ * global-error localized-copy decision; see memory + the spawned task.
  */
-export const BUDGET_BYTES = 378 * 1024;
+export const BUDGET_BYTES = 297 * 1024;
 
 /** Warm-second-request first-byte ceiling (ms). Generous for CI runners. */
 export const TTFB_BUDGET_MS = Number(process.env.TTFB_BUDGET_MS || 1000);

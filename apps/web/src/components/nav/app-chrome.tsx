@@ -10,6 +10,7 @@ import { BadgeProvider } from '@/components/nav/badge-provider';
 import { HeaderSearch } from '@/components/nav/header-search';
 import { NotificationBell } from '@/components/nav/notification-bell';
 import { UserMenu } from '@/components/nav/user-menu';
+import { SentryBoot } from '@/components/sentry-boot';
 import type { HeaderViewer } from '@/lib/auth/header-viewer';
 
 /**
@@ -39,6 +40,8 @@ export function AppChrome({
 
   return (
     <BadgeProvider initialSignedIn={viewer.signedIn}>
+      {/* Client Sentry rides this chunk on purpose — signed-in only (§4.2). */}
+      <SentryBoot />
       <header className="xidig-header">
         <AppNav />
         <div className="xidig-header__actions">
