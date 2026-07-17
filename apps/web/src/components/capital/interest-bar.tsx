@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { Enums } from '@xidig/db';
 import { useT } from '@xidig/i18n/react';
 
+import { AnimatedMark } from '@/components/brand/animated-mark';
 import { ApiRequestError, apiDelete, apiPost } from '@/lib/api-client';
 import type { InterestCounts } from '@/lib/capital/views';
 import type { PlainError } from '@/lib/errors';
@@ -45,6 +46,8 @@ export function InterestBar({
   const [mine, setMine] = useState<Set<InterestType>>(new Set(initialInterests));
   const [pending, setPending] = useState<InterestType | null>(null);
   const [error, setError] = useState<PlainError | null>(null);
+  // Ceremony on ACTIVATING a co-sign (spec §4) — never on un-toggling.
+  const [celebrated, setCelebrated] = useState(0);
 
   // help + cosign only — invest is never toggled here (goes through MaalgeliCta).
   function toggle(type: 'help' | 'cosign') {
@@ -61,6 +64,7 @@ export function InterestBar({
             )
           : await apiPost<InterestResponse>(`/api/candidates/${candidateId}/interests`, { type });
         setCounts(res.counts);
+        if (!active && type === 'cosign') setCelebrated((n) => n + 1);
         setMine((current) => {
           const next = new Set(current);
           if (active) next.delete(type);
@@ -82,7 +86,17 @@ export function InterestBar({
       {error ? <PlainErrorBanner error={error} /> : null}
 
       {/* Social proof — Garab / Co-sign count */}
-      <p className="xidig-card__body">{t('capital.cosignCount', { count: counts.cosign })}</p>
+      <p className="xidig-card__body">
+        {t('capital.cosignCount', { count: counts.cosign })}
+        {celebrated > 0 ? (
+          <AnimatedMark
+            key={celebrated}
+            mode="ceremony"
+            size={20}
+            className="xidig-celebrate-inline"
+          />
+        ) : null}
+      </p>
 
       <div className="xidig-capital-interest__actions">
         <button

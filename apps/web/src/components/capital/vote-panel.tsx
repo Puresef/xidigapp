@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import type { Enums } from '@xidig/db';
 import { useT } from '@xidig/i18n/react';
 
+import { AnimatedMark } from '@/components/brand/animated-mark';
 import { trackClient } from '@/lib/analytics/client';
 import { ApiRequestError, apiDelete, apiPost } from '@/lib/api-client';
 import type { VoteTally } from '@/lib/capital/views';
@@ -42,6 +43,10 @@ export function VotePanel({
   const [myVote, setMyVote] = useState<VoteChoice | null>(initialVote);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
+  // Ceremony trigger (spec §4): counts fresh casts THIS session — each success
+  // remounts the mark (key) so the one-shot fold replays. Never on load, never
+  // on retract.
+  const [celebrated, setCelebrated] = useState(0);
 
   // §23 governance_log_viewed — fire once per mount of the governance surface.
   useEffect(() => {
@@ -57,6 +62,7 @@ export function VotePanel({
         const res = await apiPost<VoteResponse>(`/api/candidates/${candidateId}/vote`, { vote });
         setTally(res.tally);
         setMyVote(res.myVote);
+        setCelebrated((n) => n + 1);
       } catch (cause) {
         if (cause instanceof ApiRequestError) setError(cause.plain);
         else setError({ code: 'server_error', message: '' });
@@ -75,6 +81,7 @@ export function VotePanel({
         const res = await apiDelete<VoteResponse>(`/api/candidates/${candidateId}/vote`);
         setTally(res.tally);
         setMyVote(null);
+        setCelebrated(0);
       } catch (cause) {
         if (cause instanceof ApiRequestError) setError(cause.plain);
         else setError({ code: 'server_error', message: '' });
@@ -105,6 +112,14 @@ export function VotePanel({
         </div>
       ) : null}
       <p className="xidig-card__meta">
+        {celebrated > 0 ? (
+          <AnimatedMark
+            key={celebrated}
+            mode="ceremony"
+            size={22}
+            className="xidig-celebrate-inline"
+          />
+        ) : null}
         {t('capital.voteTally', {
           approve: tally.approve,
           reject: tally.reject,

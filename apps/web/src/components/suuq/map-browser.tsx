@@ -5,6 +5,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useT } from '@xidig/i18n/react';
 
+import { AnimatedMark } from '@/components/brand/animated-mark';
+
 import { ApiRequestError, apiGet } from '@/lib/api-client';
 import { trackClient } from '@/lib/analytics/client';
 import type { PlainError } from '@/lib/errors';
@@ -93,7 +95,12 @@ export function MapBrowser() {
           {t('suuq.searchArea')}
         </button>
       </p>
-      {pending ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
+      {pending ? (
+        <p className="xidig-card__meta" role="status">
+          <AnimatedMark mode="flap" size={20} className="xidig-flap-inline" />
+          {t('state.loading')}
+        </p>
+      ) : null}
       {!pending && rows.length === 0 && !error ? (
         <p className="xidig-card__meta">{t('suuq.noResults')}</p>
       ) : null}

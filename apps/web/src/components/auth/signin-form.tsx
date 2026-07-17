@@ -5,6 +5,8 @@ import { useState, type FormEvent } from 'react';
 
 import { useT } from '@xidig/i18n/react';
 
+import { AnimatedMark } from '@/components/brand/animated-mark';
+
 import { apiPost, ApiRequestError } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 
@@ -241,6 +243,15 @@ export function SignInForm({ initialMethod, next }: { initialMethod: SignInMetho
                 ? t('action.verifyCode')
                 : t('action.sendCode')}
         </button>
+        {/* Entry ritual continues: the mark breathes while we authenticate
+            (flap = the loading gesture; spec §4). Decorative — the disabled
+            button + hidden status text carry the state. */}
+        {pending ? (
+          <p className="xidig-auth__pending" role="status">
+            <AnimatedMark mode="flap" size={26} />
+            <span className="xidig-visually-hidden">{t('state.loading')}</span>
+          </p>
+        ) : null}
       </form>
 
       {method === 'magic-link' && linkSent ? (

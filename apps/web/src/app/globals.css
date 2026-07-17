@@ -1351,7 +1351,8 @@ button.xidig-poll__option {
   }
 }
 
-/* Mount alignment: nav brand slot + the signin entry ritual. */
+/* Mount alignment: nav brand slot, the signin entry ritual, the flap while
+   authenticating, and inline ceremony/flap marks beside text. */
 .xidig-brand__mark {
   margin-right: 0.45rem;
 }
@@ -1359,6 +1360,19 @@ button.xidig-poll__option {
 .xidig-auth__mark {
   margin: 0 0 0.5rem;
   text-align: center;
+}
+
+.xidig-auth__pending {
+  margin: 0.75rem 0 0;
+  text-align: center;
+}
+
+.xidig-celebrate-inline {
+  margin-right: 0.4rem;
+}
+
+.xidig-flap-inline {
+  margin-right: 0.4rem;
 }
 
 /* "N hidden — Show all on this page" bar */
