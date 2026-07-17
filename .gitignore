@@ -35,3 +35,4 @@ packages/db/supabase/.temp/
 
 # Old-site salvage crate (temporary; deploy via xidig/DEPLOY-TOURNIQUET.md, delete after port)
 /xidig/
+.superpowers/
