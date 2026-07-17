@@ -11,6 +11,7 @@ import type { PlainError } from '@/lib/errors';
 import { CHROME_KEYS, STAGE_KEYS } from '@/lib/labs/labels';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { PlainErrorBanner } from '../auth/plain-error';
+import { LoadingComet } from '@/components/loading-comet';
 import { Avatar } from '../media/avatar';
 import { MediaSlot } from '../media/media-slot';
 
@@ -404,11 +405,7 @@ export function SearchClient({
         </p>
       ) : null}
       {error ? <PlainErrorBanner error={error} /> : null}
-      {pending ? (
-        <p className="xidig-card__meta" role="status">
-          {t('state.loading')}
-        </p>
-      ) : null}
+      {pending ? <LoadingComet /> : null}
 
       {/* Teaching empty state: what one box can find, before any search. */}
       {!results && !pending && !error && !tooShort ? (

@@ -13,6 +13,7 @@ import type { LitePrefs } from '@/lib/lite/prefs';
 import type { PostView } from '@/lib/plaza/views';
 
 import { PlainErrorBanner } from '../auth/plain-error';
+import { FeedEnd } from '../feed/feed-end';
 import { PostCard } from './post-card';
 
 /**
@@ -167,7 +168,7 @@ export function PlazaFeed({
             </button>
           </p>
         ) : loaded && items.length > 0 ? (
-          <p className="xidig-card__meta">{t('state.endOfList')}</p>
+          <FeedEnd />
         ) : null}
       </section>
     </LiteMediaProvider>

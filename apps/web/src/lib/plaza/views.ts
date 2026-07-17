@@ -80,6 +80,9 @@ export interface CommentRow {
 export interface AuthorRef {
   display_name: string;
   handle: string;
+  /** Profile city (member-visible, §22 directory field) — feed bylines render
+   *  it when set so every scroll shows the diaspora's geography. */
+  location_city: string | null;
 }
 
 export interface PollOptionView {
@@ -151,11 +154,15 @@ async function fetchAuthors(
   if (userIds.length === 0) return authors;
   const { data, error } = await admin
     .from('profiles')
-    .select('user_id, display_name, handle')
+    .select('user_id, display_name, handle, location_city')
     .in('user_id', userIds);
   if (error) throw new Error(`author hydration failed: ${error.message}`);
   for (const row of data ?? []) {
-    authors.set(row.user_id, { display_name: row.display_name, handle: row.handle });
+    authors.set(row.user_id, {
+      display_name: row.display_name,
+      handle: row.handle,
+      location_city: row.location_city ?? null,
+    });
   }
   return authors;
 }

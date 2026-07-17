@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { formatRelativeTime } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
+import { LoadingComet } from '@/components/loading-comet';
 import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { ApiRequestError, apiGet } from '@/lib/api-client';
@@ -17,6 +18,7 @@ import { PostCard } from '../plaza/post-card';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { SuggestedFollows } from '../profile/suggested-follows';
 import { ListingCard } from '../suuq/listing-card';
+import { FeedEnd } from './feed-end';
 
 /**
  * Following feed on Home (§13). Broader than the Phase 1 listings-only feed:
@@ -69,7 +71,7 @@ export function FollowingFeed({
   }, [load]);
 
   if (!loaded && pending) {
-    return <p className="xidig-card__meta">{t('state.loading')}</p>;
+    return <LoadingComet />;
   }
 
   return (
@@ -81,7 +83,7 @@ export function FollowingFeed({
         {items.length > 0 ? <LiteShowAll /> : null}
 
         {loaded && items.length === 0 && !error ? (
-          <div className="xidig-section">
+          <div className="xidig-section xidig-empty-sky">
             <p className="xidig-card__body">{t('feed.empty')}</p>
             <p className="xidig-card__meta">{t('feed.emptyHint')}</p>
             <Link href="/suuq" className="xidig-button xidig-button--secondary">
@@ -97,6 +99,7 @@ export function FollowingFeed({
             {items.map((item) => (
               <li key={feedItemKey(item)}>
                 {renderItem(item, viewerId, litePrefs, t)}
+                <WhyThis item={item} />
               </li>
             ))}
           </ul>
@@ -114,10 +117,39 @@ export function FollowingFeed({
             </button>
           </p>
         ) : loaded && items.length > 0 ? (
-          <p className="xidig-card__meta">{t('state.endOfList')}</p>
+          <FeedEnd />
         ) : null}
       </section>
     </LiteMediaProvider>
+  );
+}
+
+/**
+ * "Why am I seeing this" (brand-rethink adoption): a per-card disclosure whose
+ * copy is MECHANISM-TRUE to the following_feed view's union predicates
+ * (docs/rls-following-feed.md): posts ← users you follow; lab updates ← labs
+ * you follow OR are a member of (the view can't say which, so the copy covers
+ * both); listings ← users you follow. A <details> keeps card density flat —
+ * the pledge is one tap away, never noise. Items whose source name is
+ * unavailable (deactivated author) render no disclosure rather than a vague
+ * claim.
+ */
+function WhyThis({ item }: { item: FeedItem }) {
+  const t = useT();
+  let reason: string | null = null;
+  if (item.type === 'post' && item.view.author) {
+    reason = t('feed.whyPost', { name: item.view.author.display_name });
+  } else if (item.type === 'lab_update') {
+    reason = t('feed.whyLab', { name: item.update.labName });
+  } else if (item.type === 'listing' && item.owner) {
+    reason = t('feed.whyListing', { name: item.owner.display_name });
+  }
+  if (!reason) return null;
+  return (
+    <details className="xidig-feed-why">
+      <summary>{t('feed.whyThis')}</summary>
+      <p>{reason}</p>
+    </details>
   );
 }
 

@@ -245,11 +245,14 @@ export function MediaSlot({
     />
   );
 
+  // Revealed images wear the house frame: an 18px corner cut echoing the
+  // mark's star angle (brand-rethink adoption). Deferred/blurhash states keep
+  // the plain rounded frame — the signature belongs to real pixels only.
   if (wantFull) {
-    return <div className={frameClass}>{img}</div>;
+    return <div className={`${frameClass} xidig-media-slot--revealed`}>{img}</div>;
   }
   return (
-    <div className={frameClass}>
+    <div className={`${frameClass} xidig-media-slot--revealed`}>
       <button
         type="button"
         className="xidig-media-slot__thumb-btn"

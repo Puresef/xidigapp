@@ -498,8 +498,10 @@ export const so = {
     'Isbeddeladu isla markiiba way dhaqan galaan, wayna ku raacaan marka aad gasho.',
   'settings.themeTitle': 'Midabka',
   'settings.themeSystem': 'Raac qalabka',
-  'settings.themeLight': 'Iftiin',
-  'settings.themeDark': 'Mugdi',
+  // Habeen/Maalin (brand-rethink adoption; plain register — native batch).
+  // 'Iftiin' freed for the founding-badge candidate "Iftiinka Hore".
+  'settings.themeLight': 'Maalin',
+  'settings.themeDark': 'Habeen',
   'settings.textSizeTitle': 'Cabbirka qoraalka',
   'settings.textSizeS': 'Yar',
   'settings.textSizeM': 'Dhexe',
@@ -638,6 +640,12 @@ export const so = {
   'feed.emptyHint':
     'Raac dad iyo Meelo si aad halkan ugu aragto qoraalladooda, cusbooneysiintooda, iyo liisaskooda cusub.',
   'feed.newListingFrom': 'Liis cusub oo ka yimid {name}',
+  // Dhammaadka quudinta + daahfurnaanta kaarka (plain register — native batch)
+  'feed.end': 'Waad wada aragtay — intaasu waa wax kasta oo ka yimid dadkaaga.',
+  'feed.whyThis': 'Maxay halkan u taal?',
+  'feed.whyPost': 'Waxaad raacdaa {name} — taasi waa sababta kaliya ee ay halkan u taal.',
+  'feed.whyLab': 'Waxay ka timid {name}, Meel aad raacdo ama xubin ka tahay — sabab kale ma jirto.',
+  'feed.whyListing': 'Waxay ka timid {name}, oo aad raacdo — sabab kale ma jirto.',
   'feed.labUpdateTag': 'Cusbooneysiinta {kind}',
   'feed.labUpdateCrossPost': 'La wadaagay',
   'feed.labUpdateBy': 'Waxaa qoray {name}',
@@ -1404,6 +1412,9 @@ export const so = {
   'capital.voteSignalNote': "Calaamad bulsho oo aan qasab ahayn — way hagtaa, ma go'aamiso.",
   'capital.voteApprove': 'Ansixi',
   'capital.voteReject': 'Diid',
+  // Sharraxaadda kaararka codka (plain register — native batch)
+  'capital.voteApproveDesc': 'Calaamadee taageeradaada in mashruucan la hor keeno bulshada.',
+  'capital.voteRejectDesc': 'Calaamadee in kani aanu weli diyaar ahayn.',
   'capital.voteRetract': 'Ka noqo codka',
   'capital.voteTally': '{approve} ansixi · {reject} diid · {total} wadar',
   // Interests bar (Garab / help / Maalgeli)

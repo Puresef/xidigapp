@@ -167,7 +167,7 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
       ) : null}
 
       {bundles.length === 0 ? (
-        <div className="xidig-section">
+        <div className="xidig-section xidig-empty-sky">
           <p className="xidig-card__body">{t('notif.empty')}</p>
         </div>
       ) : (

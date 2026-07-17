@@ -95,6 +95,9 @@ export function PostCard({
       <div className="xidig-card__top">
         <p className="xidig-card__meta">
           {author ? <Link href={`/u/${author.handle}`}>{author.display_name}</Link> : null}
+          {/* Diaspora geography in every byline (brand-rethink adoption):
+              profile city when set — "Ayaan · Toronto · 2h". */}
+          {author?.location_city ? ` · ${author.location_city}` : null}
           {author ? ' · ' : null}
           {formatRelativeTime(new Date(post.created_at), locale)}
         </p>

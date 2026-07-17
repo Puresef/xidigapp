@@ -90,7 +90,21 @@ export function VotePanel({
       <p className="xidig-card__meta">{t('capital.voteSignalNote')}</p>
       {error ? <PlainErrorBanner error={error} /> : null}
 
-      <p className="xidig-card__body">
+      {/* Split bar (brand-rethink adoption): the approve share of REAL cast
+          ballots. Rendered only when votes exist — never a zero-faked bar.
+          An eligible-voter denominator ("N of M") is deliberately absent:
+          no member-side query exposes M, and a made-up denominator would
+          violate the every-number-is-real rule. Decorative (aria-hidden) —
+          the counts line below carries the numbers for everyone. */}
+      {tally.total > 0 ? (
+        <div className="xidig-vote-split" aria-hidden="true">
+          <span
+            className="xidig-vote-split__approve"
+            style={{ width: `${Math.round((tally.approve / tally.total) * 100)}%` }}
+          />
+        </div>
+      ) : null}
+      <p className="xidig-card__meta">
         {t('capital.voteTally', {
           approve: tally.approve,
           reject: tally.reject,
@@ -98,26 +112,40 @@ export function VotePanel({
         })}
       </p>
 
-      <div className="xidig-capital-vote__actions">
+      {/* Ballot option cards (brand-rethink adoption): presentation only —
+          the same immediate-cast buttons, now with a radio-style indicator,
+          bold label, and signal-language description. aria-pressed keeps the
+          toggle semantics screen readers already had. */}
+      <div className="xidig-capital-vote__actions xidig-vote-cards">
         <button
           type="button"
-          className={`xidig-button ${myVote === 'approve' ? 'xidig-button--primary' : 'xidig-button--secondary'}`}
+          className={`xidig-vote-card${myVote === 'approve' ? ' xidig-vote-card--selected' : ''}`}
           disabled={pending}
           aria-pressed={myVote === 'approve'}
           onClick={() => cast('approve')}
         >
-          {t('capital.voteApprove')}
+          <span className="xidig-vote-card__radio" aria-hidden="true" />
+          <span className="xidig-vote-card__text">
+            <span className="xidig-vote-card__label">{t('capital.voteApprove')}</span>
+            <span className="xidig-vote-card__desc">{t('capital.voteApproveDesc')}</span>
+          </span>
         </button>
         <button
           type="button"
-          className={`xidig-button ${myVote === 'reject' ? 'xidig-button--primary' : 'xidig-button--secondary'}`}
+          className={`xidig-vote-card${myVote === 'reject' ? ' xidig-vote-card--selected' : ''}`}
           disabled={pending}
           aria-pressed={myVote === 'reject'}
           onClick={() => cast('reject')}
         >
-          {t('capital.voteReject')}
+          <span className="xidig-vote-card__radio" aria-hidden="true" />
+          <span className="xidig-vote-card__text">
+            <span className="xidig-vote-card__label">{t('capital.voteReject')}</span>
+            <span className="xidig-vote-card__desc">{t('capital.voteRejectDesc')}</span>
+          </span>
         </button>
-        {myVote !== null ? (
+      </div>
+      {myVote !== null ? (
+        <p>
           <button
             type="button"
             className="xidig-button xidig-button--secondary"
@@ -126,8 +154,8 @@ export function VotePanel({
           >
             {t('capital.voteRetract')}
           </button>
-        ) : null}
-      </div>
+        </p>
+      ) : null}
     </section>
   );
 }

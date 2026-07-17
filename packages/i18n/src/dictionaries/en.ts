@@ -557,8 +557,12 @@ export const en = {
     'Changes apply instantly on this device and follow you when signed in.',
   'settings.themeTitle': 'Theme',
   'settings.themeSystem': 'Match device',
-  'settings.themeLight': 'Light',
-  'settings.themeDark': 'Dark',
+  // Habeen/Maalin theme naming (brand-rethink adoption): EN pairs as
+  // Night/Day to match the SO names. Renaming SO away from 'Iftiin' also
+  // frees that word for the founding-badge candidate name "Iftiinka Hore"
+  // (docs/brand-direction.md §5 collision, now resolved).
+  'settings.themeLight': 'Day',
+  'settings.themeDark': 'Night',
   'settings.textSizeTitle': 'Text size',
   'settings.textSizeS': 'Small',
   'settings.textSizeM': 'Medium',
@@ -780,6 +784,15 @@ export const en = {
   'feed.emptyHint':
     'Follow people and Spaces to see their posts, updates, and new listings here.',
   'feed.newListingFrom': 'New listing from {name}',
+  // End-of-feed terminus + per-card transparency (brand-rethink adoption):
+  // feed.end is the REACHED-THE-END state (distinct from feed.empty); the
+  // feed.why* lines are mechanism-true to the following_feed view's union
+  // predicates (docs/rls-following-feed.md) — never claim more than the query.
+  'feed.end': 'You’re all caught up — that’s everything from your people.',
+  'feed.whyThis': 'Why this?',
+  'feed.whyPost': 'You follow {name} — that’s the only reason it’s here.',
+  'feed.whyLab': 'From {name}, a Space you follow or belong to — no other reason.',
+  'feed.whyListing': 'From {name}, who you follow — no other reason.',
   'feed.labUpdateTag': '{kind} update',
   'feed.labUpdateCrossPost': 'Cross-posted',
   'feed.labUpdateBy': 'By {name}',
@@ -1479,6 +1492,10 @@ export const en = {
     "A non-binding community signal — it guides, it doesn't decide.",
   'capital.voteApprove': 'Approve',
   'capital.voteReject': 'Reject',
+  // Ballot option-card descriptions (brand-rethink adoption): signal
+  // language only — mirrors voteSignalNote, never decision/invest language.
+  'capital.voteApproveDesc': 'Signal your support for putting this venture before the community.',
+  'capital.voteRejectDesc': 'Signal that this one isn’t ready yet.',
   'capital.voteRetract': 'Retract vote',
   'capital.voteTally': '{approve} approve · {reject} reject · {total} total',
   // Interests bar (Garab / help / Maalgeli)
