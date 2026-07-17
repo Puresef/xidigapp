@@ -34,7 +34,7 @@ One component: `apps/web/src/components/brand/AnimatedMark` — server-renderabl
 
 | Mode | Motion | Scenario |
 |---|---|---|
-| `assemble` | X converges from the four corners, the two woven star halves slide in and lock (~1.2 s, plays **once**) | **Entry surfaces** — scattered → gathered as the opening ritual. First mount: above the `/signin` title (verified: the `xidig-auth` shell renders no mark today — this adds one, it replaces nothing) |
+| `assemble` | X converges from the four corners, the two woven star halves slide in and lock (~1.2 s, plays **once**) | **Entry surfaces** — scattered → gathered as the opening ritual. Mounts: above the `/signin` title (verified: the `xidig-auth` shell renders no mark today — this adds one), **and the signed-out front-door chrome** (Warya 17 Jul: the mark belongs on the logged-out site too) — the front-nav brand slot gains the mark beside the wordmark, assemble playing once on first load, static thereafter. Budget note: inline SVG ~1.2 KB + CSS keyframes, counted by the front-door weight gate; the existing star-path/starfield choreography is untouched |
 | `flap` | Whole-butterfly fold along the vertical center, calm loop | **Loading / pending states** — the mark-based alternative to spinners (per the comets-not-spinners doctrine). Exported; first consumer mounts with its surface |
 | `ceremony` | Wings fold toward each other and spread — one shot, showier | **Celebration moments only** — vote cast, co-sign, founding-badge reveal (the ceremony-vs-utility doctrine: never on routine taps). Exported; mounts with those surfaces |
 
@@ -51,4 +51,4 @@ Mechanics proven on the motion board: quadrant `clip-path` layers for assemble (
 
 ## 6. Out of scope
 
-Wordmark and chrome spark; palette questions (gold/indigo — separately parked); building the personalization feature; PWA dynamic icon switching; any front-door surface changes (the front door has its own star system).
+Wordmark typography and chrome spark redesign; palette questions (gold/indigo — separately parked); building the personalization feature; PWA dynamic icon switching; front-door surfaces beyond the front-nav mark mount (the star-path/starfield/StarAssembly system stays untouched).
