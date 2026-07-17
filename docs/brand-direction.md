@@ -1,0 +1,17 @@
+# Brand direction — rulings from the brand-rethink review (17 Jul 2026)
+
+*Outcome record of the outside brand-identity proposal (`~/Downloads/xidig-brand-identity.html`, reviewed adversarially 14–17 Jul). The full adoption table lives in the review session; this file records only what is RULED or LANDED. Extends `docs/front-door-standard.md` (FDS) §2-H / §4.4. Hirar (short-video, ~v1.5) and Fadhi (group video, ~v1.2) are parked by Warya — the names are reserved vocabulary (native review pending), nothing else.*
+
+## Ruled by Warya (17 Jul)
+
+1. **The mark keeps the X.** The proposal's five-shard gold star as a *replacement* mark is **rejected** — the blue X-that-reads-as-a-star (somali-blues `#2E78B0` family + dark star) is the identity. What survives from the proposal is the *engineering brief* for FDS W-12: redraw the existing X as a clean geometric vector (~hundreds of bytes vs today's 19,052 B PNG-trace `apps/web/src/app/icon.svg`; the mark weaves — upper-left arm over the star's left point, star's lower-right point over the lower lobe — keep that fingerprint), optionally with separable arms so it can assemble on open (scattered → gathered). **Warya will do this redesign properly himself later** — a session-built candidate was parked at his instruction; no repo asset changed.
+2. **Sharing stays channel-nameless** (directive-8 Option B, shipped 11 Jul — recorded in FDS §5.2).
+
+## Landed (17 Jul, working tree)
+
+3. **Duotone gradient identity discs** — `apps/web/src/components/media/avatar.tsx`. The 0-byte initials fallback (§22 low-bandwidth identity: photos never required, never default-weight) upgraded from 8 flat muted colors to 8 deterministic duotone gradients on the brand family (somali-blue, teal, indigo, plum, forest, amber-brown, burgundy, steel). Rich-by-default (11 Jul directive) at zero bytes. White-initials contrast ≥ 4.5:1 against **both** stops of every pair is a regression **gate** (`avatar.test.tsx`), not a comment; measured 5.0–7.4. Blurhash branch unchanged (flat darkened wash); image branch unchanged.
+
+## Documented framework, NOT executed (needs-further-thought bucket)
+
+4. **Brand ratification as founding votes** — the proposal's strongest strategic idea, adopted as a *two-track framework*: (a) a founder's-draft brand ships now so nothing waits on a cohort that barely exists; (b) once founding members exist, specific questions go to real ballots on the shipped Phase-5 voting rails (zero new schema). **Ballotable:** tagline, founding-badge epithet, palette direction, ratification of the redrawn X, feature names. **Never ballotable:** legally gated questions (the member-equity/securities framing rides the FDS §9-Q3 legal lane), safety policy, and Somali grammatical correctness (native-reviewer authority, not majority vote). Every ballot declares binding vs advisory up front. Turnout renders as a real organic-filtered N/500.
+5. **Open brand questions deliberately NOT ruled here:** palette pivot (indigo-vs-ink base, gold-vs-blue accent), tagline ("Hal xiddig, hal dad" — draft, native review first), Osmanya accent (subsetted self-hosted only, script-reader gate), founding-badge name ("Iftiinka Hore" — note collision with `settings.themeLight` SO 'Iftiin'), Habeen/Maalin theme naming, and the double-d orthography tension (*xiddig* correct Somali vs *Xidig* brand). All carry SO-native-review routing; several are founding-ballot candidates per §4.
