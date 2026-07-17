@@ -1171,6 +1171,196 @@ button.xidig-poll__option {
   background: var(--x-ok);
 }
 
+/* ============================================================================
+ * AnimatedMark (mark-redesign spec §4) — the brand mark's three motions.
+ * BASE STATE IS THE FINAL FRAME everywhere: with motion off (reduced-motion
+ * pref or html[data-motion='off']) every layer sits assembled and whole.
+ * Animations apply ONLY inside the double gate below.
+ * ========================================================================= */
+.xidig-animark {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  vertical-align: middle;
+  perspective: 700px;
+}
+
+.xidig-animark > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.xidig-animark__q,
+.xidig-animark__star,
+.xidig-animark__half {
+  position: absolute;
+  inset: 0;
+}
+
+.xidig-animark__q svg,
+.xidig-animark__star svg,
+.xidig-animark__half svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Assemble quadrants tile the X exactly; seams vanish at rest. */
+.xidig-animark__q--1 {
+  clip-path: inset(0 50% 50% 0);
+}
+.xidig-animark__q--2 {
+  clip-path: inset(0 0 50% 50%);
+}
+.xidig-animark__q--3 {
+  clip-path: inset(50% 50% 0 0);
+}
+.xidig-animark__q--4 {
+  clip-path: inset(50% 0 0 50%);
+}
+
+.xidig-animark__half--l {
+  clip-path: inset(0 50% 0 0);
+  transform-origin: 50% 50%;
+}
+.xidig-animark__half--r {
+  clip-path: inset(0 0 0 50%);
+  transform-origin: 50% 50%;
+}
+
+/* The double gate: sweep/fold/converge only when motion is welcome. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) .xidig-animark--assemble .xidig-animark__q--1 {
+    animation: xidig-animark-q1 0.55s ease-out both;
+  }
+  html:not([data-motion='off']) .xidig-animark--assemble .xidig-animark__q--2 {
+    animation: xidig-animark-q2 0.55s ease-out 0.06s both;
+  }
+  html:not([data-motion='off']) .xidig-animark--assemble .xidig-animark__q--3 {
+    animation: xidig-animark-q3 0.55s ease-out 0.12s both;
+  }
+  html:not([data-motion='off']) .xidig-animark--assemble .xidig-animark__q--4 {
+    animation: xidig-animark-q4 0.55s ease-out 0.18s both;
+  }
+  html:not([data-motion='off']) .xidig-animark--assemble .xidig-animark__star--r {
+    animation: xidig-animark-star-r 0.5s ease-out 0.55s both;
+  }
+  html:not([data-motion='off']) .xidig-animark--assemble .xidig-animark__star--l {
+    animation: xidig-animark-star-l 0.5s ease-out 0.65s both;
+  }
+  html:not([data-motion='off']) .xidig-animark--flap > svg {
+    transform-origin: 50% 50%;
+    animation: xidig-animark-flap 2.6s cubic-bezier(0.55, 0, 0.35, 1) infinite;
+  }
+  html:not([data-motion='off']) .xidig-animark--ceremony .xidig-animark__half--l {
+    animation: xidig-animark-fold-l 0.9s cubic-bezier(0.55, 0, 0.35, 1) 1;
+  }
+  html:not([data-motion='off']) .xidig-animark--ceremony .xidig-animark__half--r {
+    animation: xidig-animark-fold-r 0.9s cubic-bezier(0.55, 0, 0.35, 1) 1;
+  }
+}
+
+@keyframes xidig-animark-q1 {
+  from {
+    transform: translate(-46%, -46%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes xidig-animark-q2 {
+  from {
+    transform: translate(46%, -46%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes xidig-animark-q3 {
+  from {
+    transform: translate(-46%, 46%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes xidig-animark-q4 {
+  from {
+    transform: translate(46%, 46%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes xidig-animark-star-r {
+  from {
+    transform: translate(34%, -12%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes xidig-animark-star-l {
+  from {
+    transform: translate(-34%, 12%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes xidig-animark-flap {
+  0%,
+  58%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: rotateY(64deg) scaleX(0.32);
+  }
+}
+@keyframes xidig-animark-fold-l {
+  0%,
+  100% {
+    transform: none;
+  }
+  35% {
+    transform: rotateY(62deg);
+  }
+}
+@keyframes xidig-animark-fold-r {
+  0%,
+  100% {
+    transform: none;
+  }
+  35% {
+    transform: rotateY(-62deg);
+  }
+}
+
+/* Mount alignment: nav brand slot + the signin entry ritual. */
+.xidig-brand__mark {
+  margin-right: 0.45rem;
+}
+
+.xidig-auth__mark {
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+
 /* "N hidden — Show all on this page" bar */
 .xidig-lite-showall {
   display: flex;

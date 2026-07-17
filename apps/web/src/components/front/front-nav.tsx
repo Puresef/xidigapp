@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation';
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
+import { AnimatedMark } from '@/components/brand/animated-mark';
+
 /**
  * Signed-out front-door nav (docs/front-door-plan.md §2). Deliberately light:
  * no BadgeProvider, no supabase-js, no polling — an anonymous visitor's header
@@ -30,7 +32,11 @@ export function FrontNav() {
 
   return (
     <nav aria-label={t('a11y.mainNav')} className="xidig-nav">
+      {/* The mark joins the logged-out chrome (mark-redesign spec §4):
+          assemble plays once per load under the CSS motion gate. Decorative
+          (no label) — the Link's brand text already carries the name. */}
       <Link href="/" className="xidig-brand">
+        <AnimatedMark mode="assemble" size={20} className="xidig-brand__mark" />
         {t('app.name')}
       </Link>
       <ul className="xidig-nav__list">

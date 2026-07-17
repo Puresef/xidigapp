@@ -1,5 +1,6 @@
 import { SignInForm, type SignInMethod } from '@/components/auth/signin-form';
 import { Banner } from '@/components/banner';
+import { AnimatedMark } from '@/components/brand/animated-mark';
 import { isErrorCode, resolveError } from '@/lib/errors';
 import { getT } from '@/lib/locale';
 import { safeNextPath } from '@/lib/auth/links';
@@ -30,6 +31,11 @@ export default async function SignInPage({
 
   return (
     <main className="xidig-auth">
+      {/* Entry ritual (mark-redesign spec §4): the mark assembles once above
+          the title — scattered → gathered. Named: it stands alone here. */}
+      <p className="xidig-auth__mark">
+        <AnimatedMark mode="assemble" size={56} label={t('app.name')} />
+      </p>
       <h1 className="xidig-auth__title">{t('auth.signInTitle')}</h1>
       {reasonError ? <Banner kind="error">{reasonError.message}</Banner> : null}
       <SignInForm initialMethod={method} next={next} />
