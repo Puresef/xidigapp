@@ -3648,6 +3648,7 @@ export type Database = {
           id: string
           name: string
           source: Database["public"]["Enums"]["content_source"]
+          usage_count: number
         }
         Insert: {
           created_at?: string
@@ -3656,6 +3657,7 @@ export type Database = {
           id?: string
           name: string
           source?: Database["public"]["Enums"]["content_source"]
+          usage_count?: number
         }
         Update: {
           created_at?: string
@@ -3664,11 +3666,63 @@ export type Database = {
           id?: string
           name?: string
           source?: Database["public"]["Enums"]["content_source"]
+          usage_count?: number
         }
         Relationships: [
           {
             foreignKeyName: "tags_created_by_user_id_fkey"
             columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      term_suggestions: {
+        Row: {
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["term_suggestion_kind"]
+          note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: Database["public"]["Enums"]["term_suggestion_status"]
+          suggested_by: string
+          term: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["term_suggestion_kind"]
+          note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["term_suggestion_status"]
+          suggested_by: string
+          term: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["term_suggestion_kind"]
+          note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["term_suggestion_status"]
+          suggested_by?: string
+          term?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "term_suggestions_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "term_suggestions_suggested_by_fkey"
+            columns: ["suggested_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -4640,6 +4694,8 @@ export type Database = {
         | "other"
       report_status: "open" | "in_review" | "resolved" | "dismissed"
       space_mode: "club" | "lab"
+      term_suggestion_kind: "lane" | "listing_category"
+      term_suggestion_status: "pending" | "approved" | "declined"
       user_role: "member" | "mod" | "admin"
       verification_request_status:
         | "pending"
@@ -4917,6 +4973,8 @@ export const Constants = {
       ],
       report_status: ["open", "in_review", "resolved", "dismissed"],
       space_mode: ["club", "lab"],
+      term_suggestion_kind: ["lane", "listing_category"],
+      term_suggestion_status: ["pending", "approved", "declined"],
       user_role: ["member", "mod", "admin"],
       verification_request_status: [
         "pending",

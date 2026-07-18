@@ -28,7 +28,10 @@ export async function GET(request: Request): Promise<Response> {
 
     let query = ctx.supabase
       .from('tags')
-      .select('id, name')
+      .select('id, name, usage_count')
+      // Popularity first (count-guided) then alphabetical — surfaces the
+      // canonical, widely-used tag ahead of near-duplicate one-offs.
+      .order('usage_count', { ascending: false })
       .order('name', { ascending: true })
       .limit(TAG_LIST_MAX);
     if (params.q) {

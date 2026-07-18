@@ -12,6 +12,7 @@ import { Banner } from '../banner';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { OPEN_TO_KEYS, OPEN_TO_SLUGS } from './open-to';
 import { SkillsInput } from './skills-input';
+import { SuggestTerm } from './suggest-term';
 
 /**
  * Profile create/edit form (§10 fields, §20 complete-profile). Sends the FULL
@@ -266,6 +267,7 @@ export function ProfileForm({
             </label>
           ))}
         </div>
+        <SuggestTerm kind="lane" />
       </fieldset>
 
       <fieldset className="xidig-field">

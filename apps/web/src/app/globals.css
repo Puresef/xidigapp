@@ -2346,6 +2346,43 @@ a.xidig-settings-card:hover {
   line-height: 1;
 }
 
+/* "Suggest a term" escape hatch under the shared-coordinate pickers. */
+.xidig-suggest {
+  display: flex;
+  gap: 0.5rem;
+  margin-block-start: 0.5rem;
+}
+
+.xidig-suggest__open {
+  margin-block-start: 0.5rem;
+}
+
+/* Admin review queue (term suggestions). */
+.xidig-review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.xidig-review-list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+}
+
+.xidig-review-list__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
 .xidig-drafts {
   margin-block: 0.5rem;
 }
