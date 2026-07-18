@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
-import { createServerClient as createServiceClient } from '@xidig/db';
+import { createServerClient as createServiceClient } from '@xidig/db/server';
 import type { Database } from '@xidig/db';
 
 import { env } from '@/env';

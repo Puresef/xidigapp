@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { createServerClient } from '@xidig/db';
+import { createServerClient } from '@xidig/db/server';
 
 import { env } from '@/env';
 
