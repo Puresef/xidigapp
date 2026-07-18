@@ -16,6 +16,9 @@
   --x-radius: 10px;
   --x-space: 1rem;
   --x-max-form: 26rem;
+  /* Form-control surface: fields must wear the theme, never the UA default
+     (the browser's color-scheme gray reads as broken next to token cards). */
+  --x-field-bg: #ffffff;
 }
 
 * {
@@ -118,9 +121,21 @@ main {
   border-color: var(--x-border);
 }
 
+/* Disabled buttons go flat and muted — NOT a dimmed copy of the primary
+   pill, which reads as a second (broken) button style next to enabled ones. */
 .xidig-button:disabled {
-  opacity: 0.55;
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+  color: var(--x-muted);
+  border-color: var(--x-border);
   cursor: not-allowed;
+}
+
+/* Pressed toggles (reactions, follows) stay visibly ON while briefly
+   disabled in-flight — flattening them would read as the state dropping. */
+.xidig-button[aria-pressed='true']:disabled {
+  background: color-mix(in srgb, var(--x-accent) 55%, var(--x-bg));
+  color: var(--x-accent-fg);
+  border-color: transparent;
 }
 
 /* --- Auth / settings forms --- */
@@ -157,6 +172,8 @@ main {
   padding: 0.55rem 0.75rem;
   font: inherit;
   width: 100%;
+  background: var(--x-field-bg);
+  color: var(--x-fg);
 }
 
 .xidig-field__input:focus {
@@ -251,6 +268,50 @@ main {
   font-size: 0.8rem;
   border: 1px solid var(--x-border);
   color: var(--x-muted);
+  /* Chips render as <span> on cards and <button> in pickers — without an
+     explicit background the buttons fall back to the UA gray. */
+  background: transparent;
+  font-family: inherit;
+}
+
+button.xidig-tag {
+  cursor: pointer;
+}
+
+/* Disabled chips keep readable text (the at-cap moment is exactly when the
+   member must still read them) — color-shift, not opacity dimming. */
+button.xidig-tag:disabled {
+  background: color-mix(in srgb, var(--x-border) 30%, transparent);
+  color: var(--x-muted);
+  border-color: color-mix(in srgb, var(--x-border) 60%, transparent);
+  cursor: not-allowed;
+}
+
+/* Picker chips toggle with aria-pressed — sighted users need the state too. */
+.xidig-tag[aria-pressed='true'] {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+  border-color: var(--x-accent);
+}
+
+/* Collapsed composer: a field-shaped invitation, so the Plaza leads with the
+   feed instead of a full form. Expands into the real composer on click. */
+.xidig-composer-prompt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--x-field-bg);
+  color: var(--x-muted);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  cursor: text;
+}
+
+.xidig-composer-prompt:hover,
+.xidig-composer-prompt:focus-visible {
+  border-color: var(--x-muted);
 }
 
 .xidig-tag--ok {
@@ -432,6 +493,30 @@ main {
   flex: 3 1 14rem;
 }
 
+/* Directory filter forms: an even grid instead of rag-right flex — no more
+   one stretched field with the Search button crammed on its tail. */
+.xidig-toolbar--filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.5rem 0.75rem;
+  align-items: end;
+}
+
+.xidig-toolbar--filters .xidig-field,
+.xidig-toolbar--filters .xidig-field--grow {
+  min-width: 0;
+}
+
+.xidig-toolbar--filters .xidig-field--grow {
+  grid-column: span 2;
+}
+
+@media (max-width: 32rem) {
+  .xidig-toolbar--filters .xidig-field--grow {
+    grid-column: auto;
+  }
+}
+
 /* Map (Leaflet mounts into this) */
 .xidig-map {
   width: 100%;
@@ -495,7 +580,7 @@ a.xidig-tabs__tab {
   flex: 1;
 }
 
-a.xidig-tabs__tab[aria-current='page'] {
+.xidig-tabs__tab[aria-current='page'] {
   background: var(--x-accent);
   color: var(--x-accent-fg);
 }
@@ -998,6 +1083,24 @@ button.xidig-poll__option {
   );
 }
 
+/* Shared empty state (rich-by-default): the mark, the message, and — where
+   the surface has an obvious next step — one CTA. Replaces the bare bordered
+   paragraphs that read as wireframe. */
+.xidig-empty {
+  justify-items: center;
+  text-align: center;
+  padding: 2rem var(--x-space);
+}
+
+.xidig-empty__mark {
+  display: inline-flex;
+  opacity: 0.55;
+}
+
+.xidig-empty .xidig-card__body {
+  max-width: 32rem;
+}
+
 /* "Why am I seeing this" disclosure under feed cards: one tap away, never
    noise. Summary reads as a quiet meta link; the answer stays meta-toned. */
 .xidig-feed-why {
@@ -1494,6 +1597,8 @@ html[data-motion='off'] .xidig-avatar {
   --x-danger-bg: #35201e;
   --x-ok: #8ad4a4;
   --x-ok-bg: #1c2f24;
+  /* Slightly recessed below the card surface so fields read as wells. */
+  --x-field-bg: #101216;
 }
 
 /* Light-hardcoded surfaces that tokens don't reach. */
@@ -2227,6 +2332,9 @@ a.xidig-settings-card:hover {
 .xidig-footer__list {
   display: flex;
   flex-wrap: wrap;
+  /* One composed unit with the centered mark above — not a left-anchored
+     row under a centered logo. */
+  justify-content: center;
   gap: 0.5rem 1.25rem;
   list-style: none;
   margin: 0 auto;

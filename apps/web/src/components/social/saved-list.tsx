@@ -17,6 +17,7 @@ import type { PostView } from '@/lib/plaza/views';
 import type { BookmarkEntityType } from '@/lib/social/entities';
 
 import { PlainErrorBanner } from '../auth/plain-error';
+import { FeedEnd } from '../feed/feed-end';
 import { BookmarkButton } from './bookmark-button';
 
 /**
@@ -170,7 +171,7 @@ export function SavedList({
           </button>
         </p>
       ) : loaded && items.length > 0 ? (
-        <p className="xidig-card__meta">{t('state.endOfList')}</p>
+        <FeedEnd messageKey="state.endOfList" />
       ) : null}
     </section>
   );

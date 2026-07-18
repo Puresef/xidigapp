@@ -8,7 +8,11 @@ import { ApiRequestError, apiGet } from '@/lib/api-client';
 import type { CategoryOption } from '@/lib/categories';
 import type { PlainError } from '@/lib/errors';
 import { formatPriceRange, listingOpenNow } from '@/lib/listings';
+import Link from 'next/link';
+
 import { PlainErrorBanner } from '../auth/plain-error';
+import { EmptyState } from '../empty-state';
+import { FeedEnd } from '../feed/feed-end';
 import { emptyBusinessesKey } from './directory-empty';
 import { ListingCard, type ListingRow } from './listing-card';
 import { LoadingFlap } from '@/components/loading-flap';
@@ -97,10 +101,13 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
   // client-side fetch, so there is no SSR/hydration divergence to worry
   // about). Filters the LOADED results only — see the module comment.
   const visibleRows = openNowOnly ? rows.filter((row) => listingOpenNow(row.opening_hours)) : rows;
+  // "Open now" only counts as a filter when it emptied a populated page —
+  // mirrors emptyBusinessesKey's clientFiltered definition.
+  const clientFiltered = rows.length > 0 && openNowOnly;
 
   return (
     <div>
-      <form className="xidig-toolbar" onSubmit={onSubmit}>
+      <form className="xidig-toolbar xidig-toolbar--filters" onSubmit={onSubmit}>
         <div className="xidig-field xidig-field--grow">
           <label className="xidig-field__label" htmlFor="biz-q">
             {t('action.search')}
@@ -204,9 +211,19 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
       {error ? <PlainErrorBanner error={error} /> : null}
       {!loaded && pending ? <LoadingFlap /> : null}
       {loaded && visibleRows.length === 0 && !error ? (
-        <p className="xidig-card__meta">
-          {t(emptyBusinessesKey(applied, rows.length > 0 && openNowOnly))}
-        </p>
+        <EmptyState
+          messageKey={emptyBusinessesKey(applied, clientFiltered)}
+          // CTA only for the genuinely-empty browse, not filtered no-results —
+          // same "filtered" definition as the message key, so copy that
+          // invites adding a listing always comes WITH the button.
+          action={
+            applied || clientFiltered ? undefined : (
+              <Link className="xidig-button xidig-button--primary" href="/suuq/new">
+                {t('suuq.addListing')}
+              </Link>
+            )
+          }
+        />
       ) : null}
 
       <ul className="xidig-card-grid">
@@ -231,7 +248,7 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
           </button>
         </p>
       ) : loaded && rows.length > 0 ? (
-        <p className="xidig-card__meta">{t('state.endOfList')}</p>
+        <FeedEnd messageKey="state.endOfList" />
       ) : null}
     </div>
   );

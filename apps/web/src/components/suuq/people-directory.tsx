@@ -11,6 +11,8 @@ import { LANES } from '@/lib/lanes';
 import { Avatar } from '../media/avatar';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { OPEN_TO_KEYS, OPEN_TO_SLUGS } from '../profile/open-to';
+import { EmptyState } from '../empty-state';
+import { FeedEnd } from '../feed/feed-end';
 import { emptyPeopleKey } from './directory-empty';
 import { LoadingFlap } from '@/components/loading-flap';
 
@@ -113,7 +115,7 @@ export function PeopleDirectory() {
 
   return (
     <div>
-      <form className="xidig-toolbar" onSubmit={onSubmit}>
+      <form className="xidig-toolbar xidig-toolbar--filters" onSubmit={onSubmit}>
         <div className="xidig-field xidig-field--grow">
           <label className="xidig-field__label" htmlFor="people-q">
             {t('action.search')}
@@ -217,7 +219,18 @@ export function PeopleDirectory() {
       {error ? <PlainErrorBanner error={error} /> : null}
       {!loaded && pending ? <LoadingFlap /> : null}
       {loaded && rows.length === 0 && !error ? (
-        <p className="xidig-card__meta">{t(emptyPeopleKey(applied))}</p>
+        <EmptyState
+          messageKey={emptyPeopleKey(applied)}
+          // CTA only on the unfiltered browse — "no results for that search"
+          // is not a complete-your-profile moment.
+          action={
+            applied ? undefined : (
+              <Link className="xidig-button xidig-button--primary" href="/settings/profile">
+                {t('onboarding.completeProfile')}
+              </Link>
+            )
+          }
+        />
       ) : null}
 
       <ul className="xidig-card-grid">
@@ -269,7 +282,7 @@ export function PeopleDirectory() {
           </button>
         </p>
       ) : loaded && rows.length > 0 ? (
-        <p className="xidig-card__meta">{t('state.endOfList')}</p>
+        <FeedEnd messageKey="state.endOfList" />
       ) : null}
     </div>
   );

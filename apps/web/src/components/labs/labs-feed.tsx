@@ -9,7 +9,11 @@ import type { PlainError } from '@/lib/errors';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import type { LabView } from '@/lib/labs/views';
 
+import Link from 'next/link';
+
 import { PlainErrorBanner } from '../auth/plain-error';
+import { EmptyState } from '../empty-state';
+import { FeedEnd } from '../feed/feed-end';
 import { LabCard } from './lab-card';
 import { LoadingFlap } from '@/components/loading-flap';
 
@@ -78,9 +82,14 @@ export function LabsFeed({
       {error ? <PlainErrorBanner error={error} /> : null}
 
       {loaded && items.length === 0 && !error ? (
-        <div className="xidig-section">
-          <p className="xidig-card__body">{t('lab.emptyList')}</p>
-        </div>
+        <EmptyState
+          messageKey="lab.emptyList"
+          action={
+            <Link className="xidig-button xidig-button--primary" href="/labs/new">
+              {t('lab.createCta')}
+            </Link>
+          }
+        />
       ) : null}
 
       {items.length > 0 ? (
@@ -105,7 +114,7 @@ export function LabsFeed({
           </button>
         </p>
       ) : loaded && items.length > 0 ? (
-        <p className="xidig-card__meta">{t('state.endOfList')}</p>
+        <FeedEnd messageKey="state.endOfList" />
       ) : null}
     </section>
   );

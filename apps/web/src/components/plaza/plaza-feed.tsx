@@ -13,7 +13,10 @@ import type { PlainError } from '@/lib/errors';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import type { PostView } from '@/lib/plaza/views';
 
+import { COMPOSE_EVENT } from '@/lib/plaza/constants';
+
 import { PlainErrorBanner } from '../auth/plain-error';
+import { EmptyState } from '../empty-state';
 import { FeedEnd } from '../feed/feed-end';
 import { PostCard } from './post-card';
 
@@ -137,9 +140,22 @@ export function PlazaFeed({
         ) : null}
 
         {loaded && items.length === 0 && !error ? (
-          <div className="xidig-section">
-            <p className="xidig-card__body">{type ? t(EMPTY_KEYS[type]) : t('state.emptyFeed')}</p>
-          </div>
+          <EmptyState
+            messageKey={type ? EMPTY_KEYS[type] : 'state.emptyFeed'}
+            action={
+              <button
+                type="button"
+                className="xidig-button xidig-button--primary"
+                onClick={() =>
+                  // detail.type carries the active filter so "No polls yet →
+                  // Start the first post" opens the composer ON the Poll tab.
+                  window.dispatchEvent(new CustomEvent(COMPOSE_EVENT, { detail: { type } }))
+                }
+              >
+                {t('plaza.emptyCta')}
+              </button>
+            }
+          />
         ) : null}
 
         {items.length > 0 ? (

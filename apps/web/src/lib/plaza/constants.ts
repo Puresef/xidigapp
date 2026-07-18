@@ -39,6 +39,10 @@ export const MEDIA_BUCKET = 'post-media';
 
 export const ASK_NUDGE_AFTER_DAYS = 7; // §15/§26 stale-Ask nudge
 
+// Window event that expands + focuses the (collapsed-by-default) composer —
+// dispatched by the feed's empty-state CTA; the composer listens.
+export const COMPOSE_EVENT = 'xidig:compose';
+
 // §15 helper credit → reputation_events ledger row (event_type below).
 // Phase 7 recomputes scores with the full 30pt/day-cap + 90-day-decay rules;
 // until then the materialized helper_score is a plain increment.

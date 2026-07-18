@@ -285,6 +285,17 @@ body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button--second
   border-color: rgba(151, 173, 214, 0.45);
 }
 
+/* Disabled affordance in front tokens — the app-side .xidig-button:disabled
+   colors lose to the higher-specificity front rules above, and the old
+   global opacity dim is gone. Placed after the hover rules so it wins them. */
+main.xidig-front .xidig-button:disabled,
+body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button:disabled {
+  background: rgba(151, 173, 214, 0.12);
+  border-color: var(--xf-line-strong);
+  color: rgba(238, 242, 249, 0.55);
+  cursor: not-allowed;
+}
+
 main.xidig-front .xidig-button--primary:focus-visible,
 body:has(main.xidig-front) .xidig-header:has(.xidig-brand) .xidig-button--primary:focus-visible {
   outline: 2px solid #ffd9a8;

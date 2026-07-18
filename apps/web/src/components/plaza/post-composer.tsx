@@ -6,11 +6,13 @@ import { useRouter } from 'next/navigation';
 import { formatRelativeTime, type MessageKey } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
+import { ButtonTabs } from '@/components/button-tabs';
 import { MentionAutocomplete } from '@/components/social/mention-autocomplete';
 import { ApiRequestError, apiDelete, apiGet, apiPatch, apiPost } from '@/lib/api-client';
 import { detectLink } from '@/lib/embeds';
 import type { PlainError } from '@/lib/errors';
 import {
+  COMPOSE_EVENT,
   POLL_DEFAULT_DAYS,
   POLL_MAX_DAYS,
   POLL_MIN_DAYS,
@@ -105,10 +107,22 @@ function readLocalDraft(): LocalDraft | null {
   }
 }
 
-export function PostComposer({ lowBandwidth }: { lowBandwidth: boolean }) {
+export function PostComposer({
+  lowBandwidth,
+  defaultExpanded = false,
+}: {
+  lowBandwidth: boolean;
+  defaultExpanded?: boolean;
+}) {
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
+
+  // Collapsed by default so the Plaza leads with the feed, not a form. A
+  // restored draft, the feed's empty-state CTA (COMPOSE_EVENT), or the prompt
+  // itself expands it; it never auto-collapses.
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  const focusOnExpandRef = useRef(false);
 
   const [type, setType] = useState<PostType>('intro');
   const [title, setTitle] = useState('');
@@ -147,6 +161,9 @@ export function PostComposer({ lowBandwidth }: { lowBandwidth: boolean }) {
       applyPayload(local.payload);
       draftIdRef.current = local.draftId;
       setRestored(true);
+      // Someone mid-thought gets their words back on screen, not behind a
+      // collapsed prompt.
+      setExpanded(true);
     }
     apiGet<{ items: DraftListItem[] }>('/api/me/drafts')
       .then((page) => setDrafts(page.items))
@@ -154,6 +171,40 @@ export function PostComposer({ lowBandwidth }: { lowBandwidth: boolean }) {
         // Drafts list is a bonus affordance — never block composing.
       });
   }, [applyPayload]);
+
+  // Latest has-unsaved-text, readable from the stable event listener below.
+  const hasTextRef = useRef(false);
+  hasTextRef.current = Boolean(title.trim() || body.trim());
+
+  // Feed empty-state CTA (or any future "compose" entry point). detail.type
+  // carries the feed's active filter — "No polls yet → Start the first post"
+  // must land on the Poll tab, not Intro. Never override a draft in progress.
+  useEffect(() => {
+    function onCompose(event: Event) {
+      const requested = (event as CustomEvent<{ type?: string }>).detail?.type;
+      if (
+        requested &&
+        (POST_TYPES as readonly string[]).includes(requested) &&
+        !hasTextRef.current
+      ) {
+        setType(requested as PostType);
+      }
+      focusOnExpandRef.current = true;
+      setExpanded(true);
+      // Already expanded → no state change, no effect re-run: focus directly.
+      document.getElementById('composer-body')?.focus();
+    }
+    window.addEventListener(COMPOSE_EVENT, onCompose);
+    return () => window.removeEventListener(COMPOSE_EVENT, onCompose);
+  }, []);
+
+  // Focus lands in the body only for user-initiated expansion — never on a
+  // mount that happens to start expanded.
+  useEffect(() => {
+    if (!expanded || !focusOnExpandRef.current) return;
+    focusOnExpandRef.current = false;
+    document.getElementById('composer-body')?.focus();
+  }, [expanded]);
 
   const persistDraft = useCallback(async () => {
     const state = saveStateRef.current;
@@ -225,6 +276,8 @@ export function PostComposer({ lowBandwidth }: { lowBandwidth: boolean }) {
     draftIdRef.current = draft.id;
     setDrafts((current) => current.filter((row) => row.id !== draft.id));
     setRestored(false);
+    focusOnExpandRef.current = true;
+    setExpanded(true);
   }
 
   function deleteDraft(draftId: string) {
@@ -300,8 +353,11 @@ export function PostComposer({ lowBandwidth }: { lowBandwidth: boolean }) {
 
   const visibleDrafts = drafts.filter((row) => row.id !== draftIdRef.current);
 
-  return (
-    <section className="xidig-section">
+  // Shared between the collapsed and expanded renders: the title, the
+  // draft-restored banner, and the "continue a draft" picker (continueDraft
+  // expands, so drafts stay reachable while collapsed).
+  const header = (
+    <>
       <h2 className="xidig-section__title">{t('plaza.composerTitle')}</h2>
 
       {restored ? <Banner kind="notice">{t('plaza.draftRestored')}</Banner> : null}
@@ -347,21 +403,46 @@ export function PostComposer({ lowBandwidth }: { lowBandwidth: boolean }) {
           </ul>
         </section>
       ) : null}
+    </>
+  );
 
-      <div role="tablist" aria-label={t('plaza.composerTitle')} className="xidig-tabs">
-        {POST_TYPES.map((candidate) => (
-          <button
-            key={candidate}
-            type="button"
-            role="tab"
-            aria-selected={candidate === type}
-            className="xidig-tabs__tab"
-            onClick={() => setType(candidate)}
-          >
-            {t(TYPE_LABEL_KEYS[candidate])}
-          </button>
-        ))}
-      </div>
+  if (!expanded) {
+    return (
+      <section className="xidig-section">
+        {header}
+        {/* A one-way reveal whose trigger unmounts on activation is a plain
+            button — aria-expanded would promise a collapse that never comes. */}
+        <button
+          type="button"
+          className="xidig-composer-prompt"
+          onClick={() => {
+            focusOnExpandRef.current = true;
+            setExpanded(true);
+          }}
+        >
+          {t('plaza.composerPrompt')}
+        </button>
+      </section>
+    );
+  }
+
+  return (
+    <section className="xidig-section">
+      {header}
+
+      <ButtonTabs<PostType>
+        label={t('plaza.composerTitle')}
+        idBase="composer-type"
+        panelId="composer-panel"
+        value={type}
+        onChange={setType}
+        tabs={POST_TYPES.map((candidate) => ({
+          value: candidate,
+          label: t(TYPE_LABEL_KEYS[candidate]),
+        }))}
+      />
+
+      <div role="tabpanel" id="composer-panel" aria-labelledby={`composer-type-tab-${type}`}>
       <p className="xidig-field__hint">{t(TYPE_HINT_KEYS[type])}</p>
 
       <form className="xidig-form" onSubmit={submit}>
@@ -489,6 +570,7 @@ export function PostComposer({ lowBandwidth }: { lowBandwidth: boolean }) {
           ) : null}
         </p>
       </form>
+      </div>
     </section>
   );
 }

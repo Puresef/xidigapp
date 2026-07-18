@@ -855,7 +855,10 @@ export const so = {
   'plaza.emptyUpdate': 'Weli war ma jiro. Wax ma dhisaysaa? Wadaag horumarkaaga.',
   'plaza.emptyPoll':
     'Weli codbixin ma jirto. Go’aan ma u baahan tahay? Bulshada weydiiso codbixin degdeg ah.',
+  'plaza.emptyCta': 'Qor qoraalka koowaad',
+  'plaza.imageChoose': 'Sawirro ku dar',
   'plaza.composerTitle': 'La wadaag Madasha',
+  'plaza.composerPrompt': 'Wax la wadaag Madasha…',
   'plaza.titleLabel': 'Cinwaan (ikhtiyaari)',
   'plaza.bodyLabel': 'Qoraalkaaga',
   'plaza.bodyLabelAsk': 'Maxaad caawimaad ugu baahan tahay?',
@@ -1001,6 +1004,7 @@ export const so = {
   'messages.tabChats': 'Sheekooyin',
   'messages.tabRequests': 'Codsiyo',
   'messages.empty': 'Weli sheeko ma jirto. Fur bogga dhisaha, kadibna taabo Fariin si aad u bilowdo.',
+  'messages.emptyCta': 'Dad ka hel Suuqa',
   'messages.emptyRequests': 'Hadda codsi fariin ah ma jiro.',
   'messages.requestsHeading': 'Codsiyada fariinta',
   'messages.you': 'Adiga',
@@ -1097,7 +1101,7 @@ export const so = {
   'push.denied':
     'Riixistu waa ka xannaaban tahay dejinta browserkaaga. U ogolow ogeysiisyada Xidig si aad u daarto.',
   'push.unavailable':
-    'Riixista weli lagama habayn server-ka — ogeysiisyada gudaha app-ku weli way shaqeeyaan.',
+    'Riixistu dhawaan ayay imanaysaa — jawaabaha iyo xusniinta halkan gudaha app-ka ayaad ku sii arki doontaa.',
 
   // Labs / Spaces (§16, §20) — draft SO, pending native review.
   'lab.listTitle': 'Warshadaha',

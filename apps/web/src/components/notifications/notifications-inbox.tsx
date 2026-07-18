@@ -11,6 +11,7 @@ import type { NotificationBundle } from '@/lib/notifications/bundle';
 import type { PlainError } from '@/lib/errors';
 import { createClient } from '@/lib/supabase-browser';
 
+import { EmptyState } from '../empty-state';
 import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
@@ -167,9 +168,7 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
       ) : null}
 
       {bundles.length === 0 ? (
-        <div className="xidig-section xidig-empty-sky">
-          <p className="xidig-card__body">{t('notif.empty')}</p>
-        </div>
+        <EmptyState className="xidig-empty-sky" messageKey="notif.empty" />
       ) : (
         <ul className="xidig-notif-list">
           {bundles.map((b) => {

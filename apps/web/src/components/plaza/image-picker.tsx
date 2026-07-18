@@ -53,6 +53,7 @@ export function ImagePicker({
   const t = useT();
   const [staged, setStaged] = useState<StagedImage[]>([]);
   const [error, setError] = useState<PlainError | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Object URLs live until the picker unmounts (revoking on every staged-list
   // change would kill previews still on screen).
@@ -156,23 +157,39 @@ export function ImagePicker({
 
   return (
     <div className="xidig-field">
-      <label className="xidig-field__label" htmlFor="composer-images">
+      {/* Not a <label>: label activation forwards clicks to the associated
+          control even when it's hidden, which would reopen the OS file dialog
+          after the trigger button disables at the image cap. */}
+      <p className="xidig-field__label" id="composer-images-label">
         {t('plaza.imagesLabel')}
-      </label>
+      </p>
       <p className="xidig-field__hint">
         {t('plaza.imagesHint', { max: POST_MAX_IMAGES, maxMb: IMAGE_MAX_MB })}
       </p>
       {error ? <PlainErrorBanner error={error} /> : null}
+      {/* The native file control can't be themed — a styled trigger fronts a
+          hidden input instead. */}
       <input
+        ref={fileInputRef}
         id="composer-images"
         type="file"
         accept="image/jpeg,image/png,image/gif,image/webp"
         multiple
-        className="xidig-field__input"
-        aria-label={t('plaza.imagesLabel')}
+        hidden
+        aria-labelledby="composer-images-label"
         disabled={totalCount >= POST_MAX_IMAGES}
         onChange={onFiles}
       />
+      <p className="xidig-profile__actions">
+        <button
+          type="button"
+          className="xidig-button xidig-button--secondary"
+          disabled={totalCount >= POST_MAX_IMAGES}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {t('plaza.imageChoose')}
+        </button>
+      </p>
 
       {staged.length > 0 ? (
         <div className="xidig-media-row">

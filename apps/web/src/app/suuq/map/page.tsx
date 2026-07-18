@@ -34,7 +34,7 @@ export default async function SuuqMapPage() {
     const categories = await getCategories(ctx.supabase, locale);
 
     return (
-      <main>
+      <main className="xidig-section">
         <div className="xidig-profile__header">
           <h1 className="xidig-auth__title">{t('suuq.tabMap')}</h1>
           <Link href="/suuq" className="xidig-button xidig-button--secondary">
@@ -57,7 +57,7 @@ export default async function SuuqMapPage() {
   }
 
   return (
-    <main>
+    <main className="xidig-section">
       <div className="xidig-profile__header">
         <h1 className="xidig-auth__title">{t('suuq.tabMap')}</h1>
         <Link href="/suuq" className="xidig-button xidig-button--secondary">

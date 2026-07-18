@@ -1003,8 +1003,11 @@ export const en = {
     'No Wins posted yet. Shipped something? Closed a deal? Post the win — proof powers this community.',
   'plaza.emptyUpdate': 'No updates yet. Building something? Share your progress.',
   'plaza.emptyPoll': 'No polls yet. Need a decision? Ask the community with a quick poll.',
+  'plaza.emptyCta': 'Start the first post',
+  'plaza.imageChoose': 'Add images',
   // Composer
   'plaza.composerTitle': 'Share with the Plaza',
+  'plaza.composerPrompt': 'Share something with the Plaza…',
   'plaza.titleLabel': 'Title (optional)',
   'plaza.bodyLabel': 'Your post',
   'plaza.bodyLabelAsk': 'What do you need help with?',
@@ -1084,6 +1087,7 @@ export const en = {
   'messages.tabChats': 'Chats',
   'messages.tabRequests': 'Requests',
   'messages.empty': 'No conversations yet. Open a builder’s profile and tap Message to start one.',
+  'messages.emptyCta': 'Find people in the Directory',
   'messages.emptyRequests': 'No message requests right now.',
   'messages.requestsHeading': 'Message requests',
   'messages.you': 'You',
@@ -1177,7 +1181,7 @@ export const en = {
   'push.disable': 'Turn off push',
   'push.unsupported': 'This browser doesn’t support push notifications.',
   'push.denied': 'Push is blocked in your browser settings. Allow notifications for Xidig to turn it on.',
-  'push.unavailable': 'Push isn’t configured on the server yet — in-app notifications still work.',
+  'push.unavailable': 'Push is coming soon — replies and mentions keep showing up right here in the app.',
 
   // Labs / Spaces (§16, §20). Chrome (Warshad/Koox) reuses term.lab / term.club.
   'lab.listTitle': 'Labs',

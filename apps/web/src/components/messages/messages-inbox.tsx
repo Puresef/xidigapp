@@ -11,6 +11,8 @@ import type { InboxItem } from '@/lib/dm/views';
 import type { PlainError } from '@/lib/errors';
 import { createClient } from '@/lib/supabase-browser';
 
+import { ButtonTabs } from '../button-tabs';
+import { EmptyState } from '../empty-state';
 import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
@@ -98,32 +100,42 @@ export function MessagesInbox({ meId, initial }: { meId: string; initial: InboxR
     <section aria-label={t('nav.messages')}>
       {error ? <PlainErrorBanner error={error} /> : null}
 
-      <div className="xidig-tabs">
-        <button
-          type="button"
-          className="xidig-tabs__tab"
-          aria-current={tab === 'chats' ? 'page' : undefined}
-          onClick={() => setTab('chats')}
-        >
-          {t('messages.tabChats')}
-        </button>
-        <button
-          type="button"
-          className="xidig-tabs__tab"
-          aria-current={tab === 'requests' ? 'page' : undefined}
-          onClick={() => setTab('requests')}
-        >
-          {t('messages.tabRequests')}
-          {requests.length > 0 ? <span className="xidig-dm-badge">{requests.length}</span> : null}
-        </button>
-      </div>
+      <ButtonTabs<Tab>
+        label={t('nav.messages')}
+        idBase="inbox"
+        panelId="inbox-panel"
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { value: 'chats', label: t('messages.tabChats') },
+          {
+            value: 'requests',
+            label: (
+              <>
+                {t('messages.tabRequests')}
+                {requests.length > 0 ? (
+                  <span className="xidig-dm-badge">{requests.length}</span>
+                ) : null}
+              </>
+            ),
+          },
+        ]}
+      />
 
+      <div role="tabpanel" id="inbox-panel" aria-labelledby={`inbox-tab-${tab}`}>
       {shown.length === 0 ? (
-        <div className="xidig-section">
-          <p className="xidig-card__body">
-            {tab === 'requests' ? t('messages.emptyRequests') : t('messages.empty')}
-          </p>
-        </div>
+        tab === 'requests' ? (
+          <EmptyState messageKey="messages.emptyRequests" />
+        ) : (
+          <EmptyState
+            messageKey="messages.empty"
+            action={
+              <Link className="xidig-button xidig-button--primary" href="/suuq">
+                {t('messages.emptyCta')}
+              </Link>
+            }
+          />
+        )
       ) : (
         <ul className="xidig-dm-inbox">
           {shown.map((c) => {
@@ -173,6 +185,7 @@ export function MessagesInbox({ meId, initial }: { meId: string; initial: InboxR
           </button>
         </p>
       ) : null}
+      </div>
     </section>
   );
 }

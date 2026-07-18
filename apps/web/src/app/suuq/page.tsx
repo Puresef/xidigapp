@@ -32,7 +32,7 @@ export default async function SuuqPage({
   const categories = await getCategories(ctx.supabase, locale);
 
   return (
-    <main>
+    <main className="xidig-section">
       <div className="xidig-profile__header">
         <h1 className="xidig-auth__title">{t('nav.suuq')}</h1>
         <Link href="/suuq/new" className="xidig-button xidig-button--primary">
