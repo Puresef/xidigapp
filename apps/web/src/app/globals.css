@@ -2,13 +2,20 @@
    Minimal, token-based, no framework: real brand styling lands with the
    Brand Guide (§26). Class naming: xidig-<block>__<element>--<modifier>. */
 
+/* Xidig palette (18 Jul "one sky" overhaul): the app joins the front door's
+   identity. Accent = the mark's own blue (#2e78b0 — Somali-flag family;
+   white on it is 4.75:1). Light mode is a dawn sky: blue-tinted near-white
+   canvas with white surfaces floating on it. */
 :root {
-  --x-bg: #ffffff;
-  --x-fg: #16181d;
-  --x-muted: #5c6470;
-  --x-border: #d9dee5;
-  --x-accent: #16181d;
+  --x-bg: #f2f5fa;
+  --x-surface: #ffffff;
+  --x-fg: #131c2e;
+  --x-muted: #556075;
+  --x-border: #d9e0ec;
+  --x-border-strong: #b9c4d8;
+  --x-accent: #2e78b0;
   --x-accent-fg: #ffffff;
+  --x-accent-soft: rgba(46, 120, 176, 0.1);
   --x-danger: #b3261e;
   --x-danger-bg: #fdf1f0;
   --x-ok: #1b6e3d;
@@ -19,6 +26,12 @@
   /* Form-control surface: fields must wear the theme, never the UA default
      (the browser's color-scheme gray reads as broken next to token cards). */
   --x-field-bg: #ffffff;
+  /* Field boundaries hold the 3:1 non-text minimum on their surface —
+     decorative card borders stay softer. */
+  --x-field-border: #8794a8;
+  /* Display face for headings + buttons — same Space Grotesk the front door
+     runs, loaded once by next/font in the root layout. */
+  --x-display: var(--font-display, 'Space Grotesk'), system-ui, sans-serif;
 }
 
 * {
@@ -35,6 +48,45 @@ body {
     'Segoe UI',
     sans-serif;
   line-height: 1.5;
+}
+
+/* The sky ("Xidig" means star): a fixed ambient layer behind the app — blue
+   glows on the canvas, plus the front door's star dust in dark mode. This is
+   the wide-viewport treatment: the flanks around the 64rem column read as
+   sky, not dead space. Front-door pages paint their own (front.css). CSS
+   only — zero image bytes, one fixed layer, no scroll repaints. */
+body:not(:has(main.xidig-front))::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(56rem 30rem at 82% -6rem, var(--x-accent-soft), transparent 65%),
+    radial-gradient(40rem 24rem at 6% -2rem, rgba(46, 120, 176, 0.05), transparent 60%);
+}
+
+[data-theme='dark'] body:not(:has(main.xidig-front))::before {
+  background-image:
+    radial-gradient(56rem 30rem at 82% -6rem, rgba(0, 119, 204, 0.12), transparent 65%),
+    radial-gradient(40rem 24rem at 6% -2rem, rgba(0, 119, 204, 0.06), transparent 60%),
+    radial-gradient(1.2px 1.2px at 18% 12%, rgba(232, 240, 255, 0.7) 50%, rgba(232, 240, 255, 0) 51%),
+    radial-gradient(1px 1px at 62% 34%, rgba(232, 240, 255, 0.5) 50%, rgba(232, 240, 255, 0) 51%),
+    radial-gradient(1.4px 1.4px at 83% 8%, rgba(143, 195, 240, 0.6) 50%, rgba(143, 195, 240, 0) 51%),
+    radial-gradient(0.9px 0.9px at 38% 68%, rgba(232, 240, 255, 0.4) 50%, rgba(232, 240, 255, 0) 51%),
+    radial-gradient(1.1px 1.1px at 92% 56%, rgba(232, 240, 255, 0.45) 50%, rgba(232, 240, 255, 0) 51%);
+  background-size:
+    100% 100%,
+    100% 100%,
+    530px 530px,
+    467px 467px,
+    641px 641px,
+    383px 383px,
+    719px 719px;
+  background-repeat: no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat;
+  /* Dust fades with depth — densest under the header, near-gone by the fold. */
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3) 30rem, rgba(0, 0, 0, 0.1));
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3) 30rem, rgba(0, 0, 0, 0.1));
 }
 
 a {
@@ -67,12 +119,113 @@ main {
 }
 
 .xidig-nav__item a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
   text-decoration: none;
   color: var(--x-muted);
 }
 
 .xidig-nav__item a:hover {
   color: var(--x-fg);
+}
+
+/* Tab icons live in the markup for the mobile bottom bar; desktop stays a
+   text row. */
+.xidig-nav__icon {
+  display: none;
+}
+
+/* ── Mobile: the SIGNED-IN primary nav becomes a bottom tab bar (PRD §12) —
+   the header at phone width can't contain five text tabs plus search/create/
+   bell/account without wrapping into a broken multi-row stack. Every rule is
+   scoped to .xidig-nav--app: the signed-out FrontNav shares the base classes
+   and keeps its own header behavior. z-index 40 keeps the bar UNDER the
+   user-menu/consent (50), modals (60), and toasts (90) — the modal scrim
+   must cover it, and consent must stay answerable. ── */
+@media (max-width: 48rem) {
+  .xidig-nav--app .xidig-nav__list {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 40;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 0;
+    padding: 0.3rem 0.5rem calc(0.3rem + env(safe-area-inset-bottom));
+    background: var(--x-surface);
+    border-top: 1px solid var(--x-border);
+  }
+
+  .xidig-nav--app .xidig-nav__item a {
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.3rem 0.15rem;
+    font-size: 0.65rem;
+    text-decoration: none;
+    min-width: 0;
+  }
+
+  .xidig-nav--app .xidig-nav__label {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .xidig-nav--app .xidig-nav__icon {
+    display: block;
+  }
+
+  /* Beats the desktop underline rule on specificity; weight keeps a
+     non-color active cue beside the blue. */
+  .xidig-nav--app .xidig-nav__list .xidig-nav__item a[aria-current='page'] {
+    color: var(--x-accent);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .xidig-nav--app .xidig-nav__item .xidig-nav__badge {
+    position: absolute;
+    top: 0;
+    inset-inline-end: 22%;
+    margin: 0;
+  }
+
+  /* Content never hides under the bar. */
+  body:has(.xidig-nav--app) {
+    padding-bottom: 4.5rem;
+  }
+
+  /* Toasts and the consent banner rise above the bottom bar. */
+  body:has(.xidig-nav--app) .xidig-toaster {
+    bottom: 5.25rem;
+  }
+
+  body:has(.xidig-nav--app) .xidig-consent {
+    bottom: calc(3.75rem + env(safe-area-inset-bottom));
+  }
+
+  /* One-row signed-in header: brand + actions; search flexes down instead
+     of wrapping. */
+  body:has(.xidig-nav--app) .xidig-header {
+    flex-wrap: nowrap;
+  }
+
+  body:has(.xidig-nav--app) .xidig-header__actions {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+  }
+
+  body:has(.xidig-nav--app) .xidig-header-search {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }
 
 .xidig-language-toggle {
@@ -83,11 +236,24 @@ main {
 }
 
 .xidig-language-toggle__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   border: 0;
   background: transparent;
   padding: 0.25rem 0.75rem;
   cursor: pointer;
   font: inherit;
+}
+
+.xidig-flag {
+  flex: none;
+  border-radius: 2px;
+  /* Dual keyline so the blue Somali field survives the pressed blue pill
+     and both flags hold an edge on light and dark surfaces. */
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    0 0 0 1px rgba(19, 28, 46, 0.15);
 }
 
 .xidig-language-toggle__option[aria-pressed='true'] {
@@ -97,28 +263,53 @@ main {
 
 /* --- Buttons (used by @xidig/ui Button) --- */
 
+/* Buttons ("one sky" overhaul): pills in the display face, like the front
+   door. Primary carries a subtle top-light gradient on the brand blue. */
 .xidig-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: var(--x-radius);
+  border-radius: 999px;
   border: 1px solid var(--x-accent);
-  padding: 0.55rem 1rem;
+  padding: 0.55rem 1.15rem;
   font: inherit;
+  font-family: var(--x-display);
   font-weight: 600;
+  letter-spacing: 0.01em;
   cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
+/* Gradient runs DOWN into a deeper blue: every stop keeps white ≥ 4.5:1
+   (#2e78b0 = 4.74, #276a9e = 5.77) — a lighter top stop would fail AA. */
 .xidig-button--primary {
-  background: var(--x-accent);
+  background: linear-gradient(180deg, var(--x-accent), #276a9e);
+  border-color: transparent;
   color: var(--x-accent-fg);
+  box-shadow: 0 1px 2px rgba(10, 14, 26, 0.25);
+}
+
+.xidig-button--primary:hover {
+  background: #276a9e;
 }
 
 .xidig-button--secondary {
   background: transparent;
   color: var(--x-fg);
-  border-color: var(--x-border);
+  border-color: var(--x-border-strong);
+}
+
+.xidig-button--secondary:hover {
+  background: var(--x-accent-soft);
+}
+
+.xidig-button:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
 }
 
 /* Disabled buttons go flat and muted — NOT a dimmed copy of the primary
@@ -131,11 +322,13 @@ main {
 }
 
 /* Pressed toggles (reactions, follows) stay visibly ON while briefly
-   disabled in-flight — flattening them would read as the state dropping. */
+   disabled in-flight — flattening them would read as the state dropping.
+   Tinted outline (not a %-mix fill): AA-safe in both palettes now that the
+   light accent is mid-blue. */
 .xidig-button[aria-pressed='true']:disabled {
-  background: color-mix(in srgb, var(--x-accent) 55%, var(--x-bg));
-  color: var(--x-accent-fg);
-  border-color: transparent;
+  background: var(--x-accent-soft);
+  color: var(--x-fg);
+  border-color: var(--x-accent);
 }
 
 /* --- Auth / settings forms --- */
@@ -144,6 +337,15 @@ main {
   max-width: var(--x-max-form);
   margin: 3rem auto;
   padding: 0 var(--x-space);
+}
+
+/* Headings wear the display face — the same Space Grotesk as the front door. */
+.xidig-auth__title,
+.xidig-section__title,
+.xidig-card__title,
+.xidig-empty__title {
+  font-family: var(--x-display);
+  letter-spacing: -0.01em;
 }
 
 .xidig-auth__title {
@@ -170,7 +372,7 @@ main {
 }
 
 .xidig-field__input {
-  border: 1px solid var(--x-border);
+  border: 1px solid var(--x-field-border);
   border-radius: var(--x-radius);
   padding: 0.55rem 0.75rem;
   font: inherit;
@@ -251,6 +453,7 @@ main {
 /* --- Settings sections --- */
 
 .xidig-section {
+  background: var(--x-surface);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
   padding: var(--x-space);
@@ -305,7 +508,7 @@ button.xidig-tag:disabled {
   text-align: left;
   background: var(--x-field-bg);
   color: var(--x-muted);
-  border: 1px solid var(--x-border);
+  border: 1px solid var(--x-field-border);
   border-radius: var(--x-radius);
   padding: 0.65rem 0.75rem;
   font: inherit;
@@ -406,6 +609,7 @@ button.xidig-tag:disabled {
 
 /* Generic content card + card grids (directory results, feed, listings). */
 .xidig-card {
+  background: var(--x-surface);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
   padding: var(--x-space);
@@ -520,13 +724,16 @@ button.xidig-tag:disabled {
   }
 }
 
-/* Map (Leaflet mounts into this) */
+/* Map (Leaflet mounts into this). isolation contains Leaflet's internal
+   z-indexes (panes run to 1000+) so tiles/controls never paint over fixed
+   chrome like the mobile tab bar. */
 .xidig-map {
   width: 100%;
   height: 55vh;
   min-height: 18rem;
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
+  isolation: isolate;
 }
 
 .xidig-map--pick {
@@ -861,6 +1068,12 @@ button.xidig-poll__option {
 .xidig-dm-msg__meta {
   font-size: 0.72rem;
   opacity: 0.75;
+}
+
+/* Own bubbles are the mid-blue accent now — dimmed white there drops below
+   AA; the bubble fill itself already separates the meta line. */
+.xidig-dm-msg--mine .xidig-dm-msg__meta {
+  opacity: 1;
 }
 
 .xidig-dm-composer {
@@ -1604,22 +1817,29 @@ html[data-motion='off'] .xidig-avatar {
   color-scheme: light;
 }
 
-/* Dark tokens: derived from the light palette, contrast kept ≥ AA on the new
-   background (fg 13.9:1, muted 7.0:1, danger 8.0:1, ok 8.9:1 vs #16181d). */
+/* Dark: the front door's ink night sky (--xf-ink family). Contrast kept ≥ AA
+   on the new canvas (fg 15.2:1, muted 8.6:1 vs #0a0e1a; fg 12.4:1, muted
+   7.0:1 vs the #101828 surface; white on the blue accent 4.75:1). */
 [data-theme='dark'] {
   color-scheme: dark;
-  --x-bg: #16181d;
-  --x-fg: #e9ebef;
-  --x-muted: #a6aeba;
-  --x-border: #3b414b;
-  --x-accent: #e9ebef;
-  --x-accent-fg: #16181d;
+  --x-bg: #0a0e1a;
+  --x-surface: #101828;
+  --x-fg: #eef2f9;
+  --x-muted: #a7b3c9;
+  --x-border: rgba(151, 173, 214, 0.16);
+  --x-border-strong: rgba(151, 173, 214, 0.3);
+  --x-accent: #2e78b0;
+  --x-accent-fg: #ffffff;
+  --x-accent-soft: rgba(77, 166, 232, 0.14);
   --x-danger: #ffa39b;
   --x-danger-bg: #35201e;
   --x-ok: #8ad4a4;
   --x-ok-bg: #1c2f24;
   /* Slightly recessed below the card surface so fields read as wells. */
-  --x-field-bg: #101216;
+  --x-field-bg: #0c1220;
+  /* 3.25:1 over the #101828 surface — the 0.16-alpha card border reads as
+     texture, not a control boundary. */
+  --x-field-border: rgba(151, 173, 214, 0.55);
 }
 
 /* Light-hardcoded surfaces that tokens don't reach. */
@@ -2299,7 +2519,7 @@ a.xidig-settings-card:hover {
   display: grid;
   gap: 0.1rem;
   padding: 0.4rem;
-  background: var(--x-bg);
+  background: var(--x-surface);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
@@ -2419,7 +2639,7 @@ a.xidig-settings-card:hover {
   padding: 0.55rem 1rem;
   border-radius: 999px;
   border: 1px solid var(--x-border);
-  background: var(--x-bg);
+  background: var(--x-surface);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
   font-size: 0.92rem;
 }

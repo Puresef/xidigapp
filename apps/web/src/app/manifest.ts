@@ -12,8 +12,9 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Where Somali builders connect, build, and fund — end to end.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#111111',
+    // "One sky" palette (18 Jul): dawn canvas + the mark's blue.
+    background_color: '#f2f5fa',
+    theme_color: '#2e78b0',
     icons: [
       { src: '/icon.svg', type: 'image/svg+xml', sizes: 'any' },
       { src: '/apple-icon.png', type: 'image/png', sizes: '180x180' },

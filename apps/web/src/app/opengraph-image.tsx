@@ -26,8 +26,8 @@ export const contentType = 'image/png';
 export const alt = 'Xidig';
 
 const BG = '#ffffff';
-const FG = '#16181d';
-const MUTED = '#5c6470';
+const FG = '#131c2e';
+const MUTED = '#556075';
 
 /** The brand domain is a locale-invariant mark, not translatable copy. */
 const BRAND_DOMAIN = 'xidig.net';

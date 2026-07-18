@@ -24,7 +24,7 @@ export const alt = 'Xidig';
 
 const idSchema = z.string().uuid();
 
-const INK = '#16181d';
+const INK = '#131c2e';
 const PAPER = '#ffffff';
 const MUTED = '#c9ced6';
 

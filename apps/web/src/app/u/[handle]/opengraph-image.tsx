@@ -19,9 +19,9 @@ export const contentType = 'image/png';
 // Brand tokens (globals.css :root) — inlined because ImageResponse styles
 // can't read CSS variables.
 const BG = '#ffffff';
-const FG = '#16181d';
-const MUTED = '#5c6470';
-const BORDER = '#d9dee5';
+const FG = '#131c2e';
+const MUTED = '#556075';
+const BORDER = '#d9e0ec';
 
 // Mirrors components/media/avatar.tsx (not imported: that module pulls the
 // client blurhash decoder into this edge-safe bundle for no benefit here).
