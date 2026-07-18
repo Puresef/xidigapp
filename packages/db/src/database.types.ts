@@ -1134,6 +1134,13 @@ export type Database = {
             referencedRelation: "business_listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "following_listings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       follows: {
@@ -1861,6 +1868,50 @@ export type Database = {
             columns: ["playbook_id"]
             isOneToOne: false
             referencedRelation: "lab_playbooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lanes: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name_en: string
+          name_so: string
+          position: number
+          slug: string
+          source: Database["public"]["Enums"]["content_source"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name_en: string
+          name_so: string
+          position?: number
+          slug: string
+          source?: Database["public"]["Enums"]["content_source"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name_en?: string
+          name_so?: string
+          position?: number
+          slug?: string
+          source?: Database["public"]["Enums"]["content_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lanes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]

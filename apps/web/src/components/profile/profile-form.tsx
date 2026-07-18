@@ -51,12 +51,20 @@ function contactString(snapshot: ProfileSnapshot | null, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
+export interface LaneOption {
+  slug: string;
+  label: string;
+}
+
 export function ProfileForm({
   snapshot,
   initialOpenTo = [],
+  laneCatalog,
 }: {
   snapshot: ProfileSnapshot | null;
   initialOpenTo?: string[];
+  /** Lanes to offer, from the DB lookup table; falls back to the shipped const. */
+  laneCatalog?: LaneOption[];
 }) {
   const t = useT();
   const router = useRouter();
@@ -77,6 +85,13 @@ export function ProfileForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  // DB-driven lane options (ops-extensible); fall back to the shipped const so
+  // the picker is never empty.
+  const laneOptions: LaneOption[] =
+    laneCatalog && laneCatalog.length > 0
+      ? laneCatalog
+      : LANES.map((slug) => ({ slug, label: slug }));
 
   function toggleLane(lane: string) {
     setLanes((current) =>
@@ -248,14 +263,14 @@ export function ProfileForm({
         <legend className="xidig-field__label">{t('profile.lanesLabel')}</legend>
         <p className="xidig-field__hint">{t('profile.lanesHint')}</p>
         <div className="xidig-chip-row">
-          {LANES.map((lane) => (
-            <label key={lane} className="xidig-checkbox">
+          {laneOptions.map((lane) => (
+            <label key={lane.slug} className="xidig-checkbox">
               <input
                 type="checkbox"
-                checked={lanes.includes(lane)}
-                onChange={() => toggleLane(lane)}
+                checked={lanes.includes(lane.slug)}
+                onChange={() => toggleLane(lane.slug)}
               />
-              <span>{lane}</span>
+              <span>{lane.label}</span>
             </label>
           ))}
         </div>
