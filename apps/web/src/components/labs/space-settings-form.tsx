@@ -331,6 +331,7 @@ export function SpaceSettingsForm({
               type="file"
               accept="image/jpeg,image/png,image/gif,image/webp"
               className="xidig-visually-hidden"
+              tabIndex={-1}
               aria-labelledby="space-icon-label"
               onChange={(e) => onPickArt('icon', e.target.files)}
             />
@@ -374,6 +375,7 @@ export function SpaceSettingsForm({
               type="file"
               accept="image/jpeg,image/png,image/gif,image/webp"
               className="xidig-visually-hidden"
+              tabIndex={-1}
               aria-labelledby="space-cover-label"
               onChange={(e) => onPickArt('cover', e.target.files)}
             />

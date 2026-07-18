@@ -21,6 +21,7 @@ import {
   type ProfileView,
 } from '@/lib/profile-view';
 import { HANDLE_REGEX } from '@/lib/profiles';
+import { BackLink } from '@/components/back-link';
 
 export const dynamic = 'force-dynamic';
 
@@ -110,6 +111,7 @@ export default async function ProfilePermalinkPage({
 
   return (
     <main>
+      <BackLink href="/suuq" labelKey="nav.suuq" />
       <LiteMediaProvider>
         <LiteShowAll />
         {viewer === 'owner' ? (

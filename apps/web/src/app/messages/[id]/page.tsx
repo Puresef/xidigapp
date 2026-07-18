@@ -1,11 +1,10 @@
 import { notFound, redirect } from 'next/navigation';
-import Link from 'next/link';
 
+import { BackLink } from '@/components/back-link';
 import { ConversationView } from '@/components/messages/conversation-view';
 import { getAuthContext } from '@/lib/auth/guards';
 import { loadConversationForUser, otherParticipant } from '@/lib/dm/service';
 import { loadMessagesPage, participantProfile } from '@/lib/dm/views';
-import { getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -37,13 +36,9 @@ export default async function ConversationPage({
     loadMessagesPage(ctx.supabase, id, ctx.appUser.id, null),
   ]);
 
-  const t = await getT();
-
   return (
     <main className="xidig-section">
-      <p className="xidig-dm-back">
-        <Link href="/messages">← {t('nav.messages')}</Link>
-      </p>
+      <BackLink href="/messages" labelKey="nav.messages" />
       <ConversationView
         meId={ctx.appUser.id}
         initialHeader={{

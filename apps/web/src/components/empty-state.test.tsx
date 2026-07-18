@@ -47,4 +47,13 @@ describe('EmptyState', () => {
     const html = render({ messageKey: 'notif.empty', className: 'xidig-empty-sky' });
     expect(html).toMatch(/class="[^"]*xidig-empty[^"]*xidig-empty-sky/);
   });
+
+  it('renders an optional title above the message (Capital pattern)', () => {
+    const html = render({ titleKey: 'capital.emptyTitle', messageKey: 'capital.emptyBody' });
+    // a real heading — pages using titleKey replace a former h2
+    expect(html).toMatch(/<h2[^>]*xidig-empty__title/);
+    expect(html).toContain('No Candidates yet');
+
+    expect(render({ messageKey: 'notif.empty' })).not.toContain('xidig-empty__title');
+  });
 });

@@ -857,6 +857,7 @@ export const so = {
     'Weli codbixin ma jirto. Go’aan ma u baahan tahay? Bulshada weydiiso codbixin degdeg ah.',
   'plaza.emptyCta': 'Qor qoraalka koowaad',
   'plaza.imageChoose': 'Sawirro ku dar',
+  'action.chooseImage': 'Dooro sawir',
   'plaza.composerTitle': 'La wadaag Madasha',
   'plaza.composerPrompt': 'Wax la wadaag Madasha…',
   'plaza.titleLabel': 'Cinwaan (ikhtiyaari)',
@@ -1065,6 +1066,8 @@ export const so = {
   'notif.empty':
     'Wax cusub ma jiraan. Jawaabaha, xusniinta, iyo fariimaha cusub halkan ayay ka soo muuqan doonaan.',
   'notif.markAllRead': 'Dhammaan calaamadee la akhriyay',
+  'notif.viewAll': 'Dhammaan digniinaha',
+  'notif.loadedCount': 'Digniino la soo raray: {count}',
   'notif.allRead': 'Dhammaan waa la akhriyay.',
   'notif.reply': '{name} wuu ka jawaabay qoraalkaaga',
   'notif.replyBundle': '{name} iyo {count} kale ayaa ka jawaabay qoraalkaaga',

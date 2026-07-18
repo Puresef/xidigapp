@@ -6,6 +6,7 @@ import type { Enums } from '@xidig/db';
 import type { MessageKey } from '@xidig/i18n';
 
 import { CandidateCard } from '@/components/capital/candidate-card';
+import { EmptyState } from '@/components/empty-state';
 import { getAuthContext } from '@/lib/auth/guards';
 import { listCandidates } from '@/lib/capital/views';
 import { getT } from '@/lib/locale';
@@ -113,13 +114,15 @@ export default async function CapitalIndexPage({
       </div>
 
       {items.length === 0 ? (
-        <div className="xidig-card xidig-capital-empty">
-          <h2 className="xidig-card__title">{t('capital.emptyTitle')}</h2>
-          <p className="xidig-card__body">{t('capital.emptyBody')}</p>
-          <p className="xidig-card__meta">
-            <Link href="/labs">{t('capital.emptyLabsLink')} →</Link>
-          </p>
-        </div>
+        <EmptyState
+          titleKey="capital.emptyTitle"
+          messageKey="capital.emptyBody"
+          action={
+            <p className="xidig-card__meta">
+              <Link href="/labs">{t('capital.emptyLabsLink')} →</Link>
+            </p>
+          }
+        />
       ) : (
         <ul className="xidig-card-grid">
           {items.map((item) => (

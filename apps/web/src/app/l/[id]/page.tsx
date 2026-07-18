@@ -25,6 +25,7 @@ import {
 } from '@/lib/listing-view';
 import { getLitePrefs } from '@/lib/lite/server';
 import { getLocale, getT } from '@/lib/locale';
+import { BackLink } from '@/components/back-link';
 
 export const dynamic = 'force-dynamic';
 
@@ -150,6 +151,7 @@ export default async function ListingPermalinkPage({
 
   return (
     <main>
+      <BackLink href="/suuq" labelKey="nav.suuq" />
       <TrackListingView listingId={listing.id} />
       <LiteMediaProvider>
         <article className="xidig-profile">

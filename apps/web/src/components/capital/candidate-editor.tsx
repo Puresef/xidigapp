@@ -21,6 +21,7 @@ import type { PlainError } from '@/lib/errors';
 
 import { PlainErrorBanner } from '../auth/plain-error';
 import { Banner } from '../banner';
+import { FilePickerButton } from '../file-picker-button';
 
 /**
  * Draft/submitted candidate editor (§17). Creator/lead only (the page + the
@@ -213,15 +214,15 @@ export function CandidateEditor({ candidate }: { candidate: CandidateRow }) {
 
       {/* Logo + cover upload */}
       <div className="xidig-field">
-        <label className="xidig-field__label" htmlFor={logoId}>
+        <p className="xidig-field__label" id={`${logoId}-label`}>
           {t('capital.fieldLogo')}
-        </label>
-        <input
+        </p>
+        <FilePickerButton
           id={logoId}
-          type="file"
           accept="image/jpeg,image/png,image/webp"
-          className="xidig-field__input"
           disabled={uploading !== null}
+          labelKey="action.chooseImage"
+          labelledBy={`${logoId}-label`}
           onChange={onFile('candidate_logo')}
         />
         {uploading === 'candidate_logo' ? (
@@ -229,15 +230,15 @@ export function CandidateEditor({ candidate }: { candidate: CandidateRow }) {
         ) : null}
       </div>
       <div className="xidig-field">
-        <label className="xidig-field__label" htmlFor={coverId}>
+        <p className="xidig-field__label" id={`${coverId}-label`}>
           {t('capital.fieldCover')}
-        </label>
-        <input
+        </p>
+        <FilePickerButton
           id={coverId}
-          type="file"
           accept="image/jpeg,image/png,image/webp"
-          className="xidig-field__input"
           disabled={uploading !== null}
+          labelKey="action.chooseImage"
+          labelledBy={`${coverId}-label`}
           onChange={onFile('candidate_cover')}
         />
         {uploading === 'candidate_cover' ? (

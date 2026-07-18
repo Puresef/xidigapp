@@ -15,10 +15,12 @@ import { AnimatedMark } from '@/components/brand/animated-mark';
  * call site; the CTA stays caller-built (Link, button, or nothing).
  */
 export function EmptyState({
+  titleKey,
   messageKey,
   action,
   className,
 }: {
+  titleKey?: MessageKey;
   messageKey: MessageKey;
   action?: ReactNode;
   className?: string;
@@ -30,6 +32,7 @@ export function EmptyState({
       <span className="xidig-empty__mark">
         <AnimatedMark mode="static" size={26} />
       </span>
+      {titleKey ? <h2 className="xidig-empty__title">{t(titleKey)}</h2> : null}
       <p className="xidig-card__body">{t(messageKey)}</p>
       {action ?? null}
     </div>

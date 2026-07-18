@@ -1005,6 +1005,7 @@ export const en = {
   'plaza.emptyPoll': 'No polls yet. Need a decision? Ask the community with a quick poll.',
   'plaza.emptyCta': 'Start the first post',
   'plaza.imageChoose': 'Add images',
+  'action.chooseImage': 'Choose image',
   // Composer
   'plaza.composerTitle': 'Share with the Plaza',
   'plaza.composerPrompt': 'Share something with the Plaza…',
@@ -1149,6 +1150,8 @@ export const en = {
   'notif.empty':
     'You’re all caught up. Replies, mentions, and new messages will show up here.',
   'notif.markAllRead': 'Mark all read',
+  'notif.viewAll': 'See all notifications',
+  'notif.loadedCount': 'Notifications loaded: {count}',
   'notif.allRead': 'All caught up.',
   // Bundled summary lines — {name} is the most recent actor, {count} the extras
   'notif.reply': '{name} replied to your post',

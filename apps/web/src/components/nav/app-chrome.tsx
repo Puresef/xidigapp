@@ -1,14 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-
-import { useT } from '@xidig/i18n/react';
-
 import { ConsentBanner } from '@/components/consent/consent-banner';
 import { AppNav } from '@/components/app-nav';
 import { BadgeProvider } from '@/components/nav/badge-provider';
+import { CreateButton } from '@/components/nav/create-button';
 import { HeaderSearch } from '@/components/nav/header-search';
-import { NotificationBell } from '@/components/nav/notification-bell';
+import { KeyboardShortcuts } from '@/components/nav/keyboard-shortcuts';
+import { NotificationsMenu } from '@/components/nav/notifications-menu';
+import { Toaster } from '@/components/toaster';
 import { UserMenu } from '@/components/nav/user-menu';
 import { SentryBoot } from '@/components/sentry-boot';
 import type { HeaderViewer } from '@/lib/auth/header-viewer';
@@ -36,8 +35,6 @@ export function AppChrome({
   viewer: HeaderViewer;
   consentNeedsPrompt: boolean;
 }) {
-  const t = useT();
-
   return (
     <BadgeProvider initialSignedIn={viewer.signedIn}>
       {/* Client Sentry rides this chunk on purpose — signed-in only (§4.2). */}
@@ -47,15 +44,15 @@ export function AppChrome({
         <div className="xidig-header__actions">
           <HeaderSearch />
           {/* Abuur — the create action (naming review 5 Jul): a header button,
-              not a nav tab. */}
-          <Link href="/suuq/new" className="xidig-button xidig-button--primary">
-            {t('action.abuur')}
-          </Link>
-          <NotificationBell />
+              not a nav tab. Contextual since 18 Jul (lib/nav/create-target). */}
+          <CreateButton />
+          <NotificationsMenu />
           <UserMenu viewer={viewer} />
         </div>
       </header>
       <ConsentBanner needsPrompt={consentNeedsPrompt} />
+      <KeyboardShortcuts />
+      <Toaster />
     </BadgeProvider>
   );
 }

@@ -14,6 +14,7 @@ import { getT } from '@/lib/locale';
 import { ASK_NUDGE_AFTER_DAYS } from '@/lib/plaza/constants';
 import { hydratePosts, POST_COLUMNS } from '@/lib/plaza/views';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
+import { BackLink } from '@/components/back-link';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,6 +87,7 @@ export default async function PostPermalinkPage({ params }: { params: Promise<{ 
 
   return (
     <main className="xidig-section">
+      <BackLink href="/plaza" labelKey="nav.plaza" />
       <LiteMediaProvider>
         <LiteShowAll />
         <PostCard

@@ -164,6 +164,9 @@ main {
 .xidig-field__label {
   font-weight: 600;
   font-size: 0.92rem;
+  /* Labels render as <label>, <span>, <legend>, or <p> (hidden-file-input
+     pattern) — zero the UA paragraph margin so the rhythm stays uniform. */
+  margin: 0;
 }
 
 .xidig-field__input {
@@ -791,10 +794,6 @@ button.xidig-poll__option {
 }
 
 /* Conversation thread */
-.xidig-dm-back {
-  margin: 0 0 0.5rem;
-}
-
 .xidig-dm-header {
   display: flex;
   align-items: center;
@@ -1097,8 +1096,30 @@ button.xidig-poll__option {
   opacity: 0.55;
 }
 
+.xidig-empty__title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
 .xidig-empty .xidig-card__body {
   max-width: 32rem;
+}
+
+/* Form fieldsets are grouping semantics, not chrome — kill the UA groove
+   border that makes Photos/Location pin read like a 90s frame. */
+fieldset.xidig-field {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+fieldset.xidig-field > legend {
+  padding: 0;
+  /* legend sits outside the fieldset's grid flow — restore the 0.3rem gap
+     div-based fields get from the grid gap. */
+  margin-bottom: 0.3rem;
 }
 
 /* "Why am I seeing this" disclosure under feed cards: one tap away, never
@@ -2192,7 +2213,6 @@ a.xidig-settings-card:hover {
 .xidig-capital-maalgeli__cta { width: 100%; } /* prominent, full-width on mobile-first */
 .xidig-capital-fund__secondary { margin-top: 0.75rem; }
 .xidig-capital-fund__disclaimer { margin-top: 1rem; font-style: italic; }
-.xidig-capital-empty { text-align: center; padding: 1.5rem; }
 
 /* ============================================================================
    Header nav restructure (7 Jul): search box · bell · account menu
@@ -2223,7 +2243,9 @@ a.xidig-settings-card:hover {
   outline: none;
 }
 
-/* Icon button (notifications bell) with an overlaid unread badge */
+/* Icon button (notifications bell) with an overlaid unread badge. Now a
+   real <button> (menu trigger) — reset the UA button face like
+   .xidig-user-menu__trigger does. */
 .xidig-icon-button {
   position: relative;
   display: inline-flex;
@@ -2233,15 +2255,16 @@ a.xidig-settings-card:hover {
   height: 2.25rem;
   border-radius: 999px;
   border: 1px solid transparent;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
   color: var(--x-fg);
   text-decoration: none;
   flex: none;
 }
 .xidig-icon-button:hover {
   background: color-mix(in srgb, var(--x-border) 45%, transparent);
-}
-.xidig-icon-button[aria-current='page'] {
-  border-color: var(--x-border);
 }
 .xidig-icon-button__badge {
   position: absolute;
@@ -2310,6 +2333,97 @@ a.xidig-settings-card:hover {
 .xidig-user-menu__item:hover {
   background: color-mix(in srgb, var(--x-border) 45%, transparent);
 }
+/* Bell dropdown: same mechanics as the account menu, wider panel for
+   readable summary lines. */
+.xidig-notif-menu .xidig-user-menu__panel {
+  min-width: 21rem;
+  max-width: min(24rem, calc(100vw - 2rem));
+  max-height: min(70vh, 30rem);
+  overflow-y: auto;
+}
+
+/* Narrow screens: a right-anchored 21rem panel would run off the left edge,
+   and the wrapping mobile header makes trigger-relative tops unreliable —
+   present it as a top sheet instead. Still inside the menu root in the DOM,
+   so outside-click close keeps working. */
+@media (max-width: 30rem) {
+  .xidig-notif-menu .xidig-user-menu__panel {
+    position: fixed;
+    inset-inline: 0.75rem;
+    top: 0.75rem;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+.xidig-notif-menu__item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.xidig-notif-menu__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.xidig-notif-menu__empty {
+  margin: 0;
+  padding: 0.5rem;
+  color: var(--x-muted);
+  font-size: 0.9rem;
+}
+
+/* "You are here" on the See-all item when already on /notifications. */
+.xidig-user-menu__item[aria-current='page'] {
+  font-weight: 600;
+}
+
+.xidig-notif-menu__footer {
+  border-top: 1px solid var(--x-border);
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+/* Detail-page "← Section" orientation link. */
+.xidig-backlink {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.xidig-backlink a {
+  color: var(--x-muted);
+  text-decoration: none;
+}
+
+.xidig-backlink a:hover,
+.xidig-backlink a:focus-visible {
+  color: var(--x-fg);
+  text-decoration: underline;
+}
+
+/* Transient confirmations — one polite live region above everything. */
+.xidig-toaster {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 1.25rem;
+  z-index: 90;
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.xidig-toaster__toast {
+  margin: 0;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--x-border);
+  background: var(--x-bg);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  font-size: 0.92rem;
+}
+
 .xidig-user-menu__item--danger {
   color: var(--x-danger);
 }

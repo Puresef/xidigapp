@@ -150,6 +150,7 @@ export function ProfileMediaEditor({ snapshot }: { snapshot: ProfileMediaSnapsho
             type="file"
             accept="image/jpeg,image/png,image/gif,image/webp"
             className="xidig-visually-hidden"
+            tabIndex={-1}
             aria-labelledby="profile-avatar-label"
             onChange={(e) => onPick('avatar', e.target.files)}
           />
@@ -193,6 +194,7 @@ export function ProfileMediaEditor({ snapshot }: { snapshot: ProfileMediaSnapsho
             type="file"
             accept="image/jpeg,image/png,image/gif,image/webp"
             className="xidig-visually-hidden"
+            tabIndex={-1}
             aria-labelledby="profile-cover-label"
             onChange={(e) => onPick('cover', e.target.files)}
           />

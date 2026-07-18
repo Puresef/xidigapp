@@ -35,6 +35,7 @@ import { getLitePrefs } from '@/lib/lite/server';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
+import { BackLink } from '@/components/back-link';
 
 export const dynamic = 'force-dynamic';
 
@@ -110,6 +111,7 @@ export default async function LabDetailPage({
 
   return (
     <main className="xidig-section">
+      <BackLink href="/labs" labelKey="nav.labs" />
       <SpaceArtHeader
         name={lab.name}
         slug={lab.slug}
@@ -446,6 +448,7 @@ async function PublicLabView({ slug }: { slug: string }) {
 
   return (
     <main className="xidig-section">
+      <BackLink href="/labs" labelKey="nav.labs" />
       <SpaceArtHeader
         name={lab.name ?? ''}
         slug={slug}

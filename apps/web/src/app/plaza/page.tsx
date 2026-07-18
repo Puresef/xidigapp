@@ -53,7 +53,9 @@ export default async function PlazaPage({
     <main className="xidig-section">
       <h1 className="xidig-auth__title">{t('nav.plaza')}</h1>
 
-      <PostComposer lowBandwidth={lowBandwidth} />
+      {/* ?compose=1 (contextual header Create from another page) boots the
+          composer expanded; on-plaza clicks use COMPOSE_EVENT instead. */}
+      <PostComposer lowBandwidth={lowBandwidth} defaultExpanded={params.compose === '1'} />
 
       <div className="xidig-tabs">
         <Link

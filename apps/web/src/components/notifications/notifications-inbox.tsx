@@ -11,6 +11,9 @@ import type { NotificationBundle } from '@/lib/notifications/bundle';
 import type { PlainError } from '@/lib/errors';
 import { createClient } from '@/lib/supabase-browser';
 
+import { bundleHref, bundleSummary } from '@/lib/notifications/present';
+import { toast } from '@/lib/toast';
+
 import { EmptyState } from '../empty-state';
 import { PlainErrorBanner } from '../auth/plain-error';
 
@@ -25,17 +28,6 @@ interface NotifResponse {
   bundles: NotificationBundle[];
   unreadCount: number;
   nextCursor: string | null;
-}
-
-function bundleHref(b: NotificationBundle): string | null {
-  if (b.entityType === 'conversation' && b.entityId) return `/messages/${b.entityId}`;
-  if (b.entityType === 'post' && b.entityId) return `/p/${b.entityId}`;
-  if (b.entityType === 'event' && typeof b.payload?.eventSlug === 'string') {
-    return `/events/${b.payload.eventSlug}`;
-  }
-  const postId = b.payload?.postId;
-  if (typeof postId === 'string') return `/p/${postId}`;
-  return null;
 }
 
 export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
@@ -72,46 +64,6 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
     };
   }, [refetch]);
 
-  function summary(b: NotificationBundle): string {
-    const actor = b.actors[0];
-    const name = actor?.displayName || actor?.handle || '';
-    const extra = Math.max(0, b.actorCount - 1);
-    switch (b.type) {
-      case 'reply':
-        return extra > 0 ? t('notif.replyBundle', { name, count: extra }) : t('notif.reply', { name });
-      case 'mention':
-        return extra > 0
-          ? t('notif.mentionBundle', { name, count: extra })
-          : t('notif.mention', { name });
-      case 'new_dm':
-        return t('notif.newDm', { name, count: b.count });
-      case 'dm_request':
-        return t('notif.dmRequest', { name });
-      case 'dm_accepted':
-        return t('notif.dmAccepted', { name });
-      case 'ask_credited':
-        return t('notif.askCredited');
-      case 'ask_stale':
-        return t('notif.askStale');
-      case 'moderation_hold':
-        return t('notif.moderationHold');
-      case 'moderation_removed':
-        return t('notif.moderationRemoved');
-      case 'candidate_status':
-        return t('notif.candidateStatus');
-      case 'event_rsvp':
-        return b.count > 1
-          ? t('notif.eventRsvpBundle', { count: b.count })
-          : t('notif.eventRsvp', { name });
-      case 'event_cancelled':
-        return t('notif.eventCancelled');
-      case 'event_reminder':
-        return t('notif.eventReminder');
-      default:
-        return t('notif.generic');
-    }
-  }
-
   function markRead(ids: string[]) {
     void apiPost('/api/notifications/read', { ids }).catch(() => {});
     setBundles((current) =>
@@ -128,6 +80,7 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
       await apiPost('/api/notifications/read', { all: true });
       setBundles((current) => current.map((b) => ({ ...b, unread: false })));
       if (typeof window !== 'undefined') window.dispatchEvent(new Event('xidig:badges'));
+      toast('notif.allRead');
     } catch (cause) {
       if (cause instanceof ApiRequestError) setError(cause.plain);
     }
@@ -176,7 +129,7 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
             const content = (
               <>
                 {b.unread ? <span className="xidig-notif__dot" aria-hidden="true" /> : null}
-                <span className="xidig-notif__text">{summary(b)}</span>
+                <span className="xidig-notif__text">{bundleSummary(b, t)}</span>
                 <time className="xidig-card__meta" dateTime={b.latestAt}>
                   {formatRelativeTime(new Date(b.latestAt), locale)}
                 </time>

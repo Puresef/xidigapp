@@ -13,6 +13,7 @@ import { getMemberEventView, getPublicEventView, type EventView } from '@/lib/ev
 import { getLocale, getT } from '@/lib/locale';
 
 import { formatEventStart } from '@/components/events/event-list';
+import { BackLink } from '@/components/back-link';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,6 +92,7 @@ export default async function EventDetailPage({
 
   return (
     <main className="xidig-section">
+      <BackLink href="/events" labelKey="nav.events" />
       <h1 className="xidig-auth__title">{e.title}</h1>
 
       {e.status === 'cancelled' ? (

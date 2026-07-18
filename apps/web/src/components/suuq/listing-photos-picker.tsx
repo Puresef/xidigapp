@@ -7,6 +7,7 @@ import { useT } from '@xidig/i18n/react';
 import { resolveError, type PlainError } from '@/lib/errors';
 import { LISTING_MAX_PHOTOS } from '@/lib/listings';
 import { IMAGE_MAX_BYTES, IMAGE_MAX_MB } from '@/lib/plaza/constants';
+import { FilePickerButton } from '../file-picker-button';
 import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
@@ -171,19 +172,20 @@ export function ListingPhotosPicker({
 
   return (
     <fieldset className="xidig-field">
-      <legend className="xidig-field__label">{t('suuq.photosLabel')}</legend>
+      <legend className="xidig-field__label" id="listing-photos-label">
+        {t('suuq.photosLabel')}
+      </legend>
       <p className="xidig-field__hint">
         {t('suuq.photosHint', { max: LISTING_MAX_PHOTOS, maxMb: IMAGE_MAX_MB })}
       </p>
       {error ? <PlainErrorBanner error={error} /> : null}
-      <input
+      <FilePickerButton
         id="listing-photos"
-        type="file"
         accept="image/jpeg,image/png,image/gif,image/webp"
         multiple
-        className="xidig-field__input"
-        aria-label={t('suuq.photosLabel')}
         disabled={totalCount >= LISTING_MAX_PHOTOS}
+        labelKey="plaza.imageChoose"
+        labelledBy="listing-photos-label"
         onChange={onFiles}
       />
 

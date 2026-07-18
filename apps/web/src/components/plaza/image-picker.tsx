@@ -6,6 +6,7 @@ import { useT } from '@xidig/i18n/react';
 
 import { resolveError, type PlainError } from '@/lib/errors';
 import { IMAGE_MAX_BYTES, IMAGE_MAX_MB, POST_MAX_IMAGES } from '@/lib/plaza/constants';
+import { FilePickerButton } from '../file-picker-button';
 import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
@@ -53,7 +54,6 @@ export function ImagePicker({
   const t = useT();
   const [staged, setStaged] = useState<StagedImage[]>([]);
   const [error, setError] = useState<PlainError | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Object URLs live until the picker unmounts (revoking on every staged-list
   // change would kill previews still on screen).
@@ -167,29 +167,15 @@ export function ImagePicker({
         {t('plaza.imagesHint', { max: POST_MAX_IMAGES, maxMb: IMAGE_MAX_MB })}
       </p>
       {error ? <PlainErrorBanner error={error} /> : null}
-      {/* The native file control can't be themed — a styled trigger fronts a
-          hidden input instead. */}
-      <input
-        ref={fileInputRef}
+      <FilePickerButton
         id="composer-images"
-        type="file"
         accept="image/jpeg,image/png,image/gif,image/webp"
         multiple
-        hidden
-        aria-labelledby="composer-images-label"
         disabled={totalCount >= POST_MAX_IMAGES}
+        labelKey="plaza.imageChoose"
+        labelledBy="composer-images-label"
         onChange={onFiles}
       />
-      <p className="xidig-profile__actions">
-        <button
-          type="button"
-          className="xidig-button xidig-button--secondary"
-          disabled={totalCount >= POST_MAX_IMAGES}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {t('plaza.imageChoose')}
-        </button>
-      </p>
 
       {staged.length > 0 ? (
         <div className="xidig-media-row">
