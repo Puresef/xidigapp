@@ -43,4 +43,23 @@ describe('AppNav', () => {
   it('keeps aria-current on the active tab', () => {
     expect(render().match(/aria-current="page"/g)?.length).toBe(1);
   });
+
+  it('renders the brand link outside the tab nav so only the tabs relocate to the bottom bar', () => {
+    // The mobile bottom bar is the tab <nav>, moved to the end of <body> via a
+    // portal so keyboard focus is header -> content -> bar. The brand must sit
+    // OUTSIDE that nav or it would ride along to the bottom and leave the
+    // header logo-less. Observable at SSR: the brand precedes the <nav>.
+    const html = render();
+    const brandIdx = html.indexOf('xidig-brand');
+    const navIdx = html.indexOf('<nav');
+    expect(brandIdx).toBeGreaterThan(-1);
+    expect(navIdx).toBeGreaterThan(-1);
+    expect(brandIdx).toBeLessThan(navIdx);
+  });
+
+  it('names the relocatable tab nav so it stays a navigation landmark after the portal move', () => {
+    // aria-label lives on the tab <nav> (not an outer wrapper), so the landmark
+    // survives being portaled out of the header on mobile.
+    expect(render()).toMatch(/<nav[^>]*aria-label="[^"]+"[^>]*class="[^"]*xidig-nav--app/);
+  });
 });

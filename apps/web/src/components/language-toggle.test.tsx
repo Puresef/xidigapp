@@ -28,19 +28,27 @@ function render(): string {
 describe('LanguageToggle', () => {
   it('renders Somali first, then English', () => {
     const html = render();
-    const so = html.indexOf('lang="so"');
-    const en = html.indexOf('lang="en"');
+    const so = html.indexOf('aria-label="Somali"');
+    const en = html.indexOf('aria-label="English"');
     expect(so).toBeGreaterThan(-1);
     expect(en).toBeGreaterThan(-1);
     expect(so).toBeLessThan(en);
   });
 
-  it('shows a decorative flag on each option, endonyms intact', () => {
+  it('shows the short code visibly with the full language name as the accessible label', () => {
+    const html = render();
+    // compact visible labels — the code stands in for the name
+    expect(html).toContain('>so</span>');
+    expect(html).toContain('>en</span>');
+    // screen readers still hear the full language name
+    expect(html).toContain('aria-label="Somali"');
+    expect(html).toContain('aria-label="English"');
+  });
+
+  it('shows a decorative flag on each option', () => {
     const html = render();
     expect(html.match(/xidig-flag/g)?.length).toBeGreaterThanOrEqual(2);
-    // flags are decoration; the endonym is the accessible label
+    // flags are decoration; the aria-label carries the name
     expect(html.match(/<svg [^>]*aria-hidden="true"/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(html).toContain('Somali');
-    expect(html).toContain('English');
   });
 });

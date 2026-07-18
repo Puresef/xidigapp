@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
@@ -92,19 +94,51 @@ function isActive(pathname: string, href: string): boolean {
 
 export function AppNav() {
   const t = useT();
-  const pathname = usePathname();
-  const { messages } = useBadges();
 
+  // The brand stays in the header; the tab bar (NavTabs) portals to the end of
+  // <body> on mobile. Grouping them in one .xidig-nav element keeps the pair a
+  // single header flex child, so the header's space-between still pins the
+  // group left and the actions right (a bare brand + separate nav would let
+  // space-between shove the tabs to the centre on desktop).
   return (
-    // --app modifier scopes the mobile bottom-bar CSS to the signed-in nav —
-    // the signed-out FrontNav shares the base classes and must never be
-    // captured by it.
-    <nav aria-label={t('a11y.mainNav')} className="xidig-nav xidig-nav--app">
+    <div className="xidig-nav">
       {/* Brand mark joins the signed-in chrome too (mark-redesign sweep):
           mark-only to keep the crowded header tight; the label names it. */}
       <Link href="/" className="xidig-brand">
         <AnimatedMark mode="assemble" size={20} label={t('app.name')} />
       </Link>
+      <NavTabs />
+    </div>
+  );
+}
+
+/**
+ * The five primary tabs. On mobile they become the fixed bottom bar; to keep
+ * keyboard focus order sane (header → content → bar, not header → bar → back
+ * to header) the bar is portaled to the end of <body> so its DOM position
+ * matches its visual position. The portal is scoped to the tab <nav> only
+ * (the brand stays in the header) and engages after mount — pre-hydration the
+ * CSS `position: fixed` already paints it at the bottom, so relocating changes
+ * tab order, never pixels. The --app class travels with the portaled nav, so
+ * the mobile CSS (`.xidig-nav--app .xidig-nav__list`, `body:has(.xidig-nav--app)`)
+ * still matches from <body>, and the signed-out FrontNav is never captured.
+ */
+function NavTabs() {
+  const t = useT();
+  const pathname = usePathname();
+  const { messages } = useBadges();
+  const [relocate, setRelocate] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 48rem)');
+    const sync = () => setRelocate(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  const bar = (
+    <nav aria-label={t('a11y.mainNav')} className="xidig-nav--app">
       <ul className="xidig-nav__list">
         {NAV_ITEMS.map((item) => {
           const badge = item.href === '/messages' ? messages : 0;
@@ -125,4 +159,9 @@ export function AppNav() {
       </ul>
     </nav>
   );
+
+  if (relocate && typeof document !== 'undefined') {
+    return createPortal(bar, document.body);
+  }
+  return bar;
 }

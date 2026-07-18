@@ -74,14 +74,17 @@ export function LanguageToggle() {
         <button
           key={code}
           type="button"
-          lang={code}
           aria-pressed={code === locale}
+          // Visible label is the compact code; the accessible name stays the
+          // full language so screen readers announce "Somali"/"English", not
+          // a cryptic two-letter code.
+          aria-label={LOCALE_NAMES[code]}
           title={t('language.switchHint')}
           onClick={() => switchTo(code)}
           className="xidig-language-toggle__option"
         >
           <FlagIcon code={code} />
-          {LOCALE_NAMES[code]}
+          <span aria-hidden="true">{code}</span>
         </button>
       ))}
     </div>
