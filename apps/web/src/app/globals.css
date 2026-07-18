@@ -2320,6 +2320,32 @@ a.xidig-settings-card:hover {
   background: color-mix(in srgb, var(--x-border) 45%, transparent);
 }
 
+/* Skills chip-input: the suggestion rows lay out name + member_count on a line;
+   chips carry an inline remove affordance. */
+.xidig-skills .xidig-mention__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.xidig-skills__count {
+  font-size: 0.75rem;
+  color: var(--x-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.xidig-skills__x {
+  margin-inline-start: 0.3rem;
+  padding: 0 0.15rem;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .xidig-drafts {
   margin-block: 0.5rem;
 }

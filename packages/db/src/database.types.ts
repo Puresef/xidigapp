@@ -3619,6 +3619,27 @@ export type Database = {
           },
         ]
       }
+      skills: {
+        Row: {
+          created_at: string
+          member_count: number
+          name: string
+          source: Database["public"]["Enums"]["content_source"]
+        }
+        Insert: {
+          created_at?: string
+          member_count?: number
+          name: string
+          source?: Database["public"]["Enums"]["content_source"]
+        }
+        Update: {
+          created_at?: string
+          member_count?: number
+          name?: string
+          source?: Database["public"]["Enums"]["content_source"]
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           created_at: string
@@ -4468,6 +4489,7 @@ export type Database = {
         Returns: number
       }
       normalize_auth_phone: { Args: { p: string }; Returns: string }
+      normalize_skills: { Args: { arr: string[] }; Returns: string[] }
       pgp_armor_headers: {
         Args: { "": string }
         Returns: Record<string, unknown>[]

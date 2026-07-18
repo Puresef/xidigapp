@@ -11,6 +11,7 @@ import { LANES } from '@/lib/lanes';
 import { Banner } from '../banner';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { OPEN_TO_KEYS, OPEN_TO_SLUGS } from './open-to';
+import { SkillsInput } from './skills-input';
 
 /**
  * Profile create/edit form (§10 fields, §20 complete-profile). Sends the FULL
@@ -74,7 +75,7 @@ export function ProfileForm({
   const [bio, setBio] = useState(snapshot?.bio ?? '');
   const [city, setCity] = useState(snapshot?.location_city ?? '');
   const [country, setCountry] = useState(snapshot?.location_country ?? '');
-  const [skillsText, setSkillsText] = useState((snapshot?.skills ?? []).join(', '));
+  const [skills, setSkills] = useState<string[]>(snapshot?.skills ?? []);
   const [lanes, setLanes] = useState<string[]>(snapshot?.lanes ?? []);
   const [links, setLinks] = useState<LinkRow[]>(snapshot?.links ?? []);
   const [whatsapp, setWhatsapp] = useState(contactString(snapshot, 'whatsapp'));
@@ -146,11 +147,7 @@ export function ProfileForm({
           latitude: snapshot?.latitude ?? null,
           longitude: snapshot?.longitude ?? null,
           timezone: snapshot?.timezone ?? null,
-          skills: skillsText
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean)
-            .slice(0, 50),
+          skills: skills.slice(0, 50),
           lanes,
           links: links.filter((row) => row.label.trim() && row.url.trim()),
           contact_options: contact,
@@ -250,12 +247,7 @@ export function ProfileForm({
         <label className="xidig-field__label" htmlFor="profile-skills">
           {t('profile.skillsLabel')}
         </label>
-        <input
-          id="profile-skills"
-          className="xidig-field__input"
-          value={skillsText}
-          onChange={(e) => setSkillsText(e.target.value)}
-        />
+        <SkillsInput id="profile-skills" value={skills} onChange={setSkills} max={50} />
         <p className="xidig-field__hint">{t('profile.skillsHint')}</p>
       </div>
 
