@@ -1250,6 +1250,30 @@ button.xidig-poll__option {
   html:not([data-motion='off']) .xidig-animark--assemble .xidig-animark__star--l {
     animation: xidig-animark-star-l 0.5s ease-out 0.65s both;
   }
+  html:not([data-motion='off']) .xidig-animark--hero .xidig-animark__q--1 {
+    animation: xidig-animark-q1 0.55s ease-out both;
+  }
+  html:not([data-motion='off']) .xidig-animark--hero .xidig-animark__q--2 {
+    animation: xidig-animark-q2 0.55s ease-out 0.06s both;
+  }
+  html:not([data-motion='off']) .xidig-animark--hero .xidig-animark__q--3 {
+    animation: xidig-animark-q3 0.55s ease-out 0.12s both;
+  }
+  html:not([data-motion='off']) .xidig-animark--hero .xidig-animark__q--4 {
+    animation: xidig-animark-q4 0.55s ease-out 0.18s both;
+  }
+  html:not([data-motion='off']) .xidig-animark--hero .xidig-animark__star--r {
+    animation: xidig-animark-star-r 0.5s ease-out 0.55s both;
+  }
+  html:not([data-motion='off']) .xidig-animark--hero .xidig-animark__star--l {
+    animation: xidig-animark-star-l 0.5s ease-out 0.65s both;
+  }
+  /* After assembling, the hero mark rests and occasionally breathes — one
+     gentle fold every ~7s, delayed past the assembly. */
+  html:not([data-motion='off']) .xidig-animark--hero {
+    transform-origin: 50% 50%;
+    animation: xidig-animark-breathe 7s cubic-bezier(0.55, 0, 0.35, 1) 2.4s infinite;
+  }
   html:not([data-motion='off']) .xidig-animark--flap > svg {
     transform-origin: 50% 50%;
     animation: xidig-animark-flap 2.6s cubic-bezier(0.55, 0, 0.35, 1) infinite;
@@ -1322,6 +1346,16 @@ button.xidig-poll__option {
     opacity: 1;
   }
 }
+@keyframes xidig-animark-breathe {
+  0%,
+  86%,
+  100% {
+    transform: none;
+  }
+  92% {
+    transform: rotateY(38deg) scaleX(0.62);
+  }
+}
 @keyframes xidig-animark-flap {
   0%,
   58%,
@@ -1373,6 +1407,13 @@ button.xidig-poll__option {
 
 .xidig-flap-inline {
   margin-right: 0.4rem;
+}
+
+.xidig-footer__mark {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 0.5rem;
+  opacity: 0.7;
 }
 
 /* "N hidden — Show all on this page" bar */

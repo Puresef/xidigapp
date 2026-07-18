@@ -10,6 +10,8 @@ import type { ReactNode } from 'react';
  *   - `flap`      calm whole-butterfly fold loop — the loading/breathing pulse.
  *   - `ceremony`  one-shot wings-fold-and-spread — celebration moments only
  *                 (vote cast, co-sign, badge reveal), never routine taps.
+ *   - `hero`      assemble once, then rest and occasionally breathe — the
+ *                 living hero mark (assemble layers + a gentle wrapper loop).
  *   - `static`    the mark, no layers, no motion.
  *
  * CSS-only (keyframes in globals.css under .xidig-animark): server-renderable,
@@ -24,7 +26,7 @@ import type { ReactNode } from 'react';
  * (3 paths) and the two woven star halves. Keep them in sync with the icon.
  */
 
-export type AnimatedMarkMode = 'static' | 'assemble' | 'flap' | 'ceremony';
+export type AnimatedMarkMode = 'static' | 'assemble' | 'flap' | 'ceremony' | 'hero';
 
 const VIEW_BOX = '437 119 540 540';
 
@@ -81,7 +83,7 @@ export function AnimatedMark({
     .filter(Boolean)
     .join(' ');
   let layers: ReactNode;
-  if (mode === 'assemble') {
+  if (mode === 'assemble' || mode === 'hero') {
     layers = (
       <>
         <span className="xidig-animark__q xidig-animark__q--1" aria-hidden="true"><ArmsSvg /></span>

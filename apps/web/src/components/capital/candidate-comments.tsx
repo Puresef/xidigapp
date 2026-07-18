@@ -13,6 +13,7 @@ import { COMMENT_BODY_MAX } from '@/lib/plaza/constants';
 
 import { PlainErrorBanner } from '../auth/plain-error';
 import { ReportControl } from '../report-control';
+import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * Open member comments on a Candidate (§12/§17). Reuses the Phase 2 CommentView
@@ -115,7 +116,7 @@ export function CandidateComments({
       <h2 className="xidig-section__title">{t('capital.commentsHeading')}</h2>
       {error ? <PlainErrorBanner error={error} /> : null}
 
-      {!loaded && pending ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
+      {!loaded && pending ? <LoadingFlap /> : null}
       {loaded && items.length === 0 ? (
         <p className="xidig-card__meta">{t('capital.commentsEmpty')}</p>
       ) : null}

@@ -11,6 +11,7 @@ import type { PlainError } from '@/lib/errors';
 import { Banner } from '../banner';
 import { AttestationModal } from './attestation-modal';
 import { VentureFundModal } from './venture-fund-modal';
+import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * Maalgeli (Invest) CTA — the region gate's UI face (§17, compliance-critical).
@@ -93,7 +94,7 @@ export function MaalgeliCta({ candidateId }: { candidateId?: string | null }) {
   }
 
   if (phase === 'checking') {
-    return <p className="xidig-card__meta">{t('state.loading')}</p>;
+    return <LoadingFlap />;
   }
 
   if (phase === 'informational') {

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
+import { AnimatedMark } from '@/components/brand/animated-mark';
 import { useBadges } from '@/components/nav/badge-provider';
 
 /**
@@ -39,6 +40,11 @@ export function AppNav() {
 
   return (
     <nav aria-label={t('a11y.mainNav')} className="xidig-nav">
+      {/* Brand mark joins the signed-in chrome too (mark-redesign sweep):
+          mark-only to keep the crowded header tight; the label names it. */}
+      <Link href="/" className="xidig-brand">
+        <AnimatedMark mode="assemble" size={20} label={t('app.name')} />
+      </Link>
       <ul className="xidig-nav__list">
         {NAV_ITEMS.map((item) => {
           const badge = item.href === '/messages' ? messages : 0;

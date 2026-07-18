@@ -13,6 +13,8 @@ import { getLocale, getT } from '@/lib/locale';
 
 import { formatEventStart } from '@/components/events/event-list';
 
+import { AnimatedMark } from '@/components/brand/animated-mark';
+
 import { FrontMotion } from './front-motion';
 import { StarAssembly, StarPath } from './star-path';
 import { Starfield } from './starfield';
@@ -135,6 +137,12 @@ export async function FrontHome() {
       <FrontMotion />
       <section className="xidig-front__hero xidig-front__hero--home">
         <Starfield />
+        {/* The living mark replaces the old traced constellation: assembles
+            once, then rests and occasionally breathes (mode="hero"). Sky
+            furniture — decorative, behind the copy on small screens. */}
+        <div className="xidig-front__hero-mark" aria-hidden="true">
+          <AnimatedMark mode="hero" size={300} />
+        </div>
         <div className="xidig-front__hero-inner">
           <h1>{t('marketing.heroTitle')}</h1>
           <p>{t('marketing.heroSub')}</p>

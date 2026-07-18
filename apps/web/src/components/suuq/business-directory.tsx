@@ -11,6 +11,7 @@ import { formatPriceRange, listingOpenNow } from '@/lib/listings';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { emptyBusinessesKey } from './directory-empty';
 import { ListingCard, type ListingRow } from './listing-card';
+import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * Business directory tab (§18): q + category + city/country + verified +
@@ -201,7 +202,7 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
       </p>
 
       {error ? <PlainErrorBanner error={error} /> : null}
-      {!loaded && pending ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
+      {!loaded && pending ? <LoadingFlap /> : null}
       {loaded && visibleRows.length === 0 && !error ? (
         <p className="xidig-card__meta">
           {t(emptyBusinessesKey(applied, rows.length > 0 && openNowOnly))}

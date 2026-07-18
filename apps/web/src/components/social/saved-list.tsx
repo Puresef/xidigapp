@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useT } from '@xidig/i18n/react';
 
 import { PostCard } from '@/components/plaza/post-card';
+import { LoadingFlap } from '@/components/loading-flap';
 import { CHROME_KEYS } from '@/lib/labs/labels';
 import type { LabView } from '@/lib/labs/views';
 import type { ListingView } from '@/lib/listing-view';
@@ -86,7 +87,7 @@ export function SavedList({
   }, [load]);
 
   if (!loaded && pending) {
-    return <p className="xidig-card__meta">{t('state.loading')}</p>;
+    return <LoadingFlap />;
   }
 
   return (

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
+import { AnimatedMark } from '@/components/brand/animated-mark';
 import { MARKETING_LINKS } from '@/lib/external-links';
 
 /**
@@ -26,6 +27,9 @@ export function SiteFooter() {
   const t = useT();
   return (
     <footer className="xidig-footer">
+      <p className="xidig-footer__mark">
+        <AnimatedMark mode="static" size={18} />
+      </p>
       <nav aria-label={t('a11y.footerNav')} className="xidig-footer__nav">
         <ul className="xidig-footer__list">
           {FOOTER_LINKS.map((link) => (

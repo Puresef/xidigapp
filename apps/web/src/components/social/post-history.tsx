@@ -9,6 +9,7 @@ import { ApiRequestError, apiGet } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 
 import { PlainErrorBanner } from '../auth/plain-error';
+import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * Edit history viewer (Phase 4.5), author/mod only — the page decides whether
@@ -64,7 +65,7 @@ export function PostHistory({ postId, count }: { postId: string; count: number }
       {open ? (
         <div className="xidig-revisions__panel">
           {error ? <PlainErrorBanner error={error} /> : null}
-          {pending ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
+          {pending ? <LoadingFlap /> : null}
           {items !== null && items.length === 0 ? (
             <p className="xidig-card__meta">{t('plaza.editHistoryEmpty')}</p>
           ) : null}

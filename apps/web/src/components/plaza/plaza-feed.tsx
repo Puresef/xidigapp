@@ -7,6 +7,7 @@ import { useT } from '@xidig/i18n/react';
 
 import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
+import { LoadingFlap } from '@/components/loading-flap';
 import { ApiRequestError, apiGet } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import type { LitePrefs } from '@/lib/lite/prefs';
@@ -105,7 +106,7 @@ export function PlazaFeed({
   }, [type]);
 
   if (!loaded && pending) {
-    return <p className="xidig-card__meta">{t('state.loading')}</p>;
+    return <LoadingFlap />;
   }
 
   return (

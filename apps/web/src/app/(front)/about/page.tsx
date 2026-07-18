@@ -1,3 +1,4 @@
+import { AnimatedMark } from '@/components/brand/animated-mark';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -30,6 +31,11 @@ export default async function AboutPage() {
     <main className="xidig-front">
       <div className="xidig-front__prose">
         <section className="xidig-front__hero">
+          {/* The identity page carries the mark itself — still, not moving:
+              the story does the talking here. */}
+          <p className="xidig-auth__mark">
+            <AnimatedMark mode="static" size={44} />
+          </p>
           <h1>{t('marketing.aboutTitle')}</h1>
           <p>{t('marketing.aboutStory1')}</p>
         </section>

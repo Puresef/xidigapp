@@ -11,6 +11,7 @@ import type { LabView } from '@/lib/labs/views';
 
 import { PlainErrorBanner } from '../auth/plain-error';
 import { LabCard } from './lab-card';
+import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * Labs Discover list. Explicit "load more" (no infinite scroll) for
@@ -69,7 +70,7 @@ export function LabsFeed({
   }, [load]);
 
   if (!loaded && pending) {
-    return <p className="xidig-card__meta">{t('state.loading')}</p>;
+    return <LoadingFlap />;
   }
 
   return (

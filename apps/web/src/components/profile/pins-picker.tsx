@@ -9,6 +9,7 @@ import { ApiRequestError, apiGet, apiPut } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import { Banner } from '../banner';
 import { PlainErrorBanner } from '../auth/plain-error';
+import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * Pins picker (Phase 4.5 §4, /settings/profile): choose up to 3 of your own
@@ -174,7 +175,7 @@ export function PinsPicker() {
 
       {error ? <PlainErrorBanner error={error} /> : null}
       {notice ? <Banner kind="notice">{notice}</Banner> : null}
-      {!loaded ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
+      {!loaded ? <LoadingFlap /> : null}
 
       {loaded ? (
         <>

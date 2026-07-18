@@ -7,6 +7,7 @@ import { useT } from '@xidig/i18n/react';
 import type { Translator } from '@xidig/i18n';
 
 import { Avatar } from '@/components/media/avatar';
+import { LoadingFlap } from '@/components/loading-flap';
 import { apiGet } from '@/lib/api-client';
 import { OPEN_TO_KEYS } from './open-to';
 import { FollowButton } from './follow-button';
@@ -118,7 +119,7 @@ export function SuggestedFollows({
 
   if (failed) return null;
   if (payload === null) {
-    return <p className="xidig-card__meta">{t('state.loading')}</p>;
+    return <LoadingFlap />;
   }
 
   const people = payload.people.filter((person) => !skippedPeople.has(person.user_id));

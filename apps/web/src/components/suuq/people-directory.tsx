@@ -12,6 +12,7 @@ import { Avatar } from '../media/avatar';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { OPEN_TO_KEYS, OPEN_TO_SLUGS } from '../profile/open-to';
 import { emptyPeopleKey } from './directory-empty';
+import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * People directory (§18): free-text transliteration-tolerant search (the API
@@ -214,7 +215,7 @@ export function PeopleDirectory() {
       </form>
 
       {error ? <PlainErrorBanner error={error} /> : null}
-      {!loaded && pending ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
+      {!loaded && pending ? <LoadingFlap /> : null}
       {loaded && rows.length === 0 && !error ? (
         <p className="xidig-card__meta">{t(emptyPeopleKey(applied))}</p>
       ) : null}

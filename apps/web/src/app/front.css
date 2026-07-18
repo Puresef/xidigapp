@@ -2283,3 +2283,29 @@ main.xidig-front .xf-vg-tick {
     & .is-inview .xf-vig--owned .xf-vg-tick--4 { animation: xf-vg-pop 0.35s ease 2.6s backwards; }
   }
 }
+
+/* ── The living hero mark (replaces the traced constellation star) ─────────
+   Sky furniture: absolute right, behind the copy; assembles once then
+   breathes (globals.css .xidig-animark--hero). Small screens dim + shrink it
+   behind the text instead of dropping it. */
+main.xidig-front .xidig-front__hero-mark {
+  position: absolute;
+  top: 12%;
+  right: 7%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+main.xidig-front .xidig-front__hero-mark .xidig-animark {
+  filter: drop-shadow(0 0 28px rgba(77, 166, 232, 0.32));
+}
+
+@media (max-width: 880px) {
+  main.xidig-front .xidig-front__hero-mark {
+    top: 6px;
+    right: -34px;
+    opacity: 0.32;
+    transform: scale(0.55);
+    transform-origin: top right;
+  }
+}

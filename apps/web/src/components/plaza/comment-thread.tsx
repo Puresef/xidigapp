@@ -15,6 +15,7 @@ import { PlainErrorBanner } from '../auth/plain-error';
 import { Banner } from '../banner';
 import { CommentForm } from './comment-form';
 import { ReactionBar } from './reaction-bar';
+import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * Comment thread on /p/[id] (§15). Conversation order (created_at ASC) with
@@ -131,7 +132,7 @@ export function CommentThread({
       {error ? <PlainErrorBanner error={error} /> : null}
       {creditedNotice ? <Banner kind="notice">{t('plaza.helperCredited')}</Banner> : null}
 
-      {!loaded && pending ? <p className="xidig-card__meta">{t('state.loading')}</p> : null}
+      {!loaded && pending ? <LoadingFlap /> : null}
       {loaded && items.length === 0 ? <p className="xidig-card__meta">{t('state.empty')}</p> : null}
 
       <ul className="xidig-card-grid">

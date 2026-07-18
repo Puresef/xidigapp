@@ -1,3 +1,4 @@
+import { AnimatedMark } from '@/components/brand/animated-mark';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -56,6 +57,10 @@ export default async function WaitlistPage({
 
   return (
     <main className="xidig-auth">
+      {/* The conversion page gets the entry ritual too — assemble once. */}
+      <p className="xidig-auth__mark">
+        <AnimatedMark mode="assemble" size={44} />
+      </p>
       <h1 className="xidig-auth__title">{t('waitlist.title')}</h1>
       <p>{t('waitlist.subtitle')}</p>
       {foundingSpotsLeft !== null && foundingSpotsLeft > 0 ? (
