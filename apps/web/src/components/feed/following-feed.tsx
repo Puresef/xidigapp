@@ -17,6 +17,7 @@ import { LITE_BUNDLES, type LitePrefs } from '@/lib/lite/prefs';
 
 import { PostCard } from '../plaza/post-card';
 import { PlainErrorBanner } from '../auth/plain-error';
+import { EmptyState } from '../empty-state';
 import { SuggestedFollows } from '../profile/suggested-follows';
 import { ListingCard } from '../suuq/listing-card';
 import { FeedEnd } from './feed-end';
@@ -101,17 +102,27 @@ export function FollowingFeed({
         {items.length > 0 ? <LiteShowAll /> : null}
 
         {loaded && items.length === 0 && !error ? (
-          <div className="xidig-section xidig-empty-sky">
-            <p className="xidig-card__body">{t('feed.empty')}</p>
-            <p className="xidig-card__meta">{t('feed.emptyHint')}</p>
-            {/* Task 7: the natural next stop for an empty Following feed is
-                the community-wide Latest tab, not the Directory. */}
-            <Link href="/?tab=latest" className="xidig-button xidig-button--secondary">
-              {t('feed.emptyLatestCta')} →
-            </Link>
+          <>
+            {/* Shared EmptyState (Task 9) wearing the calm starfield; the
+                Latest-tab CTA (Task 7) stays the single action. SuggestedFollows
+                sits OUTSIDE it — a row list would fight the centered layout. */}
+            <EmptyState
+              className="xidig-empty-sky"
+              messageKey="feed.empty"
+              action={
+                <>
+                  <p className="xidig-card__meta">{t('feed.emptyHint')}</p>
+                  {/* Task 7: the natural next stop for an empty Following feed
+                      is the community-wide Latest tab, not the Directory. */}
+                  <Link href="/?tab=latest" className="xidig-button xidig-button--secondary">
+                    {t('feed.emptyLatestCta')} →
+                  </Link>
+                </>
+              }
+            />
             {/* Phase 4.5: an empty following feed is exactly when suggestions help. */}
             <SuggestedFollows />
-          </div>
+          </>
         ) : null}
 
         {items.length > 0 ? (

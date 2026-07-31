@@ -12,6 +12,7 @@ import { getLocale, getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 import { formatEventStart } from '@/components/events/event-list';
+import { EmptyState } from '@/components/empty-state';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,7 +134,19 @@ export default async function EventsIndexPage({
       </nav>
 
       {items.length === 0 ? (
-        <p className="xidig-card__body">{t('events.empty')}</p>
+        // Shared empty state (Task 9); the create CTA only for members who
+        // can actually host (organizers/verified businesses/mods — authz
+        // matches the header button above).
+        <EmptyState
+          messageKey="events.empty"
+          action={
+            canHost ? (
+              <Link href="/events/new" className="xidig-button xidig-button--primary">
+                {t('events.newEvent')}
+              </Link>
+            ) : undefined
+          }
+        />
       ) : (
         <ul className="xidig-invite-list">
           {items.map((item) => (

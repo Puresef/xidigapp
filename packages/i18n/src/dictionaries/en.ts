@@ -1122,6 +1122,7 @@ export const en = {
   'messages.new': 'New',
   'messages.unreadCount': { one: '{count} unread', other: '{count} unread' },
   'messages.noPreview': 'No messages yet.',
+  'messages.emptyThread': 'No messages yet — say salaam to break the ice.',
   'messages.requestExplainer':
     '{name} wants to message you. Accept to start chatting, or decline — they won’t be told.',
   'messages.accepted': 'Request accepted — you can chat now.',

@@ -1034,6 +1034,7 @@ export const so = {
   'messages.new': 'Cusub',
   'messages.unreadCount': { one: '{count} aan la akhriyin', other: '{count} aan la akhriyin' },
   'messages.noPreview': 'Weli fariin ma jirto.',
+  'messages.emptyThread': 'Fariin ma jirto weli — salaan ka bilow.',
   'messages.requestExplainer':
     '{name} wuxuu doonayaa inuu ku fariimo. Aqbal si aad u bilowdo sheekada, ama diid — lama ogeysiin doono.',
   'messages.accepted': 'Codsiga waa la aqbalay — hadda waad sheekaysan kartaa.',

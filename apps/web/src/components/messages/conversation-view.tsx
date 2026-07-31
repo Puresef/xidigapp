@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase-browser';
 import { Avatar } from '../media/avatar';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { Banner } from '../banner';
+import { EmptyState } from '../empty-state';
 import { ConversationMenu } from './conversation-menu';
 
 /**
@@ -259,6 +260,12 @@ export function ConversationView({
               {t('messages.loadOlder')}
             </button>
           </p>
+        ) : messages.length === 0 && canCompose ? (
+          // Empty accepted thread (SSR-known — messages arrive as props, so
+          // this never flashes during a fetch): teach the first move instead
+          // of the bare "very start of your conversation" line. Request /
+          // declined / blocked threads keep their own state banners below.
+          <EmptyState messageKey="messages.emptyThread" />
         ) : (
           <p className="xidig-card__meta xidig-dm-thread__start">{t('messages.historyStart')}</p>
         )}

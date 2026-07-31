@@ -4,6 +4,7 @@ import type { Enums } from '@xidig/db';
 import type { MessageKey } from '@xidig/i18n';
 
 import { AwardVoteControl, type VoteTargetOption } from '@/components/awards/award-vote-control';
+import { EmptyState } from '@/components/empty-state';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getT } from '@/lib/locale';
 
@@ -77,10 +78,9 @@ export default async function AwardsPage() {
         <div className="xidig-card__header">
           <h1 className="xidig-auth__title">{t('awards.title')}</h1>
         </div>
-        <div className="xidig-card">
-          <h2 className="xidig-card__title">{t('awards.emptyTitle')}</h2>
-          <p className="xidig-card__body">{t('awards.emptyBody')}</p>
-        </div>
+        {/* Teaching empty state (Task 9, shared component): the keys exist in
+            both dictionaries, so the MessageKey props type-check directly. */}
+        <EmptyState titleKey="awards.emptyTitle" messageKey="awards.emptyBody" />
       </main>
     );
   }

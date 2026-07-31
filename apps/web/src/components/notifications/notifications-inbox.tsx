@@ -47,6 +47,10 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
       setError(null);
     } catch (cause) {
       if (cause instanceof ApiRequestError) setError(cause.plain);
+      // Offline/proxy failures have no PlainError payload — normalize to the
+      // generic server_error so the banner still renders (empty message →
+      // PlainErrorBanner falls back to error.server copy).
+      else setError({ code: 'server_error', message: '' });
     }
   }, []);
 

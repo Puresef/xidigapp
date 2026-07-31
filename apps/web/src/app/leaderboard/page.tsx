@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { formatNumber } from '@xidig/i18n';
 
+import { EmptyState } from '@/components/empty-state';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getLocale, getT } from '@/lib/locale';
 
@@ -80,7 +81,7 @@ export default async function LeaderboardPage() {
       <section className="xidig-section">
         <h2 className="xidig-section__title">{t('reputation.topHelpersHeading')}</h2>
         {rows.length === 0 ? (
-          <p className="xidig-card__meta">{t('reputation.leaderboardEmpty')}</p>
+          <EmptyState messageKey="reputation.leaderboardEmpty" />
         ) : (
           <ul className="xidig-card-list">
             {rows.map((row, index) => (

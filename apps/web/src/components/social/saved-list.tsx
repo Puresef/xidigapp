@@ -17,6 +17,7 @@ import type { PostView } from '@/lib/plaza/views';
 import type { BookmarkEntityType } from '@/lib/social/entities';
 
 import { PlainErrorBanner } from '../auth/plain-error';
+import { EmptyState } from '../empty-state';
 import { FeedEnd } from '../feed/feed-end';
 import { BookmarkButton } from './bookmark-button';
 
@@ -96,9 +97,7 @@ export function SavedList({
       {error ? <PlainErrorBanner error={error} /> : null}
 
       {loaded && items.length === 0 && !error ? (
-        <div className="xidig-section">
-          <p className="xidig-card__body">{t('saved.empty')}</p>
-        </div>
+        <EmptyState messageKey="saved.empty" />
       ) : null}
 
       {items.length > 0 ? (

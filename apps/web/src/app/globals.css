@@ -3535,6 +3535,84 @@ body:has(.xidig-consent) {
   }
 }
 
+/* Low-bandwidth auto-prompt (§22, LiteAutoPrompt) — the consent banner's
+   visual family (raised surface + border + radius), but a compact floating
+   card, not an edge-to-edge bar: it's an offer, not a legal choice. NOT a
+   toast (it must not auto-dismiss) and NOT a modal (never blocks the page).
+   Sits at z 45 in the fixed-layer ladder: mobile tab bar 40 < lite prompt 45
+   < consent 50 — consent legitimately paints over it, but the two never
+   actually stack (see the :has() suppression below).
+   AA (both palettes): title = default ink on --x-surface-2 (token-block
+   ratios); body = --x-muted on --x-surface-2 → #556075 on #ffffff 6.34:1
+   light, #a7b3c9 on #16203a 7.63:1 dark. */
+.xidig-lite-prompt {
+  position: fixed;
+  inset-inline: 1rem;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  z-index: 45;
+  margin: 0 auto;
+  max-width: 26rem;
+  padding: 0.85rem 1rem;
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  box-shadow: var(--x-shadow-2);
+}
+
+/* One bottom prompt at a time: consent (a legal obligation, and it already
+   carries its own Lite shortcut row) outranks the auto-prompt. The prompt
+   stays mounted, so it simply appears once the member answers consent. */
+body:has(.xidig-consent) .xidig-lite-prompt {
+  display: none;
+}
+
+/* Mobile: float above the app tab bar, mirroring the consent banner's
+   offset (tab bar = 3.75rem + safe area). */
+@media (max-width: 48rem) {
+  body:has(.xidig-nav--app) .xidig-lite-prompt {
+    bottom: calc(3.75rem + env(safe-area-inset-bottom) + 0.75rem);
+  }
+}
+
+/* Scroll clearance while the prompt is visible so it never covers the last
+   card's actions — skipped when consent is mounted (the prompt is hidden
+   then, and consent's own, larger clearance rules take over). */
+body:has(.xidig-lite-prompt):not(:has(.xidig-consent)) {
+  padding-bottom: 10rem;
+}
+
+@media (max-width: 48rem) {
+  body:has(.xidig-nav--app):has(.xidig-lite-prompt):not(:has(.xidig-consent)) {
+    padding-bottom: calc(3.75rem + env(safe-area-inset-bottom) + 10rem);
+  }
+}
+
+.xidig-lite-prompt__title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.xidig-lite-prompt__body {
+  margin: 0 0 0.6rem;
+  font-size: var(--x-text-m);
+  color: var(--x-muted);
+}
+
+.xidig-lite-prompt__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--x-space-xs);
+}
+
+/* Entrance fade shares the consent banner's keyframes; declared only inside
+   the motion double-gate (the global kills also zero it elsewhere). */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) .xidig-lite-prompt {
+    animation: xidig-consent-in 0.2s ease-out;
+  }
+}
+
 /* ============================================================================
  * Interaction states (31 Jul full-quality pass — DESIGN.md §4): every
  * interactive element ships hover / pressed / focus-visible / disabled.
