@@ -20,6 +20,10 @@ import { VerifiedExplainer } from './verified-explainer';
 /**
  * Compact listing card (§18) — used by the directory Businesses tab, the map
  * list fallback, and the Following feed. Links to the /l/[id] permalink.
+ * The root element is polymorphic (`as`): 'li' by default for the <ul>
+ * directory grids; 'div' where the caller supplies its own list item (the
+ * feed's keyed <li>) or no list at all (the map preview panel) — a bare <li>
+ * outside <ul>/<ol> is invalid DOM nesting and React errors on it.
  *
  * Phase 4.5: primary-photo thumbnail (MediaSlot — blurhash placeholder +
  * "Show" tap in Lite mode), price range, "Open now" chip, and a bookmark
@@ -97,6 +101,7 @@ export function ListingCard({
   active,
   onActiveChange,
   onViewOnMap,
+  as: Root = 'li',
 }: {
   listing: ListingRow;
   byline?: string | undefined;
@@ -123,6 +128,11 @@ export function ListingCard({
   active?: boolean | undefined;
   onActiveChange?: ((active: boolean) => void) | undefined;
   onViewOnMap?: (() => void) | undefined;
+  /**
+   * Root element. Default 'li' (directory <ul> grids); pass 'div' when the
+   * card renders outside a list or inside a caller-owned <li> (see module doc).
+   */
+  as?: 'li' | 'div' | undefined;
 }) {
   const t = useT();
   const cookiePrefs = useCookieLitePrefs();
@@ -151,7 +161,7 @@ export function ListingCard({
     : {};
 
   return (
-    <li
+    <Root
       className={`xidig-card xidig-listing-card${active ? ' xidig-listing-card--active' : ''}`}
       {...activation}
     >
@@ -234,6 +244,6 @@ export function ListingCard({
           </p>
         ) : null}
       </div>
-    </li>
+    </Root>
   );
 }

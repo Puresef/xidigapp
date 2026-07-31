@@ -255,14 +255,17 @@ export function MapBrowser({
                 ×
               </button>
             </p>
-            <ul className="xidig-card-grid">
+            {/* A single previewed card is not a list — div wrapper (the grid
+                class is purely layout) + as="div" root keeps the DOM valid. */}
+            <div className="xidig-card-grid">
               <ListingCard
+                as="div"
                 listing={preview}
                 signedIn
                 bookmarked={preview.bookmarked ?? false}
                 categories={categories}
               />
-            </ul>
+            </div>
           </section>
         ) : null}
       </div>

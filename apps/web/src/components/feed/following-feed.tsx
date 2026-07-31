@@ -238,7 +238,11 @@ function renderItem(
     return <LabUpdateCard update={item.update} />;
   }
   return (
+    // as="div": the feed's <ul> already wraps every item in its own keyed
+    // <li> (see the items.map above) — the card's default <li> root would
+    // nest li>li, which is invalid DOM and a React error.
     <ListingCard
+      as="div"
       listing={item.listing}
       byline={
         item.owner ? t('feed.newListingFrom', { name: item.owner.display_name }) : undefined
