@@ -2,13 +2,24 @@
    Minimal, token-based, no framework: real brand styling lands with the
    Brand Guide (§26). Class naming: xidig-<block>__<element>--<modifier>. */
 
-/* Xidig palette (18 Jul "one sky" overhaul): the app joins the front door's
-   identity. Accent = the mark's own blue (#2e78b0 — Somali-flag family;
-   white on it is 4.75:1). Light mode is a dawn sky: blue-tinted near-white
-   canvas with white surfaces floating on it. */
+/* Xidig palette (18 Jul "one sky" overhaul; 31 Jul full-quality pass): the
+   app joins the front door's identity. Accent = the mark's own blue
+   (#2e78b0 — Somali-flag family; white on it is 4.75:1). Light mode is a
+   dawn sky: blue-tinted near-white canvas with white surfaces floating on
+   it. Duotone discipline (DESIGN.md §2): ONE functional accent plus the
+   reserved trust/celebration orange (--x-trust — Verified, Wins, Founding
+   Member, Garab, Capital entry, nothing else); sanctioned exemptions are
+   seeded violet #6d28d9 (§21 provenance) and semantic --x-ok/--x-danger.
+   Elevation is a three-step ramp: --x-bg (canvas) → --x-surface (cards) →
+   --x-surface-2 (anything floating above a card) — it never inverts. */
 :root {
   --x-bg: #f2f5fa;
   --x-surface: #ffffff;
+  /* Elevation step 2 — menus, pickers, toasts, modals. Light stays white
+     and lets --x-shadow-2 carry the lift; dark actually lightens (see the
+     [data-theme='dark'] block). A floating panel never drops to --x-bg. */
+  --x-surface-2: #ffffff;
+  --x-shadow-2: 0 8px 28px rgba(10, 14, 26, 0.16);
   --x-fg: #131c2e;
   --x-muted: #556075;
   --x-border: #d9e0ec;
@@ -16,6 +27,17 @@
   --x-accent: #2e78b0;
   --x-accent-fg: #ffffff;
   --x-accent-soft: rgba(46, 120, 176, 0.1);
+  /* Accent as TEXT: #2e78b0 holds AA on white (4.74:1) but only 3.74:1 on
+     the dark surface — this per-palette variant is for text/icons in the
+     accent hue. 5.77:1 on #fff, 5.09:1 on accent-soft-over-white. */
+  --x-accent-text: #276a9e;
+  /* Trust & celebration orange (DESIGN.md §2) — reserved: Verified, Wins,
+     Founding Member, Garab, Capital entry. Base #ff8c00 is fill/ring only
+     (2.33:1 on white); as text use --x-trust-fg (5.21:1 on #fff, 4.69:1 on
+     trust-soft-over-white); on a solid trust fill use ink #131c2e (7.30:1). */
+  --x-trust: #ff8c00;
+  --x-trust-fg: #a85700;
+  --x-trust-soft: rgba(255, 140, 0, 0.12);
   --x-danger: #b3261e;
   --x-danger-bg: #fdf1f0;
   --x-ok: #1b6e3d;
@@ -23,6 +45,23 @@
   --x-radius: 10px;
   --x-space: 1rem;
   --x-max-form: 26rem;
+  /* Radius / spacing / type ramps — each step matches a value the file
+     already used inline (pure refactor: rendered output identical). A new
+     hardcoded px/rem where a ramp token fits is a review flag (DESIGN.md §2).
+     Micro sizes (0.65/0.72/0.75rem badge-and-label specials) stay literal. */
+  --x-radius-s: calc(var(--x-radius) - 4px); /* 6px — inner corners */
+  --x-radius-pill: 999px;
+  --x-space-2xs: 0.25rem;
+  --x-space-xs: 0.5rem;
+  --x-space-s: 0.75rem;
+  --x-space-l: 1.5rem;
+  --x-text-xs: 0.8rem;
+  --x-text-s: 0.85rem;
+  --x-text-m: 0.9rem;
+  --x-text-ui: 0.92rem;
+  --x-text-body: 0.95rem;
+  --x-text-l: 1.05rem;
+  --x-text-xl: 1.5rem;
   /* Form-control surface: fields must wear the theme, never the UA default
      (the browser's color-scheme gray reads as broken next to token cards). */
   --x-field-bg: #ffffff;
@@ -182,9 +221,11 @@ main {
   }
 
   /* Beats the desktop underline rule on specificity; weight keeps a
-     non-color active cue beside the blue. */
+     non-color active cue beside the blue. Text variant, not raw accent:
+     5.77:1 (light) / 8.32:1 (dark) on the surface-toned tab bar — the raw
+     accent is only 3.74:1 on the dark surface. */
   .xidig-nav--app .xidig-nav__list .xidig-nav__item a[aria-current='page'] {
-    color: var(--x-accent);
+    color: var(--x-accent-text);
     font-weight: 700;
     text-decoration: none;
   }
@@ -349,7 +390,7 @@ main {
 }
 
 .xidig-auth__title {
-  font-size: 1.5rem;
+  font-size: var(--x-text-xl);
   margin: 0 0 1rem;
 }
 
@@ -365,7 +406,7 @@ main {
 
 .xidig-field__label {
   font-weight: 600;
-  font-size: 0.92rem;
+  font-size: var(--x-text-ui);
   /* Labels render as <label>, <span>, <legend>, or <p> (hidden-file-input
      pattern) — zero the UA paragraph margin so the rhythm stays uniform. */
   margin: 0;
@@ -388,14 +429,14 @@ main {
 
 .xidig-field__hint {
   color: var(--x-muted);
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
 }
 
 .xidig-checkbox {
   display: flex;
   gap: 0.5rem;
   align-items: flex-start;
-  font-size: 0.92rem;
+  font-size: var(--x-text-ui);
 }
 
 /* --- Tabs (sign-in method switcher) --- */
@@ -415,7 +456,7 @@ main {
   background: transparent;
   padding: 0.45rem 0.5rem;
   font: inherit;
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   cursor: pointer;
   color: var(--x-muted);
 }
@@ -430,7 +471,7 @@ main {
 .xidig-banner {
   border-radius: var(--x-radius);
   padding: 0.75rem 1rem;
-  font-size: 0.95rem;
+  font-size: var(--x-text-body);
   border: 1px solid var(--x-border);
 }
 
@@ -464,14 +505,14 @@ main {
 
 .xidig-section__title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--x-text-l);
 }
 
 .xidig-tag {
   display: inline-block;
   border-radius: 999px;
   padding: 0.1rem 0.6rem;
-  font-size: 0.8rem;
+  font-size: var(--x-text-xs);
   border: 1px solid var(--x-border);
   color: var(--x-muted);
   /* Chips render as <span> on cards and <button> in pickers — without an
@@ -526,6 +567,18 @@ button.xidig-tag:disabled {
   border-color: color-mix(in srgb, var(--x-ok) 30%, white);
 }
 
+/* Trust chip (Verified business, etc): --x-trust reservation, distinct from
+   semantic ok. Text 4.69:1 (light) / 7.10:1 (dark) on the trust tint. */
+.xidig-tag--trust {
+  color: var(--x-trust-fg);
+  background: var(--x-trust-soft);
+  border-color: color-mix(in srgb, var(--x-trust) 45%, white);
+}
+
+[data-theme='dark'] .xidig-tag--trust {
+  border-color: color-mix(in srgb, var(--x-trust) 45%, var(--x-bg));
+}
+
 /* Phase 8: seeded / AI-assisted content + AI-account chips (§21). A distinct
    violet so seeded/AI content is unmistakable and never reads as member content. */
 .xidig-tag--seeded {
@@ -547,9 +600,31 @@ button.xidig-tag:disabled {
   border-color: color-mix(in srgb, var(--x-danger) 30%, white);
 }
 
+/* Designed badge chip (lab kind chrome, and any classified label that is a
+   statement, not a filter). Default wears the accent tint — text variant
+   5.09:1 (light) / 6.64:1 (dark) on accent-soft-over-surface. */
+.xidig-badge {
+  display: inline-block;
+  border-radius: var(--x-radius-pill);
+  padding: 0.1rem 0.6rem;
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  color: var(--x-accent-text);
+  background: var(--x-accent-soft);
+  border: 1px solid transparent;
+}
+
+/* Muted badge (Dormant): a credibility signal, not shame — quiet raised
+   neutral. Muted text 6.33:1 (light) / 7.63:1 (dark) on surface-2. */
+.xidig-badge--muted {
+  color: var(--x-muted);
+  background: var(--x-surface-2);
+  border-color: var(--x-border);
+}
+
 .xidig-auth__meta {
   margin-top: 1rem;
-  font-size: 0.92rem;
+  font-size: var(--x-text-ui);
   color: var(--x-muted);
   display: grid;
   gap: 0.35rem;
@@ -603,7 +678,7 @@ button.xidig-tag:disabled {
   border: 1px solid var(--x-border);
   border-radius: 999px;
   padding: 0.15rem 0.75rem;
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
   color: var(--x-muted);
 }
 
@@ -623,18 +698,18 @@ button.xidig-tag:disabled {
 
 .xidig-card__title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: var(--x-text-l);
 }
 
 .xidig-card__meta {
   color: var(--x-muted);
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
   margin: 0;
 }
 
 .xidig-card__body {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: var(--x-text-body);
 }
 
 .xidig-card-grid {
@@ -672,7 +747,7 @@ button.xidig-tag:disabled {
   flex-wrap: wrap;
   gap: 0.75rem;
   color: var(--x-muted);
-  font-size: 0.92rem;
+  font-size: var(--x-text-ui);
 }
 
 .xidig-profile__actions {
@@ -785,7 +860,7 @@ a.xidig-tabs__tab {
   text-decoration: none;
   text-align: center;
   padding: 0.45rem 0.75rem;
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   color: var(--x-muted);
   flex: 1;
 }
@@ -812,7 +887,7 @@ a.xidig-tabs__tab {
   border: 1px solid var(--x-border);
   border-radius: 999px;
   background: var(--x-bg);
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
   cursor: pointer;
 }
 
@@ -838,7 +913,7 @@ a.xidig-tabs__tab {
   gap: 0.25rem;
   padding: 0.45rem 0.6rem;
   border: 1px solid var(--x-border);
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   text-align: left;
   background: var(--x-bg);
 }
@@ -855,7 +930,7 @@ button.xidig-poll__option {
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: var(--x-text-m);
 }
 
 .xidig-poll__bar {
@@ -875,7 +950,7 @@ button.xidig-poll__option {
   aspect-ratio: 16 / 9;
   width: 100%;
   border: 1px solid var(--x-border);
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   overflow: hidden;
 }
 
@@ -894,7 +969,7 @@ button.xidig-poll__option {
 
 .xidig-post-images img {
   width: 100%;
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   border: 1px solid var(--x-border);
 }
 
@@ -916,7 +991,7 @@ button.xidig-poll__option {
   width: 100%;
   height: 4.5rem;
   object-fit: cover;
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   border: 1px solid var(--x-border);
 }
 
@@ -986,7 +1061,7 @@ button.xidig-poll__option {
 
 .xidig-dm-row__preview {
   color: var(--x-muted);
-  font-size: 0.9rem;
+  font-size: var(--x-text-m);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1012,7 +1087,7 @@ button.xidig-poll__option {
 
 .xidig-dm-header__name {
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: var(--x-text-l);
   text-decoration: none;
   color: inherit;
 }
@@ -1110,10 +1185,10 @@ button.xidig-poll__option {
   z-index: 20;
   min-width: 16rem;
   padding: 0.5rem;
-  background: var(--x-fg-bg, #fff);
+  background: var(--x-surface-2);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--x-shadow-2);
 }
 
 .xidig-dm-menu__list {
@@ -1130,7 +1205,7 @@ button.xidig-poll__option {
   padding: 0.5rem;
   background: none;
   border: 0;
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   cursor: pointer;
   color: inherit;
 }
@@ -1197,13 +1272,13 @@ button.xidig-poll__option {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
 }
 
 .xidig-media-slot img {
   display: block;
   width: 100%;
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   border: 1px solid var(--x-border);
 }
 
@@ -1215,6 +1290,9 @@ button.xidig-poll__option {
   height: 100%;
 }
 
+/* Scrim alpha 0.86: the blurhash underlay is arbitrary, so ratios are
+   computed against the worst case (pure black beneath → resolved ≈ #dbdbdb):
+   fg 12.30:1, muted size line 4.57:1. Dark override near the theme block. */
 .xidig-media-slot__overlay {
   position: absolute;
   inset: 0;
@@ -1225,9 +1303,9 @@ button.xidig-poll__option {
   gap: 0.35rem;
   padding: 0.75rem;
   text-align: center;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.86);
   border: 1px dashed var(--x-border);
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
 }
 
 .xidig-media-slot__label {
@@ -1312,7 +1390,7 @@ button.xidig-poll__option {
 .xidig-empty__title {
   margin: 0;
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: var(--x-text-l);
 }
 
 .xidig-empty .xidig-card__body {
@@ -1343,7 +1421,7 @@ fieldset.xidig-field > legend {
 
 .xidig-feed-why summary {
   display: inline-block;
-  font-size: 0.8rem;
+  font-size: var(--x-text-xs);
   color: var(--x-muted);
   cursor: pointer;
 }
@@ -1355,7 +1433,7 @@ fieldset.xidig-field > legend {
 
 .xidig-feed-why p {
   margin: 0.25rem 0 0;
-  font-size: 0.8rem;
+  font-size: var(--x-text-xs);
   color: var(--x-muted);
 }
 
@@ -1488,7 +1566,7 @@ fieldset.xidig-field > legend {
 }
 
 .xidig-vote-card__desc {
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
   color: var(--x-muted);
 }
 
@@ -1824,6 +1902,10 @@ html[data-motion='off'] .xidig-avatar {
   color-scheme: dark;
   --x-bg: #0a0e1a;
   --x-surface: #101828;
+  /* Elevation lightens as it rises (#0a0e1a → #101828 → #16203a): fg
+     14.37:1, muted 7.63:1 on the raised step. Never invert back to bg. */
+  --x-surface-2: #16203a;
+  --x-shadow-2: 0 10px 32px rgba(0, 0, 0, 0.55);
   --x-fg: #eef2f9;
   --x-muted: #a7b3c9;
   --x-border: rgba(151, 173, 214, 0.16);
@@ -1831,6 +1913,13 @@ html[data-motion='off'] .xidig-avatar {
   --x-accent: #2e78b0;
   --x-accent-fg: #ffffff;
   --x-accent-soft: rgba(77, 166, 232, 0.14);
+  /* Accent-as-text lightened for ink surfaces (the --x-danger/--x-ok dark
+     pattern): 8.32:1 on #101828, 5.97:1 on accent-soft-over-surface-2. */
+  --x-accent-text: #7ab8e8;
+  /* Trust text lightened the same way: 9.15:1 on #101828, 7.10:1 on
+     trust-soft-over-surface. Base --x-trust stays #ff8c00 (fills/rings). */
+  --x-trust-fg: #ffa733;
+  --x-trust-soft: rgba(255, 140, 0, 0.16);
   --x-danger: #ffa39b;
   --x-danger-bg: #35201e;
   --x-ok: #8ad4a4;
@@ -1842,14 +1931,11 @@ html[data-motion='off'] .xidig-avatar {
   --x-field-border: rgba(151, 173, 214, 0.55);
 }
 
-/* Light-hardcoded surfaces that tokens don't reach. */
+/* Light-hardcoded surfaces that tokens don't reach. Scrim alpha 0.82: the
+   blurhash underlay is arbitrary, so ratios are computed against the worst
+   case (pure white beneath → resolved ≈ #363943): fg 10.26:1, muted 5.45:1. */
 [data-theme='dark'] .xidig-media-slot__overlay {
-  background: rgba(22, 24, 29, 0.55);
-}
-
-[data-theme='dark'] .xidig-dm-menu__panel {
-  background: var(--x-bg);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  background: rgba(10, 14, 26, 0.82);
 }
 
 /* color-mix borders mixed toward white read as glare on dark — mix toward bg. */
@@ -1922,7 +2008,7 @@ a.xidig-settings-card:hover {
 .xidig-matrix {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.92rem;
+  font-size: var(--x-text-ui);
 }
 
 .xidig-matrix th,
@@ -1953,7 +2039,7 @@ a.xidig-settings-card:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.95rem;
+  font-size: var(--x-text-body);
 }
 
 /* Blocked-members rows (privacy page). */
@@ -1982,7 +2068,7 @@ a.xidig-settings-card:hover {
 
 .xidig-block-list__handle {
   color: var(--x-muted);
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
 }
 
 /* Data & Lite mode page. */
@@ -2208,9 +2294,9 @@ a.xidig-settings-card:hover {
   width: 4.5rem;
   height: 4.5rem;
   border: 1px solid var(--x-border);
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   color: var(--x-muted);
-  font-size: 1.5rem;
+  font-size: var(--x-text-xl);
   font-weight: 600;
   user-select: none;
 }
@@ -2297,11 +2383,15 @@ a.xidig-settings-card:hover {
   line-height: 0;
   border-radius: 999px;
 }
-/* Verified members get a ring (gap-ring floats on the card) + a check badge. */
+/* Verified members get a ring (gap-ring floats on the card) + a check badge.
+   Trust orange, not accent (DESIGN.md §2): Verified is a trust moment. The
+   ring is a decorative echo (2.33:1 on white — allowed as redundant
+   decoration); the CHECK badge is the AA indicator: ink on the solid trust
+   fill is 7.30:1 in both palettes. */
 .xidig-byline__avatar--verified {
   box-shadow:
     0 0 0 2px var(--x-surface),
-    0 0 0 3.5px var(--x-accent);
+    0 0 0 3.5px var(--x-trust);
 }
 .xidig-byline__check {
   position: absolute;
@@ -2312,9 +2402,9 @@ a.xidig-settings-card:hover {
   justify-content: center;
   width: 16px;
   height: 16px;
-  border-radius: 999px;
-  background: var(--x-accent);
-  color: var(--x-accent-fg);
+  border-radius: var(--x-radius-pill);
+  background: var(--x-trust);
+  color: #131c2e; /* ink on #ff8c00 — 7.30:1; white here would be 2.33:1 */
   border: 2px solid var(--x-surface);
 }
 .xidig-byline__text {
@@ -2348,7 +2438,7 @@ a.xidig-settings-card:hover {
   color: var(--x-muted);
 }
 .xidig-post-comments__n {
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
   font-weight: 600;
 }
 
@@ -2360,37 +2450,40 @@ a.xidig-settings-card:hover {
   gap: 0.25rem;
   margin: 0.75rem 0;
 }
+/* Accent-as-text state colors: --x-accent itself is only 3.74:1 on the dark
+   surface — the per-palette text variant holds 5.77:1 (light) / 8.32:1
+   (dark) on the card surface. */
 .xidig-icon-button--on {
-  color: var(--x-accent);
+  color: var(--x-accent-text);
 }
+/* Copied-confirmation green: the semantic token, not a one-off hex —
+   6.28:1 on white, 10.17:1 on the dark surface. */
 .xidig-icon-button--done {
-  color: #1f9d57;
+  color: var(--x-ok);
 }
 
-/* ── Post-type chips: colour-coded so the feed scans at a glance ───────── */
+/* ── Post-type chips: duotone (DESIGN.md §2). Win is the celebration chip
+   and wears trust orange (4.69:1 light / 7.10:1 dark on the tint); update
+   keeps the accent-soft treatment (5.09:1 / 6.64:1); ask/poll/intro are
+   neutral — the LABEL differentiates them (5.59:1 / 7.44:1). The five-hue
+   palette is retired and gated by globals-tokens.test.ts. ───────────────── */
 .xidig-post-type {
   font-weight: 600;
   border-color: transparent;
 }
 .xidig-post-type--win {
-  color: #1f8f57;
-  background: color-mix(in srgb, #1f8f57 12%, transparent);
-}
-.xidig-post-type--ask {
-  color: #b26a09;
-  background: color-mix(in srgb, #b26a09 13%, transparent);
+  color: var(--x-trust-fg);
+  background: var(--x-trust-soft);
 }
 .xidig-post-type--update {
-  color: var(--x-accent);
+  color: var(--x-accent-text);
   background: var(--x-accent-soft);
 }
-.xidig-post-type--poll {
-  color: #7c4bc0;
-  background: color-mix(in srgb, #7c4bc0 13%, transparent);
-}
+.xidig-post-type--ask,
+.xidig-post-type--poll,
 .xidig-post-type--intro {
-  color: #0e8c86;
-  background: color-mix(in srgb, #0e8c86 13%, transparent);
+  color: var(--x-muted);
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
 }
 
 /* ── Reaction picker (collapsed add-reaction affordance) ──────────────── */
@@ -2411,9 +2504,9 @@ a.xidig-settings-card:hover {
   gap: 0.15rem;
   padding: 0.3rem;
   border: 1px solid var(--x-border);
-  border-radius: 999px;
-  background: var(--x-surface);
-  box-shadow: 0 8px 24px rgba(19, 28, 46, 0.14);
+  border-radius: var(--x-radius-pill);
+  background: var(--x-surface-2);
+  box-shadow: var(--x-shadow-2);
 }
 .xidig-reaction-picker__opt {
   display: inline-flex;
@@ -2424,7 +2517,7 @@ a.xidig-settings-card:hover {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  font-size: 1.05rem;
+  font-size: var(--x-text-l);
   cursor: pointer;
   transition: transform 0.1s ease, background-color 0.1s ease;
 }
@@ -2448,10 +2541,10 @@ a.xidig-settings-card:hover {
   margin: 0;
   padding: 0.25rem;
   list-style: none;
-  background: var(--x-bg);
+  background: var(--x-surface-2);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
+  box-shadow: var(--x-shadow-2);
   max-height: 14rem;
   overflow-y: auto;
 }
@@ -2463,7 +2556,7 @@ a.xidig-settings-card:hover {
   padding: 0.5rem;
   background: none;
   border: 0;
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   cursor: pointer;
   color: inherit;
 }
@@ -2604,7 +2697,7 @@ a.xidig-settings-card:hover {
 
 .xidig-search-group__header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
 
-.xidig-search-group__more { font-size: 0.9rem; white-space: nowrap; }
+.xidig-search-group__more { font-size: var(--x-text-m); white-space: nowrap; }
 
 .xidig-search-list { list-style: none; margin: 0.5rem 0 0; padding: 0; }
 
@@ -2634,7 +2727,7 @@ a.xidig-settings-card:hover {
    ============================================================================ */
 /* --- Modal (attestation + venture fund) — NEW, no existing dialog class --- */
 .xidig-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,0.5); }
-.xidig-modal__panel { width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto; background: var(--x-bg); border-radius: var(--x-radius); padding: 1.25rem; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.xidig-modal__panel { width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto; background: var(--x-surface-2); border-radius: var(--x-radius); padding: 1.25rem; box-shadow: var(--x-shadow-2); }
 .xidig-modal__title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; }
 .xidig-modal__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
 
@@ -2735,10 +2828,10 @@ a.xidig-settings-card:hover {
   display: grid;
   gap: 0.1rem;
   padding: 0.4rem;
-  background: var(--x-surface);
+  background: var(--x-surface-2);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--x-shadow-2);
 }
 .xidig-user-menu__identity {
   display: grid;
@@ -2751,7 +2844,7 @@ a.xidig-settings-card:hover {
 }
 .xidig-user-menu__handle {
   color: var(--x-muted);
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
 }
 .xidig-user-menu__item {
   display: block;
@@ -2760,7 +2853,7 @@ a.xidig-settings-card:hover {
   padding: 0.5rem;
   border: 0;
   background: transparent;
-  border-radius: calc(var(--x-radius) - 4px);
+  border-radius: var(--x-radius-s);
   font: inherit;
   color: inherit;
   text-decoration: none;
@@ -2807,7 +2900,7 @@ a.xidig-settings-card:hover {
   margin: 0;
   padding: 0.5rem;
   color: var(--x-muted);
-  font-size: 0.9rem;
+  font-size: var(--x-text-m);
 }
 
 /* "You are here" on the See-all item when already on /notifications. */
@@ -2824,7 +2917,7 @@ a.xidig-settings-card:hover {
 /* Detail-page "← Section" orientation link. */
 .xidig-backlink {
   margin: 0 0 0.5rem;
-  font-size: 0.9rem;
+  font-size: var(--x-text-m);
 }
 
 .xidig-backlink a {
@@ -2853,11 +2946,11 @@ a.xidig-settings-card:hover {
 .xidig-toaster__toast {
   margin: 0;
   padding: 0.55rem 1rem;
-  border-radius: 999px;
+  border-radius: var(--x-radius-pill);
   border: 1px solid var(--x-border);
-  background: var(--x-surface);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
-  font-size: 0.92rem;
+  background: var(--x-surface-2);
+  box-shadow: var(--x-shadow-2);
+  font-size: var(--x-text-ui);
 }
 
 .xidig-user-menu__item--danger {
@@ -2894,7 +2987,7 @@ a.xidig-settings-card:hover {
 
 .xidig-footer__list a {
   color: var(--x-muted);
-  font-size: 0.9rem;
+  font-size: var(--x-text-m);
   text-decoration: none;
 }
 
@@ -2910,7 +3003,7 @@ a.xidig-settings-card:hover {
 
 .xidig-brand {
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: var(--x-text-l);
   letter-spacing: 0.01em;
   color: var(--x-fg);
   text-decoration: none;
@@ -2936,7 +3029,7 @@ a.xidig-settings-card:hover {
 
 .xidig-front__hero p {
   color: var(--x-muted);
-  font-size: 1.05rem;
+  font-size: var(--x-text-l);
   margin: 0 0 1.25rem;
 }
 
@@ -2972,13 +3065,13 @@ a.xidig-settings-card:hover {
 
 .xidig-front-card h3 {
   margin: 0 0 0.4rem;
-  font-size: 1.05rem;
+  font-size: var(--x-text-l);
 }
 
 .xidig-front-card p {
   margin: 0;
   color: var(--x-muted);
-  font-size: 0.95rem;
+  font-size: var(--x-text-body);
   line-height: 1.5;
 }
 
@@ -3008,7 +3101,7 @@ a.xidig-settings-card:hover {
 
 .xidig-report-meta {
   color: var(--x-muted);
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
   margin: 0.35rem 0 0;
 }
 
@@ -3026,7 +3119,7 @@ a.xidig-settings-card:hover {
   border: 1px solid var(--x-border);
   padding: 0.4rem 0.6rem;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: var(--x-text-m);
 }
 
 .xidig-report-faq {
@@ -3062,7 +3155,7 @@ a.xidig-settings-card:hover {
 
 .xidig-consent__body {
   margin: 0 0 0.6rem;
-  font-size: 0.9rem;
+  font-size: var(--x-text-m);
   color: var(--x-muted);
 }
 
@@ -3076,7 +3169,7 @@ a.xidig-settings-card:hover {
 
 .xidig-consent__hint {
   display: block;
-  font-size: 0.85rem;
+  font-size: var(--x-text-s);
   color: var(--x-muted);
 }
 

@@ -41,12 +41,13 @@ Every token is defined twice: light in `:root`, dark under
 | ------------------------------------ | ----------------------- | --------------------------- | --------------------------------------------- |
 | `--x-bg`                             | `#f2f5fa`               | `#0a0e1a`                   | Page canvas (dawn sky / ink night sky)        |
 | `--x-surface`                        | `#ffffff`               | `#101828`                   | Cards, panels                                 |
-| `--x-surface-2`                      | `#f8fafd` family        | `~#16203a`                  | Raised layer: menus, pickers, toasts, modals  |
+| `--x-surface-2` (+ `--x-shadow-2`)   | `#ffffff` + shadow      | `#16203a`                   | Raised layer: menus, pickers, toasts, modals  |
 | `--x-fg`                             | `#131c2e`               | `#eef2f9`                   | Body text                                     |
 | `--x-muted`                          | `#556075`               | `#a7b3c9`                   | Secondary text (AA on bg *and* surface)       |
 | `--x-border` / `--x-border-strong`   | `#d9e0ec` / `#b9c4d8`   | `rgba(151,173,214,.16/.3)`  | Card texture / boundaries                     |
-| `--x-accent` (+ `-fg`, `-soft`)      | `#2e78b0`               | `#2e78b0`                   | THE functional accent                         |
-| `--x-trust` (+ `-fg`, `-soft`)       | `#FF8C00` family        | `#FF8C00` family            | Trust & celebration — reserved (see below)    |
+| `--x-accent` (+ `-fg`, `-soft`)      | `#2e78b0`               | `#2e78b0`                   | THE functional accent (fills, rings, links)   |
+| `--x-accent-text`                    | `#276a9e`               | `#7ab8e8`                   | Accent as *text/icon* — AA on both surfaces   |
+| `--x-trust` (+ `-fg`, `-soft`)       | `#ff8c00` / `#a85700`   | `#ff8c00` / `#ffa733`       | Trust & celebration — reserved (see below)    |
 | `--x-ok` / `--x-danger` (+ `-bg`)    | semantic pair           | lightened for dark          | Success / destructive only                    |
 | `--x-field-bg` / `--x-field-border`  | `#ffffff` / `#8794a8`   | `#0c1220` / 0.55-alpha      | Form fields (3:1 non-text minimum on borders) |
 
@@ -62,8 +63,10 @@ is orientation.
 - **Trust orange is reserved.** `--x-trust` (#FF8C00 family) marks trust and
   celebration ONLY: Verified (avatar ring/check, listing chip), Wins, Founding
   Member, Garab/Co-sign, Capital entry. Anywhere else it is a violation.
-  #FF8C00 on white is 2.33:1 — as *text* on light surfaces use the text-safe
-  variant (~`#b35f00`); pure #FF8C00 only as border or fill-with-ink.
+  #FF8C00 on white is 2.33:1 — as *text* use `--x-trust-fg` (`#a85700` light —
+  the softer `#b35f00` fails AA at 4.15:1 on the trust-soft chip tint — /
+  `#ffa733` dark); pure #FF8C00 only as ring/border or fill-with-ink
+  (`#131c2e` on it is 7.30:1).
 - **Sanctioned exemptions** (these stay; nothing else does): seeded violet
   `#6d28d9` (`.xidig-tag--seeded`) — the §21 AI/seed provenance marker,
   deliberately outside the duotone so seeded content is unmistakable — and the
@@ -81,8 +84,10 @@ is orientation.
 
 Three steps, always in order: `--x-bg` (canvas) → `--x-surface` (cards) →
 `--x-surface-2` (anything floating above a card: dropdown menus, the reaction
-picker, DM menus, toasts, modals). Elevation never inverts — a floating panel
-must not drop to `--x-bg` in dark mode.
+picker, DM menus, toasts, modals). Raised panels pair `--x-surface-2` with
+`--x-shadow-2`: in light the surface stays white and the shadow carries the
+lift; in dark the surface itself lightens (`#16203a`). Elevation never
+inverts — a floating panel must not drop to `--x-bg` in dark mode.
 
 ### Radius, spacing, type
 
@@ -143,9 +148,11 @@ Reuse before building: `Banner`, `EmptyState`, `LoadingComet`/`LoadingFlap`,
 
 AA ≥ 4.5:1 for every text/background pair in BOTH palettes. This is a gate,
 not a guideline: computed ratios live in CSS comments for non-obvious pairs,
-and named token pairs are asserted by test (precedent: the avatar-disc
-contrast gate, [`docs/brand-direction.md`](docs/brand-direction.md) item 3).
-New color pair → compute the ratio before it lands.
+and named token pairs are asserted by test —
+`apps/web/src/app/globals-tokens.test.ts` (extend its `PAIRS` table when a
+new pair ships) alongside the avatar-disc contrast gate
+([`docs/brand-direction.md`](docs/brand-direction.md) item 3). New color
+pair → compute the ratio before it lands.
 
 ### Typography
 

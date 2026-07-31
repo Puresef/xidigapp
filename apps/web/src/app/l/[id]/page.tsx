@@ -158,7 +158,7 @@ export default async function ListingPermalinkPage({
           <header className="xidig-profile__header">
             <h1 className="xidig-auth__title">{listing.business_name}</h1>
             {listing.verification_status === 'verified' ? (
-              <span className="xidig-tag xidig-tag--ok">{t('suuq.verifiedBusiness')}</span>
+              <span className="xidig-tag xidig-tag--trust">{t('suuq.verifiedBusiness')}</span>
             ) : null}
             {listing.owner_user_id === null ? (
               <span className="xidig-tag">{t('suuq.unclaimed')}</span>

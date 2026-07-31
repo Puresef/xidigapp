@@ -136,7 +136,7 @@ export function ListingCard({
         ) : null}
         <p className="xidig-chip-row">
           {listing.verification_status === 'verified' ? (
-            <span className="xidig-tag xidig-tag--ok">{t('suuq.verifiedBusiness')}</span>
+            <span className="xidig-tag xidig-tag--trust">{t('suuq.verifiedBusiness')}</span>
           ) : null}
           {listing.owner_user_id === null ? (
             <span className="xidig-tag">{t('suuq.unclaimed')}</span>
