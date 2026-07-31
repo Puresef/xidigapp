@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiError } from '@/lib/api';
+import { decodeListingCursor, encodeCursor, encodeListingCursor } from '@/lib/pagination';
 
 /**
  * GET /api/listings — bookmark hydration contract (Task 10, directory UX).
@@ -142,9 +143,12 @@ function listingRow(id: string, overrides: Row = {}): Row {
     country: 'Somaliland',
     contact_links: [],
     verification_status: 'verified',
+    is_verified: true,
+    verified_at: '2026-07-15T00:00:00Z',
     status: 'published',
     source: 'member',
     created_at: '2026-07-01T00:00:00Z',
+    updated_at: '2026-07-20T00:00:00Z',
     opening_hours: null,
     price_range: null,
     primary_photo_path: null,
@@ -237,5 +241,111 @@ describe('GET /api/listings — bookmarked hydration', () => {
     const response = await GET(getRequest());
 
     expect(response.status).toBe(401);
+  });
+});
+
+describe('GET /api/listings — verified-first sort + versioned cursor (Task 11)', () => {
+  it('orders is_verified DESC, updated_at DESC, id DESC (verified tier on top)', async () => {
+    const client = new FakeClient({ business_listings: [[listingRow('L1')]] });
+    authHolder.ctx = contextFor(client);
+
+    const response = await GET(getRequest());
+    expect(response.status).toBe(200);
+
+    const query = client.queryFor('business_listings');
+    const orders = query.recorded
+      .filter((entry) => entry.op === 'order')
+      .map((entry) => entry.args);
+    expect(orders).toEqual([
+      ['is_verified', { ascending: false }],
+      ['updated_at', { ascending: false }],
+      ['id', { ascending: false }],
+    ]);
+    // The SELECT must carry the cursor keys + the explainer's verified_at.
+    const select = query.argsOf('select')?.[0] as string;
+    expect(select).toContain('is_verified');
+    expect(select).toContain('updated_at');
+    expect(select).toContain('verified_at');
+  });
+
+  it('mints a v2 cursor from the last row and it round-trips the new shape', async () => {
+    const client = new FakeClient({
+      business_listings: [
+        [
+          listingRow('L1'),
+          listingRow('L2', {
+            is_verified: false,
+            verification_status: 'unverified',
+            verified_at: null,
+            updated_at: '2026-07-18T00:00:00Z',
+          }),
+          listingRow('L3'),
+        ],
+      ],
+      bookmarks: [[]],
+    });
+    authHolder.ctx = contextFor(client);
+
+    const response = await GET(getRequest('?limit=2'));
+    const body = (await response.json()) as { data: { nextCursor: string | null } };
+
+    expect(body.data.nextCursor).not.toBeNull();
+    expect(decodeListingCursor(body.data.nextCursor)).toEqual({
+      verified: false,
+      updatedAt: '2026-07-18T00:00:00Z',
+      id: 'L2',
+    });
+  });
+
+  it('applies the tier-aware keyset filter for a v2 cursor', async () => {
+    const client = new FakeClient({
+      business_listings: [[listingRow('L1')]],
+      bookmarks: [[]],
+    });
+    authHolder.ctx = contextFor(client);
+
+    const cursor = encodeListingCursor({
+      verified: true,
+      updatedAt: '2026-07-19T00:00:00Z',
+      id: 'L9',
+    });
+    const response = await GET(getRequest(`?cursor=${encodeURIComponent(cursor)}`));
+    expect(response.status).toBe(200);
+
+    const query = client.queryFor('business_listings');
+    expect(query.argsOf('or')).toEqual([
+      'and(is_verified.eq.true,updated_at.lt.2026-07-19T00:00:00Z),' +
+        'and(is_verified.eq.true,updated_at.eq.2026-07-19T00:00:00Z,id.lt.L9),' +
+        'is_verified.eq.false',
+    ]);
+  });
+
+  it('an OLD unversioned cursor restarts from page 1 — 200, no keyset filter', async () => {
+    const client = new FakeClient({
+      business_listings: [[listingRow('L1')]],
+      bookmarks: [[]],
+    });
+    authHolder.ctx = contextFor(client);
+
+    const oldCursor = encodeCursor({ createdAt: '2026-07-01T00:00:00Z', id: 'L5' });
+    const response = await GET(getRequest(`?cursor=${encodeURIComponent(oldCursor)}`));
+
+    expect(response.status).toBe(200);
+    const query = client.queryFor('business_listings');
+    expect(query.recorded.some((entry) => entry.op === 'or')).toBe(false);
+  });
+
+  it('a garbage cursor also restarts from page 1 (never a 400)', async () => {
+    const client = new FakeClient({
+      business_listings: [[listingRow('L1')]],
+      bookmarks: [[]],
+    });
+    authHolder.ctx = contextFor(client);
+
+    const response = await GET(getRequest('?cursor=not-a-cursor'));
+
+    expect(response.status).toBe(200);
+    const query = client.queryFor('business_listings');
+    expect(query.recorded.some((entry) => entry.op === 'or')).toBe(false);
   });
 });

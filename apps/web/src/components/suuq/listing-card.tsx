@@ -15,6 +15,7 @@ import { LITE_BUNDLES, LITE_COOKIE, parseLitePrefs, type LitePrefs } from '@/lib
 
 import { OpenNowChip } from './opening-hours-display';
 import { PriceRangeDisplay } from './price-range';
+import { VerifiedExplainer } from './verified-explainer';
 
 /**
  * Compact listing card (§18) — used by the directory Businesses tab, the map
@@ -41,6 +42,9 @@ export interface ListingRow {
   country: string | null;
   contact_links: unknown;
   verification_status: string;
+  /** Task 11: approval date for the Verified explainer (optional — narrower
+   *  call sites and seeded rows may not carry it; the dialog omits the line). */
+  verified_at?: string | null;
   status: string;
   created_at: string;
   /** content_source ('member' | 'seed' | 'ai') — drives the seeded/AI label. */
@@ -155,7 +159,7 @@ export function ListingCard({
         ) : null}
         <p className="xidig-chip-row">
           {listing.verification_status === 'verified' ? (
-            <span className="xidig-tag xidig-tag--trust">{t('suuq.verifiedBusiness')}</span>
+            <VerifiedExplainer verifiedAt={listing.verified_at ?? null} />
           ) : null}
           {listing.owner_user_id === null ? (
             <span className="xidig-tag">{t('suuq.unclaimed')}</span>

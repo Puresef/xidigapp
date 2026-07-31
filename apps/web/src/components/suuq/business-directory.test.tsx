@@ -147,4 +147,105 @@ describe('BusinessDirectory (Task 10)', () => {
     expect(calls[3]).not.toContain('cursor=');
     expect(host.textContent).toContain('Filters · 1');
   });
+
+  it('publishes the sort rule beside the results (Task 11 chronological honesty)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(JSON.stringify({ data: { listings: [listing], nextCursor: null } }), {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          }),
+      ),
+    );
+
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    await act(async () => {
+      root.render(
+        <LocaleProvider initialLocale="en">
+          <BusinessDirectory categories={[]} />
+        </LocaleProvider>,
+      );
+    });
+
+    expect(host.textContent).toContain('Recently updated · Verified first');
+  });
+
+  it('a failed live-filter apply clears the cursor — load-more can never page a stale keyset (Task 10 review)', async () => {
+    vi.useFakeTimers();
+    const calls: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        calls.push(String(url));
+        // Boot succeeds WITH a cursor; the live-filter apply (call 2) fails;
+        // the retry (call 3) succeeds with a fresh cursor.
+        if (calls.length === 2) {
+          return new Response(JSON.stringify({ error: { code: 'server_error' } }), {
+            status: 500,
+            headers: { 'content-type': 'application/json' },
+          });
+        }
+        return new Response(
+          JSON.stringify({
+            data: { listings: [listing], nextCursor: calls.length === 1 ? 'CUR1' : 'CUR2' },
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        );
+      }),
+    );
+
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    await act(async () => {
+      root.render(
+        <LocaleProvider initialLocale="en">
+          <BusinessDirectory categories={[]} />
+        </LocaleProvider>,
+      );
+    });
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+    const findLoadMore = () =>
+      [...host.querySelectorAll('button')].find((b) => b.textContent === 'Load more');
+    expect(findLoadMore()).toBeDefined();
+
+    // Type → debounce fires → the apply FAILS. The old list survives, but the
+    // stale CUR1 cursor must be gone: `applied` now points at q=ca, and CUR1
+    // encodes a keyset for the previous (unfiltered) set — paging it into the
+    // new filters would mix generations.
+    const search = host.querySelector<HTMLInputElement>('#biz-q')!;
+    await act(async () => {
+      setValue(search, 'ca', 'input');
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(310);
+    });
+    expect(calls).toHaveLength(2);
+    expect(host.textContent).toContain('Hodan Café'); // old list still visible
+    expect(findLoadMore()).toBeUndefined(); // …but not pageable
+
+    // Enter retries the apply; success restores paging with the FRESH cursor.
+    await act(async () => {
+      search.form!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+    expect(calls).toHaveLength(3);
+    const loadMore = findLoadMore()!;
+    await act(async () => {
+      loadMore.click();
+    });
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
+    expect(calls[3]).toContain('q=ca');
+    expect(calls[3]).toContain('cursor=CUR2');
+  });
 });

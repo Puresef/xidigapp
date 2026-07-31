@@ -16,6 +16,7 @@ import { ListingServicesList } from '@/components/suuq/listing-services-list';
 import { OpeningHoursDisplay } from '@/components/suuq/opening-hours-display';
 import { PriceRangeDisplay } from '@/components/suuq/price-range';
 import { TrackListingView } from '@/components/suuq/track-listing-view';
+import { VerifiedExplainer } from '@/components/suuq/verified-explainer';
 import { WhatsAppCta } from '@/components/suuq/whatsapp-cta';
 import { getAuthContext } from '@/lib/auth/guards';
 import {
@@ -158,7 +159,7 @@ export default async function ListingPermalinkPage({
           <header className="xidig-profile__header">
             <h1 className="xidig-auth__title">{listing.business_name}</h1>
             {listing.verification_status === 'verified' ? (
-              <span className="xidig-tag xidig-tag--trust">{t('suuq.verifiedBusiness')}</span>
+              <VerifiedExplainer verifiedAt={listing.verified_at} />
             ) : null}
             {listing.owner_user_id === null ? (
               <span className="xidig-tag">{t('suuq.unclaimed')}</span>

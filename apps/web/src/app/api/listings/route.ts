@@ -9,7 +9,12 @@ import { resolveError } from '@/lib/errors';
 import { LISTINGS_PER_WEEK, listingCreateSchema, normalizeBusinessName } from '@/lib/listings';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { getT } from '@/lib/locale';
-import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/pagination';
+import {
+  decodeListingCursor,
+  encodeListingCursor,
+  keysetBeforeListing,
+  pageSizeSchema,
+} from '@/lib/pagination';
 import { enforceRateLimit } from '@/lib/rate-limit';
 
 import type { Json } from '@xidig/db';
@@ -25,7 +30,7 @@ import type { Json } from '@xidig/db';
  */
 
 const SELECT =
-  'id, owner_user_id, business_name, category_id, short_description, address, landmark, latitude, longitude, city, country, contact_links, verification_status, status, source, created_at, opening_hours, price_range, primary_photo_path, primary_photo_blurhash, primary_photo_alt, photo_count';
+  'id, owner_user_id, business_name, category_id, short_description, address, landmark, latitude, longitude, city, country, contact_links, verification_status, verified_at, is_verified, status, source, created_at, updated_at, opening_hours, price_range, primary_photo_path, primary_photo_blurhash, primary_photo_alt, photo_count';
 
 const bboxSchema = z
   .string()
@@ -56,10 +61,22 @@ export async function GET(request: Request): Promise<Response> {
     const ctx = await requireUser();
     const params = querySchema.parse(Object.fromEntries(new URL(request.url).searchParams));
 
+    // Task 11 published sort rule (caption `suuq.sortTransparency` ships with
+    // this): verified first, then most recently updated. `is_verified` is a
+    // stored generated column (verification_status = 'verified') because the
+    // enum's declaration order (unverified < pending < verified) would rank
+    // 'pending' as a middle tier — a boolean collapses "everything else" into
+    // one tier, exactly as published. NO tie-rotation beyond this: updated_at
+    // is timestamptz (µs precision), so real ties are ~impossible, and
+    // verified-first + recency already rotates placement by activity
+    // (documented adjudication — do not add literal rotation). Note the photo
+    // denorm writes touch updated_at via set_updated_at; that churn is
+    // accepted — a photo change IS an update in the "recently updated" sense.
     let query = ctx.supabase
       .from('business_listings')
       .select(SELECT)
-      .order('created_at', { ascending: false })
+      .order('is_verified', { ascending: false })
+      .order('updated_at', { ascending: false })
       .order('id', { ascending: false })
       .limit(params.limit + 1);
 
@@ -81,8 +98,10 @@ export async function GET(request: Request): Promise<Response> {
         .lte('longitude', maxLng);
     }
 
-    const cursor = decodeCursor(params.cursor);
-    if (cursor) query = query.or(keysetBefore(cursor, 'id'));
+    // Versioned (v2) cursor: old/invalid cursors decode to null and simply
+    // restart from page 1 — a stale client never 400s and never mixes orders.
+    const cursor = decodeListingCursor(params.cursor);
+    if (cursor) query = query.or(keysetBeforeListing(cursor));
 
     const { data, error } = await query;
     if (error) throw new Error(`listings query failed: ${error.message}`);
@@ -92,7 +111,13 @@ export async function GET(request: Request): Promise<Response> {
     const page = hasMore ? rows.slice(0, params.limit) : rows;
     const last = page.at(-1);
     const nextCursor =
-      hasMore && last ? encodeCursor({ createdAt: last.created_at, id: last.id }) : null;
+      hasMore && last
+        ? encodeListingCursor({
+            verified: last.is_verified,
+            updatedAt: last.updated_at,
+            id: last.id,
+          })
+        : null;
 
     // Task 10: hydrate each row's `bookmarked` for THIS caller in one batch
     // query over the page ids (skipped for an empty page — one extra query

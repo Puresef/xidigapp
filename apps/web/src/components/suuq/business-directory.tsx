@@ -91,6 +91,11 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
       setLoaded(true);
     } catch (cause) {
       if (genRef.current !== gen) return;
+      // Belt-and-braces with applyNow's apply-start clear: a failed page-1
+      // fetch must never leave a pageable cursor behind (load-more would mix
+      // filter/sort generations). Failed load-mores keep their cursor — the
+      // button doubles as the retry.
+      if (!cursor) setNextCursor(null);
       if (cause instanceof ApiRequestError) setError(cause.plain);
       else setError({ code: 'server_error', message: '' });
     } finally {
@@ -122,6 +127,13 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
     }
     genRef.current += 1;
     setApplied(filters);
+    // Task 10 review finding: clear the cursor at apply-START, not only on
+    // success. If the page-1 fetch fails, the old list stays on screen but
+    // `applied` already points at the NEW filter set — a surviving cursor
+    // would let Load more page a stale keyset (old filters, old sort) into
+    // it. Success overwrites this with the fresh cursor; failure leaves the
+    // list un-pageable until a retry, which is the honest state.
+    setNextCursor(null);
     void fetchPage(filters, null, genRef.current);
   }
   const applyRef = useRef(applyNow);
@@ -346,6 +358,12 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
             )
           }
         />
+      ) : null}
+
+      {/* Task 11 published sort rule (chronological honesty): the caption
+          ships in the same commit as the server-side ordering it describes. */}
+      {visibleRows.length > 0 ? (
+        <p className="xidig-card__meta">{t('suuq.sortTransparency')}</p>
       ) : null}
 
       <ul className="xidig-card-grid">

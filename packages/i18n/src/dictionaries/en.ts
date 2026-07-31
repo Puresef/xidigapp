@@ -963,6 +963,11 @@ export const en = {
   'suuq.listedBy': 'Listed by {name}',
   'suuq.contactHeading': 'Contact',
   'suuq.verifiedBusiness': 'Verified Business',
+  // Task 11 — published directory sort rule + Verified chip explainer (§14/§18).
+  'suuq.sortTransparency': 'Recently updated · Verified first — no hidden ranking.',
+  'suuq.verifiedExplainerBody':
+    'A community verifier checked this business is real — a video call with the owner, a premises video, or documents. It means the business exists and the listing is genuine; it is not a rating or an endorsement.',
+  'suuq.verifiedCheckedDate': 'Checked: {date}',
   'suuq.joinCta': 'Join Xidig to connect with Somali businesses and builders.',
   'suuq.osmLink': 'Open in OpenStreetMap',
   // Phase 4.5 — listing edit, photos, hours, services, price range, filters

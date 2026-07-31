@@ -810,6 +810,12 @@ export const so = {
   'suuq.listedBy': 'Waxaa geliyay {name}',
   'suuq.contactHeading': 'Xiriirka',
   'suuq.verifiedBusiness': 'Ganacsi la xaqiijiyay',
+  // Task 11 — published directory sort rule + Verified chip explainer (§14/§18).
+  'suuq.sortTransparency':
+    'Kuwa dhawaan la cusboonaysiiyay · kuwa la xaqiijiyay ayaa horreeya — kala saarid qarsoon ma jirto.',
+  'suuq.verifiedExplainerBody':
+    'Xaqiijiye bulsho ayaa hubiyay in ganacsigani run yahay — wicitaan muuqaal ah oo lala yeesho mulkiilaha, muuqaal goobta ah, ama dukumentiyo. Waxay micnaheedu tahay ganacsigu waa jiraa, xogtuna waa run — ma aha qiimayn ama ammaan.',
+  'suuq.verifiedCheckedDate': 'La hubiyay: {date}',
   'suuq.joinCta': 'Ku biir Xidig si aad ula xiriirto ganacsiyada iyo dhisayaasha Soomaalida.',
   'suuq.osmLink': 'Ka fur OpenStreetMap',
   // Phase 4.5 — listing edit, photos, hours, services, price range, filters
