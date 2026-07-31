@@ -6,7 +6,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { formatRelativeTime } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
-import { LoadingComet } from '@/components/loading-comet';
+import { FeedSkeleton } from '@/components/feed/feed-skeleton';
+import { LoadingFlap } from '@/components/loading-flap';
 import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { ApiRequestError, apiGet } from '@/lib/api-client';
@@ -71,13 +72,30 @@ export function FollowingFeed({
   }, [load]);
 
   if (!loaded && pending) {
-    return <LoadingComet />;
+    return <FeedSkeleton />;
   }
 
   return (
     <LiteMediaProvider>
       <section aria-label={t('feed.title')}>
-        {error ? <PlainErrorBanner error={error} /> : null}
+        {error ? (
+          <>
+            <PlainErrorBanner error={error} />
+            {/* Initial-load failure (nothing on screen) → explicit Retry.
+                Load-more failures keep the Load more button as the retry. */}
+            {items.length === 0 ? (
+              <p>
+                <button
+                  type="button"
+                  className="xidig-button xidig-button--secondary"
+                  onClick={() => void load(null)}
+                >
+                  {t('action.retry')}
+                </button>
+              </p>
+            ) : null}
+          </>
+        ) : null}
 
         {/* Page-level "N hidden — Show all" bar (§22) for the media in the feed. */}
         {items.length > 0 ? <LiteShowAll /> : null}
@@ -86,8 +104,10 @@ export function FollowingFeed({
           <div className="xidig-section xidig-empty-sky">
             <p className="xidig-card__body">{t('feed.empty')}</p>
             <p className="xidig-card__meta">{t('feed.emptyHint')}</p>
-            <Link href="/suuq" className="xidig-button xidig-button--secondary">
-              {t('nav.suuq')} →
+            {/* Task 7: the natural next stop for an empty Following feed is
+                the community-wide Latest tab, not the Directory. */}
+            <Link href="/?tab=latest" className="xidig-button xidig-button--secondary">
+              {t('feed.emptyLatestCta')} →
             </Link>
             {/* Phase 4.5: an empty following feed is exactly when suggestions help. */}
             <SuggestedFollows />
@@ -106,16 +126,21 @@ export function FollowingFeed({
         ) : null}
 
         {nextCursor ? (
-          <p>
-            <button
-              type="button"
-              className="xidig-button xidig-button--secondary"
-              disabled={pending}
-              onClick={() => void load(nextCursor)}
-            >
-              {t('action.loadMore')}
-            </button>
-          </p>
+          pending ? (
+            // Load-more in flight: the inline flap, not skeletons (the list
+            // above is real content — only the tail is loading).
+            <LoadingFlap />
+          ) : (
+            <p>
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                onClick={() => void load(nextCursor)}
+              >
+                {t('action.loadMore')}
+              </button>
+            </p>
+          )
         ) : loaded && items.length > 0 ? (
           <FeedEnd />
         ) : null}
@@ -125,17 +150,23 @@ export function FollowingFeed({
 }
 
 /**
- * "Why am I seeing this" (brand-rethink adoption): a per-card disclosure whose
- * copy is MECHANISM-TRUE to the following_feed view's union predicates
+ * "Why am I seeing this" (brand-rethink adoption): a per-card info-icon
+ * button opening a small popover (Task 7 — was a <details>; an icon reads as
+ * card chrome, not content). A positioned popover, not the Dialog primitive:
+ * two lines of static text never justify a focus-trapped modal — the
+ * reaction-picker precedent. Opens upward so end-of-list cards don't clip;
+ * Escape and re-tap close it.
+ *
+ * Copy is MECHANISM-TRUE to the following_feed view's union predicates
  * (docs/rls-following-feed.md): posts ← users you follow; lab updates ← labs
  * you follow OR are a member of (the view can't say which, so the copy covers
- * both); listings ← users you follow. A <details> keeps card density flat —
- * the pledge is one tap away, never noise. Items whose source name is
- * unavailable (deactivated author) render no disclosure rather than a vague
- * claim.
+ * both); listings ← users you follow. Plus the published sort rule ("newest
+ * first" — chronological honesty). Items whose source name is unavailable
+ * (deactivated author) render no disclosure rather than a vague claim.
  */
 function WhyThis({ item }: { item: FeedItem }) {
   const t = useT();
+  const [open, setOpen] = useState(false);
   let reason: string | null = null;
   if (item.type === 'post' && item.view.author) {
     reason = t('feed.whyPost', { name: item.view.author.display_name });
@@ -146,10 +177,32 @@ function WhyThis({ item }: { item: FeedItem }) {
   }
   if (!reason) return null;
   return (
-    <details className="xidig-feed-why">
-      <summary>{t('feed.whyThis')}</summary>
-      <p>{reason}</p>
-    </details>
+    <div
+      className="xidig-feed-why"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') setOpen(false);
+      }}
+    >
+      <button
+        type="button"
+        className="xidig-icon-button xidig-feed-why__trigger"
+        aria-expanded={open}
+        aria-label={t('feed.whyThis')}
+        title={t('feed.whyThis')}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 11v5M12 8h.01" />
+        </svg>
+      </button>
+      {open ? (
+        <div className="xidig-feed-why__panel" role="note">
+          <p>{reason}</p>
+          <p>{t('feed.sortTransparency')}</p>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

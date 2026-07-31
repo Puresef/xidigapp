@@ -779,10 +779,18 @@ export const en = {
 
   // Following feed on Home (§13 — Phase 1 feed = new listings from people you follow)
   'feed.title': 'Following',
+  // Home tabs (Task 7): Following (default) / Latest (global Plaza feed).
+  // Link-based ?tab= — shareable URLs, back-button friendly.
+  'feed.tabFollowing': 'Following',
+  'feed.tabLatest': 'Latest',
+  // Published sort rule (chronological honesty): rides the Latest tab caption
+  // AND the per-card "Why this?" popover — one key, one truth.
+  'feed.sortTransparency': 'Newest first — no hidden ranking.',
   'feed.empty':
     'Nothing here yet — follow people and Spaces, and their posts, updates, and new listings will show up here.',
   'feed.emptyHint':
     'Follow people and Spaces to see their posts, updates, and new listings here.',
+  'feed.emptyLatestCta': 'See the latest posts',
   'feed.newListingFrom': 'New listing from {name}',
   // End-of-feed terminus + per-card transparency (brand-rethink adoption):
   // feed.end is the REACHED-THE-END state (distinct from feed.empty); the
@@ -1045,6 +1053,9 @@ export const en = {
   'plaza.pollClosed': 'Poll closed',
   'plaza.pollClosesIn': 'Closes {when}',
   'plaza.commentsCount': { one: '{count} comment', other: '{count} comments' },
+  // Feed-card body clamp escape hatch + inline newest-comment teaser (Task 7)
+  'plaza.readMore': 'Read more',
+  'plaza.latestComment': 'Latest comment',
   'plaza.reactionFire': 'Fire',
   'plaza.reactionStrong': 'Strong',
   'plaza.reactionMashallah': 'Mashallah',

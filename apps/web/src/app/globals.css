@@ -1470,28 +1470,43 @@ fieldset.xidig-field > legend {
   margin-bottom: 0.3rem;
 }
 
-/* "Why am I seeing this" disclosure under feed cards: one tap away, never
-   noise. Summary reads as a quiet meta link; the answer stays meta-toned. */
+/* "Why am I seeing this" under feed cards (Task 7): info-icon trigger + small
+   popover — was a <details>; the icon reads as chrome, the answer stays one
+   tap away. Panel opens UPWARD (end-of-list cards never clip) on the raised
+   surface, mirroring the reaction-picker's elevation. */
 .xidig-feed-why {
+  position: relative;
+  display: inline-flex;
   margin: 0.25rem 0 0;
 }
 
-.xidig-feed-why summary {
-  display: inline-block;
-  font-size: var(--x-text-xs);
+.xidig-feed-why__trigger {
+  width: 1.75rem;
+  height: 1.75rem;
   color: var(--x-muted);
-  cursor: pointer;
 }
 
-.xidig-feed-why summary:hover,
-.xidig-feed-why summary:focus-visible {
-  text-decoration: underline;
+.xidig-feed-why__panel {
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  inset-inline-start: 0;
+  z-index: 5;
+  width: min(22rem, 78vw);
+  padding: var(--x-space-xs);
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  box-shadow: var(--x-shadow-2);
 }
 
-.xidig-feed-why p {
-  margin: 0.25rem 0 0;
+.xidig-feed-why__panel p {
+  margin: 0;
   font-size: var(--x-text-xs);
   color: var(--x-muted);
+}
+
+.xidig-feed-why__panel p + p {
+  margin-top: 0.25rem;
 }
 
 /* Comet loading primitive (brand-rethink adoption): directional streak, not a
@@ -2497,6 +2512,69 @@ a.xidig-settings-card:hover {
 .xidig-post-comments__n {
   font-size: var(--x-text-s);
   font-weight: 600;
+}
+
+/* ── Share menu (Task 7 one-affordance collapse): DM-menu chrome, sized to
+   its two entries; icon + label rows. --done wears the semantic ok green
+   (same AA-checked token as .xidig-icon-button--done). ─────────────────── */
+.xidig-share-menu {
+  min-width: 11rem;
+}
+.xidig-share-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-2xs);
+}
+.xidig-share-menu__item svg {
+  flex: none;
+}
+.xidig-share-menu__item--done {
+  color: var(--x-ok);
+}
+
+/* ── Feed-card body clamp (Task 7): 4 lines on feed cards, NEVER on detail
+   (the detail body renders without this class). "Read more" is the escape
+   hatch to the permalink. ─────────────────────────────────────────────── */
+.xidig-post-body--clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.xidig-post-readmore {
+  margin-top: 0.15rem;
+}
+
+/* ── Newest-comment teaser under the feed-card footer: one muted line, the
+   whole row a link into the thread. Snippet ellipsizes to a single line. ── */
+.xidig-post-latest {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-2xs);
+  min-width: 0;
+  margin-top: var(--x-space-2xs);
+  padding-top: var(--x-space-2xs);
+  border-top: 1px solid var(--x-border);
+  font-size: var(--x-text-s);
+  color: var(--x-muted);
+  text-decoration: none;
+}
+.xidig-post-latest:hover .xidig-post-latest__snippet,
+.xidig-post-latest:focus-visible .xidig-post-latest__snippet {
+  text-decoration: underline;
+}
+.xidig-post-latest .xidig-avatar {
+  flex: none;
+}
+.xidig-post-latest__name {
+  flex: none;
+  font-weight: 600;
+}
+.xidig-post-latest__snippet {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── Share/save/copy as icon buttons ──────────────────────────────────── */
@@ -3635,4 +3713,33 @@ button.xidig-poll__option:disabled,
   to {
     transform: translateX(100%);
   }
+}
+
+/* Feed initial-load silhouette (Task 7): list gap mirrors .xidig-post-list,
+   the byline row mirrors .xidig-byline's 0.625rem gap, and the footer bar
+   stands in for the reaction/action strip — same footprint, no layout jump. */
+.xidig-feed-skeleton {
+  display: grid;
+  gap: var(--x-space);
+}
+
+.xidig-feed-skeleton__byline {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.2rem;
+}
+
+.xidig-feed-skeleton__name {
+  width: 38%;
+}
+
+.xidig-feed-skeleton__short {
+  width: 62%;
+}
+
+.xidig-feed-skeleton__footer {
+  margin-top: 0.4rem;
+  height: 1.75rem;
+  width: 55%;
 }

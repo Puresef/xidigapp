@@ -1,10 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
+import { FeedSkeleton } from '@/components/feed/feed-skeleton';
 import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { LoadingFlap } from '@/components/loading-flap';
@@ -47,6 +49,7 @@ export function PlazaFeed({
   viewerId,
   lowBandwidth,
   prefs,
+  composeHref,
 }: {
   type?: PlazaType | undefined;
   viewerId: string;
@@ -54,6 +57,12 @@ export function PlazaFeed({
   lowBandwidth: boolean;
   /** Granular Lite prefs (§22); wins over `lowBandwidth` in each PostCard. */
   prefs?: LitePrefs | undefined;
+  /**
+   * Surfaces WITHOUT a mounted composer (Home's Latest tab) pass a link
+   * target (/plaza?compose=1) so the empty-state CTA navigates instead of
+   * dispatching COMPOSE_EVENT into a page nothing is listening on.
+   */
+  composeHref?: string | undefined;
 }) {
   const t = useT();
   const [items, setItems] = useState<PostView[]>([]);
@@ -109,13 +118,30 @@ export function PlazaFeed({
   }, [type]);
 
   if (!loaded && pending) {
-    return <LoadingFlap />;
+    return <FeedSkeleton />;
   }
 
   return (
     <LiteMediaProvider>
       <section aria-label={t('nav.plaza')}>
-        {error ? <PlainErrorBanner error={error} /> : null}
+        {error ? (
+          <>
+            <PlainErrorBanner error={error} />
+            {/* Initial-load failure (nothing on screen) → explicit Retry.
+                Load-more failures keep the Load more button as the retry. */}
+            {items.length === 0 ? (
+              <p>
+                <button
+                  type="button"
+                  className="xidig-button xidig-button--secondary"
+                  onClick={() => void load(null)}
+                >
+                  {t('action.retry')}
+                </button>
+              </p>
+            ) : null}
+          </>
+        ) : null}
 
         {/* Page-level "N hidden — Show all" bar (§22): the feed is the most
             media-dense surface, so batch-reveal belongs here most of all. */}
@@ -143,17 +169,23 @@ export function PlazaFeed({
           <EmptyState
             messageKey={type ? EMPTY_KEYS[type] : 'state.emptyFeed'}
             action={
-              <button
-                type="button"
-                className="xidig-button xidig-button--primary"
-                onClick={() =>
-                  // detail.type carries the active filter so "No polls yet →
-                  // Start the first post" opens the composer ON the Poll tab.
-                  window.dispatchEvent(new CustomEvent(COMPOSE_EVENT, { detail: { type } }))
-                }
-              >
-                {t('plaza.emptyCta')}
-              </button>
+              composeHref ? (
+                <Link href={composeHref} className="xidig-button xidig-button--primary">
+                  {t('plaza.emptyCta')}
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="xidig-button xidig-button--primary"
+                  onClick={() =>
+                    // detail.type carries the active filter so "No polls yet →
+                    // Start the first post" opens the composer ON the Poll tab.
+                    window.dispatchEvent(new CustomEvent(COMPOSE_EVENT, { detail: { type } }))
+                  }
+                >
+                  {t('plaza.emptyCta')}
+                </button>
+              )
             }
           />
         ) : null}
@@ -174,16 +206,21 @@ export function PlazaFeed({
         ) : null}
 
         {nextCursor ? (
-          <p>
-            <button
-              type="button"
-              className="xidig-button xidig-button--secondary"
-              disabled={pending}
-              onClick={() => void load(nextCursor)}
-            >
-              {t('action.loadMore')}
-            </button>
-          </p>
+          pending ? (
+            // Load-more in flight: the inline flap, not skeletons (the list
+            // above is real content — only the tail is loading).
+            <LoadingFlap />
+          ) : (
+            <p>
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                onClick={() => void load(nextCursor)}
+              >
+                {t('action.loadMore')}
+              </button>
+            </p>
+          )
         ) : loaded && items.length > 0 ? (
           <FeedEnd />
         ) : null}

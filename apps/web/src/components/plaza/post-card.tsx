@@ -97,6 +97,14 @@ export function PostCard({
     author?.verification_status === 'community_verified' ||
     author?.verification_status === 'identity_verified';
 
+  // Feed cards clamp the body to 4 lines (detail pages NEVER clamp). CSS
+  // line-clamp can't report overflow without client measurement, so the
+  // "Read more" escape hatch uses a cheap server-safe heuristic: long text or
+  // many hard line breaks. A rare short-but-clamped body still links out via
+  // the title/comments; a rare unclamped "Read more" is harmless.
+  const mayClamp = !detail && (post.body.length > 280 || post.body.split('\n').length > 4);
+  const latestComment = detail ? null : (view.latestComment ?? null);
+
   return (
     <article className="xidig-card">
       <div className="xidig-card__top">
@@ -197,7 +205,14 @@ export function PostCard({
             )
           ) : null}
 
-          <p className="xidig-card__body">{post.body}</p>
+          <p className={detail ? 'xidig-card__body' : 'xidig-card__body xidig-post-body--clamp'}>
+            {post.body}
+          </p>
+          {mayClamp ? (
+            <p className="xidig-card__meta xidig-post-readmore">
+              <Link href={permalink}>{t('plaza.readMore')}</Link>
+            </p>
+          ) : null}
         </>
       )}
 
@@ -286,6 +301,31 @@ export function PostCard({
         ) : null}
         <ShareActions path={permalink} text={post.title ?? post.body.slice(0, 80)} />
       </div>
+
+      {/* Newest-comment teaser (feed cards only): tiny avatar + name + one-line
+          snippet, the whole row a link into the thread. Author may be null
+          (deactivated) — the snippet still shows, unattributed. */}
+      {latestComment ? (
+        <Link href={permalink} className="xidig-post-latest">
+          <span className="xidig-visually-hidden">{t('plaza.latestComment')}: </span>
+          {latestComment.author ? (
+            <>
+              <Avatar
+                name={latestComment.author.display_name}
+                handle={latestComment.author.handle}
+                src={latestComment.author.avatar_thumb_url}
+                blurhash={latestComment.author.avatar_blurhash}
+                size={20}
+                prefs={litePrefs}
+              />
+              <span className="xidig-post-latest__name">
+                {latestComment.author.display_name}
+              </span>
+            </>
+          ) : null}
+          <span className="xidig-post-latest__snippet">{latestComment.snippet}</span>
+        </Link>
+      ) : null}
     </article>
   );
 }

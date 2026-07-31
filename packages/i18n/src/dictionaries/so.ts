@@ -635,10 +635,15 @@ export const so = {
 
   // Following feed on Home (§13)
   'feed.title': 'Kuwa aad raacdo',
+  // Home tabs (Task 7): Following (default) / Latest
+  'feed.tabFollowing': 'Kuwa aad raacdo',
+  'feed.tabLatest': 'Ugu cusub',
+  'feed.sortTransparency': 'Kuwa ugu cusub ayaa horreeya — kala saarid qarsoon ma jirto.',
   'feed.empty':
     'Weli waxba ma jiraan — raac dad iyo Meelo, qoraalladooda, cusbooneysiintooda, iyo liisaskooda cusubna halkan ayay ka soo muuqan doonaan.',
   'feed.emptyHint':
     'Raac dad iyo Meelo si aad halkan ugu aragto qoraalladooda, cusbooneysiintooda, iyo liisaskooda cusub.',
+  'feed.emptyLatestCta': 'Arag qoraallada ugu cusub',
   'feed.newListingFrom': 'Liis cusub oo ka yimid {name}',
   // Dhammaadka quudinta + daahfurnaanta kaarka (plain register — native batch)
   'feed.end': 'Waad wada aragtay — intaasu waa wax kasta oo ka yimid dadkaaga.',
@@ -895,6 +900,9 @@ export const so = {
   'plaza.pollClosed': 'Codbixin xiran',
   'plaza.pollClosesIn': 'Waxay xirmaysaa {when}',
   'plaza.commentsCount': { one: '{count} faallo', other: '{count} faallo' },
+  // Kaararka quudinta: jarista qoraalka + faallada ugu dambeysay (Task 7)
+  'plaza.readMore': 'Sii akhri',
+  'plaza.latestComment': 'Faallada ugu dambeysay',
   'plaza.reactionFire': 'Dab',
   'plaza.reactionStrong': 'Xoog',
   'plaza.reactionMashallah': 'Mashaallah',
