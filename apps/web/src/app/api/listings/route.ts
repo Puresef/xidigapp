@@ -94,6 +94,25 @@ export async function GET(request: Request): Promise<Response> {
     const nextCursor =
       hasMore && last ? encodeCursor({ createdAt: last.created_at, id: last.id }) : null;
 
+    // Task 10: hydrate each row's `bookmarked` for THIS caller in one batch
+    // query over the page ids (skipped for an empty page — one extra query
+    // max). Best-effort like the detail page: a lookup error degrades to
+    // all-false rather than failing the whole directory. Anonymous callers
+    // never reach here (requireUser 401s), so there is no anon branch.
+    const bookmarkedIds = new Set<string>();
+    if (page.length > 0) {
+      const { data: marks } = await ctx.supabase
+        .from('bookmarks')
+        .select('entity_id')
+        .eq('user_id', ctx.appUser.id)
+        .eq('entity_type', 'listing')
+        .in(
+          'entity_id',
+          page.map((row) => row.id),
+        );
+      for (const mark of marks ?? []) bookmarkedIds.add(mark.entity_id);
+    }
+
     // Storage paths → public CDN URLs server-side: clients never build
     // storage URLs (that would need server env). Thumb by the Phase 4.5
     // `{path}_thumb.webp` pipeline convention.
@@ -103,6 +122,7 @@ export async function GET(request: Request): Promise<Response> {
       primary_photo_thumb_url: row.primary_photo_path
         ? publicMediaUrl(derivedThumbPath(row.primary_photo_path))
         : null,
+      bookmarked: bookmarkedIds.has(row.id),
     }));
 
     return apiOk({ listings, nextCursor });
