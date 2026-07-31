@@ -227,6 +227,41 @@ describe('Dialog', () => {
     expect(panel()).toBeNull();
   });
 
+  it('non-dismissing backdrop press never steals focus (keydown keeps working)', () => {
+    mount(<Harness closeOnBackdrop={false} />);
+    openDialog();
+    expect(document.activeElement).toBe(panel());
+
+    // In a real browser an un-prevented mousedown on the overlay focuses
+    // <body> — the portal parent — after which keydowns bypass the overlay
+    // handler entirely (Tab walks the hidden page, Escape goes dead). jsdom
+    // does not emulate that focus default, so the cancellation itself is the
+    // observable: the dialog must preventDefault a press it does not dismiss.
+    let press: MouseEvent;
+    act(() => {
+      press = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+      backdrop()!.dispatchEvent(press);
+    });
+    expect(panel()).not.toBeNull();
+    expect(press!.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(panel());
+    expect(document.activeElement).not.toBe(document.body);
+
+    // Keydown handling survived the press: Escape still closes.
+    pressKey('Escape');
+    expect(panel()).toBeNull();
+  });
+
+  it('restores a pre-existing body overflow value on close (not reset to "")', () => {
+    document.body.style.overflow = 'scroll';
+    mount(<Harness />);
+    openDialog();
+    expect(document.body.style.overflow).toBe('hidden');
+
+    pressKey('Escape');
+    expect(document.body.style.overflow).toBe('scroll');
+  });
+
   it('corner close button closes and returns focus to the invoker', () => {
     mount(<Harness />);
     openDialog();

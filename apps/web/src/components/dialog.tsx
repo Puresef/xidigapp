@@ -118,7 +118,17 @@ export function Dialog({
   function handleBackdropMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
     // mousedown (not click) so a text-selection drag that ends on the
     // backdrop never dismisses; target check keeps panel presses inert.
-    if (closeOnBackdrop && event.target === event.currentTarget) onClose();
+    if (event.target !== event.currentTarget) return;
+    // Suppress the browser's default focus move: an un-prevented mousedown on
+    // the overlay focuses <body>, and because body is the portal parent every
+    // subsequent keydown then bypasses the overlay handler — Tab walks the
+    // hidden page and Escape goes dead. That matters whenever the press does
+    // NOT dismiss (closeOnBackdrop={false}, or an onClose that swallows the
+    // call like AttestationModal while pending); when it does dismiss, the
+    // close effect hands focus back to the invoker so preventing the default
+    // is moot. preventDefault on mousedown blocks only the focus change.
+    event.preventDefault();
+    if (closeOnBackdrop) onClose();
   }
 
   const dialog = (
