@@ -7,6 +7,7 @@ import { getLowBandwidth } from '@/lib/bandwidth-server';
 import { getCategories } from '@/lib/categories';
 import { getMemberListingView } from '@/lib/listing-view';
 import { asContactLinks, asOpeningHours } from '@/lib/listings';
+import { getLitePrefs } from '@/lib/lite/server';
 import { getLocale, getT } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
@@ -20,11 +21,7 @@ export const dynamic = 'force-dynamic';
 
 const idSchema = z.string().uuid();
 
-export default async function EditListingPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EditListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!idSchema.safeParse(id).success) notFound();
 
@@ -41,6 +38,7 @@ export default async function EditListingPage({
   const t = await getT();
   const locale = await getLocale();
   const lowBandwidth = await getLowBandwidth();
+  const prefs = await getLitePrefs();
   const categories = await getCategories(ctx.supabase, locale);
 
   const { listing } = view;
@@ -79,7 +77,12 @@ export default async function EditListingPage({
   return (
     <main className="xidig-auth">
       <h1 className="xidig-auth__title">{t('suuq.editListingTitle')}</h1>
-      <ListingForm categories={categories} lowBandwidth={lowBandwidth} listing={initial} />
+      <ListingForm
+        categories={categories}
+        lowBandwidth={lowBandwidth}
+        prefs={prefs}
+        listing={initial}
+      />
     </main>
   );
 }

@@ -11,6 +11,9 @@ import { ApiRequestError, apiPatch, apiPost, apiPut } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import type { CategoryOption } from '@/lib/categories';
 import { isEmptyOpeningHours, type OpeningHours } from '@/lib/listings';
+import { MAP_EST_BYTES } from '@/lib/lite/estimates';
+import type { LitePrefs } from '@/lib/lite/prefs';
+import { MediaSlot } from '@/components/media/media-slot';
 import { Banner } from '../banner';
 import { PlainErrorBanner } from '../auth/plain-error';
 import type { ListingRow } from './listing-card';
@@ -76,10 +79,17 @@ export interface ListingFormInitial {
 export function ListingForm({
   categories,
   lowBandwidth,
+  prefs,
   listing,
 }: {
   categories: CategoryOption[];
   lowBandwidth: boolean;
+  /**
+   * Task 12: granular Lite prefs gate the pick-map behind a MediaSlot
+   * (maps deferred → placeholder + Show; §22 defer-not-disable). The legacy
+   * low-bandwidth manual-coordinates branch still wins when active.
+   */
+  prefs: LitePrefs;
   /** Present → edit mode (PATCH + photos PUT instead of POST). */
   listing?: ListingFormInitial | undefined;
 }) {
@@ -122,9 +132,7 @@ export function ListingForm({
   const [notice, setNotice] = useState<string | null>(null);
 
   function setContact(index: number, patch: Partial<ContactRow>) {
-    setContacts((current) =>
-      current.map((row, i) => (i === index ? { ...row, ...patch } : row)),
-    );
+    setContacts((current) => current.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   }
 
   async function submit(force: boolean) {
@@ -361,13 +369,24 @@ export function ListingForm({
             </div>
           </div>
         ) : (
-          <ListingsMap
-            mode="pick"
-            onPick={(lat, lng) => {
-              setLatitude(Number(lat.toFixed(6)));
-              setLongitude(Number(lng.toFixed(6)));
-            }}
-          />
+          // MediaSlot kind='map' (Task 12, pattern from the old /suuq/map
+          // page): with maps deferred in Lite the picker renders as a ~0-byte
+          // placeholder and Leaflet + tiles mount only on the explicit tap.
+          <MediaSlot
+            kind="map"
+            src="/suuq/new#pick-map"
+            alt={t('suuq.pinLabel')}
+            estBytes={MAP_EST_BYTES}
+            prefs={prefs}
+          >
+            <ListingsMap
+              mode="pick"
+              onPick={(lat, lng) => {
+                setLatitude(Number(lat.toFixed(6)));
+                setLongitude(Number(lng.toFixed(6)));
+              }}
+            />
+          </MediaSlot>
         )}
         <p className="xidig-field__hint">
           {pinSet

@@ -960,6 +960,8 @@ export const en = {
   'suuq.unclaimed': 'Unclaimed',
   'suuq.mapLowBandwidth': 'Map tiles are off in low-bandwidth mode — here’s the list instead.',
   'suuq.searchArea': 'Search this area',
+  // Task 12 — cluster badge tooltip/accessible name (count is the visible label).
+  'suuq.mapCluster': '{count} listings — select to zoom in',
   'suuq.listedBy': 'Listed by {name}',
   'suuq.contactHeading': 'Contact',
   'suuq.verifiedBusiness': 'Verified Business',

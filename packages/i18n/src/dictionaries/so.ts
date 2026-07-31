@@ -807,6 +807,8 @@ export const so = {
   'suuq.unclaimed': 'Aan la sheegan',
   'suuq.mapLowBandwidth': 'Khariidaddu waa damsan tahay habka isticmaalka-yar — halkan waxaa ah liiska.',
   'suuq.searchArea': 'Raadi aaggan',
+  // Task 12 — cluster badge tooltip/accessible name (count is the visible label).
+  'suuq.mapCluster': '{count} liis — dooro si aad u aragto',
   'suuq.listedBy': 'Waxaa geliyay {name}',
   'suuq.contactHeading': 'Xiriirka',
   'suuq.verifiedBusiness': 'Ganacsi la xaqiijiyay',

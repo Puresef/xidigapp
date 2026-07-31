@@ -4,6 +4,7 @@ import { ListingForm } from '@/components/suuq/listing-form';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getLowBandwidth } from '@/lib/bandwidth-server';
 import { getCategories } from '@/lib/categories';
+import { getLitePrefs } from '@/lib/lite/server';
 import { getLocale, getT } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
@@ -20,12 +21,13 @@ export default async function NewListingPage() {
   const t = await getT();
   const locale = await getLocale();
   const lowBandwidth = await getLowBandwidth();
+  const prefs = await getLitePrefs();
   const categories = await getCategories(ctx.supabase, locale);
 
   return (
     <main className="xidig-auth">
       <h1 className="xidig-auth__title">{t('suuq.newListingTitle')}</h1>
-      <ListingForm categories={categories} lowBandwidth={lowBandwidth} />
+      <ListingForm categories={categories} lowBandwidth={lowBandwidth} prefs={prefs} />
     </main>
   );
 }

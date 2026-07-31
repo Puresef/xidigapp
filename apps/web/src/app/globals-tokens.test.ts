@@ -269,6 +269,9 @@ const FOCUS_VISIBLE_CLASSES = [
   '.xidig-user-menu__item',
   '.xidig-nav__item a',
   '.xidig-media-slot__thumb-btn',
+  // Task 12 map: Leaflet's keyboard option makes pins/clusters tabbable.
+  '.xidig-map-pin',
+  '.xidig-map-cluster',
 ];
 
 const ACTIVE_CLASSES = [

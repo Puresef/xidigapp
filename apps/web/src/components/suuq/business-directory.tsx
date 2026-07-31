@@ -10,12 +10,14 @@ import type { PlainError } from '@/lib/errors';
 import { formatPriceRange, listingOpenNow } from '@/lib/listings';
 import Link from 'next/link';
 
+import type { LitePrefs } from '@/lib/lite/prefs';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { Dialog } from '../dialog';
 import { EmptyState } from '../empty-state';
 import { FeedEnd } from '../feed/feed-end';
 import { emptyBusinessesKey } from './directory-empty';
 import { ListingCard, type ListingRow } from './listing-card';
+import { MapBrowser } from './map-browser';
 import { LoadingFlap } from '@/components/loading-flap';
 
 /**
@@ -36,6 +38,14 @@ import { LoadingFlap } from '@/components/loading-flap';
  * change the server query, so load-more still pages the unfiltered set. The
  * filters sheet disclosed this next to the toggle (suuq.openNowClientNote).
  * Server-side open-now filtering is deferred.
+ *
+ * Task 12 (`view="map"`, /suuq?tab=map): the SAME filter bar + sheet drive
+ * the map surface — this component keeps owning filter state (chosen over
+ * lifting it to the page: the Task 10 debounce/generation machinery lives
+ * here and the map only needs the applied set), but list fetching is skipped
+ * and the applied filter string is passed to MapBrowser, which owns its own
+ * viewport-scoped fetch (filters + bbox). `openNowOnly` passes through so
+ * pins and cards stay consistent with the sheet toggle.
  */
 
 interface ListingPage {
@@ -45,7 +55,17 @@ interface ListingPage {
 
 const DEBOUNCE_MS = 300;
 
-export function BusinessDirectory({ categories }: { categories: CategoryOption[] }) {
+export function BusinessDirectory({
+  categories,
+  view = 'list',
+  prefs,
+}: {
+  categories: CategoryOption[];
+  /** 'map' embeds MapBrowser under the shared filter bar (Task 12). */
+  view?: 'list' | 'map' | undefined;
+  /** Required with view='map' (MediaSlot tile deferral needs the prefs). */
+  prefs?: LitePrefs | undefined;
+}) {
   const t = useT();
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
@@ -134,7 +154,9 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
     // it. Success overwrites this with the fresh cursor; failure leaves the
     // list un-pageable until a retry, which is the honest state.
     setNextCursor(null);
-    void fetchPage(filters, null, genRef.current);
+    // Map view: MapBrowser refetches off the `applied` prop change (its fetch
+    // carries the bbox this component never sees) — no list fetch here.
+    if (view === 'list') void fetchPage(filters, null, genRef.current);
   }
   const applyRef = useRef(applyNow);
   useEffect(() => {
@@ -143,10 +165,10 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
 
   const [booted, setBooted] = useState(false);
   useEffect(() => {
-    if (booted) return;
+    if (booted || view === 'map') return;
     setBooted(true);
     void fetchPage('', null, genRef.current);
-  }, [booted, fetchPage]);
+  }, [booted, view, fetchPage]);
 
   // Live text filtering (q/city/country): debounce. Value-keyed skip guards
   // (not a bare first-run flag) so mount and no-op renders never schedule an
@@ -342,59 +364,70 @@ export function BusinessDirectory({ categories }: { categories: CategoryOption[]
         </div>
       </Dialog>
 
-      {error ? <PlainErrorBanner error={error} /> : null}
-      {!loaded && pending ? <LoadingFlap /> : null}
-      {loaded && visibleRows.length === 0 && !error ? (
-        <EmptyState
-          messageKey={emptyBusinessesKey(applied, clientFiltered)}
-          // CTA only for the genuinely-empty browse, not filtered no-results —
-          // same "filtered" definition as the message key, so copy that
-          // invites adding a listing always comes WITH the button.
-          action={
-            applied || clientFiltered ? undefined : (
-              <Link className="xidig-button xidig-button--primary" href="/suuq/new">
-                {t('suuq.addListing')}
-              </Link>
-            )
-          }
+      {view === 'map' && prefs ? (
+        <MapBrowser
+          filters={applied}
+          openNowOnly={openNowOnly}
+          categories={categoryNames}
+          prefs={prefs}
         />
-      ) : null}
+      ) : (
+        <>
+          {error ? <PlainErrorBanner error={error} /> : null}
+          {!loaded && pending ? <LoadingFlap /> : null}
+          {loaded && visibleRows.length === 0 && !error ? (
+            <EmptyState
+              messageKey={emptyBusinessesKey(applied, clientFiltered)}
+              // CTA only for the genuinely-empty browse, not filtered no-results —
+              // same "filtered" definition as the message key, so copy that
+              // invites adding a listing always comes WITH the button.
+              action={
+                applied || clientFiltered ? undefined : (
+                  <Link className="xidig-button xidig-button--primary" href="/suuq/new">
+                    {t('suuq.addListing')}
+                  </Link>
+                )
+              }
+            />
+          ) : null}
 
-      {/* Task 11 published sort rule (chronological honesty): the caption
+          {/* Task 11 published sort rule (chronological honesty): the caption
           ships in the same commit as the server-side ordering it describes. */}
-      {visibleRows.length > 0 ? (
-        <p className="xidig-card__meta">{t('suuq.sortTransparency')}</p>
-      ) : null}
+          {visibleRows.length > 0 ? (
+            <p className="xidig-card__meta">{t('suuq.sortTransparency')}</p>
+          ) : null}
 
-      <ul className="xidig-card-grid">
-        {visibleRows.map((listing) => (
-          // The directory is a members-only surface (page + API both gated),
-          // so the bookmark button is always live here. `bookmarked` is
-          // hydrated by GET /api/listings (Task 10) — one batch query.
-          <ListingCard
-            key={listing.id}
-            listing={listing}
-            signedIn
-            bookmarked={listing.bookmarked ?? false}
-            categories={categoryNames}
-          />
-        ))}
-      </ul>
+          <ul className="xidig-card-grid">
+            {visibleRows.map((listing) => (
+              // The directory is a members-only surface (page + API both gated),
+              // so the bookmark button is always live here. `bookmarked` is
+              // hydrated by GET /api/listings (Task 10) — one batch query.
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                signedIn
+                bookmarked={listing.bookmarked ?? false}
+                categories={categoryNames}
+              />
+            ))}
+          </ul>
 
-      {nextCursor ? (
-        <p>
-          <button
-            type="button"
-            className="xidig-button xidig-button--secondary"
-            disabled={pending}
-            onClick={() => void fetchPage(applied, nextCursor, genRef.current)}
-          >
-            {t('action.loadMore')}
-          </button>
-        </p>
-      ) : loaded && rows.length > 0 ? (
-        <FeedEnd messageKey="state.endOfList" />
-      ) : null}
+          {nextCursor ? (
+            <p>
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                disabled={pending}
+                onClick={() => void fetchPage(applied, nextCursor, genRef.current)}
+              >
+                {t('action.loadMore')}
+              </button>
+            </p>
+          ) : loaded && rows.length > 0 ? (
+            <FeedEnd messageKey="state.endOfList" />
+          ) : null}
+        </>
+      )}
     </div>
   );
 }

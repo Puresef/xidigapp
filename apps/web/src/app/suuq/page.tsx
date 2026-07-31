@@ -5,6 +5,7 @@ import { BusinessDirectory } from '@/components/suuq/business-directory';
 import { PeopleDirectory } from '@/components/suuq/people-directory';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getCategories } from '@/lib/categories';
+import { getLitePrefs } from '@/lib/lite/server';
 import { getLocale, getT } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
@@ -12,8 +13,11 @@ export const dynamic = 'force-dynamic';
 /**
  * Suuq — Directory & Map (§18, §12: people + business listings, NOT a
  * commerce surface). Tabs are links (?tab=), not client state: the URL is
- * shareable and no JS is needed to switch. The map is its own route
- * (/suuq/map) so its tiles never load unless asked for (§22).
+ * shareable and no JS is needed to switch. Task 12: the map is a tab on THIS
+ * page (?tab=map) so it composes with the directory's filter bar; /suuq/map
+ * 308s here. Tiles still never load uninvited — the Leaflet chunk is
+ * dynamic-imported only on the map tab, and Lite defers the tiles behind a
+ * MediaSlot reveal while the list keeps rendering (§22 defer-not-disable).
  */
 export default async function SuuqPage({
   searchParams,
@@ -25,11 +29,12 @@ export default async function SuuqPage({
   if (ctx.appUser.status === 'suspended') redirect('/auth/error?reason=account_suspended');
 
   const params = await searchParams;
-  const tab = params.tab === 'businesses' ? 'businesses' : 'people';
+  const tab = params.tab === 'businesses' ? 'businesses' : params.tab === 'map' ? 'map' : 'people';
 
   const t = await getT();
   const locale = await getLocale();
   const categories = await getCategories(ctx.supabase, locale);
+  const prefs = tab === 'map' ? await getLitePrefs() : null;
 
   return (
     <main className="xidig-section">
@@ -55,12 +60,22 @@ export default async function SuuqPage({
         >
           {t('suuq.tabBusinesses')}
         </Link>
-        <Link className="xidig-tabs__tab" href="/suuq/map">
+        <Link
+          className="xidig-tabs__tab"
+          href="/suuq?tab=map"
+          aria-current={tab === 'map' ? 'page' : undefined}
+        >
           {t('suuq.tabMap')}
         </Link>
       </div>
 
-      {tab === 'people' ? <PeopleDirectory /> : <BusinessDirectory categories={categories} />}
+      {tab === 'people' ? (
+        <PeopleDirectory />
+      ) : tab === 'map' && prefs ? (
+        <BusinessDirectory categories={categories} view="map" prefs={prefs} />
+      ) : (
+        <BusinessDirectory categories={categories} />
+      )}
     </main>
   );
 }

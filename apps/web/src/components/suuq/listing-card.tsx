@@ -94,6 +94,9 @@ export function ListingCard({
   signedIn,
   bookmarked,
   categories,
+  active,
+  onActiveChange,
+  onViewOnMap,
 }: {
   listing: ListingRow;
   byline?: string | undefined;
@@ -111,6 +114,15 @@ export function ListingCard({
    * map, or an id the map doesn't know, simply renders no chip.
    */
   categories?: ReadonlyMap<string, string> | undefined;
+  /**
+   * Task 12 pin↔card linkage (map tab only): `active` highlights the card
+   * when its marker is hovered; `onActiveChange` reports card hover/focus so
+   * the marker restyles; `onViewOnMap` renders the "View on map" affordance
+   * (action.viewOnMap) that pans the map to this listing's pin.
+   */
+  active?: boolean | undefined;
+  onActiveChange?: ((active: boolean) => void) | undefined;
+  onViewOnMap?: (() => void) | undefined;
 }) {
   const t = useT();
   const cookiePrefs = useCookieLitePrefs();
@@ -127,8 +139,22 @@ export function ListingCard({
   const whatsapp = asContactLinks(listing.contact_links).find((row) => row.type === 'whatsapp');
   const contactUrl = whatsapp ? contactHref('whatsapp', whatsapp.value) : null;
 
+  // Hover AND focus report activation (focus bubbles to the li in React), so
+  // keyboard users get the same card→pin highlight as mouse users.
+  const activation = onActiveChange
+    ? {
+        onMouseEnter: () => onActiveChange(true),
+        onMouseLeave: () => onActiveChange(false),
+        onFocus: () => onActiveChange(true),
+        onBlur: () => onActiveChange(false),
+      }
+    : {};
+
   return (
-    <li className="xidig-card xidig-listing-card">
+    <li
+      className={`xidig-card xidig-listing-card${active ? ' xidig-listing-card--active' : ''}`}
+      {...activation}
+    >
       <div className="xidig-listing-card__thumb">
         {thumbUrl && litePrefs ? (
           <MediaSlot
@@ -171,7 +197,7 @@ export function ListingCard({
             <OpenNowChip hours={listing.opening_hours} />
           ) : null}
         </p>
-        {contactUrl || signedIn !== undefined ? (
+        {contactUrl || signedIn !== undefined || onViewOnMap ? (
           // Sibling controls in a row, never nested inside another
           // interactive — the title link stays its own element.
           <p className="xidig-listing-card__actions">
@@ -187,6 +213,15 @@ export function ListingCard({
               >
                 {t('suuq.whatsappCta')}
               </a>
+            ) : null}
+            {onViewOnMap ? (
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                onClick={onViewOnMap}
+              >
+                {t('action.viewOnMap')}
+              </button>
             ) : null}
             {signedIn !== undefined ? (
               <BookmarkButton
