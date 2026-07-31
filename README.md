@@ -50,6 +50,13 @@ A missing or malformed required value makes the app fail fast with a clear error
 `next build` runs with `SKIP_ENV_VALIDATION=true`, so building never requires
 real secrets. See [`docs/runbook.md`](docs/runbook.md).
 
+## Design
+
+[`DESIGN.md`](DESIGN.md) is the UI steering doc — design target (full-quality
+always; Lite is byte-delivery, never a ceiling), tokens, and the interaction
+states quality bar. The normative MediaSlot/Lite contract lives in
+[`docs/lite-mode.md`](docs/lite-mode.md).
+
 ## CI
 
 `.github/workflows/ci.yml` runs on every PR: `install → lint → typecheck → test
