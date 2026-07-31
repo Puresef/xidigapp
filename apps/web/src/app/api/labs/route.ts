@@ -5,7 +5,13 @@ import { requireUser } from '@/lib/auth/guards';
 import { LAB_CREATE_LIMIT, RATE_WINDOW_DAY_SECONDS } from '@/lib/labs/constants';
 import { labCreateSchema, labListQuerySchema } from '@/lib/labs/schemas';
 import { createLab } from '@/lib/labs/service';
-import { hydrateLabs, LAB_COLUMNS, type LabRow } from '@/lib/labs/views';
+import {
+  fetchLabCounts,
+  fetchLabMembershipIds,
+  hydrateLabs,
+  LAB_COLUMNS,
+  type LabRow,
+} from '@/lib/labs/views';
 import { isSupporter } from '@/lib/posts-api';
 import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/pagination';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -17,7 +23,10 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * Labs / Spaces collection (§16). GET is the Discover browse (listed Spaces the
  * caller can read, newest first) with an optional mode filter and a `mine=1`
  * variant (Spaces the caller leads or belongs to). Reads run under the caller's
- * RLS so private/members/public visibility is DB-enforced.
+ * RLS so private/members/public visibility is DB-enforced. Every page also
+ * carries `counts` for the Discover tabs (All / Clubs / Labs / My Spaces) —
+ * head-only exact counts on the caller's client, so the numbers can never
+ * reveal a Space the caller's RLS hides.
  *
  * POST creates a Space as a Club or a Lab. A Lab requires the create_lab
  * capability (Supporter) — Clubs are free. Validation runs BEFORE any write;
@@ -32,6 +41,14 @@ export async function GET(request: Request): Promise<Response> {
     const params = querySchema.parse(Object.fromEntries(new URL(request.url).searchParams));
     const admin = getSupabaseAdmin();
 
+    // One membership scan feeds both the mine=1 filter and the mine count.
+    const memberLabIds = await fetchLabMembershipIds(admin, ctx.appUser.id);
+
+    if (params.mine === '1' && memberLabIds.length === 0) {
+      const counts = await fetchLabCounts(ctx.supabase, memberLabIds);
+      return apiOk({ items: [], nextCursor: null, counts });
+    }
+
     let query = ctx.supabase
       .from('labs')
       .select(LAB_COLUMNS)
@@ -41,15 +58,7 @@ export async function GET(request: Request): Promise<Response> {
 
     if (params.mine === '1') {
       // Spaces the caller belongs to (lead or active member).
-      const { data: memberships, error } = await admin
-        .from('lab_members')
-        .select('lab_id')
-        .eq('user_id', ctx.appUser.id)
-        .eq('status', 'active');
-      if (error) throw new Error(`membership scan failed: ${error.message}`);
-      const ids = (memberships ?? []).map((m) => m.lab_id);
-      if (ids.length === 0) return apiOk({ items: [], nextCursor: null });
-      query = query.in('id', ids);
+      query = query.in('id', memberLabIds);
     } else {
       query = query.eq('is_listed', true);
     }
@@ -69,8 +78,11 @@ export async function GET(request: Request): Promise<Response> {
     const nextCursor =
       hasMore && last ? encodeCursor({ createdAt: last.created_at, id: last.id }) : null;
 
-    const items = await hydrateLabs(admin, ctx.appUser.id, page);
-    return apiOk({ items, nextCursor });
+    const [items, counts] = await Promise.all([
+      hydrateLabs(admin, ctx.appUser.id, page),
+      fetchLabCounts(ctx.supabase, memberLabIds),
+    ]);
+    return apiOk({ items, nextCursor, counts });
   } catch (error) {
     return handleApiError(error);
   }

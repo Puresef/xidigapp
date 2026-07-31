@@ -88,6 +88,9 @@ export interface AuthorRef {
   user_id: string;
   display_name: string;
   handle: string;
+  /** 96px pipeline thumb (<8KB) — what facepiles/bylines load; null = initials disc. */
+  avatar_thumb_url: string | null;
+  avatar_blurhash: string | null;
 }
 
 export type ViewerRelation = 'lead' | 'core' | 'member' | 'observer' | 'requested' | 'none';
@@ -98,6 +101,12 @@ export interface LabView {
   kind: Enums<'space_mode'>;
   lead: AuthorRef | null;
   memberCount: number;
+  /**
+   * First few active members (join order) for the directory facepile — []
+   * whenever the §16 member_list_visibility gate hides the roster from this
+   * viewer (count-only). See the gate note in hydrateLabs.
+   */
+  memberPreview: AuthorRef[];
   tags: { id: string; name: string }[];
   skillNeeds: { id: string; skill: string; alerted_at: string | null }[];
   /** The viewer's relationship to this Space (drives UI affordances). */
@@ -135,19 +144,38 @@ async function fetchAuthors(
   if (userIds.length === 0) return authors;
   const { data, error } = await admin
     .from('profiles')
-    .select('user_id, display_name, handle')
+    .select('user_id, display_name, handle, avatar_path, avatar_blurhash')
     .in('user_id', userIds);
   if (error) throw new Error(`author hydration failed: ${error.message}`);
   for (const row of data ?? []) {
-    authors.set(row.user_id, { user_id: row.user_id, display_name: row.display_name, handle: row.handle });
+    authors.set(row.user_id, {
+      user_id: row.user_id,
+      display_name: row.display_name,
+      handle: row.handle,
+      avatar_thumb_url: row.avatar_path
+        ? publicMediaUrl(derivedThumbPath(row.avatar_path))
+        : null,
+      avatar_blurhash: row.avatar_blurhash ?? null,
+    });
   }
   return authors;
 }
+
+/** Facepile size on directory cards. */
+export const MEMBER_PREVIEW_LIMIT = 4;
 
 /**
  * Hydrate lab rows into view models. `viewerId` drives viewerRelation (the
  * caller's role or pending-request state). Aggregation is JS-side over the page
  * (≤20 labs) — fine at beta scale.
+ *
+ * FACEPILE GATE (§16 member_list_visibility): hydration runs on the service
+ * role, so the roster gate is enforced HERE, before anything reaches the view
+ * model the API returns. The directory rule is deliberately stricter than the
+ * DB's can_read_lab_roster (which also opens 'members' rosters to any reader):
+ * 'public' → facepile for everyone; 'members' → only the lead / an active
+ * member of THIS Space; 'private' → never (count-only). A Discover card is a
+ * broadcast surface — the detail page's Members tab is the roster surface.
  */
 export async function hydrateLabs(
   admin: SupabaseClient<Database>,
@@ -160,9 +188,13 @@ export async function hydrateLabs(
   const labIds = rows.map((r) => r.id);
   const leadIds = [...new Set(rows.map((r) => r.lead_user_id))];
 
-  const [authors, membersResult, tagsResult, skillsResult, mineResult] = await Promise.all([
-    fetchAuthors(admin, leadIds),
-    admin.from('lab_members').select('lab_id, user_id, role').in('lab_id', labIds).eq('status', 'active'),
+  const [membersResult, tagsResult, skillsResult, mineResult] = await Promise.all([
+    admin
+      .from('lab_members')
+      .select('lab_id, user_id, role')
+      .in('lab_id', labIds)
+      .eq('status', 'active')
+      .order('joined_at', { ascending: true }),
     admin.from('lab_tags').select('lab_id, tags ( id, name )').in('lab_id', labIds),
     admin
       .from('lab_skill_needs')
@@ -177,8 +209,10 @@ export async function hydrateLabs(
   if (mineResult.error) throw new Error(`viewer membership failed: ${mineResult.error.message}`);
 
   const memberCounts = new Map<string, number>();
+  const membersByLab = new Map<string, string[]>();
   for (const row of membersResult.data ?? []) {
     memberCounts.set(row.lab_id, (memberCounts.get(row.lab_id) ?? 0) + 1);
+    membersByLab.set(row.lab_id, [...(membersByLab.get(row.lab_id) ?? []), row.user_id]);
   }
 
   const tagsByLab = new Map<string, { id: string; name: string }[]>();
@@ -198,6 +232,24 @@ export async function hydrateLabs(
     mineByLab.set(row.lab_id, { role: row.role, status: row.status });
   }
 
+  // The facepile gate (see the function doc). Hidden roster ids are excluded
+  // BEFORE the profile batch, so a downstream bug can never resurface them.
+  const rosterVisible = (lab: LabRow): boolean => {
+    if (lab.member_list_visibility === 'public') return true;
+    if (lab.member_list_visibility !== 'members') return false;
+    return lab.lead_user_id === viewerId || mineByLab.get(lab.id)?.status === 'active';
+  };
+  const previewIdsByLab = new Map<string, string[]>();
+  for (const lab of rows) {
+    if (!rosterVisible(lab)) continue;
+    previewIdsByLab.set(lab.id, (membersByLab.get(lab.id) ?? []).slice(0, MEMBER_PREVIEW_LIMIT));
+  }
+
+  // One profile batch covers leads + every permitted preview id.
+  const authors = await fetchAuthors(admin, [
+    ...new Set([...leadIds, ...[...previewIdsByLab.values()].flat()]),
+  ]);
+
   return rows.map((lab) => {
     const mine = mineByLab.get(lab.id);
     let viewerRelation: ViewerRelation = 'none';
@@ -210,6 +262,9 @@ export async function hydrateLabs(
       kind: lab.space_mode,
       lead: authors.get(lab.lead_user_id) ?? null,
       memberCount: memberCounts.get(lab.id) ?? 0,
+      memberPreview: (previewIdsByLab.get(lab.id) ?? [])
+        .map((id) => authors.get(id))
+        .filter((author): author is AuthorRef => Boolean(author)),
       tags: tagsByLab.get(lab.id) ?? [],
       skillNeeds: skillsByLab.get(lab.id) ?? [],
       viewerRelation,
@@ -218,6 +273,61 @@ export async function hydrateLabs(
       media: labMediaView(lab),
     };
   });
+}
+
+// --- Discover tab counts ----------------------------------------------------
+
+export interface LabTabCounts {
+  all: number;
+  clubs: number;
+  labs: number;
+  mine: number;
+}
+
+/** Listed Space ids the user belongs to (lead rows included — createLab seeds one). */
+export async function fetchLabMembershipIds(
+  admin: SupabaseClient<Database>,
+  userId: string,
+): Promise<string[]> {
+  const { data, error } = await admin
+    .from('lab_members')
+    .select('lab_id')
+    .eq('user_id', userId)
+    .eq('status', 'active');
+  if (error) throw new Error(`membership scan failed: ${error.message}`);
+  return (data ?? []).map((m) => m.lab_id);
+}
+
+/**
+ * Tab counts for Discover (All / Clubs / Labs / My Spaces): head-only exact
+ * counts issued on the CALLER's client, so RLS decides what is countable — a
+ * viewer can never infer the existence of a Space they cannot read from any
+ * number here. `memberLabIds` comes from fetchLabMembershipIds (service role;
+ * the rows are the caller's own memberships), then the mine count itself is
+ * still RLS-filtered through the labs SELECT policy.
+ */
+export async function fetchLabCounts(
+  caller: SupabaseClient<Database>,
+  memberLabIds: string[],
+): Promise<LabTabCounts> {
+  const head = { count: 'exact', head: true } as const;
+  const [all, clubs, labs, mine] = await Promise.all([
+    caller.from('labs').select('id', head).eq('is_listed', true),
+    caller.from('labs').select('id', head).eq('is_listed', true).eq('space_mode', 'club'),
+    caller.from('labs').select('id', head).eq('is_listed', true).eq('space_mode', 'lab'),
+    memberLabIds.length > 0
+      ? caller.from('labs').select('id', head).in('id', memberLabIds)
+      : Promise.resolve({ count: 0, error: null }),
+  ]);
+  for (const result of [all, clubs, labs, mine]) {
+    if (result.error) throw new Error(`lab tab counts failed: ${result.error.message}`);
+  }
+  return {
+    all: all.count ?? 0,
+    clubs: clubs.count ?? 0,
+    labs: labs.count ?? 0,
+    mine: mine.count ?? 0,
+  };
 }
 
 // --- child content read models ----------------------------------------------
