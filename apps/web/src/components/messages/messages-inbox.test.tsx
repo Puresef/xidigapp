@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 import { LocaleProvider } from '@xidig/i18n/react';
 
+import type { InboxItem } from '@/lib/dm/views';
+
 import { MessagesInbox } from './messages-inbox';
 
 /**
@@ -13,13 +15,13 @@ import { MessagesInbox } from './messages-inbox';
  * active state. This locks the markup to the selector the CSS actually uses.
  */
 
-function render(): string {
+function render(conversations: InboxItem[] = []): string {
   return renderToStaticMarkup(
     createElement(LocaleProvider, {
       initialLocale: 'en',
       children: createElement(MessagesInbox, {
         meId: 'user-1',
-        initial: { conversations: [], nextCursor: null },
+        initial: { conversations, nextCursor: null },
       }),
     }),
   );
@@ -39,5 +41,31 @@ describe('MessagesInbox tabs', () => {
   it('empty Chats tab offers a way to find people (Directory CTA)', () => {
     const html = render();
     expect(html).toContain('href="/suuq"');
+  });
+
+  it('rows lead with an avatar — initials disc when the participant has no photo (Task 8)', () => {
+    const html = render([
+      {
+        conversationId: 'c1',
+        status: 'accepted',
+        isInitiator: true,
+        other: {
+          userId: 'u2',
+          handle: 'hodan',
+          displayName: 'Hodan Cabdi',
+          verificationStatus: 'unverified',
+          avatarThumbUrl: null,
+          avatarBlurhash: null,
+        },
+        lastMessage: { body: 'salaam', at: '2026-07-30T10:00:00Z', senderUserId: 'u2', deleted: false },
+        unreadCount: 0,
+        updatedAt: '2026-07-30T10:00:00Z',
+        createdAt: '2026-07-29T10:00:00Z',
+      },
+    ]);
+    // Never bare text next to an empty gap: no photo → the initials disc.
+    expect(html).toContain('xidig-avatar--initials');
+    expect(html).toContain('HC');
+    expect(html).toContain('Hodan Cabdi');
   });
 });

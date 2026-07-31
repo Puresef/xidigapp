@@ -8,8 +8,10 @@ import { useLocale, useT } from '@xidig/i18n/react';
 import { ApiRequestError, apiGet, apiPost } from '@/lib/api-client';
 import type { MessageView, Participant } from '@/lib/dm/views';
 import type { PlainError } from '@/lib/errors';
+import type { LitePrefs } from '@/lib/lite/prefs';
 import { createClient } from '@/lib/supabase-browser';
 
+import { Avatar } from '../media/avatar';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { Banner } from '../banner';
 import { ConversationMenu } from './conversation-menu';
@@ -54,11 +56,14 @@ export function ConversationView({
   initialHeader,
   initialMessages,
   initialNextCursor,
+  prefs,
 }: {
   meId: string;
   initialHeader: ConversationHeader;
   initialMessages: MessageView[];
   initialNextCursor: string | null;
+  /** Viewer Lite prefs (SSR page passes them) — text-only Lite keeps initials. */
+  prefs?: LitePrefs | undefined;
 }) {
   const t = useT();
   const { locale } = useLocale();
@@ -203,11 +208,29 @@ export function ConversationView({
   return (
     <section className="xidig-dm" aria-label={name}>
       <header className="xidig-dm-header">
-        <div>
+        {/* Header byline: avatar + name (no disc when the participant is gone
+            — never an empty gap next to the em-dash name). */}
+        <div className="xidig-byline">
           {header.other ? (
-            <a className="xidig-dm-header__name" href={`/u/${header.other.handle ?? ''}`}>
-              {name}
-            </a>
+            <>
+              <a
+                className="xidig-byline__avatar"
+                href={`/u/${header.other.handle ?? ''}`}
+                aria-label={name}
+              >
+                <Avatar
+                  name={name}
+                  handle={header.other.handle ?? ''}
+                  src={header.other.avatarThumbUrl}
+                  blurhash={header.other.avatarBlurhash}
+                  size={40}
+                  prefs={prefs}
+                />
+              </a>
+              <a className="xidig-dm-header__name" href={`/u/${header.other.handle ?? ''}`}>
+                {name}
+              </a>
+            </>
           ) : (
             <span className="xidig-dm-header__name">{name}</span>
           )}

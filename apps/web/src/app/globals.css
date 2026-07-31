@@ -1110,6 +1110,9 @@ button.xidig-poll__option {
   display: grid;
   gap: 0.15rem;
   min-width: 0;
+  /* Rows lead with a 40px avatar (Task 8): main must absorb the slack so the
+     time/badge column stays pinned right and long Somali names still truncate. */
+  flex: 1;
 }
 
 .xidig-dm-row__name {
@@ -2699,6 +2702,22 @@ a.xidig-settings-card:hover {
 .xidig-mention__item--active,
 .xidig-mention__item:hover {
   background: color-mix(in srgb, var(--x-border) 45%, transparent);
+}
+
+/* @mention person rows: initials disc + one-line name that survives ~130%
+   Somali lengths (ellipsis, never overflow). Scoped as a modifier so the
+   skills chip-input's baseline row layout (.xidig-skills override below)
+   is untouched. */
+.xidig-mention__item--person {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.xidig-mention__item-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Skills chip-input: the suggestion rows lay out name + member_count on a line;

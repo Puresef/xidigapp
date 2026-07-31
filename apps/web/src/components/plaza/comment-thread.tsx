@@ -11,6 +11,7 @@ import { ApiRequestError, apiDelete, apiGet, apiPost } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 import type { CommentView, PostView } from '@/lib/plaza/views';
 
+import { Avatar } from '../media/avatar';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { Banner } from '../banner';
 import { CommentForm } from './comment-form';
@@ -152,24 +153,45 @@ export function CommentThread({
 
           return (
             <li key={comment.id} className="xidig-card">
-              <p className="xidig-card__meta">
+              {/* Comment byline: 28px avatar (author may be null — deactivated —
+                  in which case no disc renders, never an empty gap). */}
+              <div className="xidig-byline">
                 {item.author ? (
-                  <Link href={`/u/${item.author.handle}`}>{item.author.display_name}</Link>
-                ) : null}{' '}
-                {formatRelativeTime(new Date(comment.created_at), locale)}
-                {comment.edited_at !== null ? (
-                  <>
-                    {' '}
-                    <span className="xidig-tag">{t('plaza.edited')}</span>
-                  </>
+                  <Link
+                    href={`/u/${item.author.handle}`}
+                    className="xidig-byline__avatar"
+                    aria-label={item.author.display_name}
+                  >
+                    <Avatar
+                      name={item.author.display_name}
+                      handle={item.author.handle}
+                      src={item.author.avatar_thumb_url}
+                      blurhash={item.author.avatar_blurhash}
+                      size={28}
+                    />
+                  </Link>
                 ) : null}
-                {isCredited ? (
-                  <>
-                    {' '}
-                    <span className="xidig-tag xidig-tag--ok">{t('plaza.creditedBadge')}</span>
-                  </>
-                ) : null}
-              </p>
+                <p className="xidig-card__meta xidig-byline__text">
+                  {item.author ? (
+                    <Link className="xidig-byline__name" href={`/u/${item.author.handle}`}>
+                      {item.author.display_name}
+                    </Link>
+                  ) : null}{' '}
+                  {formatRelativeTime(new Date(comment.created_at), locale)}
+                  {comment.edited_at !== null ? (
+                    <>
+                      {' '}
+                      <span className="xidig-tag">{t('plaza.edited')}</span>
+                    </>
+                  ) : null}
+                  {isCredited ? (
+                    <>
+                      {' '}
+                      <span className="xidig-tag xidig-tag--ok">{t('plaza.creditedBadge')}</span>
+                    </>
+                  ) : null}
+                </p>
+              </div>
               <p className="xidig-card__body">{comment.body}</p>
               <ReactionBar
                 targetKind="comment"

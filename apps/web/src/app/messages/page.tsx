@@ -4,6 +4,7 @@ import { MessagesInbox } from '@/components/messages/messages-inbox';
 import { getAuthContext } from '@/lib/auth/guards';
 import { DM_INBOX_PAGE_SIZE } from '@/lib/dm/constants';
 import { hydrateInbox } from '@/lib/dm/views';
+import { getLitePrefs } from '@/lib/lite/server';
 import { getT } from '@/lib/locale';
 import { encodeCursor } from '@/lib/pagination';
 
@@ -20,6 +21,7 @@ export default async function MessagesPage() {
   if (ctx.appUser.status === 'suspended') redirect('/auth/error?reason=account_suspended');
 
   const t = await getT();
+  const prefs = await getLitePrefs();
 
   const { data } = await ctx.supabase.rpc('dm_inbox', { p_limit: DM_INBOX_PAGE_SIZE });
   const rows = data ?? [];
@@ -34,7 +36,7 @@ export default async function MessagesPage() {
     <main className="xidig-section">
       <h1 className="xidig-auth__title">{t('nav.messages')}</h1>
       <p className="xidig-card__meta">{t('messages.subtitle')}</p>
-      <MessagesInbox meId={ctx.appUser.id} initial={{ conversations, nextCursor }} />
+      <MessagesInbox meId={ctx.appUser.id} initial={{ conversations, nextCursor }} prefs={prefs} />
     </main>
   );
 }

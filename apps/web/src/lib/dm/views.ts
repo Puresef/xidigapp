@@ -1,7 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import type { Database, Tables } from '@xidig/db';
+import type { Database, Enums, Tables } from '@xidig/db';
 
+import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { decodeCursor, encodeCursor, keysetBefore, type Cursor } from '@/lib/pagination';
 
 import { DM_MESSAGE_PAGE_SIZE } from './constants';
@@ -18,6 +19,36 @@ export interface Participant {
   handle: string | null;
   displayName: string | null;
   verificationStatus: string | null;
+  /** Avatar THUMB public URL (<8KB, 96px pipeline) — null → initials disc. */
+  avatarThumbUrl: string | null;
+  avatarBlurhash: string | null;
+}
+
+/** The profiles projection the DM surface needs — display fields only. */
+export interface ParticipantProfileRow {
+  user_id: string;
+  handle: string | null;
+  display_name: string | null;
+  verification_status: Enums<'profile_verification_status'> | null;
+  avatar_path: string | null;
+  avatar_blurhash: string | null;
+}
+
+/**
+ * Profiles row → Participant (pure; unit-tested). Avatar follows the Plaza
+ * byline convention (lib/plaza/views.ts fetchAuthors): storage path → derived
+ * thumb public URL, never the full image; missing path → null so the client
+ * renders the zero-byte initials disc.
+ */
+export function toParticipant(row: ParticipantProfileRow): Participant {
+  return {
+    userId: row.user_id,
+    handle: row.handle,
+    displayName: row.display_name,
+    verificationStatus: row.verification_status,
+    avatarThumbUrl: row.avatar_path ? publicMediaUrl(derivedThumbPath(row.avatar_path)) : null,
+    avatarBlurhash: row.avatar_blurhash ?? null,
+  };
 }
 
 export interface MessageView {
@@ -53,15 +84,10 @@ async function fetchParticipants(
   if (unique.length === 0) return map;
   const { data } = await admin
     .from('profiles')
-    .select('user_id, handle, display_name, verification_status')
+    .select('user_id, handle, display_name, verification_status, avatar_path, avatar_blurhash')
     .in('user_id', unique);
   for (const row of data ?? []) {
-    map.set(row.user_id, {
-      userId: row.user_id,
-      handle: row.handle,
-      displayName: row.display_name,
-      verificationStatus: row.verification_status,
-    });
+    map.set(row.user_id, toParticipant(row));
   }
   return map;
 }

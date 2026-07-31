@@ -6,6 +6,8 @@ import { useT } from '@xidig/i18n/react';
 
 import { apiGet } from '@/lib/api-client';
 
+import { Avatar } from '../media/avatar';
+
 /**
  * Textarea with @mention autocomplete (Phase 4.5 §13). Drop-in replacement
  * for the composer/comment textareas: typing `@` plus a character queries the
@@ -170,14 +172,19 @@ export function MentionAutocomplete({
                 id={`${listId}-${index}`}
                 role="option"
                 aria-selected={index === active}
-                className={`xidig-mention__item${index === active ? ' xidig-mention__item--active' : ''}`}
+                className={`xidig-mention__item xidig-mention__item--person${index === active ? ' xidig-mention__item--active' : ''}`}
                 onMouseDown={(event) => {
                   event.preventDefault();
                   insert(profile.handle);
                 }}
                 onMouseEnter={() => setActive(index)}
               >
-                <strong>{profile.display_name}</strong> @{profile.handle}
+                {/* Zero-byte initials disc — the directory search returns no
+                    avatar fields and the popup must stay instant (§22). */}
+                <Avatar name={profile.display_name} handle={profile.handle} size={28} />
+                <span className="xidig-mention__item-text">
+                  <strong>{profile.display_name}</strong> @{profile.handle}
+                </span>
               </button>
             </li>
           ))}

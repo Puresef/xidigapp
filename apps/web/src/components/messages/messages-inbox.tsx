@@ -9,8 +9,10 @@ import { useLocale, useT } from '@xidig/i18n/react';
 import { ApiRequestError, apiGet } from '@/lib/api-client';
 import type { InboxItem } from '@/lib/dm/views';
 import type { PlainError } from '@/lib/errors';
+import type { LitePrefs } from '@/lib/lite/prefs';
 import { createClient } from '@/lib/supabase-browser';
 
+import { Avatar } from '../media/avatar';
 import { ButtonTabs } from '../button-tabs';
 import { EmptyState } from '../empty-state';
 import { PlainErrorBanner } from '../auth/plain-error';
@@ -30,7 +32,16 @@ interface InboxResponse {
 
 type Tab = 'chats' | 'requests';
 
-export function MessagesInbox({ meId, initial }: { meId: string; initial: InboxResponse }) {
+export function MessagesInbox({
+  meId,
+  initial,
+  prefs,
+}: {
+  meId: string;
+  initial: InboxResponse;
+  /** Viewer Lite prefs (SSR page passes them) — text-only Lite keeps initials. */
+  prefs?: LitePrefs | undefined;
+}) {
   const t = useT();
   const { locale } = useLocale();
   const [items, setItems] = useState<InboxItem[]>(initial.conversations);
@@ -147,6 +158,14 @@ export function MessagesInbox({ meId, initial }: { meId: string; initial: InboxR
             return (
               <li key={c.conversationId}>
                 <Link className="xidig-dm-row" href={`/messages/${c.conversationId}`}>
+                  <Avatar
+                    name={name}
+                    handle={c.other?.handle ?? ''}
+                    src={c.other?.avatarThumbUrl}
+                    blurhash={c.other?.avatarBlurhash}
+                    size={40}
+                    prefs={prefs}
+                  />
                   <span className="xidig-dm-row__main">
                     <span className="xidig-dm-row__name">{name}</span>
                     <span className="xidig-dm-row__preview">

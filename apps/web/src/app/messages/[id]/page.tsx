@@ -5,6 +5,7 @@ import { ConversationView } from '@/components/messages/conversation-view';
 import { getAuthContext } from '@/lib/auth/guards';
 import { loadConversationForUser, otherParticipant } from '@/lib/dm/service';
 import { loadMessagesPage, participantProfile } from '@/lib/dm/views';
+import { getLitePrefs } from '@/lib/lite/server';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -31,9 +32,10 @@ export default async function ConversationPage({
   const convo = await loadConversationForUser(admin, id, ctx.appUser.id);
   if (!convo) notFound();
 
-  const [other, page] = await Promise.all([
+  const [other, page, prefs] = await Promise.all([
     participantProfile(admin, otherParticipant(convo, ctx.appUser.id)),
     loadMessagesPage(ctx.supabase, id, ctx.appUser.id, null),
+    getLitePrefs(),
   ]);
 
   return (
@@ -49,6 +51,7 @@ export default async function ConversationPage({
         }}
         initialMessages={page.messages}
         initialNextCursor={page.nextCursor}
+        prefs={prefs}
       />
     </main>
   );

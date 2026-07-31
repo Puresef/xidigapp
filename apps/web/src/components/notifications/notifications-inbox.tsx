@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase-browser';
 import { bundleHref, bundleSummary } from '@/lib/notifications/present';
 import { toast } from '@/lib/toast';
 
+import { Avatar } from '../media/avatar';
 import { EmptyState } from '../empty-state';
 import { PlainErrorBanner } from '../auth/plain-error';
 
@@ -126,9 +127,21 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
         <ul className="xidig-notif-list">
           {bundles.map((b) => {
             const href = bundleHref(b);
+            // Most-recent actor → zero-byte initials disc (bundle actors carry
+            // handle+name only — no avatar fields; thumb hydration would be an
+            // API change, deliberately out of scope). Actor-less system rows
+            // (moderation, Ask lifecycle) render no disc — never an empty gap.
+            const actor = b.actors[0];
             const content = (
               <>
                 {b.unread ? <span className="xidig-notif__dot" aria-hidden="true" /> : null}
+                {actor ? (
+                  <Avatar
+                    name={actor.displayName || actor.handle}
+                    handle={actor.handle}
+                    size={28}
+                  />
+                ) : null}
                 <span className="xidig-notif__text">{bundleSummary(b, t)}</span>
                 <time className="xidig-card__meta" dateTime={b.latestAt}>
                   {formatRelativeTime(new Date(b.latestAt), locale)}
