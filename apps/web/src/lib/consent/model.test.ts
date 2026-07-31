@@ -5,6 +5,7 @@ import {
   decideConsent,
   parseConsentCookie,
   serializeConsentCookie,
+  shouldLoadTrafficAnalytics,
   type ConsentCookieValue,
 } from './model';
 
@@ -145,5 +146,48 @@ describe('decideConsent', () => {
       analytics: false,
       errorMonitoring: false,
     });
+  });
+});
+
+/**
+ * Vercel Web Analytics gate (aggregate traffic counting — NOT the §23
+ * PostHog pipeline). Essential-tier by default so the signed-out front door
+ * is actually countable, with an explicit decline as the one override.
+ */
+describe('shouldLoadTrafficAnalytics', () => {
+  it('loads for signed-out visitors — they are never prompted, by design', () => {
+    expect(shouldLoadTrafficAnalytics(null)).toBe(true);
+  });
+
+  it('loads while the banner is unanswered — silence is not refusal', () => {
+    expect(
+      shouldLoadTrafficAnalytics({ needsPrompt: true, analytics: false, errorMonitoring: false }),
+    ).toBe(true);
+  });
+
+  it('suppresses on an explicit decline — an answered "no" outranks the tier', () => {
+    expect(
+      shouldLoadTrafficAnalytics({ needsPrompt: false, analytics: false, errorMonitoring: false }),
+    ).toBe(false);
+  });
+
+  it('loads on an explicit grant', () => {
+    expect(
+      shouldLoadTrafficAnalytics({ needsPrompt: false, analytics: true, errorMonitoring: false }),
+    ).toBe(true);
+  });
+
+  it('fails closed: a consent-lookup error suppresses', () => {
+    // decideConsent maps a failed lookup to exactly this shape.
+    expect(shouldLoadTrafficAnalytics(decideConsent(null, 'error'))).toBe(false);
+  });
+
+  it('error_monitoring is orthogonal — it never drives the traffic beacon', () => {
+    expect(
+      shouldLoadTrafficAnalytics({ needsPrompt: false, analytics: false, errorMonitoring: true }),
+    ).toBe(false);
+    expect(
+      shouldLoadTrafficAnalytics({ needsPrompt: false, analytics: true, errorMonitoring: false }),
+    ).toBe(true);
   });
 });

@@ -6,6 +6,8 @@ import { Space_Grotesk } from 'next/font/google';
 import { cookies, headers } from 'next/headers';
 import type { ReactNode } from 'react';
 
+import { Analytics } from '@vercel/analytics/next';
+
 import { LocaleProvider } from '@xidig/i18n/react';
 
 import { env } from '../env';
@@ -14,7 +16,7 @@ import { HeaderChrome } from '../components/nav/header-chrome';
 import { SiteFooter } from '../components/site-footer';
 import { getHeaderViewer } from '../lib/auth/header-viewer';
 import { getGeoCountry } from '../lib/capital/region-gate';
-import { CONSENT_COOKIE } from '../lib/consent/model';
+import { CONSENT_COOKIE, shouldLoadTrafficAnalytics } from '../lib/consent/model';
 import { getConsentChoice } from '../lib/consent/server';
 import { isLiteActive } from '../lib/lite/prefs';
 import { regionSuggestsLite } from '../lib/lite/connection';
@@ -115,6 +117,26 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   // the live connection (2G/3G/Save-Data) before offering Lite.
   const geoSuggestsLite = regionSuggestsLite(getGeoCountry({ headers: await headers() }));
 
+  // Vercel Web Analytics — aggregate traffic counting (visitors, page views),
+  // NOT the §23 product-analytics pipeline. It sets no cookie and stores no
+  // persistent identifier (daily-rotating hash), and the `/next` entrypoint
+  // reports the ROUTE PATTERN (`/u/[handle]`), never the resolved path, so no
+  // member is identifiable from a beacon. On that basis it is disclosed as
+  // essential-tier measurement rather than gated behind the opt-in banner —
+  // gating it would zero the signed-out front door, which is the only traffic
+  // it exists to count (docs/consent-capture.md).
+  //
+  // One override: a member who has ANSWERED the banner and declined
+  // `analytics` is suppressed anyway — an explicit "no" outranks the
+  // tier argument. `needsPrompt` guards the un-answered case, so a member
+  // who simply hasn't seen the banner yet still counts. A consent lookup
+  // error resolves to {needsPrompt: false, analytics: false} by design, so
+  // it fails closed here too.
+  //
+  // PostHog product analytics remains strict opt-in — hasAnalyticsConsent()
+  // is untouched by this. Predicate + rationale: lib/consent/model.ts.
+  const trafficAnalytics = shouldLoadTrafficAnalytics(consent);
+
   return (
     // suppressHydrationWarning: the inline script (and the appearance settings
     // page) legitimately mutate html attributes before/after hydration.
@@ -144,6 +166,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             regionSuggestsLite={geoSuggestsLite}
           />
           <SiteFooter />
+          {trafficAnalytics && <Analytics />}
         </LocaleProvider>
       </body>
     </html>
