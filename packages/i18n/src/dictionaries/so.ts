@@ -805,7 +805,6 @@ export const so = {
   'suuq.claimSubmitted':
     'Sheegashada waa la gudbiyay — kormeere ayaa eegi doona; haddii la ansixiyo, liiska adigaa lagu wareejinayaa.',
   'suuq.unclaimed': 'Aan la sheegan',
-  'suuq.mapLowBandwidth': 'Khariidaddu waa damsan tahay habka isticmaalka-yar — halkan waxaa ah liiska.',
   'suuq.searchArea': 'Raadi aaggan',
   // Task 12 — cluster badge tooltip/accessible name (count is the visible label).
   'suuq.mapCluster': '{count} liis — dooro si aad u aragto',

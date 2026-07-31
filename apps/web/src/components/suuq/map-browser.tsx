@@ -14,7 +14,12 @@ import type { PlainError } from '@/lib/errors';
 import { listingOpenNow } from '@/lib/listings';
 import { MAP_EST_BYTES } from '@/lib/lite/estimates';
 import type { LitePrefs } from '@/lib/lite/prefs';
-import { loadStoredBbox, storeBbox } from '@/lib/suuq/map-viewport';
+import {
+  loadStoredBbox,
+  shouldPersistBbox,
+  storeBbox,
+  type BboxChangeReason,
+} from '@/lib/suuq/map-viewport';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { ListingCard, type ListingRow } from './listing-card';
 import type { MapMarker } from './listings-map';
@@ -90,6 +95,12 @@ export function MapBrowser({
    *  while a search-this-area request is in flight). */
   const genRef = useRef(0);
   const previewPanelRef = useRef<HTMLElement | null>(null);
+  /** Focus restore for the preview panel: the element focused when the
+   *  preview opened (marker / "View on map" button), so Escape/× returns the
+   *  keyboard user where they were instead of dropping focus to <body>. */
+  const previewReturnRef = useRef<HTMLElement | null>(null);
+  const previewOpenRef = useRef(false);
+  const mapWrapRef = useRef<HTMLDivElement | null>(null);
 
   const load = useCallback(async (area: string | null, filterSet: string) => {
     const gen = ++genRef.current;
@@ -133,12 +144,15 @@ export function MapBrowser({
     void load(bboxRef.current, filters);
   }, [filters, load]);
 
-  const handleBboxChange = useCallback((nextBbox: string, user: boolean) => {
+  const handleBboxChange = useCallback((nextBbox: string, reason: BboxChangeReason) => {
     bboxRef.current = nextBbox;
     setBbox(nextBbox);
-    storeBbox(nextBbox);
-    // Restore/fit moves persist but never arm "search this area".
-    if (user) setBboxDirty(true);
+    // Persist real viewports (user/fit/restore); NEVER the Mogadishu
+    // 'default' — storing it on an empty first visit would make the stored
+    // bbox win every later mount and permanently kill fit-to-pins.
+    if (shouldPersistBbox(reason)) storeBbox(nextBbox);
+    // Only real pans arm "search this area".
+    if (reason === 'user') setBboxDirty(true);
   }, []);
 
   // "Open now" applies to pins AND cards — the map must never show a pin the
@@ -168,9 +182,24 @@ export function MapBrowser({
   const preview = previewId ? (rows.find((row) => row.id === previewId) ?? null) : null;
 
   // Move focus into the panel when it opens — keyboard flow: marker Enter →
-  // panel → its links/buttons; Escape (or Close) returns to browsing.
+  // panel → its links/buttons; Escape (or Close) returns focus to whatever
+  // opened it (captured on the closed→open transition), falling back to the
+  // map container when that trigger is gone (markers rebuild on re-cluster).
   useEffect(() => {
-    if (preview) previewPanelRef.current?.focus();
+    if (preview) {
+      if (!previewOpenRef.current) {
+        previewOpenRef.current = true;
+        previewReturnRef.current =
+          document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      }
+      previewPanelRef.current?.focus();
+    } else if (previewOpenRef.current) {
+      previewOpenRef.current = false;
+      const target = previewReturnRef.current;
+      previewReturnRef.current = null;
+      if (target?.isConnected) target.focus();
+      else mapWrapRef.current?.querySelector<HTMLElement>('.xidig-map')?.focus();
+    }
   }, [preview]);
 
   const mapsEnabled = prefs.maps;
@@ -190,7 +219,7 @@ export function MapBrowser({
   return (
     <div>
       {error ? <PlainErrorBanner error={error} /> : null}
-      <div className="xidig-map-wrap">
+      <div className="xidig-map-wrap" ref={mapWrapRef}>
         {mapsEnabled ? (
           mapEl
         ) : (

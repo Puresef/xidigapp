@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { formatNumber } from '@xidig/i18n';
 
 import { EmptyState } from '@/components/empty-state';
+import { Avatar } from '@/components/media/avatar';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getLocale, getT } from '@/lib/locale';
 
@@ -89,6 +90,9 @@ export default async function LeaderboardPage() {
                 <div className="xidig-card__body">
                   <h3 className="xidig-card__title">
                     <span className="xidig-tag">#{formatNumber(index + 1, locale)}</span>{' '}
+                    {/* 0-byte initials disc (Avatar is server-safe — no hooks);
+                        no photo columns fetched here, deliberately. */}
+                    <Avatar name={row.displayName} handle={row.handle} size={28} />{' '}
                     <Link href={`/u/${row.handle}`}>{row.displayName}</Link>
                   </h3>
                   <p className="xidig-card__meta">@{row.handle}</p>

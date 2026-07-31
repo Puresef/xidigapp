@@ -958,7 +958,6 @@ export const en = {
   'suuq.claimSubmitted':
     'Claim submitted — a moderator will review it and transfer the listing to you if approved.',
   'suuq.unclaimed': 'Unclaimed',
-  'suuq.mapLowBandwidth': 'Map tiles are off in low-bandwidth mode — here’s the list instead.',
   'suuq.searchArea': 'Search this area',
   // Task 12 — cluster badge tooltip/accessible name (count is the visible label).
   'suuq.mapCluster': '{count} listings — select to zoom in',

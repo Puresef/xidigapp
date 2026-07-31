@@ -17,6 +17,26 @@ export const MAP_BBOX_STORAGE_KEY = 'xidig:suuq-map-bbox';
 /** `[west, south, east, north]` in degrees. */
 export type Bbox = [number, number, number, number];
 
+/**
+ * Why a viewport was reported (listings-map → map-browser):
+ *  - 'user'    — a real pan/zoom (persist AND arm "search this area")
+ *  - 'fit'     — programmatic fit/pan to real data (fit-to-pins, cluster
+ *                zoom, card→map focus)
+ *  - 'restore' — the stored bbox re-applied on mount
+ *  - 'default' — the Mogadishu fallback on an empty first visit
+ */
+export type BboxChangeReason = 'user' | 'fit' | 'restore' | 'default';
+
+/**
+ * Persist every reported viewport EXCEPT the hardcoded default: fit/restore
+ * results are real data, but storing the Mogadishu constant on an empty first
+ * visit would make loadStoredBbox() succeed forever after — permanently
+ * defeating fit-to-pins for members whose listings are elsewhere.
+ */
+export function shouldPersistBbox(reason: BboxChangeReason): boolean {
+  return reason !== 'default';
+}
+
 type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
 
 function defaultStorage(): StorageLike | null {

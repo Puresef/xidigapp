@@ -107,4 +107,32 @@ describe('ReactionBar anti-anchoring', () => {
     expect(container.textContent).toContain('2');
     expect(chip('Fire').getAttribute('aria-pressed')).toBe('true');
   });
+
+  it('re-hides counts when the viewer removes their only reaction (chips stay)', () => {
+    mount(
+      <ReactionBar
+        targetKind="post"
+        targetId="post-1"
+        counts={counts({ fire: 3, watching: 2 })}
+        mine={[]}
+      />,
+    );
+    // React: the gate opens (fire 3→4 optimistically, watching's 2 unlocks).
+    act(() => {
+      chip('Fire').click();
+    });
+    expect(container.textContent).toContain('4');
+    expect(container.textContent).toContain('2');
+    // Unreact the same chip: the viewer has no reaction left on the post, so
+    // anti-anchoring re-arms — every number disappears again…
+    act(() => {
+      chip('Fire').click();
+    });
+    expect(container.textContent).not.toContain('3');
+    expect(container.textContent).not.toContain('2');
+    // …but the chips themselves remain (types in play stay visible).
+    expect(chip('Fire')).toBeTruthy();
+    expect(chip('Watching')).toBeTruthy();
+    expect(chip('Fire').getAttribute('aria-pressed')).toBe('false');
+  });
 });

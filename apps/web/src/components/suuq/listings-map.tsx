@@ -8,7 +8,11 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useT } from '@xidig/i18n/react';
 
 import { clusterPoints } from '@/lib/suuq/map-cluster';
-import { loadStoredBbox, parseBbox } from '@/lib/suuq/map-viewport';
+import {
+  loadStoredBbox,
+  parseBbox,
+  type BboxChangeReason,
+} from '@/lib/suuq/map-viewport';
 
 /**
  * Leaflet wrapper (§18 map; §24 lists MapLibre for later — Leaflet + OSM
@@ -21,8 +25,9 @@ import { loadStoredBbox, parseBbox } from '@/lib/suuq/map-viewport';
  *    hover/tap reports up via onActiveChange/onMarkerSelect, and the parent's
  *    activeId restyles the matching pin. Viewport order (Task 12): stored
  *    last-viewed bbox → fitBounds to the first fetched pins → Mogadishu
- *    constant. moveend reports the bbox up (flagged user vs programmatic so
- *    only real pans arm "search this area").
+ *    constant. moveend reports the bbox up tagged with a BboxChangeReason
+ *    ('user' | 'fit' | 'restore' | 'default') so only real pans arm "search
+ *    this area" and only the hardcoded default escapes persistence.
  *  - pick: §18 pin-drop. Click/tap drops the pin; the parent receives lat/lng
  *    exactly as POST /api/listings expects.
  *
@@ -68,11 +73,11 @@ export function ListingsMap(props: {
   mode: 'browse' | 'pick';
   markers?: MapMarker[];
   /**
-   * Reports the viewport on every moveend. `user` is false for programmatic
-   * moves (restore/fit) so the parent can persist those without arming the
-   * "search this area" button.
+   * Reports the viewport on every moveend, tagged with WHY it moved
+   * (BboxChangeReason) so the parent can decide per reason: only 'user' arms
+   * "search this area", and only the hardcoded 'default' skips persistence.
    */
-  onBboxChange?: (bbox: string, user: boolean) => void;
+  onBboxChange?: (bbox: string, reason: BboxChangeReason) => void;
   /** Pin↔card linkage (Task 12): hovered/focused listing, both directions. */
   activeId?: string | null;
   onActiveChange?: (id: string | null) => void;
@@ -91,8 +96,9 @@ export function ListingsMap(props: {
   /** Latest browse data + one L.Marker per un-clustered listing id. */
   const markersDataRef = useRef<MapMarker[]>([]);
   const markerElsRef = useRef(new Map<string, L.Marker>());
-  /** True while WE move the map (restore/fit/cluster-zoom) — see onBboxChange. */
-  const programmaticRef = useRef(false);
+  /** Set while WE move the map (fit-to-pins/cluster-zoom/card-focus) — the
+   *  moveend handler reports that reason instead of 'user'. */
+  const programmaticRef = useRef<Exclude<BboxChangeReason, 'user'> | null>(null);
   /** Arm fit-to-pins only when no stored viewport AND the user hasn't moved. */
   const autoFitPendingRef = useRef(false);
 
@@ -115,13 +121,14 @@ export function ListingsMap(props: {
   const initialPickRef = useRef(props.initialPick ?? null);
 
   /** Run a programmatic map move without arming "search this area"
-   *  (animate:false keeps the moveend synchronous, so the flag scopes). */
+   *  (animate:false keeps the moveend synchronous, so the flag scopes).
+   *  Every caller is a fit-to-real-data move, so the reason is 'fit'. */
   const moveProgrammatic = useCallback((run: () => void) => {
-    programmaticRef.current = true;
+    programmaticRef.current = 'fit';
     try {
       run();
     } finally {
-      programmaticRef.current = false;
+      programmaticRef.current = null;
     }
   }, []);
 
@@ -178,6 +185,9 @@ export function ListingsMap(props: {
     const initialPick = initialPickRef.current;
 
     const map = L.map(el);
+    /** Why the initial (browse) viewport report fires — 'default' must NOT be
+     *  persisted by the parent or fit-to-pins dies forever (see map-viewport). */
+    let initialReason: Extract<BboxChangeReason, 'restore' | 'default'> = 'default';
 
     if (mode === 'pick') {
       const start: [number, number] = initialPick
@@ -192,6 +202,7 @@ export function ListingsMap(props: {
       if (stored) {
         const [west, south, east, north] = stored;
         map.fitBounds(L.latLngBounds([south, west], [north, east]), { animate: false });
+        initialReason = 'restore';
       } else {
         map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
         autoFitPendingRef.current = true;
@@ -208,21 +219,21 @@ export function ListingsMap(props: {
       markersRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
       map.on('moveend', () => {
-        const user = !programmaticRef.current;
-        if (user) autoFitPendingRef.current = false;
+        const reason: BboxChangeReason = programmaticRef.current ?? 'user';
+        if (reason === 'user') autoFitPendingRef.current = false;
         const b = map.getBounds();
         onBboxChangeRef.current?.(
           `${b.getWest().toFixed(6)},${b.getSouth().toFixed(6)},${b.getEast().toFixed(6)},${b.getNorth().toFixed(6)}`,
-          user,
+          reason,
         );
       });
       map.on('zoomend', renderMarkers);
       // Report the restored/initial viewport once so the parent's bbox state
-      // matches what's on screen (persisted, but not "dirty").
+      // matches what's on screen ('restore' persists, 'default' must not).
       const b = map.getBounds();
       onBboxChangeRef.current?.(
         `${b.getWest().toFixed(6)},${b.getSouth().toFixed(6)},${b.getEast().toFixed(6)},${b.getNorth().toFixed(6)}`,
-        false,
+        initialReason,
       );
       renderMarkers();
     } else {

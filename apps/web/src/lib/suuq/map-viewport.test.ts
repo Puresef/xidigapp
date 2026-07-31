@@ -5,7 +5,9 @@ import {
   formatBbox,
   loadStoredBbox,
   parseBbox,
+  shouldPersistBbox,
   storeBbox,
+  type BboxChangeReason,
 } from './map-viewport';
 
 /** Minimal in-memory Storage stand-in (vitest runs in node — no window). */
@@ -88,5 +90,20 @@ describe('loadStoredBbox / storeBbox', () => {
   it('no-ops without a storage (SSR / storage disabled)', () => {
     expect(loadStoredBbox(null)).toBeNull();
     expect(() => storeBbox('45,1,46,2', null)).not.toThrow();
+  });
+});
+
+describe('shouldPersistBbox', () => {
+  it.each<BboxChangeReason>(['user', 'fit', 'restore'])(
+    'persists real viewports (%s)',
+    (reason) => {
+      expect(shouldPersistBbox(reason)).toBe(true);
+    },
+  );
+
+  it('never persists the hardcoded default viewport', () => {
+    // Storing the Mogadishu fallback on an empty first visit would make the
+    // stored bbox win every later mount — fit-to-pins would never run again.
+    expect(shouldPersistBbox('default')).toBe(false);
   });
 });
