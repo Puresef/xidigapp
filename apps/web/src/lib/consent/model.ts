@@ -105,6 +105,34 @@ export function serializeConsentCookie(value: ConsentCookieValue): string {
  *     absence, by schema design), so on a cookie-less device they are
  *     re-prompted — accepted trade-off, documented in docs/consent-capture.md.
  */
+/**
+ * Should `<Analytics/>` (Vercel Web Analytics — aggregate visitor/page-view
+ * counting) render? This is NOT the §23 PostHog gate; see
+ * hasAnalyticsConsent() in lib/analytics/consent.ts for that, which stays
+ * strict opt-in and is unaffected by this function.
+ *
+ * Vercel's beacon sets no cookie, keeps no persistent identifier (daily
+ * rotating hash) and reports route PATTERNS (`/u/[handle]`), so it is
+ * disclosed as essential-tier aggregate measurement rather than banner-gated
+ * — gating it would zero the signed-out front door, the only traffic it
+ * exists to count (docs/consent-capture.md).
+ *
+ *   - `null` (signed-out — never prompted, by design) → load.
+ *   - `needsPrompt` (signed-in, hasn't answered the current version) → load;
+ *     an unanswered banner is not a refusal.
+ *   - Answered → honour the answer. An explicit decline outranks the
+ *     essential-tier argument and suppresses the beacon.
+ *
+ * A consent-lookup error resolves to `{needsPrompt: false, analytics: false}`
+ * (see decideConsent), so failures suppress — fail-closed, like everything
+ * else in §12.
+ */
+export function shouldLoadTrafficAnalytics(consent: ConsentState | null): boolean {
+  if (consent === null) return true;
+  if (consent.needsPrompt) return true;
+  return consent.analytics;
+}
+
 export function decideConsent(
   cookie: ConsentCookieValue | null,
   records: ActiveConsentRecord[] | 'error',

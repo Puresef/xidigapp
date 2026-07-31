@@ -8,7 +8,7 @@ nothing optional runs.
 
 | Category | Covers | Basis |
 |---|---|---|
-| **Essential** | Session/auth cookies, security, preference cookies (locale, theme, Lite), **basic Sentry error capture** | Strictly necessary — always on, never a `consent_records` row |
+| **Essential** | Session/auth cookies, security, preference cookies (locale, theme, Lite), **basic Sentry error capture**, **Vercel Web Analytics** (see below) | Strictly necessary / legitimate interest — always on, never a `consent_records` row |
 | **`analytics`** | PostHog product analytics (§23 taxonomy) | Opt-in consent, Art. 6(1)(a) |
 | **`error_monitoring`** *(new, `20260709210000_consent_capture.sql`)* | Sentry session replay + performance-trace extras | Opt-in consent — replay records screen interactions, so it is not essential |
 
@@ -65,6 +65,39 @@ their rows answer.
   null;` — capture then stops immediately (rows gone) and the banner
   re-collects.
 
+## Vercel Web Analytics vs. PostHog (two different things)
+
+Added 31 Jul 2026. `<Analytics/>` (`@vercel/analytics/next`, rendered in
+`app/layout.tsx`) counts **visitors and page views in aggregate**. It is not
+the §23 product-analytics pipeline and does not touch
+`hasAnalyticsConsent()`.
+
+Why it sits in the essential tier rather than behind the banner:
+
+- **No cookie, no persistent identifier.** Vercel derives a visitor hash
+  from IP + user-agent that rotates daily; nothing is written to the device
+  and no ID survives 24h.
+- **No path-level identifiability.** The `/next` entrypoint reports the
+  **route pattern** (`/u/[handle]`, `/labs/[slug]`) — never the resolved
+  path — so a beacon cannot name the member or lab being viewed. Query
+  strings are not sent.
+- **Gating it would make it useless.** The banner targets signed-in members
+  only (next section); the traffic this measures is the signed-out front
+  door, which by design is never prompted. Consent-gating would produce a
+  permanently empty dashboard, not a privacy win.
+
+**The one override:** a member who has *answered* the banner and declined
+`analytics` gets `<Analytics/>` suppressed for their session anyway. An
+explicit "no" outranks the tier argument. `needsPrompt` guards the
+un-answered case, so a member who hasn't seen the banner yet still counts;
+a consent-lookup error resolves to `{needsPrompt: false, analytics: false}`
+and therefore also suppresses — fail-closed, consistent with the rest of
+this document.
+
+👤 **Legal**: the Privacy/Cookie pages (marketing site, outside this repo)
+must disclose Vercel Web Analytics under essential/aggregate measurement.
+Tracked in Debt below.
+
 ## Why signed-out visitors see no banner
 
 The front door deliberately processes **nothing optional** for anonymous
@@ -103,6 +136,10 @@ With the key set, events fire **per-member after that member consents**:
 
 - 👤 **Legal**: the Privacy Policy the banner links to (`/privacy`) is a
   draft pending legal review; banner copy should get the same pass.
+- 👤 **Legal (31 Jul 2026)**: that same pass must add **Vercel Web
+  Analytics** to the essential/aggregate-measurement disclosure — cookieless,
+  daily-rotating visitor hash, route-pattern paths only. The code ships the
+  posture; the disclosure lives on the marketing site.
 - 👤 Native Somali review of the `consent.*` keys (plain-register drafts).
 - 🖥️ Browser `tracesSampleRate` is treated as essential, not gated on
   `error_monitoring` — revisit if legal review wants it opt-in.
