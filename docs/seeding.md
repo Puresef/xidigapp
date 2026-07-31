@@ -75,13 +75,15 @@ locked rules: **badge-labeled, earns no reputation, never front-door proof, no
 fake people, no real-business impersonation.** The dataset in
 `apps/web/src/lib/seed/data.ts` implements this manifest; the guards in
 `apps/web/src/lib/seed/data.test.ts` make the rules structural (unique keys,
-`(demo)` labels, self-describing bodies, known tags/categories, sizing
-ceilings), so expanding the dataset without honoring the manifest fails CI.
+badge-driving `source` flags — provenance is the Seeded chip, never a
+"(demo)" text label (§21) — self-describing post bodies, known
+tags/categories, sizing ceilings), so expanding the dataset without honoring
+the manifest fails CI.
 
 | Surface | Day-one target | Shape | Why this size |
 |---|---|---|---|
 | **Plaza** | 8 posts (ceiling 12) | 1 AI welcome + 3 Wins + 2 Asks + 2 Updates, spread across tags | First screen shows every post type in use; few enough that the first organic post is immediately visible (chronological feed, no ranking) |
-| **Suuq** | 10 unclaimed listings (ceiling 12) | 10 of the 15 categories, 6 cities, all "(demo)"-suffixed and claimable via the §18 flow | The directory demonstrates breadth (category + map spread) without crowding out the first real businesses |
+| **Suuq** | 10 unclaimed listings (ceiling 12) | 10 of the 15 categories, 6 cities, all badge-labelled (`source: 'seed'` → the Seeded chip; never a name suffix) and claimable via the §18 flow | The directory demonstrates breadth (category + map spread) without crowding out the first real businesses |
 | **Labs** | **0 seeded live Labs — ever** | Density = templates only: 3 seeded playbooks + the migration-seeded charter set | A "building in public" surface with fake activity is exactly the fabrication the front door forbids; empty-but-honest beats occupied-but-fake here |
 | **Tags** | 10 approved starter tags (+15 migration-seeded) | Covers the seeded posts/listings | Enough for real posts to find an existing tag; no expansion needed |
 

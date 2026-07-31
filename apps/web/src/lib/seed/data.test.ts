@@ -6,8 +6,10 @@ import { SEED_LISTINGS, SEED_PLAYBOOKS, SEED_POSTS, SEED_TAGS } from './data';
  * Launch-day density manifest guards (docs/seeding.md "Launch-day density
  * manifest"). The dataset is allowed to grow, but only inside the honesty
  * rules — these tests make the rules structural, so a future expansion that
- * drops a "(demo)" label, references a missing tag/category, or quietly
- * doubles the seed volume fails CI instead of shipping.
+ * sneaks a text label back into a business name, references a missing
+ * tag/category, or quietly doubles the seed volume fails CI instead of
+ * shipping. Provenance is a BADGE, never text (§21 / DESIGN.md §4): the
+ * `source` flag drives ContentSourceBadge; names and descriptions stay clean.
  */
 
 /** The 15 migration-seeded listing_categories slugs (20260704000000). */
@@ -73,10 +75,13 @@ describe('seed dataset: honesty rules (no impersonation, clearly demo)', () => {
     }
   });
 
-  it('every listing is generic and visibly demo — never a real business identity', () => {
+  it('every listing is badge-labelled, never text-labelled (§21: badge, not name suffix)', () => {
     for (const listing of SEED_LISTINGS) {
-      expect(listing.businessName, `listing ${listing.key}`).toMatch(/\(demo\)$/);
-      expect(listing.shortDescription, `listing ${listing.key}`).toMatch(/^Demo listing:/);
+      // The `source` flag is the badge driver — ContentSourceBadge renders
+      // the "Seeded" chip from it, so the NAME must never carry the label.
+      expect(listing.source, `listing ${listing.key} must carry the badge driver`).toBe('seed');
+      expect(listing.businessName, `listing ${listing.key}`).not.toMatch(/\(demo\)/i);
+      expect(listing.shortDescription, `listing ${listing.key}`).not.toMatch(/^Demo listing:/);
     }
   });
 

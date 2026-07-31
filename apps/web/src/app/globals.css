@@ -495,6 +495,56 @@ main {
   font-weight: 600;
 }
 
+/* --- System notices (system voice, DESIGN.md §4) --- */
+
+/* Moderation/system messaging as a DESIGNED element, distinct from user
+   content by construction: raised surface-2 + a left rule + a leading icon,
+   never bare text inside the member's own words. Tones: info (accent rule —
+   pending states, system information) and moderation (muted rule — a
+   decision; administrative, not shaming). AA on --x-surface-2, gated in
+   globals-tokens.test.ts: fg 17.03:1 / 14.37:1, muted 6.33:1 / 7.63:1,
+   accent-text (icon + link) 5.77:1 / 7.57:1 (light / dark). */
+.xidig-system-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--x-space-xs);
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  border-left: 3px solid var(--x-accent);
+  border-radius: var(--x-radius-s);
+  padding: var(--x-space-s) var(--x-space);
+  font-size: var(--x-text-m);
+  color: var(--x-fg);
+  /* Light surface-2 is white-on-white — a whisper of lift keeps the notice
+     reading as its own raised element (decorative, no contrast duty). */
+  box-shadow: 0 1px 2px rgba(10, 14, 26, 0.07);
+}
+
+.xidig-system-notice--moderation {
+  border-left-color: var(--x-muted);
+}
+
+.xidig-system-notice__icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--x-accent-text);
+}
+
+.xidig-system-notice--moderation .xidig-system-notice__icon {
+  color: var(--x-muted);
+}
+
+.xidig-system-notice__text {
+  margin: 0;
+}
+
+.xidig-system-notice a {
+  color: var(--x-accent-text);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 /* --- Settings sections --- */
 
 .xidig-section {

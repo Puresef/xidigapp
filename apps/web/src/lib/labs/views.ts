@@ -17,7 +17,7 @@ import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 // A single string literal (not a concatenation) so the Supabase types can parse
 // it into a row shape instead of widening to `string`.
 export const LAB_COLUMNS =
-  'id, name, slug, space_mode, short_description, problem_statement, hypothesis, sprint_length_weeks, sprint_deadline, success_definition, charter_completed_at, promoted_at, stage, visibility, is_listed, is_supporter_only, member_list_visibility, join_mode, lead_user_id, last_activity_at, dormant_since, icon_path, icon_blurhash, cover_path, cover_blurhash, created_at, updated_at';
+  'id, name, slug, space_mode, source, short_description, problem_statement, hypothesis, sprint_length_weeks, sprint_deadline, success_definition, charter_completed_at, promoted_at, stage, visibility, is_listed, is_supporter_only, member_list_visibility, join_mode, lead_user_id, last_activity_at, dormant_since, icon_path, icon_blurhash, cover_path, cover_blurhash, created_at, updated_at';
 
 /** Anonymous public page: only the build-in-public fields, never settings. */
 export const LAB_PUBLIC_COLUMNS =
@@ -28,6 +28,8 @@ export interface LabRow {
   name: string;
   slug: string;
   space_mode: Enums<'space_mode'>;
+  /** §21 provenance — drives the ContentSourceBadge chip ('member' renders nothing). */
+  source: Enums<'content_source'>;
   short_description: string | null;
   problem_statement: string | null;
   hypothesis: string | null;

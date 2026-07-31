@@ -4,9 +4,11 @@
  * DETERMINISTIC + CURATED (not live-LLM-generated) so the seed is reproducible
  * and safe to re-run. Every item has a stable natural `key` → the registry
  * dedup key, so re-running never duplicates. All content is clearly demo /
- * platform-provided; the `source` flag + the UI "Seeded"/"AI-assisted" label
- * make that visible, and listings use generic descriptive names (never a real
- * business's identity) per the §18 "no fake real-world claims" rule.
+ * platform-provided: the `source` flag drives the "Seeded"/"AI-assisted"
+ * ContentSourceBadge chip — provenance is a BADGE, never a text label in the
+ * name or description (§21 / DESIGN.md §4) — and listings use generic
+ * descriptive names (never a real business's identity) per the §18 "no fake
+ * real-world claims" rule.
  *
  * Categories reference the 15 seeded `listing_categories` slugs; playbook slugs
  * are chosen NOT to collide with the migration-seeded charter templates.
@@ -156,6 +158,9 @@ export interface SeedListing {
   city: string;
   country: string;
   shortDescription: string;
+  /** Badge driver: ContentSourceBadge renders the "Seeded" chip from the
+   *  row's source column — never a "(demo)" suffix in the display name. */
+  source: 'seed' | 'ai';
   latitude?: number;
   longitude?: number;
   tags?: string[];
@@ -169,95 +174,105 @@ export interface SeedListing {
 export const SEED_LISTINGS: SeedListing[] = [
   {
     key: 'moga-fresh-produce',
-    businessName: 'Banadir Fresh Produce (demo)',
+    businessName: 'Banadir Fresh Produce',
     categorySlug: 'agriculture',
     city: 'Mogadishu',
     country: 'Somalia',
-    shortDescription: 'Demo listing: fresh produce wholesale and distribution.',
+    shortDescription: 'Fresh produce wholesale and distribution.',
+    source: 'seed',
     latitude: 2.0469,
     longitude: 45.3182,
     tags: ['agri-food'],
   },
   {
     key: 'hargeisa-logistics',
-    businessName: 'Hargeisa Last-Mile Logistics (demo)',
+    businessName: 'Hargeisa Last-Mile Logistics',
     categorySlug: 'transport-logistics',
     city: 'Hargeisa',
     country: 'Somalia',
-    shortDescription: 'Demo listing: parcel and last-mile delivery across the city.',
+    shortDescription: 'Parcel and last-mile delivery across the city.',
+    source: 'seed',
     latitude: 9.562,
     longitude: 44.077,
     tags: ['logistics'],
   },
   {
     key: 'moga-fintech-desk',
-    businessName: 'Xarunta Fintech (demo)',
+    businessName: 'Xarunta Fintech',
     categorySlug: 'finance',
     city: 'Mogadishu',
     country: 'Somalia',
-    shortDescription: 'Demo listing: mobile wallet and remittance support desk.',
+    shortDescription: 'Mobile wallet and remittance support desk.',
+    source: 'seed',
     tags: ['fintech', 'remittance'],
   },
   {
     key: 'bosaso-import-export',
-    businessName: 'Bosaso Trade & Import-Export (demo)',
+    businessName: 'Bosaso Trade & Import-Export',
     categorySlug: 'import-export',
     city: 'Bosaso',
     country: 'Somalia',
-    shortDescription: 'Demo listing: import/export brokerage and customs paperwork.',
+    shortDescription: 'Import/export brokerage and customs paperwork.',
+    source: 'seed',
     tags: ['import-export'],
   },
   {
     key: 'kismayo-solar',
-    businessName: 'Kismayo Solar Kiosks (demo)',
+    businessName: 'Kismayo Solar Kiosks',
     categorySlug: 'construction',
     city: 'Kismayo',
     country: 'Somalia',
-    shortDescription: 'Demo listing: solar charging kiosks and small installs.',
+    shortDescription: 'Solar charging kiosks and small installs.',
+    source: 'seed',
     tags: ['solar-energy'],
   },
   {
     key: 'hargeisa-ecommerce',
-    businessName: 'Hargeisa Online Bazaar (demo)',
+    businessName: 'Hargeisa Online Bazaar',
     categorySlug: 'retail',
     city: 'Hargeisa',
     country: 'Somalia',
-    shortDescription: 'Demo listing: online storefront for local retailers.',
+    shortDescription: 'Online storefront for local retailers.',
+    source: 'seed',
     tags: ['e-commerce'],
   },
   // --- Launch-day density manifest additions (docs/seeding.md) -------------
   {
     key: 'garowe-tutoring',
-    businessName: 'Garowe Tutoring Centre (demo)',
+    businessName: 'Garowe Tutoring Centre',
     categorySlug: 'education',
     city: 'Garowe',
     country: 'Somalia',
-    shortDescription: 'Demo listing: after-school tutoring and exam preparation.',
+    shortDescription: 'After-school tutoring and exam preparation.',
+    source: 'seed',
     tags: ['education'],
   },
   {
     key: 'galkacyo-clinic-supplies',
-    businessName: 'Galkacyo Clinic Supplies (demo)',
+    businessName: 'Galkacyo Clinic Supplies',
     categorySlug: 'health',
     city: 'Galkacyo',
     country: 'Somalia',
-    shortDescription: 'Demo listing: basic medical supplies for local clinics.',
+    shortDescription: 'Basic medical supplies for local clinics.',
+    source: 'seed',
     tags: ['healthtech'],
   },
   {
     key: 'moga-family-restaurant',
-    businessName: 'Banadir Family Restaurant (demo)',
+    businessName: 'Banadir Family Restaurant',
     categorySlug: 'restaurant-food',
     city: 'Mogadishu',
     country: 'Somalia',
-    shortDescription: 'Demo listing: family restaurant and event catering.',
+    shortDescription: 'Family restaurant and event catering.',
+    source: 'seed',
   },
   {
     key: 'hargeisa-accounting',
-    businessName: 'Hargeisa Accounting Desk (demo)',
+    businessName: 'Hargeisa Accounting Desk',
     categorySlug: 'professional-services',
     city: 'Hargeisa',
     country: 'Somalia',
-    shortDescription: 'Demo listing: bookkeeping and tax paperwork for small businesses.',
+    shortDescription: 'Bookkeeping and tax paperwork for small businesses.',
+    source: 'seed',
   },
 ];

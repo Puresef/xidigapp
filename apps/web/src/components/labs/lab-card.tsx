@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { useT } from '@xidig/i18n/react';
 
+import { ContentSourceBadge } from '@/components/content-source-badge';
 import { Avatar } from '@/components/media/avatar';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import type { LabView } from '@/lib/labs/views';
@@ -36,6 +37,8 @@ export function LabCard({ view, prefs }: { view: LabView; prefs?: LitePrefs | un
           <Link href={`/labs/${lab.slug}`}>{lab.name}</Link>
         </h3>
         <span className="xidig-badge">{t(CHROME_KEYS[view.kind])}</span>
+        {/* §21 provenance chip — renders nothing for member-created Spaces. */}
+        <ContentSourceBadge source={lab.source} />
       </div>
 
       {lab.short_description ? <p className="xidig-card__body">{lab.short_description}</p> : null}

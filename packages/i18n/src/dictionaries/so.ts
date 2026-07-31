@@ -905,8 +905,10 @@ export const so = {
   'plaza.pinned': 'Xul',
   'plaza.hiddenOwn':
     'Adiga keliya ayaa hadda arki kara qoraalkan — waxaa la sugayaa hubin kormeerid oo degdeg ah.',
+  // {link} → <a href="/support/appeal"> weeraha plaza.removedOwnLinkText ah.
   'plaza.removedOwn':
-    'Qoraalkan waa la saaray. Haddii aad u malaynayso inay khalad tahay, la xiriir kooxda taageerada.',
+    'Qoraalkan waa la saaray. Haddii aad u malaynayso inay khalad tahay, {link}.',
+  'plaza.removedOwnLinkText': 'racfaan ka codso',
   'plaza.lowBandwidthMedia': 'Sawirrada iyo muuqaalladu waa damsan yihiin habka isticmaalka-yar.',
   'plaza.commentsHeading': 'Faallooyinka',
   'plaza.commentLabel': 'Faallo ku dar',

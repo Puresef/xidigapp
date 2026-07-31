@@ -135,7 +135,9 @@ export async function runSeed(admin: SupabaseClient<Database>): Promise<SeedSumm
     if (!category) throw new Error(`seed listing category not found: ${listing.categorySlug}`);
 
     await createSeededListing(admin, {
-      source: 'seed',
+      // Badge driver (§21): the row's source column is what makes the
+      // ContentSourceBadge chip render — the name never carries a label.
+      source: listing.source,
       dedupKey: `seed:${SEED_RUN_LABEL}:listing:${listing.key}`,
       seedRunId,
       businessName: listing.businessName,

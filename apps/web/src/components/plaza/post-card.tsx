@@ -7,11 +7,11 @@ import { formatRelativeTime, type MessageKey } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
 import { Avatar } from '@/components/media/avatar';
-import { Banner } from '@/components/banner';
 import { ContentSourceBadge } from '@/components/content-source-badge';
 import { MediaSlot } from '@/components/media/media-slot';
 import { ShareActions } from '@/components/share-actions';
 import { BookmarkButton } from '@/components/social/bookmark-button';
+import { SystemNotice } from '@/components/system-notice';
 import { PostEditForm } from '@/components/social/post-edit-form';
 import { PostHistory } from '@/components/social/post-history';
 import { PostOverflowMenu } from '@/components/social/post-overflow-menu';
@@ -29,8 +29,10 @@ import { ReactionBar } from './reaction-bar';
  * MediaSlot (§22 Lite, Phase 4.5): a deferred category shows a ~0-byte
  * blurhash placeholder with a "Show / Muuji" tap instead of disappearing.
  * Feed cards load image THUMBS; the detail view loads the full asset.
- * Authors see their own hidden/removed status as a banner (§27); everyone
- * else never receives those rows at all (RLS).
+ * Authors see their own hidden/removed status as a SystemNotice — the system
+ * voice, visually distinct from their own content (DESIGN.md §4), with an
+ * appeal link on removal (§19/§27); everyone else never receives those rows
+ * at all (RLS).
  */
 
 type PostType = PostView['post']['type'];
@@ -165,10 +167,14 @@ export function PostCard({
       </p>
 
       {isOwn && post.status === 'hidden' ? (
-        <Banner kind="notice">{t('plaza.hiddenOwn')}</Banner>
+        <SystemNotice tone="info" messageKey="plaza.hiddenOwn" />
       ) : null}
       {isOwn && post.status === 'removed' ? (
-        <Banner kind="notice">{t('plaza.removedOwn')}</Banner>
+        <SystemNotice
+          tone="moderation"
+          messageKey="plaza.removedOwn"
+          link={{ href: '/support/appeal', textKey: 'plaza.removedOwnLinkText' }}
+        />
       ) : null}
 
       {editing ? (

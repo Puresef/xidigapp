@@ -1055,7 +1055,11 @@ export const en = {
   'plaza.pinned': 'Highlight',
   'plaza.hiddenOwn':
     'Only you can see this post right now — it’s waiting for a quick moderation check.',
-  'plaza.removedOwn': 'This post was removed. If you think that’s wrong, contact support.',
+  // Composed with a link: {link} is replaced with an <a> to /support/appeal
+  // whose text is plaza.removedOwnLinkText (SystemNotice, bracketed-sentinel
+  // pattern — see SignUpForm's renderTermsLabel).
+  'plaza.removedOwn': 'This post was removed. If you think that’s wrong, {link}.',
+  'plaza.removedOwnLinkText': 'appeal the decision',
   'plaza.lowBandwidthMedia': 'Images and embeds are off in low-bandwidth mode.',
   // Detail page — comments, Ask lifecycle, polls
   'plaza.commentsHeading': 'Comments',

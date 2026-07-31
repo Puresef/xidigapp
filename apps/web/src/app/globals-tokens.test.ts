@@ -128,6 +128,11 @@ const PAIRS: Pair[] = [
     base: '--x-surface',
     note: 'update chip / .xidig-badge text on accent tint',
   },
+  {
+    fg: '--x-accent-text',
+    bg: '--x-surface-2',
+    note: 'system-notice icon + appeal link on the raised notice surface',
+  },
   { fg: '--x-trust-fg', bg: '--x-surface', note: 'trust text on cards' },
   {
     fg: '--x-trust-fg',
