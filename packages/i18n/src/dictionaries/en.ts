@@ -1000,6 +1000,11 @@ export const en = {
   'suuq.priceRangeNone': 'Not set',
   'suuq.priceRangeAria': 'Price range {level} of 4',
   'suuq.whatsappCta': 'Message directly',
+  // Task 10 (31 Jul) — sticky filter bar + filters sheet
+  'suuq.filtersButton': 'Filters',
+  'suuq.filtersButtonCount': 'Filters · {count}',
+  'suuq.openNowClientNote':
+    '“Open now” checks only the results already loaded here, using your device’s clock.',
 
   // Plaza / Madal (§15, §20, §27) — feed, composer, asks, polls, reactions
   'plaza.filterAll': 'All',

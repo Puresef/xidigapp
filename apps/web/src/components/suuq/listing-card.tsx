@@ -8,7 +8,9 @@ import { useT } from '@xidig/i18n/react';
 import { ContentSourceBadge } from '@/components/content-source-badge';
 import { MediaSlot } from '@/components/media/media-slot';
 import { BookmarkButton } from '@/components/social/bookmark-button';
+import { trackClient } from '@/lib/analytics/client';
 import { LOW_BANDWIDTH_COOKIE, parseLowBandwidthCookieValue } from '@/lib/bandwidth';
+import { asContactLinks, contactHref } from '@/lib/listings';
 import { LITE_BUNDLES, LITE_COOKIE, parseLitePrefs, type LitePrefs } from '@/lib/lite/prefs';
 
 import { OpenNowChip } from './opening-hours-display';
@@ -51,6 +53,8 @@ export interface ListingRow {
   primary_photo_blurhash?: string | null;
   primary_photo_alt?: string | null;
   photo_count?: number;
+  /** Task 10: caller-scoped save state, hydrated by GET /api/listings. */
+  bookmarked?: boolean;
 }
 
 /** Rough weight of a 480px WebP thumb — the card never loads the full asset. */
@@ -85,6 +89,7 @@ export function ListingCard({
   prefs,
   signedIn,
   bookmarked,
+  categories,
 }: {
   listing: ListingRow;
   byline?: string | undefined;
@@ -96,13 +101,27 @@ export function ListingCard({
    */
   signedIn?: boolean | undefined;
   bookmarked?: boolean | undefined;
+  /**
+   * Task 10: id → localized name map for the category chip. Optional so
+   * narrower call sites (map list, Following feed) degrade silently — no
+   * map, or an id the map doesn't know, simply renders no chip.
+   */
+  categories?: ReadonlyMap<string, string> | undefined;
 }) {
   const t = useT();
   const cookiePrefs = useCookieLitePrefs();
   const litePrefs = prefs ?? cookiePrefs;
 
-  const location = [listing.city, listing.country].filter(Boolean).join(', ');
+  // Interpunct, not comma: "city · country" reads as two coordinates, while
+  // the comma form looked like one half-finished address (Task 10 fix).
+  const location = [listing.city, listing.country].filter(Boolean).join(' · ');
   const thumbUrl = listing.primary_photo_thumb_url ?? listing.primary_photo_url ?? null;
+  const categoryName = categories?.get(listing.category_id);
+  // First-class contact CTA (§18/§28) — mirrors whatsapp-cta.tsx: the href
+  // deep-links the listing's whatsapp contact, but the LABEL stays
+  // channel-nameless (11 Jul ruling, docs/front-door-standard.md §5.2).
+  const whatsapp = asContactLinks(listing.contact_links).find((row) => row.type === 'whatsapp');
+  const contactUrl = whatsapp ? contactHref('whatsapp', whatsapp.value) : null;
 
   return (
     <li className="xidig-card xidig-listing-card">
@@ -142,18 +161,38 @@ export function ListingCard({
             <span className="xidig-tag">{t('suuq.unclaimed')}</span>
           ) : null}
           {listing.source ? <ContentSourceBadge source={listing.source} /> : null}
+          {categoryName ? <span className="xidig-tag">{categoryName}</span> : null}
           <PriceRangeDisplay level={listing.price_range} />
           {listing.opening_hours !== undefined && listing.opening_hours !== null ? (
             <OpenNowChip hours={listing.opening_hours} />
           ) : null}
         </p>
-        {signedIn !== undefined ? (
-          <BookmarkButton
-            entityType="listing"
-            entityId={listing.id}
-            signedIn={signedIn}
-            {...(bookmarked !== undefined ? { initialBookmarked: bookmarked } : {})}
-          />
+        {contactUrl || signedIn !== undefined ? (
+          // Sibling controls in a row, never nested inside another
+          // interactive — the title link stays its own element.
+          <p className="xidig-listing-card__actions">
+            {contactUrl ? (
+              <a
+                className="xidig-button xidig-button--primary xidig-listing-card__cta"
+                href={contactUrl}
+                rel="noopener noreferrer"
+                target="_blank"
+                onClick={() =>
+                  trackClient('contact_click', { listing_id: listing.id, channel: 'whatsapp' })
+                }
+              >
+                {t('suuq.whatsappCta')}
+              </a>
+            ) : null}
+            {signedIn !== undefined ? (
+              <BookmarkButton
+                entityType="listing"
+                entityId={listing.id}
+                signedIn={signedIn}
+                {...(bookmarked !== undefined ? { initialBookmarked: bookmarked } : {})}
+              />
+            ) : null}
+          </p>
         ) : null}
       </div>
     </li>

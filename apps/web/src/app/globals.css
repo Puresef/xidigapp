@@ -856,6 +856,58 @@ button.xidig-tag:disabled {
   }
 }
 
+/* Task 10 — slim sticky filter bar (business directory): search + city +
+   Filters-sheet button in one row that sticks to the viewport top once the
+   (non-sticky) header scrolls away. Opaque theme bg so card content scrolls
+   UNDER it in both palettes; z-index 10 sits above in-flow card content but
+   deliberately below every piece of fixed chrome — the ladder is mention
+   list 30 < tab bar 40 < lite-prompt 45 < consent/user-menu 50 < modal 60. */
+.xidig-filterbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: var(--x-space-xs);
+  align-items: center;
+  padding-block: 0.5rem;
+  margin-bottom: var(--x-space-s);
+  background: var(--x-bg);
+  border-bottom: 1px solid var(--x-border);
+}
+
+.xidig-filterbar__search {
+  flex: 3 1 10rem;
+  min-width: 0;
+}
+
+.xidig-filterbar__city {
+  flex: 2 1 6rem;
+  min-width: 0;
+}
+
+.xidig-filterbar__filters {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Phones: one row squeezes the search box to a sliver — wrap into two slim
+   rows instead (search full-width, city + Filters share the second). */
+@media (max-width: 32rem) {
+  .xidig-filterbar {
+    flex-wrap: wrap;
+  }
+
+  .xidig-filterbar__search {
+    flex-basis: 100%;
+  }
+
+  /* basis 0, not auto: the input's width:100% would otherwise claim a full
+     row of its own — city and the Filters button share the second row. */
+  .xidig-filterbar__city {
+    flex: 1 1 0;
+  }
+}
+
 /* Map (Leaflet mounts into this). isolation contains Leaflet's internal
    z-indexes (panes run to 1000+) so tiles/controls never paint over fixed
    chrome like the mobile tab bar. */
@@ -2379,6 +2431,21 @@ a.xidig-settings-card:hover {
 .xidig-listing-card__body {
   flex: 1;
   min-width: 0;
+}
+
+/* Task 10 — card action row: first-class contact CTA (channel-nameless
+   label) beside the bookmark toggle. The CTA reuses the AA-gated primary
+   pill, sized down to card scale. */
+.xidig-listing-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  margin: 0.4rem 0 0;
+}
+
+.xidig-listing-card__cta {
+  padding: 0.3rem 0.85rem;
+  font-size: var(--x-text-s);
 }
 
 /* Opening hours editor rows (inside .xidig-row-editor__row). */

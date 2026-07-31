@@ -848,6 +848,11 @@ export const so = {
   'suuq.priceRangeNone': 'Lama dejin',
   'suuq.priceRangeAria': 'Heerka qiimaha {level} ee 4-ta',
   'suuq.whatsappCta': 'Si toos ah ula hadal',
+  // Task 10 (31 Jul) — shaandhada joogtada ah
+  'suuq.filtersButton': 'Shaandho',
+  'suuq.filtersButtonCount': 'Shaandho · {count}',
+  'suuq.openNowClientNote':
+    '“Hadda furan” waxay eegtaa kaliya natiijooyinka halkan hore u soo degay, iyadoo la adeegsanayo saacadda qalabkaaga.',
 
   // Madal / Plaza (§15, §20, §27)
   'plaza.filterAll': 'Dhammaan',
