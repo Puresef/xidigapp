@@ -2732,11 +2732,95 @@ a.xidig-settings-card:hover {
 /* ============================================================================
    Phase 5 — Capital / Maal
    ============================================================================ */
-/* --- Modal (attestation + venture fund) — NEW, no existing dialog class --- */
+/* --- Modal — the shared Dialog primitive (components/dialog.tsx) --- */
 .xidig-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,0.5); }
-.xidig-modal__panel { width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto; background: var(--x-surface-2); border-radius: var(--x-radius); padding: 1.25rem; box-shadow: var(--x-shadow-2); }
-.xidig-modal__title { font-size: 1.15rem; font-weight: 600; margin-bottom: var(--x-space-xs); }
+.xidig-modal__panel { position: relative; width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto; background: var(--x-surface-2); border-radius: var(--x-radius); padding: 1.25rem; box-shadow: var(--x-shadow-2); }
+.xidig-modal__title { font-size: 1.15rem; font-weight: 600; margin-bottom: var(--x-space-xs); padding-inline-end: 2.25rem; }
 .xidig-modal__actions { display: flex; flex-wrap: wrap; gap: var(--x-space-xs); margin-top: 1rem; }
+
+/* Task 4 (31 Jul) — Dialog primitive chrome. Panel text rides the
+   --x-fg/--x-surface-2 pair (AA-gated in globals-tokens.test.ts); the
+   rgba(0,0,0,0.5) backdrop carries no text of its own. */
+.xidig-modal__close {
+  position: absolute;
+  top: 0.65rem;
+  inset-inline-end: 0.65rem;
+}
+
+/* The panel takes initial programmatic focus (the trap anchor) but is not an
+   interactive control — the modal chrome itself is the indication. Real
+   controls inside keep their swept focus-visible rings. */
+.xidig-modal__panel:focus {
+  outline: none;
+}
+
+/* Entry motion — double-gated (OS pref + in-app switch), same pattern as
+   .xidig-consent / the skeleton shimmer. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) .xidig-modal {
+    animation: xidig-modal-fade 140ms ease-out;
+  }
+  html:not([data-motion='off']) .xidig-modal__panel {
+    animation: xidig-modal-rise 160ms ease-out;
+  }
+}
+
+@keyframes xidig-modal-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes xidig-modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Sheet presentation: phones dock the panel to the bottom edge (thumb
+   reach); desktop keeps the centered panel. 48rem matches the bottom-tab
+   breakpoint. */
+@media (max-width: 48rem) {
+  .xidig-modal--sheet {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .xidig-modal--sheet .xidig-modal__panel {
+    max-width: none;
+    max-height: 85vh;
+    border-radius: var(--x-radius) var(--x-radius) 0 0;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Sheet slide-up, inside the same motion double-gate (higher specificity
+   than the -rise rule, so the sheet slides instead of rising). */
+@media (max-width: 48rem) and (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) .xidig-modal--sheet .xidig-modal__panel {
+    animation: xidig-modal-sheet-up 200ms ease-out;
+  }
+}
+
+@keyframes xidig-modal-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: none;
+  }
+}
 
 /* --- Capital layout hooks (thin; most spacing inherited from xidig-section) --- */
 .xidig-capital-cover { border-radius: var(--x-radius); overflow: hidden; }
