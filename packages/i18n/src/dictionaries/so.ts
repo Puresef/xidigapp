@@ -1150,6 +1150,8 @@ export const so = {
   'lab.filterClubs': 'Kooxaha',
   'lab.filterLabs': 'Warshadaha',
   'lab.filterMine': 'Meelahayga',
+  // Calanka tab-ka + tiradiisa ("Dhammaan (12)").
+  'lab.tabWithCount': '{label} ({count})',
   'lab.emptyList':
     'Weli meelo ma jiraan. Bilow Koox si aad dad ugu soo ururiso fikrad, ama fur Warshad si aad ganacsi u dhisto.',
   'lab.createCta': 'Bilow Meel',
@@ -1217,6 +1219,9 @@ export const so = {
   'lab.memberCount': { one: '{count} xubin', other: '{count} xubnood' },
   'lab.lookingFor': 'Waxaa la raadinayaa',
   'lab.ledBy': 'Waxaa hoggaaminaya {name}',
+  // {when} waa wakhti isku-xigsi ah oo luqadda ku qoran ("3 maalmood ka hor").
+  'lab.updatedAgo': 'La cusbooneysiiyay {when}',
+  'lab.stageTrack': 'Heerka',
   'lab.stageIdea': 'Fikrad',
   'lab.stageBuilding': 'Dhisme',
   'lab.stageValidating': 'Xaqiijin',
@@ -1228,6 +1233,8 @@ export const so = {
   'lab.actionJoin': 'Ku biir',
   'lab.actionRequestJoin': 'Codso inaad ku biirto',
   'lab.actionRequested': 'Codsi sugaya',
+  'lab.actionView': 'Fiiri',
+  'lab.joinedToast': 'Waad ku biirtay.',
   'lab.actionLeave': 'Ka bax',
   'lab.actionPin': 'Ku dheji prof-ka',
   'lab.actionUnpin': 'Ka qaad',

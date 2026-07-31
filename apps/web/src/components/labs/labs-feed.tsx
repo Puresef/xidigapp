@@ -15,17 +15,40 @@ import { PlainErrorBanner } from '../auth/plain-error';
 import { EmptyState } from '../empty-state';
 import { FeedEnd } from '../feed/feed-end';
 import { LabCard } from './lab-card';
-import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * Labs Discover list. Explicit "load more" (no infinite scroll) for
  * low-bandwidth (§22). `mode` filters Clubs vs Labs; `mine` scopes to the
- * caller's Spaces. Teaching empty state when nothing matches.
+ * caller's Spaces. Teaching empty state when nothing matches. Initial load
+ * renders card-shaped skeletons matching the LabCard silhouette (header row,
+ * one-liner, stage track, activity line, CTA) so the loaded list replaces
+ * them without a layout jump; load-more keeps LoadingFlap.
  */
 
 interface FeedPage {
   items: LabView[];
   nextCursor: string | null;
+}
+
+function LabsSkeleton({ cards = 3 }: { cards?: number }) {
+  const t = useT();
+  return (
+    <div className="xidig-feed-skeleton" role="status" aria-label={t('state.loading')}>
+      {Array.from({ length: cards }, (_, index) => (
+        <div key={index} className="xidig-skeleton-card" aria-hidden="true">
+          <div className="xidig-lab-skeleton__header">
+            <span className="xidig-skeleton xidig-skeleton--avatar" />
+            <span className="xidig-skeleton xidig-skeleton--text xidig-lab-skeleton__title" />
+            <span className="xidig-skeleton xidig-skeleton--chip xidig-lab-skeleton__badge" />
+          </div>
+          <span className="xidig-skeleton xidig-skeleton--text" />
+          <span className="xidig-skeleton xidig-skeleton--text xidig-lab-skeleton__track" />
+          <span className="xidig-skeleton xidig-skeleton--text xidig-lab-skeleton__meta" />
+          <span className="xidig-skeleton xidig-skeleton--chip xidig-lab-skeleton__cta" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function LabsFeed({
@@ -74,7 +97,7 @@ export function LabsFeed({
   }, [load]);
 
   if (!loaded && pending) {
-    return <LoadingFlap />;
+    return <LabsSkeleton />;
   }
 
   return (

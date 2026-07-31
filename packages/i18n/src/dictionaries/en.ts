@@ -1233,6 +1233,8 @@ export const en = {
   'lab.filterClubs': 'Clubs',
   'lab.filterLabs': 'Labs',
   'lab.filterMine': 'My Spaces',
+  // Discover tab label + its RLS-honest count ("All (12)").
+  'lab.tabWithCount': '{label} ({count})',
   'lab.emptyList':
     'No Spaces yet. Start a Club to gather people around an idea, or open a Lab to build a venture.',
   'lab.createCta': 'Start a Space',
@@ -1302,6 +1304,9 @@ export const en = {
   'lab.memberCount': { one: '{count} member', other: '{count} members' },
   'lab.lookingFor': 'Looking for',
   'lab.ledBy': 'Led by {name}',
+  // {when} is a locale-formatted relative time ("3 days ago").
+  'lab.updatedAgo': 'Updated {when}',
+  'lab.stageTrack': 'Stage',
   'lab.stageIdea': 'Idea',
   'lab.stageBuilding': 'Building',
   'lab.stageValidating': 'Validating',
@@ -1313,6 +1318,8 @@ export const en = {
   'lab.actionJoin': 'Join',
   'lab.actionRequestJoin': 'Request to join',
   'lab.actionRequested': 'Request pending',
+  'lab.actionView': 'View',
+  'lab.joinedToast': 'Joined.',
   'lab.actionLeave': 'Leave',
   'lab.actionPin': 'Pin to profile',
   'lab.actionUnpin': 'Unpin',

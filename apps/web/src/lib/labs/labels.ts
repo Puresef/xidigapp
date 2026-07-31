@@ -12,6 +12,9 @@ export const CHROME_KEYS: Record<'club' | 'lab', MessageKey> = {
   lab: 'term.lab',
 };
 
+/** §16 venture ladder in order — drives the card stage stepper. */
+export const STAGE_ORDER = ['idea', 'building', 'validating', 'launched'] as const;
+
 export const STAGE_KEYS: Record<'idea' | 'building' | 'validating' | 'launched', MessageKey> = {
   idea: 'lab.stageIdea',
   building: 'lab.stageBuilding',

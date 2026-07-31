@@ -447,6 +447,10 @@ main {
 
 .xidig-tabs {
   display: flex;
+  /* Wrap under pressure: four Somali tab labels + counts (Labs Discover)
+     exceed a 375px viewport's min-content — wrapping beats clipping the
+     page (§22 / DESIGN.md §4 ~130% Somali length rule). No-op elsewhere. */
+  flex-wrap: wrap;
   gap: var(--x-space-2xs);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
@@ -2986,6 +2990,253 @@ a.xidig-settings-card:hover {
 
 .xidig-space-cover {
   margin-bottom: var(--x-space-s);
+}
+
+/* --- Labs Discover cards (31 Jul full-quality pass, Task 13) --------------- */
+
+/* Whole card clickable: the title link stretches over the card; the CTA row
+   floats above it (z-index). Hover lifts with surface-2 + a border tint + a
+   soft shadow. Transitions sit inside the motion double-gate by construction
+   (the appearance block's global kills zero every transition). Text AA on
+   --x-surface-2 is token-gated: fg 17.03:1 / 14.37:1, muted 6.33:1 / 7.63:1
+   (light / dark). */
+.xidig-lab-card {
+  position: relative;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+}
+
+.xidig-lab-card:hover {
+  background: var(--x-surface-2);
+  border-color: color-mix(in srgb, var(--x-accent) 45%, var(--x-border));
+  box-shadow: 0 2px 10px rgba(10, 14, 26, 0.08);
+}
+
+.xidig-lab-card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--x-radius);
+}
+
+/* The stretched overlay carries the focus ring so keyboard focus outlines
+   the whole click target, not just the title text. */
+.xidig-lab-card__link:focus-visible {
+  outline: none;
+}
+
+.xidig-lab-card__link:focus-visible::after {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+/* Interactive children ride above the stretched link. The §21 seeded chip
+   is hover-only (title tooltip) but still needs to sit above the overlay. */
+.xidig-lab-card__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+}
+
+.xidig-lab-card .xidig-tag--seeded {
+  position: relative;
+  z-index: 1;
+}
+
+/* Four-stage venture stepper (Idea → Building → Validating → Launched, §16):
+   compact dots + labels, ALL four stages always shown, current in accent.
+   Dots are decorative (aria-current="step" + the visible label carry the
+   state) yet still clear the 3:1 non-text minimum: --x-accent on the surface
+   4.74:1 light / 3.74:1 dark. Labels: current --x-accent-text (5.77:1 on
+   #fff / 8.32:1 on #101828), others --x-muted (6.33:1 / 7.0:1). */
+.xidig-stage-track {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.35rem;
+  margin: 0;
+  padding: 0;
+}
+
+.xidig-stage-track__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--x-text-xs);
+  color: var(--x-muted);
+}
+
+/* Connector line between steps. */
+.xidig-stage-track__step + .xidig-stage-track__step::before {
+  content: '';
+  width: 0.9rem;
+  height: 1px;
+  background: var(--x-border-strong);
+  margin-right: 0.3rem;
+}
+
+.xidig-stage-track__dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--x-radius-pill);
+  border: 1.5px solid var(--x-border-strong);
+  background: transparent;
+}
+
+.xidig-stage-track__step--done .xidig-stage-track__dot {
+  background: var(--x-muted);
+  border-color: var(--x-muted);
+}
+
+.xidig-stage-track__step--current .xidig-stage-track__dot {
+  background: var(--x-accent);
+  border-color: var(--x-accent);
+}
+
+.xidig-stage-track__step--current {
+  color: var(--x-accent-text);
+  font-weight: 600;
+}
+
+/* Activity line: facepile + "n members · updated …" + the Dormant badge. */
+.xidig-lab-card__activity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--x-space-xs);
+}
+
+/* Overlapping member discs; each ring is cut from the card surface so the
+   stack reads as separate faces in both palettes. Renders ONLY when the
+   §16 member_list_visibility gate allows (see lib/labs/views.ts). */
+.xidig-facepile {
+  display: inline-flex;
+  flex: none;
+}
+
+.xidig-facepile .xidig-avatar {
+  border-radius: var(--x-radius-pill);
+  box-shadow: 0 0 0 2px var(--x-surface);
+}
+
+.xidig-facepile .xidig-avatar + .xidig-avatar {
+  margin-left: -0.45rem;
+}
+
+/* Labs skeleton internals: mirror the LabCard rows (header, one-liner,
+   stage track, activity meta, CTA) so the loaded list lands without a jump. */
+.xidig-lab-skeleton__header {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-s);
+}
+
+.xidig-lab-skeleton__title {
+  width: 40%;
+}
+
+.xidig-lab-skeleton__badge {
+  width: 3rem;
+  height: 1.2rem;
+  margin-left: auto;
+}
+
+.xidig-lab-skeleton__track {
+  width: 70%;
+}
+
+.xidig-lab-skeleton__meta {
+  width: 55%;
+}
+
+.xidig-lab-skeleton__cta {
+  width: 5.5rem;
+  height: 2.2rem;
+  border-radius: var(--x-radius-s);
+}
+
+/* --- Capital / Maal entry card (trust reservation, DESIGN.md §2) -----------
+   Orange as BORDER + SOFT FILL with ink text, never orange text on white:
+   title/pitch ride --x-fg/--x-muted (token-gated AA); the CTA + icon use
+   --x-trust-fg (5.21:1 on #fff light / 9.15:1 on #101828 dark; icon disc
+   sits on trust-soft — 4.69:1 light / 7.10:1 dark per the token block). */
+a.xidig-capital-entry {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--x-space-s);
+  background: var(--x-surface);
+  border: 1px solid color-mix(in srgb, var(--x-trust) 45%, white);
+  border-left: 3px solid var(--x-trust);
+  border-radius: var(--x-radius);
+  padding: var(--x-space-s) var(--x-space);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+/* Mixing toward white reads as glare on dark — mix toward bg (house rule). */
+[data-theme='dark'] a.xidig-capital-entry {
+  border-color: color-mix(in srgb, var(--x-trust) 45%, var(--x-bg));
+  border-left-color: var(--x-trust);
+}
+
+a.xidig-capital-entry:hover {
+  border-color: var(--x-trust);
+  box-shadow: 0 2px 10px rgba(255, 140, 0, 0.16);
+}
+
+a.xidig-capital-entry:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+a.xidig-capital-entry:active {
+  transform: translateY(1px);
+}
+
+.xidig-capital-entry__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: var(--x-radius-pill);
+  background: var(--x-trust-soft);
+  color: var(--x-trust-fg);
+}
+
+.xidig-capital-entry__text {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+  /* Grow beside the icon, shrink on narrow screens (only the CTA wraps). */
+  flex: 1 1 12rem;
+}
+
+.xidig-capital-entry__title {
+  font-weight: 600;
+  font-size: var(--x-text-ui);
+}
+
+.xidig-capital-entry__pitch {
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+}
+
+.xidig-capital-entry__cta {
+  flex: none;
+  margin-left: auto;
+  color: var(--x-trust-fg);
+  font-weight: 600;
+  font-size: var(--x-text-ui);
 }
 
 /* Shared media-editor controls (also used by components/profile/profile-media-editor.tsx —

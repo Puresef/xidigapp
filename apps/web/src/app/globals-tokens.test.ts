@@ -272,6 +272,9 @@ const FOCUS_VISIBLE_CLASSES = [
   // Task 12 map: Leaflet's keyboard option makes pins/clusters tabbable.
   '.xidig-map-pin',
   '.xidig-map-cluster',
+  // Task 13 labs: stretched card link + Capital entry card.
+  '.xidig-lab-card__link',
+  'a.xidig-capital-entry',
 ];
 
 const ACTIVE_CLASSES = [
@@ -283,6 +286,7 @@ const ACTIVE_CLASSES = [
   '.xidig-nav__item a',
   '.xidig-vote-card',
   '.xidig-reaction-picker__opt',
+  'a.xidig-capital-entry',
 ];
 
 const DISABLED_CLASSES = [

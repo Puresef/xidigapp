@@ -4,9 +4,11 @@ import { redirect } from 'next/navigation';
 
 import { LabsFeed } from '@/components/labs/labs-feed';
 import { getAuthContext } from '@/lib/auth/guards';
+import { fetchLabCounts, fetchLabMembershipIds } from '@/lib/labs/views';
 import { getLitePrefs } from '@/lib/lite/server';
 import { getT } from '@/lib/locale';
 import { frontMetadata } from '@/lib/seo';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,6 +69,14 @@ export default async function LabsPage({
   const t = await getT();
   const litePrefs = await getLitePrefs();
 
+  // Tab counts under the CALLER's RLS (same helper GET /api/labs serves) —
+  // the numbers can never reveal a Space this member cannot read.
+  const admin = getSupabaseAdmin();
+  const counts = await fetchLabCounts(
+    ctx.supabase,
+    await fetchLabMembershipIds(admin, ctx.appUser.id),
+  );
+
   return (
     <main className="xidig-section">
       <div className="xidig-card__header">
@@ -77,35 +87,56 @@ export default async function LabsPage({
       </div>
       <p className="xidig-card__body">{t('lab.listSubtitle')}</p>
 
-      {/* Capital / Maal entry (§12: Capital has no bottom tab — it lives here). */}
-      <p className="xidig-card__meta">
-        <Link href="/capital">{t('capital.labsEntryLink')} →</Link>
-      </p>
+      {/* Capital / Maal entry (§12: Capital has no bottom tab — it lives here).
+          Trust-orange treatment per DESIGN.md §2: orange as border/fill, ink
+          text — never orange text on white. */}
+      <Link href="/capital" className="xidig-capital-entry">
+        <span className="xidig-capital-entry__icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 17l5.5-5.5 3.5 3L19 7.5" />
+            <path d="M14.5 7.5H19V12" />
+          </svg>
+        </span>
+        <span className="xidig-capital-entry__text">
+          <span className="xidig-capital-entry__title">{t('capital.indexTitle')}</span>
+          <span className="xidig-capital-entry__pitch">{t('capital.indexSubtitle')}</span>
+        </span>
+        <span className="xidig-capital-entry__cta">{t('capital.labsEntryLink')} →</span>
+      </Link>
 
       <div className="xidig-tabs">
         <Link className="xidig-tabs__tab" href="/labs" aria-current={filter === 'all' ? 'page' : undefined}>
-          {t('lab.filterAll')}
+          {t('lab.tabWithCount', { label: t('lab.filterAll'), count: counts.all })}
         </Link>
         <Link
           className="xidig-tabs__tab"
           href="/labs?filter=clubs"
           aria-current={filter === 'clubs' ? 'page' : undefined}
         >
-          {t('lab.filterClubs')}
+          {t('lab.tabWithCount', { label: t('lab.filterClubs'), count: counts.clubs })}
         </Link>
         <Link
           className="xidig-tabs__tab"
           href="/labs?filter=labs"
           aria-current={filter === 'labs' ? 'page' : undefined}
         >
-          {t('lab.filterLabs')}
+          {t('lab.tabWithCount', { label: t('lab.filterLabs'), count: counts.labs })}
         </Link>
         <Link
           className="xidig-tabs__tab"
           href="/labs?filter=mine"
           aria-current={filter === 'mine' ? 'page' : undefined}
         >
-          {t('lab.filterMine')}
+          {t('lab.tabWithCount', { label: t('lab.filterMine'), count: counts.mine })}
         </Link>
       </div>
 
