@@ -122,8 +122,9 @@ export function AccountSettings({
 
   function statusTag(value: string | null, verified: boolean) {
     if (!value) return <span className="xidig-tag">{t('settings.statusNotSet')}</span>;
+    /* Verified = trust treatment (DESIGN.md §2), not semantic ok. */
     return verified ? (
-      <span className="xidig-tag xidig-tag--ok">{t('settings.statusVerified')}</span>
+      <span className="xidig-tag xidig-tag--trust">{t('settings.statusVerified')}</span>
     ) : (
       <span className="xidig-tag">{t('settings.statusUnverified')}</span>
     );

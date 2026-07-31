@@ -224,11 +224,130 @@ describe('design-token contrast (AA in both palettes)', () => {
 });
 
 describe('duotone discipline scan', () => {
+  // Case-insensitive: #7C4BC0 would be the same retired hue as #7c4bc0.
+  const cssLower = css.toLowerCase();
   it.each(RETIRED)('globals.css no longer contains %s', (needle) => {
     expect(
-      css.includes(needle),
+      cssLower.includes(needle.toLowerCase()),
       `${needle} found in globals.css — the five-hue chip palette is retired ` +
         '(win → trust treatment, others neutral/accent; see DESIGN.md §2)',
     ).toBe(false);
+  });
+});
+
+/* ── Interaction-state coverage (DESIGN.md §4): every interactive element
+   ships hover / pressed / focus-visible / disabled. Presence checks only —
+   selectors may grow :not() guards without breaking these. ──────────────── */
+
+function escapeSelector(sel: string): string {
+  return sel.replace(/[.*+?^${}()|[\]\\]/g, (c) => `\\${c}`);
+}
+
+/** True when the class has a rule for the given pseudo-class (possibly with
+ *  intervening :not()/attribute guards, but within one compound selector). */
+function hasState(sel: string, pseudo: string): boolean {
+  return new RegExp(`${escapeSelector(sel)}[^,{\\s]*${escapeSelector(pseudo)}`).test(css);
+}
+
+const FOCUS_VISIBLE_CLASSES = [
+  '.xidig-tabs__tab',
+  'button.xidig-tag',
+  '.xidig-reaction',
+  'button.xidig-poll__option',
+  '.xidig-language-toggle__option',
+  '.xidig-icon-button',
+  '.xidig-switch',
+  '.xidig-dm-menu__item',
+  '.xidig-notif__link',
+  '.xidig-mention__item',
+  '.xidig-reaction-picker__opt',
+  '.xidig-user-menu__item',
+  '.xidig-nav__item a',
+  '.xidig-media-slot__thumb-btn',
+];
+
+const ACTIVE_CLASSES = [
+  '.xidig-button',
+  '.xidig-reaction',
+  'button.xidig-tag',
+  '.xidig-icon-button',
+  '.xidig-tabs__tab',
+  '.xidig-nav__item a',
+  '.xidig-vote-card',
+  '.xidig-reaction-picker__opt',
+];
+
+const DISABLED_CLASSES = [
+  'button.xidig-poll__option',
+  '.xidig-tabs__tab',
+  '.xidig-icon-button',
+  '.xidig-language-toggle__option',
+  '.xidig-composer-prompt',
+  '.xidig-switch',
+];
+
+describe('interaction-state coverage', () => {
+  it.each(FOCUS_VISIBLE_CLASSES)('focus-visible ring covers %s', (sel) => {
+    // ".xidig-nav__item a" carries a descendant space — check the final
+    // compound (the anchor) wears the pseudo-class.
+    expect(
+      new RegExp(`${escapeSelector(sel)}[^,{\\s]*:focus-visible`).test(css),
+      `${sel} has no :focus-visible rule`,
+    ).toBe(true);
+  });
+
+  it.each(ACTIVE_CLASSES)('pressed (:active) state exists for %s', (sel) => {
+    expect(hasState(sel, ':active'), `${sel} has no :active rule`).toBe(true);
+  });
+
+  it.each(DISABLED_CLASSES)('disabled state exists for %s', (sel) => {
+    expect(hasState(sel, ':disabled'), `${sel} has no :disabled rule`).toBe(true);
+  });
+});
+
+describe('typography measures', () => {
+  it('body line-height is 1.55', () => {
+    expect(/(^|\n)body \{[^}]*line-height: 1\.55;/.test(css)).toBe(true);
+  });
+
+  it('card body text measure is capped at 68ch', () => {
+    expect(/\n\.xidig-card__body \{[^}]*max-width: 68ch;/.test(css)).toBe(true);
+  });
+});
+
+describe('skeleton primitives', () => {
+  it.each(['.xidig-skeleton', '.xidig-skeleton--text', '.xidig-skeleton--avatar', '.xidig-skeleton-card'])(
+    '%s exists',
+    (sel) => {
+      expect(css.includes(`\n${sel} {`), `${sel} rule missing`).toBe(true);
+    },
+  );
+
+  it('base skeleton is static (no animation outside the motion double-gate)', () => {
+    const base = /\n\.xidig-skeleton \{([^}]*)\}/.exec(css);
+    expect(base, '.xidig-skeleton rule missing').not.toBeNull();
+    expect(base![1]).not.toMatch(/animation/);
+  });
+
+  it('shimmer sits behind BOTH motion gates', () => {
+    // The gated media block must open directly onto the data-motion-guarded
+    // shimmer selector — shimmer exists nowhere else.
+    expect(
+      /@media \(prefers-reduced-motion: no-preference\) \{\s*html:not\(\[data-motion='off'\]\) \.xidig-skeleton::after \{/.test(
+        css,
+      ),
+    ).toBe(true);
+    const occurrences = css.split('.xidig-skeleton::after').length - 1;
+    expect(occurrences, 'shimmer ::after declared outside the gate').toBe(1);
+  });
+});
+
+describe('token liveness (no dead tokens)', () => {
+  // Every token the palette defines must be consumed by at least one var()
+  // in globals.css (tokens exist to be used — a defined-but-unreferenced
+  // token is dead weight and a drift hazard).
+  const defined = [...parseTokenBlocks(css, ':root').keys()];
+  it.each(defined)('%s is consumed via var()', (token) => {
+    expect(css.includes(`var(${token})`), `${token} is defined but never consumed`).toBe(true);
   });
 });

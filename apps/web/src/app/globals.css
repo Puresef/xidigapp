@@ -86,7 +86,10 @@ body {
     -apple-system,
     'Segoe UI',
     sans-serif;
-  line-height: 1.5;
+  /* 1.55 (DESIGN.md §4 reading rhythm). Compact chrome is safe: the nav/dm
+     badges pin their own 1.15rem line-height, and chips/tab-bar labels grow
+     under 1px with no fixed heights to overflow. */
+  line-height: 1.55;
 }
 
 /* The sky ("Xidig" means star): a fixed ambient layer behind the app — blue
@@ -151,7 +154,7 @@ main {
 .xidig-nav__list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -310,7 +313,7 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   border-radius: 999px;
   border: 1px solid var(--x-accent);
   padding: 0.55rem 1.15rem;
@@ -322,7 +325,8 @@ main {
   transition:
     background-color 120ms ease,
     border-color 120ms ease,
-    box-shadow 120ms ease;
+    box-shadow 120ms ease,
+    transform 80ms ease;
 }
 
 /* Gradient runs DOWN into a deeper blue: every stop keeps white ≥ 4.5:1
@@ -434,7 +438,7 @@ main {
 
 .xidig-checkbox {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   align-items: flex-start;
   font-size: var(--x-text-ui);
 }
@@ -443,10 +447,10 @@ main {
 
 .xidig-tabs {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--x-space-2xs);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
-  padding: 0.25rem;
+  padding: var(--x-space-2xs);
   margin-bottom: 1rem;
 }
 
@@ -500,7 +504,7 @@ main {
   padding: var(--x-space);
   margin-bottom: var(--x-space);
   display: grid;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
 }
 
 .xidig-section__title {
@@ -635,14 +639,14 @@ button.xidig-tag:disabled {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 .xidig-invite-list__item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
   padding: 0.5rem 0.75rem;
@@ -654,7 +658,7 @@ button.xidig-tag:disabled {
 .xidig-header__actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
 }
 
 .xidig-nav__item a[aria-current='page'] {
@@ -669,7 +673,7 @@ button.xidig-tag:disabled {
   margin: 3rem auto;
   padding: 0 var(--x-space);
   display: grid;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
   justify-items: start;
 }
 
@@ -710,6 +714,9 @@ button.xidig-tag:disabled {
 .xidig-card__body {
   margin: 0;
   font-size: var(--x-text-body);
+  /* Text measure cap (DESIGN.md §4): the card/feed column stays full-width;
+     only the running text stops at a readable line length. */
+  max-width: 68ch;
 }
 
 .xidig-card-grid {
@@ -717,7 +724,7 @@ button.xidig-tag:disabled {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 }
 
@@ -745,7 +752,7 @@ button.xidig-tag:disabled {
 .xidig-profile__counts {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
   color: var(--x-muted);
   font-size: var(--x-text-ui);
 }
@@ -753,7 +760,7 @@ button.xidig-tag:disabled {
 .xidig-profile__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   margin: 0.75rem 0;
 }
 
@@ -761,7 +768,7 @@ button.xidig-tag:disabled {
 .xidig-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   align-items: end;
   margin-bottom: var(--x-space);
 }
@@ -828,13 +835,13 @@ button.xidig-tag:disabled {
 /* Inline row editors (links, contact links) */
 .xidig-row-editor {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 .xidig-row-editor__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   align-items: center;
 }
 
@@ -910,7 +917,7 @@ a.xidig-tabs__tab {
 
 .xidig-poll__option {
   display: grid;
-  gap: 0.25rem;
+  gap: var(--x-space-2xs);
   padding: 0.45rem 0.6rem;
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius-s);
@@ -929,7 +936,7 @@ button.xidig-poll__option {
 .xidig-poll__labels {
   display: flex;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   font-size: var(--x-text-m);
 }
 
@@ -1030,14 +1037,14 @@ button.xidig-poll__option {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.25rem;
+  gap: var(--x-space-2xs);
 }
 
 .xidig-dm-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
   padding: 0.7rem 0.6rem;
   border-radius: var(--x-radius);
   border: 1px solid var(--x-border);
@@ -1080,8 +1087,8 @@ button.xidig-poll__option {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding-bottom: 0.5rem;
+  gap: var(--x-space-xs);
+  padding-bottom: var(--x-space-xs);
   border-bottom: 1px solid var(--x-border);
 }
 
@@ -1094,7 +1101,7 @@ button.xidig-poll__option {
 
 .xidig-dm-thread {
   display: grid;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   padding: 0.75rem 0;
   max-height: 60vh;
   overflow-y: auto;
@@ -1153,9 +1160,9 @@ button.xidig-poll__option {
 
 .xidig-dm-composer {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   align-items: flex-end;
-  padding-top: 0.5rem;
+  padding-top: var(--x-space-xs);
   border-top: 1px solid var(--x-border);
 }
 
@@ -1166,8 +1173,8 @@ button.xidig-poll__option {
 
 .xidig-dm-request {
   display: grid;
-  gap: 0.5rem;
-  padding: 0.75rem;
+  gap: var(--x-space-xs);
+  padding: var(--x-space-s);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
   background: var(--x-bg);
@@ -1184,7 +1191,7 @@ button.xidig-poll__option {
   top: calc(100% + 0.25rem);
   z-index: 20;
   min-width: 16rem;
-  padding: 0.5rem;
+  padding: var(--x-space-xs);
   background: var(--x-surface-2);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
@@ -1196,13 +1203,13 @@ button.xidig-poll__option {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.25rem;
+  gap: var(--x-space-2xs);
 }
 
 .xidig-dm-menu__item {
   width: 100%;
   text-align: start;
-  padding: 0.5rem;
+  padding: var(--x-space-xs);
   background: none;
   border: 0;
   border-radius: var(--x-radius-s);
@@ -1220,13 +1227,13 @@ button.xidig-poll__option {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.25rem;
+  gap: var(--x-space-2xs);
 }
 
 .xidig-notif__link {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   width: 100%;
   text-align: start;
   padding: 0.7rem 0.6rem;
@@ -1301,7 +1308,7 @@ button.xidig-poll__option {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  padding: 0.75rem;
+  padding: var(--x-space-s);
   text-align: center;
   background: rgba(255, 255, 255, 0.86);
   border: 1px dashed var(--x-border);
@@ -1351,7 +1358,7 @@ button.xidig-poll__option {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   padding: 1rem 0;
   text-align: center;
 }
@@ -1509,7 +1516,7 @@ fieldset.xidig-field > legend {
 .xidig-vote-cards {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 .xidig-vote-card {
@@ -1836,7 +1843,7 @@ fieldset.xidig-field > legend {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   padding: 0.5rem 0.6rem;
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
@@ -2048,7 +2055,7 @@ a.xidig-settings-card:hover {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 .xidig-block-list__item {
@@ -2079,7 +2086,7 @@ a.xidig-settings-card:hover {
 .xidig-bundle-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 /* ==========================================================================
@@ -2116,7 +2123,7 @@ a.xidig-settings-card:hover {
 .xidig-completion__row {
   display: flex;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   margin: 0 0 0.5rem;
 }
 
@@ -2145,7 +2152,7 @@ a.xidig-settings-card:hover {
 .xidig-suggest-card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 /* Identity row shared by directory + suggested-follows cards */
@@ -2153,7 +2160,7 @@ a.xidig-settings-card:hover {
 .xidig-suggest-card__identity {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
 }
 
 .xidig-suggest-card__identity .xidig-card__meta {
@@ -2165,7 +2172,7 @@ a.xidig-settings-card:hover {
 .xidig-suggest-card__actions {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 /* Compact pinned-item cards */
@@ -2185,14 +2192,14 @@ a.xidig-settings-card:hover {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 .xidig-pins-editor__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
   padding: 0.4rem 0.75rem;
@@ -2215,7 +2222,7 @@ a.xidig-settings-card:hover {
 .xidig-media-editor__row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
   flex-wrap: wrap;
 }
 
@@ -2224,7 +2231,7 @@ a.xidig-settings-card:hover {
   max-width: 24rem;
   border-radius: var(--x-radius);
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--x-space-xs);
 }
 
 /* Screen-reader-only (hidden file inputs behind labelled buttons) */
@@ -2248,7 +2255,7 @@ a.xidig-settings-card:hover {
 .xidig-listing-gallery {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   margin: 0.75rem 0;
 }
 
@@ -2259,7 +2266,7 @@ a.xidig-settings-card:hover {
 .xidig-listing-gallery__thumbs {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   max-width: 40rem;
 }
 
@@ -2278,7 +2285,7 @@ a.xidig-settings-card:hover {
 
 .xidig-listing-card {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
   align-items: flex-start;
 }
 
@@ -2321,7 +2328,7 @@ a.xidig-settings-card:hover {
 .xidig-hours-editor__closed {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--x-space-2xs);
   white-space: nowrap;
 }
 
@@ -2330,7 +2337,7 @@ a.xidig-settings-card:hover {
 .xidig-hours-grid {
   margin: 0;
   display: grid;
-  gap: 0.25rem;
+  gap: var(--x-space-2xs);
   max-width: 26rem;
 }
 
@@ -2361,7 +2368,7 @@ a.xidig-settings-card:hover {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 .xidig-bookmark--on {
@@ -2421,8 +2428,8 @@ a.xidig-settings-card:hover {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.25rem;
-  margin-top: 0.75rem;
+  gap: var(--x-space-2xs);
+  margin-top: var(--x-space-s);
 }
 .xidig-post-footer__spacer {
   flex: 1 1 auto;
@@ -2447,7 +2454,7 @@ a.xidig-settings-card:hover {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: var(--x-space-2xs);
   margin: 0.75rem 0;
 }
 /* Accent-as-text state colors: --x-accent itself is only 3.74:1 on the dark
@@ -2539,7 +2546,7 @@ a.xidig-settings-card:hover {
   top: calc(100% + 0.25rem);
   z-index: 30;
   margin: 0;
-  padding: 0.25rem;
+  padding: var(--x-space-2xs);
   list-style: none;
   background: var(--x-surface-2);
   border: 1px solid var(--x-border);
@@ -2553,7 +2560,7 @@ a.xidig-settings-card:hover {
   display: block;
   width: 100%;
   text-align: start;
-  padding: 0.5rem;
+  padding: var(--x-space-xs);
   background: none;
   border: 0;
   border-radius: var(--x-radius-s);
@@ -2572,7 +2579,7 @@ a.xidig-settings-card:hover {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
 }
 
 .xidig-skills__count {
@@ -2595,12 +2602,12 @@ a.xidig-settings-card:hover {
 /* "Suggest a term" escape hatch under the shared-coordinate pickers. */
 .xidig-suggest {
   display: flex;
-  gap: 0.5rem;
-  margin-block-start: 0.5rem;
+  gap: var(--x-space-xs);
+  margin-block-start: var(--x-space-xs);
 }
 
 .xidig-suggest__open {
-  margin-block-start: 0.5rem;
+  margin-block-start: var(--x-space-xs);
 }
 
 /* Admin review queue (term suggestions). */
@@ -2610,7 +2617,7 @@ a.xidig-settings-card:hover {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 .xidig-review-list__row {
@@ -2625,12 +2632,12 @@ a.xidig-settings-card:hover {
 
 .xidig-review-list__actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   flex-shrink: 0;
 }
 
 .xidig-drafts {
-  margin-block: 0.5rem;
+  margin-block: var(--x-space-xs);
 }
 
 .xidig-drafts__list {
@@ -2638,16 +2645,16 @@ a.xidig-settings-card:hover {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 .xidig-drafts__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   flex-wrap: wrap;
-  padding: 0.5rem;
+  padding: var(--x-space-xs);
   border: 1px solid var(--x-border);
   border-radius: var(--x-radius);
 }
@@ -2659,16 +2666,16 @@ a.xidig-settings-card:hover {
 
 .xidig-drafts__actions {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   flex-shrink: 0;
 }
 
 .xidig-revisions {
-  margin-block: 0.5rem;
+  margin-block: var(--x-space-xs);
 }
 
 .xidig-revisions__panel {
-  margin-top: 0.5rem;
+  margin-top: var(--x-space-xs);
 }
 
 /* ===== from labs agent ===== */
@@ -2678,12 +2685,12 @@ a.xidig-settings-card:hover {
 .xidig-space-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
   flex-wrap: wrap;
 }
 
 .xidig-space-cover {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--x-space-s);
 }
 
 /* Shared media-editor controls (also used by components/profile/profile-media-editor.tsx —
@@ -2693,15 +2700,15 @@ a.xidig-settings-card:hover {
 
 /* Phase 4.5 DISCOVERY — /search grouped results */
 
-.xidig-search-group { margin-top: 1.5rem; }
+.xidig-search-group { margin-top: var(--x-space-l); }
 
-.xidig-search-group__header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+.xidig-search-group__header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--x-space-s); }
 
 .xidig-search-group__more { font-size: var(--x-text-m); white-space: nowrap; }
 
 .xidig-search-list { list-style: none; margin: 0.5rem 0 0; padding: 0; }
 
-.xidig-search-row { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.6rem 0; border-top: 1px solid var(--x-border); }
+.xidig-search-row { display: flex; align-items: flex-start; gap: var(--x-space-s); padding: 0.6rem 0; border-top: 1px solid var(--x-border); }
 
 .xidig-search-row:first-child { border-top: 0; }
 
@@ -2728,19 +2735,19 @@ a.xidig-settings-card:hover {
 /* --- Modal (attestation + venture fund) — NEW, no existing dialog class --- */
 .xidig-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,0.5); }
 .xidig-modal__panel { width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto; background: var(--x-surface-2); border-radius: var(--x-radius); padding: 1.25rem; box-shadow: var(--x-shadow-2); }
-.xidig-modal__title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; }
-.xidig-modal__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.xidig-modal__title { font-size: 1.15rem; font-weight: 600; margin-bottom: var(--x-space-xs); }
+.xidig-modal__actions { display: flex; flex-wrap: wrap; gap: var(--x-space-xs); margin-top: 1rem; }
 
 /* --- Capital layout hooks (thin; most spacing inherited from xidig-section) --- */
 .xidig-capital-cover { border-radius: var(--x-radius); overflow: hidden; }
-.xidig-capital-rubric__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: 0.75rem; margin: 0.5rem 0; }
-.xidig-capital-vote__actions, .xidig-capital-interest__actions, .xidig-capital-decision__actions, .xidig-capital-editor__actions, .xidig-capital-review__scores { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.xidig-capital-rubric__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: var(--x-space-s); margin: 0.5rem 0; }
+.xidig-capital-vote__actions, .xidig-capital-interest__actions, .xidig-capital-decision__actions, .xidig-capital-editor__actions, .xidig-capital-review__scores { display: flex; flex-wrap: wrap; gap: var(--x-space-xs); }
 .xidig-capital-review__scores { align-items: flex-end; }
 .xidig-capital-timeline__list { list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.35rem; }
-.xidig-capital-timeline__item { border-left: 2px solid var(--x-border); padding-left: 0.75rem; }
-.xidig-capital-maalgeli { margin-top: 0.75rem; }
+.xidig-capital-timeline__item { border-left: 2px solid var(--x-border); padding-left: var(--x-space-s); }
+.xidig-capital-maalgeli { margin-top: var(--x-space-s); }
 .xidig-capital-maalgeli__cta { width: 100%; } /* prominent, full-width on mobile-first */
-.xidig-capital-fund__secondary { margin-top: 0.75rem; }
+.xidig-capital-fund__secondary { margin-top: var(--x-space-s); }
 .xidig-capital-fund__disclaimer { margin-top: 1rem; font-style: italic; }
 
 /* ============================================================================
@@ -2837,7 +2844,7 @@ a.xidig-settings-card:hover {
   display: grid;
   padding: 0.35rem 0.5rem 0.5rem;
   border-bottom: 1px solid var(--x-border);
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--x-space-2xs);
 }
 .xidig-user-menu__name {
   font-weight: 600;
@@ -2850,7 +2857,7 @@ a.xidig-settings-card:hover {
   display: block;
   width: 100%;
   text-align: start;
-  padding: 0.5rem;
+  padding: var(--x-space-xs);
   border: 0;
   background: transparent;
   border-radius: var(--x-radius-s);
@@ -2888,7 +2895,7 @@ a.xidig-settings-card:hover {
 .xidig-notif-menu__item {
   display: flex;
   align-items: baseline;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 .xidig-notif-menu__text {
@@ -2898,7 +2905,7 @@ a.xidig-settings-card:hover {
 
 .xidig-notif-menu__empty {
   margin: 0;
-  padding: 0.5rem;
+  padding: var(--x-space-xs);
   color: var(--x-muted);
   font-size: var(--x-text-m);
 }
@@ -2910,8 +2917,8 @@ a.xidig-settings-card:hover {
 
 .xidig-notif-menu__footer {
   border-top: 1px solid var(--x-border);
-  margin-top: 0.25rem;
-  padding-top: 0.25rem;
+  margin-top: var(--x-space-2xs);
+  padding-top: var(--x-space-2xs);
 }
 
 /* Detail-page "← Section" orientation link. */
@@ -2939,7 +2946,7 @@ a.xidig-settings-card:hover {
   z-index: 90;
   display: grid;
   justify-items: center;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
   pointer-events: none;
 }
 
@@ -3036,7 +3043,7 @@ a.xidig-settings-card:hover {
 .xidig-front__cta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--x-space-s);
   align-items: center;
   margin-bottom: 1rem;
 }
@@ -3176,7 +3183,7 @@ a.xidig-settings-card:hover {
 .xidig-consent__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--x-space-xs);
 }
 
 /* Motion-safe fade only: the global kills (prefers-reduced-motion media query
@@ -3197,5 +3204,204 @@ a.xidig-settings-card:hover {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* ============================================================================
+ * Interaction states (31 Jul full-quality pass — DESIGN.md §4): every
+ * interactive element ships hover / pressed / focus-visible / disabled.
+ * Cascade note: this section sits last on purpose; quiet-state rules carry
+ * :not() guards so stateful fills (aria-pressed / aria-selected /
+ * aria-current) never gray out under a later hover/active wash.
+ * ========================================================================== */
+
+/* Focus ring — one grouped rule for every control the recon found bare.
+   The raw accent is the ring in BOTH palettes: a focus indicator needs
+   ≥ 3:1 against the adjacent surface (WCAG 1.4.11), and #2e78b0 holds it on
+   every elevation step — light 4.74:1 on #ffffff / 4.34:1 on #f2f5fa; dark
+   4.06:1 on #0a0e1a / 3.74:1 on #101828 / 3.40:1 on #16203a — so no
+   --x-accent-text swap is needed. (.xidig-button, .xidig-vote-card and
+   .xidig-user-menu__trigger already wear this same ring at their own
+   definitions.) */
+.xidig-tabs__tab:focus-visible,
+button.xidig-tag:focus-visible,
+.xidig-reaction:focus-visible,
+button.xidig-poll__option:focus-visible,
+.xidig-language-toggle__option:focus-visible,
+.xidig-icon-button:focus-visible,
+.xidig-switch:focus-visible,
+.xidig-dm-menu__item:focus-visible,
+.xidig-notif__link:focus-visible,
+.xidig-mention__item:focus-visible,
+.xidig-reaction-picker__opt:focus-visible,
+.xidig-user-menu__item:focus-visible,
+.xidig-nav__item a:focus-visible,
+.xidig-media-slot__thumb-btn:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+/* Short state transitions for the swept controls. No gate needed HERE: the
+   appearance block's global kills (@media prefers-reduced-motion + the
+   html[data-motion='off'] rules) zero every transition, so this is inside
+   the motion double-gate by construction. */
+.xidig-tabs__tab,
+button.xidig-tag,
+.xidig-reaction,
+button.xidig-poll__option,
+.xidig-language-toggle__option,
+.xidig-vote-card,
+.xidig-media-slot__thumb-btn,
+.xidig-icon-button,
+.xidig-reaction-picker__opt {
+  transition:
+    background-color 120ms ease,
+    transform 80ms ease;
+}
+
+/* Hover — quiet (transparent-resting) controls share the house wash (the
+   user-menu / dm-row tint). */
+.xidig-tabs__tab:not([aria-selected='true']):not([aria-current='page']):not(:disabled):hover,
+button.xidig-tag:not([aria-pressed='true']):not(:disabled):hover,
+.xidig-reaction:not([aria-pressed='true']):not(:disabled):hover,
+button.xidig-poll__option:not(:disabled):hover,
+.xidig-language-toggle__option:not([aria-pressed='true']):not(:disabled):hover,
+.xidig-vote-card:not(.xidig-vote-card--selected):not(:disabled):hover,
+.xidig-media-slot__thumb-btn:hover,
+.xidig-switch:not([aria-pressed='true']):not(:disabled):hover {
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+}
+
+/* An ON switch stays visibly on — hover deepens the accent instead of
+   washing it out (white on #276a9e is 5.77:1). */
+.xidig-switch[aria-pressed='true']:not(:disabled):hover {
+  background: #276a9e;
+}
+
+/* Pressed (:active) — everything settles 1px. The 1px offset itself is a
+   state style, not an animation; only the (globally gated) transition above
+   animates it. */
+.xidig-button:not(:disabled):active,
+.xidig-reaction:not(:disabled):active,
+button.xidig-tag:not(:disabled):active,
+.xidig-icon-button:not(:disabled):active,
+.xidig-tabs__tab:not(:disabled):active,
+.xidig-nav__item a:active,
+.xidig-vote-card:not(:disabled):active,
+.xidig-reaction-picker__opt:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+/* Quiet controls press into a deeper wash than hover's 45%. Muted text holds
+   AA on it: 5.37:1 (light — 60% #d9e0ec over #ffffff ≈ #eaecf4) / ~7.4:1
+   (dark — the low-alpha border wash barely moves the ink surface). */
+button.xidig-tag:not([aria-pressed='true']):not(:disabled):active,
+.xidig-reaction:not([aria-pressed='true']):not(:disabled):active,
+.xidig-icon-button:not(:disabled):active,
+.xidig-tabs__tab:not([aria-selected='true']):not([aria-current='page']):not(:disabled):active,
+.xidig-reaction-picker__opt:not(:disabled):active,
+.xidig-vote-card:not(.xidig-vote-card--selected):not(:disabled):active {
+  background: color-mix(in srgb, var(--x-border) 60%, transparent);
+}
+
+/* Accent-filled states darken WITHIN the family: the fills press to the
+   hover stop #276a9e (white 5.77:1); the primary pill — whose hover already
+   is #276a9e — presses one stop deeper to #245e8c (white 6.87:1). */
+.xidig-button--primary:not(:disabled):active {
+  background: #245e8c;
+}
+
+.xidig-button--secondary:not([aria-pressed='true']):not(:disabled):active {
+  background: color-mix(in srgb, var(--x-accent) 16%, transparent);
+}
+
+.xidig-tag[aria-pressed='true']:not(:disabled):active,
+.xidig-reaction[aria-pressed='true']:not(:disabled):active,
+.xidig-tabs__tab[aria-selected='true']:active,
+.xidig-tabs__tab[aria-current='page']:active,
+.xidig-switch[aria-pressed='true']:not(:disabled):active,
+.xidig-language-toggle__option[aria-pressed='true']:active {
+  background: #276a9e;
+}
+
+/* Disabled — the flat-and-muted house pattern (.xidig-button:disabled):
+   color-shift, never opacity dimming, so labels stay readable (muted holds
+   5.37:1 light / ~7.4:1 dark on the wash). The in-flight ON exception
+   (.xidig-button[aria-pressed='true']:disabled) outranks this for switches. */
+button.xidig-poll__option:disabled,
+.xidig-tabs__tab:disabled,
+.xidig-icon-button:disabled,
+.xidig-language-toggle__option:disabled,
+.xidig-composer-prompt:disabled,
+.xidig-switch:disabled {
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+  color: var(--x-muted);
+  border-color: var(--x-border);
+  cursor: not-allowed;
+}
+
+/* ============================================================================
+ * Skeleton primitives (loading states — consumers land in later tasks).
+ * Base = a STATIC border-tone tint: raw --x-surface-2 would be white-on-white
+ * in light mode, so the tint mixes the border into the surface instead. The
+ * shimmer sweep exists ONLY inside the motion double-gate below — with
+ * reduced motion or data-motion='off' the calm static tint is the whole
+ * treatment (no ::after is ever declared).
+ * ========================================================================== */
+.xidig-skeleton {
+  position: relative;
+  overflow: hidden;
+  min-height: 1rem;
+  border-radius: var(--x-radius-s);
+  background: color-mix(in srgb, var(--x-border) 55%, var(--x-surface));
+}
+
+.xidig-skeleton--text {
+  min-height: 0;
+  height: 0.9em;
+  border-radius: var(--x-radius-pill);
+}
+
+.xidig-skeleton--avatar {
+  flex: none;
+  min-height: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--x-radius-pill);
+}
+
+/* Card silhouette: mirrors .xidig-card's frame, padding and gap exactly, so
+   a loading list occupies the same footprint as the content replacing it. */
+.xidig-skeleton-card {
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: var(--x-space);
+  display: grid;
+  gap: 0.3rem;
+}
+
+/* Shimmer: a surface-toned band swept across the tint — lighter than the
+   tint on light (white band), deeper on dark (ink band), visible in both
+   palettes without a per-theme override. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) .xidig-skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--x-surface) 80%, transparent),
+      transparent
+    );
+    animation: xidig-skeleton-sweep 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes xidig-skeleton-sweep {
+  to {
+    transform: translateX(100%);
   }
 }

@@ -127,7 +127,16 @@ export async function ProfileViewCard({
         <h1 className="xidig-auth__title">{profile.display_name}</h1>
         <span className="xidig-profile__handle">@{profile.handle}</span>
         {verificationKey && profile.verification_status !== 'unverified' ? (
-          <span className="xidig-tag xidig-tag--ok">{t(verificationKey)}</span>
+          /* Verified wears the trust treatment (DESIGN.md §2 — trust orange is
+             reserved for earned trust moments); a pending review is not yet
+             one, so it stays a neutral chip. */
+          <span
+            className={`xidig-tag${
+              profile.verification_status === 'pending' ? '' : ' xidig-tag--trust'
+            }`}
+          >
+            {t(verificationKey)}
+          </span>
         ) : null}
         {isAi ? (
           <span className="xidig-tag xidig-tag--seeded" title={t('content.aiAccountTooltip')}>
