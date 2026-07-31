@@ -15,6 +15,8 @@ import { Banner } from '@/components/banner';
 import { ReportControl } from '@/components/report-control';
 import { ShareActions } from '@/components/share-actions';
 import { Avatar } from '@/components/media/avatar';
+import { LiteMediaProvider } from '@/components/media/lite-media-provider';
+import { LiteShowAll } from '@/components/media/lite-show-all';
 import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
 import { voteWindow } from '@/lib/capital/tally';
@@ -117,63 +119,69 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
 
   return (
     <main className="xidig-section">
-      <CandidateHeader view={view} prefs={prefs} />
+      <LiteMediaProvider>
+        <LiteShowAll />
+        <CandidateHeader view={view} prefs={prefs} />
 
-      <ShareActions path={`/c/${id}`} text={t('share.candidateText', { name: candidate.name })} />
-
-      {!isEditor ? (
-        <ReportControl targetType="candidate" targetId={id} targetName={candidate.name} />
-      ) : null}
-
-      {isEditor && ['draft', 'submitted'].includes(candidate.status) ? (
-        <p className="xidig-profile__actions">
-          <Link className="xidig-button xidig-button--secondary" href={`/c/${id}/edit`}>
-            {t('action.edit')}
-          </Link>
-        </p>
-      ) : null}
-
-      {candidate.status_reason ? (
-        <Banner kind="notice">{candidate.status_reason}</Banner>
-      ) : null}
-
-      <Pitch view={view} />
-
-      <RubricDisplay rubric={view.rubric} reviews={view.reviews} />
-
-      {showVotePanel ? (
-        <VotePanel
-          candidateId={id}
-          initialTally={view.voteTally}
-          initialVote={view.viewer.vote}
+        <ShareActions
+          path={`/c/${id}`}
+          text={t('share.candidateText', { name: candidate.name })}
         />
-      ) : null}
 
-      {/* Reviewer console */}
-      {isConflicted ? (
-        <Banner kind="notice">{t('capital.reviewerConflictNotice')}</Banner>
-      ) : null}
-      {canReview ? (
-        <>
-          <ReviewForm
+        {!isEditor ? (
+          <ReportControl targetType="candidate" targetId={id} targetName={candidate.name} />
+        ) : null}
+
+        {isEditor && ['draft', 'submitted'].includes(candidate.status) ? (
+          <p className="xidig-profile__actions">
+            <Link className="xidig-button xidig-button--secondary" href={`/c/${id}/edit`}>
+              {t('action.edit')}
+            </Link>
+          </p>
+        ) : null}
+
+        {candidate.status_reason ? (
+          <Banner kind="notice">{candidate.status_reason}</Banner>
+        ) : null}
+
+        <Pitch view={view} />
+
+        <RubricDisplay rubric={view.rubric} reviews={view.reviews} />
+
+        {showVotePanel ? (
+          <VotePanel
             candidateId={id}
-            initial={
-              view.reviews.find((r) => r.reviewer_user_id === ctx.appUser.id) ?? null
-            }
+            initialTally={view.voteTally}
+            initialVote={view.viewer.vote}
           />
-          <DecisionControls candidateId={id} />
-        </>
-      ) : null}
+        ) : null}
 
-      <InterestBar
-        candidateId={id}
-        initialCounts={view.interestCounts}
-        initialInterests={view.viewer.interests}
-      />
+        {/* Reviewer console */}
+        {isConflicted ? (
+          <Banner kind="notice">{t('capital.reviewerConflictNotice')}</Banner>
+        ) : null}
+        {canReview ? (
+          <>
+            <ReviewForm
+              candidateId={id}
+              initial={
+                view.reviews.find((r) => r.reviewer_user_id === ctx.appUser.id) ?? null
+              }
+            />
+            <DecisionControls candidateId={id} />
+          </>
+        ) : null}
 
-      <Timeline milestones={view.timeline} />
+        <InterestBar
+          candidateId={id}
+          initialCounts={view.interestCounts}
+          initialInterests={view.viewer.interests}
+        />
 
-      <CandidateComments candidateId={id} viewerId={ctx.appUser.id} />
+        <Timeline milestones={view.timeline} />
+
+        <CandidateComments candidateId={id} viewerId={ctx.appUser.id} />
+      </LiteMediaProvider>
     </main>
   );
 }
@@ -259,72 +267,78 @@ async function PublicCandidate({
 
   return (
     <main className="xidig-section">
-      {resolvedMedia.coverUrl ? (
-        <MediaSlot
-          kind="image"
-          src={resolvedMedia.coverUrl}
-          thumbSrc={resolvedMedia.coverThumbUrl ?? undefined}
-          blurhash={resolvedMedia.coverBlurhash}
-          alt={view.name}
-          prefs={prefs}
-          className="xidig-capital-cover"
-          width={1600}
-          height={600}
+      <LiteMediaProvider>
+        <LiteShowAll />
+        {resolvedMedia.coverUrl ? (
+          <MediaSlot
+            kind="image"
+            src={resolvedMedia.coverUrl}
+            thumbSrc={resolvedMedia.coverThumbUrl ?? undefined}
+            blurhash={resolvedMedia.coverBlurhash}
+            alt={view.name}
+            prefs={prefs}
+            className="xidig-capital-cover"
+            width={1600}
+            height={600}
+          />
+        ) : null}
+        <div className="xidig-card__header xidig-space-header">
+          <Avatar
+            name={view.name}
+            handle={view.id}
+            src={resolvedMedia.logoThumbUrl}
+            blurhash={resolvedMedia.logoBlurhash}
+            size={56}
+            prefs={prefs}
+          />
+          <h1 className="xidig-auth__title">{view.name}</h1>
+          <StatusBadge status={view.status} />
+        </div>
+        {view.oneLiner ? <p className="xidig-card__body">{view.oneLiner}</p> : null}
+        {view.lab ? (
+          <p className="xidig-card__meta">
+            <Link href={`/labs/${view.lab.slug}`}>{view.lab.name}</Link>
+          </p>
+        ) : null}
+
+        <section className="xidig-section xidig-capital-pitch">
+          {view.problem ? (
+            <div>
+              <h2 className="xidig-section__title">{t('capital.fieldProblem')}</h2>
+              <p className="xidig-card__body">{view.problem}</p>
+            </div>
+          ) : null}
+          {view.solution ? (
+            <div>
+              <h2 className="xidig-section__title">{t('capital.fieldSolution')}</h2>
+              <p className="xidig-card__body">{view.solution}</p>
+            </div>
+          ) : null}
+          {view.traction ? (
+            <div>
+              <h2 className="xidig-section__title">{t('capital.fieldTraction')}</h2>
+              <p className="xidig-card__body">{view.traction}</p>
+            </div>
+          ) : null}
+          {view.team ? (
+            <div>
+              <h2 className="xidig-section__title">{t('capital.fieldTeam')}</h2>
+              <p className="xidig-card__body">{view.team}</p>
+            </div>
+          ) : null}
+        </section>
+
+        <Timeline milestones={view.timeline} />
+
+        <ShareActions
+          path={`/c/${view.id}`}
+          text={t('share.candidateText', { name: view.name })}
         />
-      ) : null}
-      <div className="xidig-card__header xidig-space-header">
-        <Avatar
-          name={view.name}
-          handle={view.id}
-          src={resolvedMedia.logoThumbUrl}
-          blurhash={resolvedMedia.logoBlurhash}
-          size={56}
-          prefs={prefs}
-        />
-        <h1 className="xidig-auth__title">{view.name}</h1>
-        <StatusBadge status={view.status} />
-      </div>
-      {view.oneLiner ? <p className="xidig-card__body">{view.oneLiner}</p> : null}
-      {view.lab ? (
+
         <p className="xidig-card__meta">
-          <Link href={`/labs/${view.lab.slug}`}>{view.lab.name}</Link>
+          <Link href={signInHref}>{t('capital.signInToEngage')} →</Link>
         </p>
-      ) : null}
-
-      <section className="xidig-section xidig-capital-pitch">
-        {view.problem ? (
-          <div>
-            <h2 className="xidig-section__title">{t('capital.fieldProblem')}</h2>
-            <p className="xidig-card__body">{view.problem}</p>
-          </div>
-        ) : null}
-        {view.solution ? (
-          <div>
-            <h2 className="xidig-section__title">{t('capital.fieldSolution')}</h2>
-            <p className="xidig-card__body">{view.solution}</p>
-          </div>
-        ) : null}
-        {view.traction ? (
-          <div>
-            <h2 className="xidig-section__title">{t('capital.fieldTraction')}</h2>
-            <p className="xidig-card__body">{view.traction}</p>
-          </div>
-        ) : null}
-        {view.team ? (
-          <div>
-            <h2 className="xidig-section__title">{t('capital.fieldTeam')}</h2>
-            <p className="xidig-card__body">{view.team}</p>
-          </div>
-        ) : null}
-      </section>
-
-      <Timeline milestones={view.timeline} />
-
-      <ShareActions path={`/c/${view.id}`} text={t('share.candidateText', { name: view.name })} />
-
-      <p className="xidig-card__meta">
-        <Link href={signInHref}>{t('capital.signInToEngage')} →</Link>
-      </p>
+      </LiteMediaProvider>
     </main>
   );
 }

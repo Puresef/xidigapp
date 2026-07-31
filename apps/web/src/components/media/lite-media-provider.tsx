@@ -9,8 +9,9 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
  * page in one tap. The context is OPTIONAL — a MediaSlot without a provider
  * still works standalone (its own Show button + session memory).
  *
- * Mount once per media-heavy page (plaza feed, post detail, listing detail,
- * profile), wrapping the content that contains the slots.
+ * Mount once per media-heavy page (plaza + following feeds, post detail,
+ * listing detail, profile, Space detail, candidate detail, search results),
+ * wrapping the content that contains the slots.
  */
 
 export interface LiteMediaContextValue {

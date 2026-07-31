@@ -9,6 +9,8 @@ import { ContentComposer } from '@/components/labs/content-composer';
 import { MembershipActions } from '@/components/labs/membership-actions';
 import { ShareActions } from '@/components/share-actions';
 import { Avatar } from '@/components/media/avatar';
+import { LiteMediaProvider } from '@/components/media/lite-media-provider';
+import { LiteShowAll } from '@/components/media/lite-show-all';
 import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
 import {
@@ -112,74 +114,77 @@ export default async function LabDetailPage({
   return (
     <main className="xidig-section">
       <BackLink href="/labs" labelKey="nav.labs" />
-      <SpaceArtHeader
-        name={lab.name}
-        slug={lab.slug}
-        media={view.media}
-        chrome={t(CHROME_KEYS[view.kind])}
-        coverAlt={t('lab.coverAlt', { name: lab.name })}
-        prefs={litePrefs}
-      />
-      <p className="xidig-card__meta">
-        {t(STAGE_KEYS[lab.stage])} · {t('lab.memberCount', { count: view.memberCount })}
-        {view.sprintDaysLeft !== null
-          ? ` · ${
-              view.sprintDaysLeft < 0
-                ? t('lab.sprintEnded')
-                : t('lab.sprintCountdown', { count: view.sprintDaysLeft })
-            }`
-          : ''}
-      </p>
+      <LiteMediaProvider>
+        <LiteShowAll />
+        <SpaceArtHeader
+          name={lab.name}
+          slug={lab.slug}
+          media={view.media}
+          chrome={t(CHROME_KEYS[view.kind])}
+          coverAlt={t('lab.coverAlt', { name: lab.name })}
+          prefs={litePrefs}
+        />
+        <p className="xidig-card__meta">
+          {t(STAGE_KEYS[lab.stage])} · {t('lab.memberCount', { count: view.memberCount })}
+          {view.sprintDaysLeft !== null
+            ? ` · ${
+                view.sprintDaysLeft < 0
+                  ? t('lab.sprintEnded')
+                  : t('lab.sprintCountdown', { count: view.sprintDaysLeft })
+              }`
+            : ''}
+        </p>
 
-      {view.isDormant ? <p className="xidig-card__body">{t('lab.dormantBanner')}</p> : null}
+        {view.isDormant ? <p className="xidig-card__body">{t('lab.dormantBanner')}</p> : null}
 
-      <MembershipActions
-        labId={lab.id}
-        viewerRelation={view.viewerRelation}
-        joinMode={lab.join_mode}
-        isPinned={Boolean(pin)}
-      />
+        <MembershipActions
+          labId={lab.id}
+          viewerRelation={view.viewerRelation}
+          joinMode={lab.join_mode}
+          isPinned={Boolean(pin)}
+        />
 
-      <ShareActions path={`/labs/${slug}`} text={t('share.labText', { name: lab.name })} />
+        <ShareActions path={`/labs/${slug}`} text={t('share.labText', { name: lab.name })} />
 
-      <div className="xidig-tabs">
-        {TABS.map((value) => (
-          <Link
-            key={value}
-            className="xidig-tabs__tab"
-            href={`/labs/${slug}?tab=${value}`}
-            aria-current={tab === value ? 'page' : undefined}
-          >
-            {t(TAB_KEYS[value])}
-          </Link>
-        ))}
-        {isManager ? (
-          <Link className="xidig-tabs__tab" href={`/labs/${slug}/settings`}>
-            {t('lab.tabSettings')}
-          </Link>
+        <div className="xidig-tabs">
+          {TABS.map((value) => (
+            <Link
+              key={value}
+              className="xidig-tabs__tab"
+              href={`/labs/${slug}?tab=${value}`}
+              aria-current={tab === value ? 'page' : undefined}
+            >
+              {t(TAB_KEYS[value])}
+            </Link>
+          ))}
+          {isManager ? (
+            <Link className="xidig-tabs__tab" href={`/labs/${slug}/settings`}>
+              {t('lab.tabSettings')}
+            </Link>
+          ) : null}
+        </div>
+
+        {tab === 'overview' ? (
+          <>
+            <Overview view={view} />
+            {/* Merged discovery (extras item 8): the Space's upcoming events.
+                Member surface — public + members visibility rows (space_only
+                events stay on their own page, see lib/events/views.ts). */}
+            <UpcomingEventsSection target={{ labId: lab.id }} publicOnly={false} />
+          </>
         ) : null}
-      </div>
-
-      {tab === 'overview' ? (
-        <>
-          <Overview view={view} />
-          {/* Merged discovery (extras item 8): the Space's upcoming events.
-              Member surface — public + members visibility rows (space_only
-              events stay on their own page, see lib/events/views.ts). */}
-          <UpcomingEventsSection target={{ labId: lab.id }} publicOnly={false} />
-        </>
-      ) : null}
-      {tab === 'updates' ? (
-        <TabUpdates labId={lab.id} isContributor={isContributor} />
-      ) : null}
-      {tab === 'artifacts' ? (
-        <TabArtifacts labId={lab.id} isContributor={isContributor} />
-      ) : null}
-      {tab === 'decisions' ? (
-        <TabDecisions labId={lab.id} isContributor={isContributor} />
-      ) : null}
-      {tab === 'members' ? <TabMembers labId={lab.id} /> : null}
-      {tab === 'history' ? <TabHistory labId={lab.id} /> : null}
+        {tab === 'updates' ? (
+          <TabUpdates labId={lab.id} isContributor={isContributor} />
+        ) : null}
+        {tab === 'artifacts' ? (
+          <TabArtifacts labId={lab.id} isContributor={isContributor} />
+        ) : null}
+        {tab === 'decisions' ? (
+          <TabDecisions labId={lab.id} isContributor={isContributor} />
+        ) : null}
+        {tab === 'members' ? <TabMembers labId={lab.id} /> : null}
+        {tab === 'history' ? <TabHistory labId={lab.id} /> : null}
+      </LiteMediaProvider>
     </main>
   );
 }
@@ -449,45 +454,48 @@ async function PublicLabView({ slug }: { slug: string }) {
   return (
     <main className="xidig-section">
       <BackLink href="/labs" labelKey="nav.labs" />
-      <SpaceArtHeader
-        name={lab.name ?? ''}
-        slug={slug}
-        media={view.media}
-        chrome={t(CHROME_KEYS[(lab.space_mode as 'club' | 'lab') ?? 'club'])}
-        coverAlt={t('lab.coverAlt', { name: lab.name ?? '' })}
-        prefs={litePrefs}
-      />
-      <p className="xidig-card__meta">
-        {t('lab.publicBadge')} · {t('lab.memberCount', { count: view.memberCount })}
-      </p>
-
-      {lab.short_description ? <p className="xidig-card__body">{lab.short_description}</p> : null}
-      {lab.problem_statement ? (
-        <p className="xidig-card__body">
-          <strong>{t('lab.fieldProblem')}:</strong> {lab.problem_statement}
+      <LiteMediaProvider>
+        <LiteShowAll />
+        <SpaceArtHeader
+          name={lab.name ?? ''}
+          slug={slug}
+          media={view.media}
+          chrome={t(CHROME_KEYS[(lab.space_mode as 'club' | 'lab') ?? 'club'])}
+          coverAlt={t('lab.coverAlt', { name: lab.name ?? '' })}
+          prefs={litePrefs}
+        />
+        <p className="xidig-card__meta">
+          {t('lab.publicBadge')} · {t('lab.memberCount', { count: view.memberCount })}
         </p>
-      ) : null}
 
-      <section className="xidig-section">
-        <h2 className="xidig-section__title">{t('lab.tabUpdates')}</h2>
-        <ul className="xidig-post-list">
-          {(updates ?? []).map((u) => (
-            <li key={u.id} className="xidig-card">
-              {u.title ? <h3 className="xidig-card__title">{u.title}</h3> : null}
-              <p className="xidig-card__body">{u.body}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+        {lab.short_description ? <p className="xidig-card__body">{lab.short_description}</p> : null}
+        {lab.problem_statement ? (
+          <p className="xidig-card__body">
+            <strong>{t('lab.fieldProblem')}:</strong> {lab.problem_statement}
+          </p>
+        ) : null}
 
-      {/* Signed-out surface: PUBLIC events only + organic-proof filters. */}
-      <UpcomingEventsSection target={{ labId: lab.id as string }} publicOnly />
+        <section className="xidig-section">
+          <h2 className="xidig-section__title">{t('lab.tabUpdates')}</h2>
+          <ul className="xidig-post-list">
+            {(updates ?? []).map((u) => (
+              <li key={u.id} className="xidig-card">
+                {u.title ? <h3 className="xidig-card__title">{u.title}</h3> : null}
+                <p className="xidig-card__body">{u.body}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-      <ShareActions path={`/labs/${slug}`} text={t('share.labText', { name: lab.name ?? '' })} />
+        {/* Signed-out surface: PUBLIC events only + organic-proof filters. */}
+        <UpcomingEventsSection target={{ labId: lab.id as string }} publicOnly />
 
-      <p className="xidig-card__meta">
-        <Link href={`/signin?next=/labs/${slug}`}>{t('lab.signInToJoin')}</Link>
-      </p>
+        <ShareActions path={`/labs/${slug}`} text={t('share.labText', { name: lab.name ?? '' })} />
+
+        <p className="xidig-card__meta">
+          <Link href={`/signin?next=/labs/${slug}`}>{t('lab.signInToJoin')}</Link>
+        </p>
+      </LiteMediaProvider>
     </main>
   );
 }

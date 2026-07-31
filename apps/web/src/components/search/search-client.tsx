@@ -13,6 +13,8 @@ import type { LitePrefs } from '@/lib/lite/prefs';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { LoadingComet } from '@/components/loading-comet';
 import { Avatar } from '../media/avatar';
+import { LiteMediaProvider } from '../media/lite-media-provider';
+import { LiteShowAll } from '../media/lite-show-all';
 import { MediaSlot } from '../media/media-slot';
 
 /**
@@ -418,63 +420,68 @@ export function SearchClient({
 
       {results && !pending ? (
         <div aria-live="polite">
-          {/* Entity tabs — plain links (?type=), shareable, no client state. */}
-          <div className="xidig-tabs">
-            <Link
-              className="xidig-tabs__tab"
-              href={searchHref(searched, 'all')}
-              aria-current={activeTab === 'all' ? 'page' : undefined}
-            >
-              {t('search.tabAll')} ({total})
-            </Link>
-            {ENTITY_TABS.map((tab) => (
+          {/* Lite coordination for result thumbs (listing rows are MediaSlots):
+              deferred slots join a page-level "N hidden — Show all". */}
+          <LiteMediaProvider>
+            {/* Entity tabs — plain links (?type=), shareable, no client state. */}
+            <div className="xidig-tabs">
               <Link
-                key={tab}
                 className="xidig-tabs__tab"
-                href={searchHref(searched, tab)}
-                aria-current={activeTab === tab ? 'page' : undefined}
+                href={searchHref(searched, 'all')}
+                aria-current={activeTab === 'all' ? 'page' : undefined}
               >
-                {t(TAB_LABEL_KEYS[tab])} ({counts[tab]})
+                {t('search.tabAll')} ({total})
               </Link>
-            ))}
-          </div>
-          <p className="xidig-card__meta">{t('search.sortTransparency')}</p>
-
-          {activeTab === 'all' ? (
-            total === 0 ? (
-              <div className="xidig-card xidig-search-teach">
-                <p className="xidig-card__body">{t('search.noResults')}</p>
-                {!signedIn ? (
-                  <p className="xidig-card__meta">{t('search.signInForMore')}</p>
-                ) : null}
-              </div>
-            ) : (
-              ENTITY_TABS.filter((tab) => counts[tab] > 0).map((tab) => (
-                <Group
+              {ENTITY_TABS.map((tab) => (
+                <Link
                   key={tab}
-                  title={t(TAB_LABEL_KEYS[tab])}
-                  sortNote={t(SORT_KEYS[tab])}
-                  moreHref={moreHrefFor(tab)}
-                  moreLabel={t('search.seeMore')}
-                  showMore={counts[tab] >= GROUP_LIMIT}
+                  className="xidig-tabs__tab"
+                  href={searchHref(searched, tab)}
+                  aria-current={activeTab === tab ? 'page' : undefined}
                 >
-                  {GROUP_ROWS[tab]()}
-                </Group>
-              ))
-            )
-          ) : counts[activeTab] === 0 ? (
-            renderTabEmpty(activeTab)
-          ) : (
-            <Group
-              title={t(TAB_LABEL_KEYS[activeTab])}
-              sortNote={t(SORT_KEYS[activeTab])}
-              moreHref={moreHrefFor(activeTab)}
-              moreLabel={t('search.seeMore')}
-              showMore={counts[activeTab] >= GROUP_LIMIT}
-            >
-              {GROUP_ROWS[activeTab]()}
-            </Group>
-          )}
+                  {t(TAB_LABEL_KEYS[tab])} ({counts[tab]})
+                </Link>
+              ))}
+            </div>
+            <p className="xidig-card__meta">{t('search.sortTransparency')}</p>
+            <LiteShowAll />
+
+            {activeTab === 'all' ? (
+              total === 0 ? (
+                <div className="xidig-card xidig-search-teach">
+                  <p className="xidig-card__body">{t('search.noResults')}</p>
+                  {!signedIn ? (
+                    <p className="xidig-card__meta">{t('search.signInForMore')}</p>
+                  ) : null}
+                </div>
+              ) : (
+                ENTITY_TABS.filter((tab) => counts[tab] > 0).map((tab) => (
+                  <Group
+                    key={tab}
+                    title={t(TAB_LABEL_KEYS[tab])}
+                    sortNote={t(SORT_KEYS[tab])}
+                    moreHref={moreHrefFor(tab)}
+                    moreLabel={t('search.seeMore')}
+                    showMore={counts[tab] >= GROUP_LIMIT}
+                  >
+                    {GROUP_ROWS[tab]()}
+                  </Group>
+                ))
+              )
+            ) : counts[activeTab] === 0 ? (
+              renderTabEmpty(activeTab)
+            ) : (
+              <Group
+                title={t(TAB_LABEL_KEYS[activeTab])}
+                sortNote={t(SORT_KEYS[activeTab])}
+                moreHref={moreHrefFor(activeTab)}
+                moreLabel={t('search.seeMore')}
+                showMore={counts[activeTab] >= GROUP_LIMIT}
+              >
+                {GROUP_ROWS[activeTab]()}
+              </Group>
+            )}
+          </LiteMediaProvider>
         </div>
       ) : null}
     </div>

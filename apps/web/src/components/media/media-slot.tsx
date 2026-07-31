@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { useLocale, useT } from '@xidig/i18n/react';
 
 import { trackClient } from '@/lib/analytics/client';
+import { isSlowConnection } from '@/lib/lite/connection';
 import {
   EMBED_EST_DEFAULT_BYTES,
   formatBytes,
@@ -54,23 +55,6 @@ function setSessionFlag(prefix: string, src: string): boolean {
   } catch {
     return false;
   }
-}
-
-interface NetworkInformationLike {
-  saveData?: boolean;
-  effectiveType?: string;
-}
-
-function isSlowConnection(): boolean {
-  if (typeof navigator === 'undefined') return false;
-  const connection = (navigator as Navigator & { connection?: NetworkInformationLike }).connection;
-  if (!connection) return false;
-  if (connection.saveData) return true;
-  return (
-    connection.effectiveType === 'slow-2g' ||
-    connection.effectiveType === '2g' ||
-    connection.effectiveType === '3g'
-  );
 }
 
 function defaultEstBytes(kind: MediaSlotKind): number {
