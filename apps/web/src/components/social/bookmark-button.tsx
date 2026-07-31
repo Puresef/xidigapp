@@ -43,14 +43,20 @@ export function BookmarkButton({
     request.catch(() => setBookmarked(!next));
   }
 
+  const label = bookmarked ? t('saved.saved') : t('saved.save');
   return (
     <button
       type="button"
-      className={`xidig-button xidig-button--secondary${bookmarked ? ' xidig-bookmark--on' : ''}`}
+      className={`xidig-icon-button${bookmarked ? ' xidig-icon-button--on xidig-bookmark--on' : ''}`}
       aria-pressed={bookmarked}
+      aria-label={label}
+      title={label}
       onClick={toggle}
     >
-      {bookmarked ? t('saved.saved') : t('saved.save')}
+      {/* Bookmark glyph — filled when saved. */}
+      <svg viewBox="0 0 24 24" width="20" height="20" fill={bookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" />
+      </svg>
     </button>
   );
 }

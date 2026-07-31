@@ -614,7 +614,7 @@ button.xidig-tag:disabled {
   border-radius: var(--x-radius);
   padding: var(--x-space);
   display: grid;
-  gap: 0.4rem;
+  gap: 0.3rem;
 }
 
 .xidig-card a {
@@ -2281,6 +2281,159 @@ a.xidig-settings-card:hover {
 .xidig-bookmark--on {
   border-color: var(--x-accent);
   font-weight: 600;
+}
+
+/* ── Post byline: avatar + verified ring ──────────────────────────────── */
+.xidig-byline {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+.xidig-byline__avatar {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  line-height: 0;
+  border-radius: 999px;
+}
+/* Verified members get a ring (gap-ring floats on the card) + a check badge. */
+.xidig-byline__avatar--verified {
+  box-shadow:
+    0 0 0 2px var(--x-surface),
+    0 0 0 3.5px var(--x-accent);
+}
+.xidig-byline__check {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+  border: 2px solid var(--x-surface);
+}
+.xidig-byline__text {
+  margin: 0;
+  min-width: 0;
+}
+.xidig-byline__name {
+  font-weight: 600;
+  color: var(--x-fg);
+}
+
+/* ── Post footer: one icon toolbar (comments · save · share · copy) ────── */
+.xidig-post-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+.xidig-post-footer__spacer {
+  flex: 1 1 auto;
+}
+/* ShareActions renders its own group; neutralise its standalone margin here. */
+.xidig-post-footer .xidig-post-actions {
+  margin: 0;
+}
+.xidig-post-comments {
+  width: auto;
+  padding: 0 0.6rem;
+  gap: 0.35rem;
+  color: var(--x-muted);
+}
+.xidig-post-comments__n {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* ── Share/save/copy as icon buttons ──────────────────────────────────── */
+.xidig-post-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.75rem 0;
+}
+.xidig-icon-button--on {
+  color: var(--x-accent);
+}
+.xidig-icon-button--done {
+  color: #1f9d57;
+}
+
+/* ── Post-type chips: colour-coded so the feed scans at a glance ───────── */
+.xidig-post-type {
+  font-weight: 600;
+  border-color: transparent;
+}
+.xidig-post-type--win {
+  color: #1f8f57;
+  background: color-mix(in srgb, #1f8f57 12%, transparent);
+}
+.xidig-post-type--ask {
+  color: #b26a09;
+  background: color-mix(in srgb, #b26a09 13%, transparent);
+}
+.xidig-post-type--update {
+  color: var(--x-accent);
+  background: var(--x-accent-soft);
+}
+.xidig-post-type--poll {
+  color: #7c4bc0;
+  background: color-mix(in srgb, #7c4bc0 13%, transparent);
+}
+.xidig-post-type--intro {
+  color: #0e8c86;
+  background: color-mix(in srgb, #0e8c86 13%, transparent);
+}
+
+/* ── Reaction picker (collapsed add-reaction affordance) ──────────────── */
+.xidig-reaction--add {
+  color: var(--x-muted);
+  padding: 0.2rem 0.5rem;
+}
+.xidig-reaction-add {
+  position: relative;
+  display: inline-flex;
+}
+.xidig-reaction-picker {
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  inset-inline-start: 0;
+  z-index: 5;
+  display: flex;
+  gap: 0.15rem;
+  padding: 0.3rem;
+  border: 1px solid var(--x-border);
+  border-radius: 999px;
+  background: var(--x-surface);
+  box-shadow: 0 8px 24px rgba(19, 28, 46, 0.14);
+}
+.xidig-reaction-picker__opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+.xidig-reaction-picker__opt:hover {
+  transform: scale(1.15);
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+}
+.xidig-reaction-picker__opt--on {
+  background: var(--x-accent-soft);
 }
 
 .xidig-mention {

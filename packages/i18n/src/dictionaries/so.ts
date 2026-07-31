@@ -900,6 +900,7 @@ export const so = {
   'plaza.reactionMashallah': 'Mashaallah',
   'plaza.reactionIdea': 'Fikrad',
   'plaza.reactionWatching': 'Daawasho',
+  'plaza.addReaction': 'Falceli',
   'plaza.edited': 'Wax laga beddelay',
   'plaza.pinned': 'Xul',
   'plaza.hiddenOwn':

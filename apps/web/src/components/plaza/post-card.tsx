@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { formatRelativeTime, type MessageKey } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
+import { Avatar } from '@/components/media/avatar';
 import { Banner } from '@/components/banner';
 import { ContentSourceBadge } from '@/components/content-source-badge';
 import { MediaSlot } from '@/components/media/media-slot';
@@ -90,17 +91,57 @@ export function PostCard({
       </p>
     ) : null;
 
+  const verified =
+    author?.verification_status === 'community_verified' ||
+    author?.verification_status === 'identity_verified';
+
   return (
     <article className="xidig-card">
       <div className="xidig-card__top">
-        <p className="xidig-card__meta">
-          {author ? <Link href={`/u/${author.handle}`}>{author.display_name}</Link> : null}
-          {/* Diaspora geography in every byline (brand-rethink adoption):
-              profile city when set — "Ayaan · Toronto · 2h". */}
-          {author?.location_city ? ` · ${author.location_city}` : null}
-          {author ? ' · ' : null}
-          {formatRelativeTime(new Date(post.created_at), locale)}
-        </p>
+        <div className="xidig-byline">
+          {author ? (
+            <Link
+              href={`/u/${author.handle}`}
+              className={`xidig-byline__avatar${verified ? ' xidig-byline__avatar--verified' : ''}`}
+              aria-label={author.display_name}
+            >
+              <Avatar
+                name={author.display_name}
+                handle={author.handle}
+                src={author.avatar_thumb_url}
+                blurhash={author.avatar_blurhash}
+                size={40}
+                prefs={litePrefs}
+              />
+              {verified ? (
+                <span
+                  className="xidig-byline__check"
+                  title={
+                    author.verification_status === 'identity_verified'
+                      ? t('profile.badgeIdentityVerified')
+                      : t('profile.verifStatusCommunity')
+                  }
+                >
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M5 13l4 4L19 7" />
+                  </svg>
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
+          <p className="xidig-card__meta xidig-byline__text">
+            {author ? (
+              <Link className="xidig-byline__name" href={`/u/${author.handle}`}>
+                {author.display_name}
+              </Link>
+            ) : null}
+            {/* Diaspora geography in every byline (brand-rethink adoption):
+                profile city when set — "Ayaan · Toronto · 2h". */}
+            {author?.location_city ? ` · ${author.location_city}` : null}
+            {author ? ' · ' : null}
+            {formatRelativeTime(new Date(post.created_at), locale)}
+          </p>
+        </div>
         <PostOverflowMenu
           authorUserId={post.author_user_id}
           authorName={author?.display_name ?? ''}
@@ -112,7 +153,9 @@ export function PostCard({
       </div>
 
       <p className="xidig-chip-row">
-        <span className="xidig-tag">{t(TYPE_KEYS[post.type])}</span>
+        <span className={`xidig-tag xidig-post-type xidig-post-type--${post.type}`}>
+          {t(TYPE_KEYS[post.type])}
+        </span>
         <ContentSourceBadge source={post.source} />
         {post.pinned_at ? <span className="xidig-tag">{t('plaza.pinned')}</span> : null}
         {post.ask_status ? (
@@ -213,10 +256,19 @@ export function PostCard({
         counts={view.reactions}
         mine={view.myReactions}
       />
-      <p className="xidig-card__meta">
-        <Link href={permalink}>{t('plaza.commentsCount', { count: view.commentCount })}</Link>
-      </p>
-      <div className="xidig-profile__actions">
+      <div className="xidig-post-footer">
+        <Link
+          className="xidig-icon-button xidig-post-comments"
+          href={permalink}
+          aria-label={t('plaza.commentsCount', { count: view.commentCount })}
+          title={t('plaza.commentsCount', { count: view.commentCount })}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5a8.5 8.5 0 0 1-.9-4 8.38 8.38 0 0 1 8.5-8.5A8.5 8.5 0 0 1 21 11.5z" />
+          </svg>
+          <span className="xidig-post-comments__n">{view.commentCount}</span>
+        </Link>
+        <span className="xidig-post-footer__spacer" />
         <BookmarkButton
           entityType="post"
           entityId={post.id}
@@ -226,8 +278,8 @@ export function PostCard({
         {detail && canSeeHistory && revisionCount > 0 ? (
           <PostHistory postId={post.id} count={revisionCount} />
         ) : null}
+        <ShareActions path={permalink} text={post.title ?? post.body.slice(0, 80)} />
       </div>
-      <ShareActions path={permalink} text={post.title ?? post.body.slice(0, 80)} />
     </article>
   );
 }

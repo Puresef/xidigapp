@@ -1050,6 +1050,7 @@ export const en = {
   'plaza.reactionMashallah': 'Mashallah',
   'plaza.reactionIdea': 'Idea',
   'plaza.reactionWatching': 'Watching',
+  'plaza.addReaction': 'React',
   'plaza.edited': 'Edited',
   'plaza.pinned': 'Highlight',
   'plaza.hiddenOwn':

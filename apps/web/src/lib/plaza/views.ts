@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Enums } from '@xidig/db';
 
 import { detectLink, type LinkKind } from '@/lib/embeds';
-import { publicMediaUrl } from '@/lib/media/storage';
+import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 
 /**
  * Plaza read models. Routes fetch post/comment rows under the CALLER's RLS
@@ -83,6 +83,11 @@ export interface AuthorRef {
   /** Profile city (member-visible, §22 directory field) — feed bylines render
    *  it when set so every scroll shows the diaspora's geography. */
   location_city: string | null;
+  /** Avatar thumb URL (small, <8KB) for the byline; null → initials disc. */
+  avatar_thumb_url: string | null;
+  avatar_blurhash: string | null;
+  /** Drives the verified ring on the byline avatar. */
+  verification_status: Enums<'profile_verification_status'>;
 }
 
 export interface PollOptionView {
@@ -154,7 +159,7 @@ async function fetchAuthors(
   if (userIds.length === 0) return authors;
   const { data, error } = await admin
     .from('profiles')
-    .select('user_id, display_name, handle, location_city')
+    .select('user_id, display_name, handle, location_city, avatar_path, avatar_blurhash, verification_status')
     .in('user_id', userIds);
   if (error) throw new Error(`author hydration failed: ${error.message}`);
   for (const row of data ?? []) {
@@ -162,6 +167,13 @@ async function fetchAuthors(
       display_name: row.display_name,
       handle: row.handle,
       location_city: row.location_city ?? null,
+      // Bylines load the tiny thumb (<8KB by the 96px pipeline), not the full
+      // avatar; pre-thumb uploads fall back to the full path.
+      avatar_thumb_url: row.avatar_path
+        ? publicMediaUrl(derivedThumbPath(row.avatar_path))
+        : null,
+      avatar_blurhash: row.avatar_blurhash ?? null,
+      verification_status: row.verification_status,
     });
   }
   return authors;

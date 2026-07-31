@@ -48,22 +48,40 @@ export function ShareActions({ path, text }: { path: string; text: string }) {
   }
 
   return (
-    <div className="xidig-profile__actions">
+    <div className="xidig-post-actions">
       {canNativeShare ? (
         <button
           type="button"
-          className="xidig-button xidig-button--secondary"
+          className="xidig-icon-button"
           onClick={() => void nativeShare()}
+          aria-label={t('action.share')}
+          title={t('action.share')}
         >
-          {t('action.share')}
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+          </svg>
         </button>
       ) : null}
       <button
         type="button"
-        className="xidig-button xidig-button--secondary"
+        className={`xidig-icon-button${copied ? ' xidig-icon-button--done' : ''}`}
         onClick={() => void copy()}
+        aria-label={copied ? t('action.linkCopied') : t('action.copyLink')}
+        title={copied ? t('action.linkCopied') : t('action.copyLink')}
       >
-        {copied ? t('action.linkCopied') : t('action.copyLink')}
+        {copied ? (
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.5" />
+            <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.5 19.5" />
+          </svg>
+        )}
       </button>
     </div>
   );

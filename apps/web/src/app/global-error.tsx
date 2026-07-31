@@ -53,15 +53,108 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
   return (
     <html lang={locale}>
       <body>
+        {/* Self-contained styles: global-error replaces the root layout, so app
+            CSS (globals.css / tokens) is NOT guaranteed to load here. */}
+        <style>{GLOBAL_ERROR_CSS}</style>
         <main className="xidig-global-error">
-          <h1>{t('app.name')}</h1>
-          {/* §27 plain language: what happened · why · what to do next */}
-          <p>{t('error.server')}</p>
-          <button type="button" onClick={() => window.location.reload()}>
-            {t('action.retry')}
-          </button>
+          <div className="xidig-global-error__card">
+            <p className="xidig-global-error__brand">{t('app.name')}</p>
+            {/* §27 plain language: what happened · why · what to do next */}
+            <h1 className="xidig-global-error__title">{t('error.server')}</h1>
+            <div className="xidig-global-error__actions">
+              {/* Back is the sensible default (a retry usually just re-hits the
+                  same failing page); Home is the no-history / new-tab escape. */}
+              <button
+                type="button"
+                className="xidig-global-error__btn"
+                onClick={() => window.history.back()}
+              >
+                {t('action.back')}
+              </button>
+              <a className="xidig-global-error__link" href="/">
+                {t('nav.home')}
+              </a>
+            </div>
+          </div>
         </main>
       </body>
     </html>
   );
 }
+
+/** Brand-adjacent, dependency-free styling for the last-resort screen. */
+const GLOBAL_ERROR_CSS = `
+  body { margin: 0; }
+  .xidig-global-error {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 2rem 1.25rem;
+    background: #ffffff;
+    color: #16233f;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .xidig-global-error__card { width: 100%; max-width: 30rem; text-align: center; }
+  .xidig-global-error__brand {
+    margin: 0 0 0.75rem;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #16233f;
+  }
+  .xidig-global-error__title {
+    margin: 0 0 1.75rem;
+    font-size: 1.0625rem;
+    font-weight: 400;
+    line-height: 1.6;
+    color: #4a5568;
+  }
+  .xidig-global-error__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+  .xidig-global-error__btn,
+  .xidig-global-error__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0 1.25rem;
+    border-radius: 0.5rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .xidig-global-error__btn {
+    border: 1px solid #1d4ed8;
+    background: #1d4ed8;
+    color: #ffffff;
+  }
+  .xidig-global-error__btn:hover { background: #1e40af; border-color: #1e40af; }
+  .xidig-global-error__link {
+    border: 1px solid #d3d9e6;
+    background: #ffffff;
+    color: #16233f;
+  }
+  .xidig-global-error__link:hover { background: #f4f6fb; border-color: #b9c2d6; }
+  .xidig-global-error__btn:focus-visible,
+  .xidig-global-error__link:focus-visible {
+    outline: 2px solid #1d4ed8;
+    outline-offset: 2px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .xidig-global-error { background: #0f1729; color: #e6ebf5; }
+    .xidig-global-error__brand { color: #f4f6fb; }
+    .xidig-global-error__title { color: #a9b4cc; }
+    .xidig-global-error__link { background: #0f1729; color: #e6ebf5; border-color: #2a3652; }
+    .xidig-global-error__link:hover { background: #172136; border-color: #3a4568; }
+  }
+`;

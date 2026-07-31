@@ -49,6 +49,7 @@ export function ReactionBar({
   const [localCounts, setLocalCounts] = useState<ReactionCounts>(counts);
   const [localMine, setLocalMine] = useState<ReactionType[]>(mine);
   const [error, setError] = useState<PlainError | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   async function toggle(type: ReactionType) {
     const previousCounts = localCounts;
@@ -77,10 +78,20 @@ export function ReactionBar({
     }
   }
 
+  // Only reactions with a count — or ones the viewer picked — render as chips;
+  // the rest stay behind the "+ React" trigger so a post with no reactions
+  // isn't five empty emoji.
+  const active = REACTION_TYPES.filter((type) => localCounts[type] > 0 || localMine.includes(type));
+
+  function pick(type: ReactionType) {
+    setPickerOpen(false);
+    void toggle(type);
+  }
+
   return (
     <>
       <div className="xidig-reactions">
-        {REACTION_TYPES.map((type) => (
+        {active.map((type) => (
           <button
             key={type}
             type="button"
@@ -93,6 +104,39 @@ export function ReactionBar({
             {localCounts[type] > 0 ? <span>{localCounts[type]}</span> : null}
           </button>
         ))}
+        <div className="xidig-reaction-add">
+          <button
+            type="button"
+            className="xidig-reaction xidig-reaction--add"
+            aria-haspopup="true"
+            aria-expanded={pickerOpen}
+            aria-label={t('plaza.addReaction')}
+            title={t('plaza.addReaction')}
+            onClick={() => setPickerOpen((open) => !open)}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M8.5 14.5a4 4 0 0 0 7 0M9 9.5h.01M15 9.5h.01" />
+            </svg>
+          </button>
+          {pickerOpen ? (
+            <div className="xidig-reaction-picker" role="menu">
+              {REACTION_TYPES.map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  role="menuitem"
+                  className={`xidig-reaction-picker__opt${localMine.includes(type) ? ' xidig-reaction-picker__opt--on' : ''}`}
+                  aria-label={t(REACTION_LABEL_KEYS[type])}
+                  title={t(REACTION_LABEL_KEYS[type])}
+                  onClick={() => pick(type)}
+                >
+                  <span aria-hidden="true">{REACTION_EMOJI[type]}</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
       {error ? <PlainErrorBanner error={error} /> : null}
     </>
