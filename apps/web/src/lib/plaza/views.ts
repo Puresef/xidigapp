@@ -17,8 +17,12 @@ import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
  *                       from the service role
  *   - poll tallies      ballots are anonymous (Seq 14): counts only, and the
  *                       caller's own ballot is the only row ever echoed back
- *   - comment counts    published comments only
+ *   - comment counts    published comments only; the same fetch yields the
+ *                       newest published comment per post (feed-card teaser,
+ *                       Task 7) — comments are member-visible, so surfacing
+ *                       one snippet through the service role widens nothing
  *
+
  * Aggregation happens in JS over rows fetched per page (20 posts) with a hard
  * row cap — fine at beta scale; revisit with materialized counters if the
  * Plaza outgrows it.
@@ -118,6 +122,14 @@ export interface PostImageView {
   bytes: number | null;
 }
 
+/** Newest published comment on a post, rendered inline on feed cards. */
+export interface LatestCommentView {
+  author: AuthorRef | null;
+  /** Server-trimmed one-liner (≤ COMMENT_SNIPPET_MAX chars) — never the full body. */
+  snippet: string;
+  created_at: string;
+}
+
 export interface PostView {
   post: PostRow;
   author: AuthorRef | null;
@@ -133,6 +145,8 @@ export interface PostView {
   link: LinkKind | null;
   tags: { id: string; name: string }[];
   commentCount: number;
+  /** Newest published comment (feed-card teaser; optional so older fixtures compile). */
+  latestComment?: LatestCommentView | null;
   reactions: ReactionCounts;
   myReactions: ReactionType[];
   poll: PollView | null;
@@ -392,24 +406,70 @@ export function isPostMuted(
   return tags.some((tag) => mutes.tags.has(tag.id));
 }
 
-async function fetchCommentCounts(
+/** Hard cap for the inline latest-comment snippet (server-side trim). */
+export const COMMENT_SNIPPET_MAX = 140;
+
+export interface CommentAggregateRow {
+  post_id: string | null;
+  author_user_id: string;
+  body: string;
+  created_at: string;
+}
+
+export interface CommentAggregates {
+  counts: Map<string, number>;
+  latest: Map<string, { author_user_id: string; snippet: string; created_at: string }>;
+}
+
+/** One-line snippet: whitespace flattened, hard-trimmed with an ellipsis. */
+function snippetOf(body: string): string {
+  const flat = body.replace(/\s+/g, ' ').trim();
+  if (flat.length <= COMMENT_SNIPPET_MAX) return flat;
+  return `${flat.slice(0, COMMENT_SNIPPET_MAX - 1).trimEnd()}…`;
+}
+
+/**
+ * One pass over published comment rows → per-post count AND newest comment
+ * (Task 7 inline teaser). Pure so the max-pick + trim logic is unit-testable;
+ * order-independent so the DB query's sort is a row-cap bias control, not a
+ * correctness dependency.
+ */
+export function aggregateComments(rows: CommentAggregateRow[]): CommentAggregates {
+  const counts = new Map<string, number>();
+  const latest = new Map<string, { author_user_id: string; snippet: string; created_at: string }>();
+  for (const row of rows) {
+    if (!row.post_id) continue;
+    counts.set(row.post_id, (counts.get(row.post_id) ?? 0) + 1);
+    const current = latest.get(row.post_id);
+    if (!current || row.created_at > current.created_at) {
+      latest.set(row.post_id, {
+        author_user_id: row.author_user_id,
+        snippet: snippetOf(row.body),
+        created_at: row.created_at,
+      });
+    }
+  }
+  return { counts, latest };
+}
+
+async function fetchCommentAggregates(
   admin: SupabaseClient<Database>,
   postIds: string[],
-): Promise<Map<string, number>> {
-  const countByPost = new Map<string, number>();
-  if (postIds.length === 0) return countByPost;
+): Promise<CommentAggregates> {
+  if (postIds.length === 0) return { counts: new Map(), latest: new Map() };
+  // body/author/created_at ride the count query (one round trip for count +
+  // newest-comment teaser). Newest-first ordering means that IF the row cap
+  // ever truncates, it drops the oldest rows — counts degrade, the teaser
+  // stays right. Body weight shares the module-doc beta-scale caveat.
   const { data, error } = await admin
     .from('comments')
-    .select('post_id')
+    .select('post_id, author_user_id, body, created_at')
     .in('post_id', postIds)
     .eq('status', 'published')
+    .order('created_at', { ascending: false })
     .limit(AGGREGATE_ROW_CAP);
   if (error) throw new Error(`comment counts failed: ${error.message}`);
-  for (const row of data ?? []) {
-    if (!row.post_id) continue;
-    countByPost.set(row.post_id, (countByPost.get(row.post_id) ?? 0) + 1);
-  }
-  return countByPost;
+  return aggregateComments((data ?? []) as CommentAggregateRow[]);
 }
 
 export interface HydratePostsOptions {
@@ -436,17 +496,28 @@ export async function hydratePosts(
   const pollPostIds = rows.filter((row) => row.type === 'poll').map((row) => row.id);
   const authorIds = [...new Set(rows.map((row) => row.author_user_id))];
 
-  const [authors, reactions, polls, commentCounts, tags, imageMeta, bookmarkedIds, mutes] =
+  const [authors, reactions, polls, comments, tags, imageMeta, bookmarkedIds, mutes] =
     await Promise.all([
       fetchAuthors(admin, authorIds),
       fetchReactionAggregates(admin, 'post_id', postIds, viewerId),
       fetchPolls(admin, pollPostIds, viewerId),
-      fetchCommentCounts(admin, postIds),
+      fetchCommentAggregates(admin, postIds),
       fetchPostTags(admin, postIds),
       fetchPostImageMeta(admin, postIds),
       fetchViewerBookmarks(admin, viewerId, postIds),
       applyMuteFilter ? fetchViewerMutes(admin, viewerId) : Promise.resolve(null),
     ]);
+
+  // Latest-comment authors not already hydrated (commenters are often the
+  // post authors themselves — this supplemental batch is usually empty, and
+  // at most ONE extra round trip per page when it isn't).
+  const missingCommentAuthorIds = [
+    ...new Set([...comments.latest.values()].map((row) => row.author_user_id)),
+  ].filter((id) => !authors.has(id));
+  if (missingCommentAuthorIds.length > 0) {
+    const extra = await fetchAuthors(admin, missingCommentAuthorIds);
+    for (const [id, ref] of extra) authors.set(id, ref);
+  }
 
   const views = rows.map((post) => ({
     post,
@@ -468,7 +539,16 @@ export async function hydratePosts(
     }),
     link: post.link_url ? detectLink(post.link_url) : null,
     tags: tags.get(post.id) ?? [],
-    commentCount: commentCounts.get(post.id) ?? 0,
+    commentCount: comments.counts.get(post.id) ?? 0,
+    latestComment: ((): LatestCommentView | null => {
+      const latest = comments.latest.get(post.id);
+      if (!latest) return null;
+      return {
+        author: authors.get(latest.author_user_id) ?? null,
+        snippet: latest.snippet,
+        created_at: latest.created_at,
+      };
+    })(),
     reactions: reactions.counts.get(post.id) ?? emptyReactionCounts(),
     myReactions: reactions.mine.get(post.id) ?? [],
     poll: polls.get(post.id) ?? null,

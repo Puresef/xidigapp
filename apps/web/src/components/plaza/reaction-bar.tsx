@@ -16,6 +16,13 @@ import { PlainErrorBanner } from '../auth/plain-error';
  * §20 reaction taxonomy — five named reactions, never a generic "like".
  * Toggles are optimistic: flip locally, then PUT/DELETE; on failure revert
  * and show the server's §27 copy.
+ *
+ * ANTI-ANCHORING (31 Jul decision): reaction COUNTS render only when the
+ * viewer has reacted on this target (`localMine.length > 0`). Non-reactors
+ * see which reaction types are in play — emoji chips, no numbers — plus the
+ * add trigger, so nobody's first read of a post is anchored by its score.
+ * React once and every chip's count unlocks (the rule is per-post, not
+ * per-type). Applies everywhere the bar renders: feed cards AND detail.
  */
 
 const REACTION_EMOJI: Record<ReactionType, string> = {
@@ -83,6 +90,9 @@ export function ReactionBar({
   // isn't five empty emoji.
   const active = REACTION_TYPES.filter((type) => localCounts[type] > 0 || localMine.includes(type));
 
+  // Anti-anchoring gate (see module doc): numbers only after the viewer reacts.
+  const showCounts = localMine.length > 0;
+
   function pick(type: ReactionType) {
     setPickerOpen(false);
     void toggle(type);
@@ -101,7 +111,7 @@ export function ReactionBar({
             onClick={() => void toggle(type)}
           >
             <span aria-hidden="true">{REACTION_EMOJI[type]}</span>
-            {localCounts[type] > 0 ? <span>{localCounts[type]}</span> : null}
+            {showCounts && localCounts[type] > 0 ? <span>{localCounts[type]}</span> : null}
           </button>
         ))}
         <div className="xidig-reaction-add">
