@@ -134,9 +134,15 @@ export async function PATCH(
           awardedBy: verifier.appUser.id,
         });
       } else if (verification.type === 'business' && verification.listing_id) {
+        // verified_at is the denormalized "Checked: {date}" the §18 explainer
+        // shows — stamped with the same decision timestamp written to
+        // verifications.decided_at above. The DB-side sync trigger
+        // (20260731000000) is the backstop: any OTHER transition out of
+        // 'verified' (a future revoke flow, moderation, manual correction)
+        // nulls it, and a transition in that forgot to stamp gets now().
         const { error: listingError } = await admin
           .from('business_listings')
-          .update({ verification_status: 'verified' })
+          .update({ verification_status: 'verified', verified_at: now })
           .eq('id', verification.listing_id);
         if (listingError) throw new Error(`listing award failed: ${listingError.message}`);
 

@@ -425,6 +425,7 @@ export type Database = {
           export_checklist: Json | null
           export_readiness_score: number | null
           id: string
+          is_verified: boolean
           landmark: string | null
           latitude: number | null
           longitude: number | null
@@ -441,6 +442,7 @@ export type Database = {
           status: Database["public"]["Enums"]["content_status"]
           updated_at: string
           verification_status: Database["public"]["Enums"]["listing_verification_status"]
+          verified_at: string | null
         }
         Insert: {
           address?: string | null
@@ -453,6 +455,7 @@ export type Database = {
           export_checklist?: Json | null
           export_readiness_score?: number | null
           id?: string
+          is_verified?: boolean
           landmark?: string | null
           latitude?: number | null
           longitude?: number | null
@@ -469,6 +472,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["listing_verification_status"]
+          verified_at?: string | null
         }
         Update: {
           address?: string | null
@@ -481,6 +485,7 @@ export type Database = {
           export_checklist?: Json | null
           export_readiness_score?: number | null
           id?: string
+          is_verified?: boolean
           landmark?: string | null
           latitude?: number | null
           longitude?: number | null
@@ -497,6 +502,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["listing_verification_status"]
+          verified_at?: string | null
         }
         Relationships: [
           {

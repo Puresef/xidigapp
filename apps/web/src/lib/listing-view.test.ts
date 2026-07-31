@@ -117,6 +117,7 @@ function publishedListing(overrides: Row = {}): Row {
     country: 'Somaliland',
     contact_links: [],
     verification_status: 'verified',
+    verified_at: '2026-07-15T00:00:00Z',
     status: 'published',
     source: 'member',
     created_at: '2026-07-01T00:00:00Z',
