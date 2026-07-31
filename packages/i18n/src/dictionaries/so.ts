@@ -133,6 +133,7 @@ export const so = {
   'state.comingSoonBody':
     'Qaybtan Xidig waxay furmaysaa marxalad danbe. Suuqu hadda waa furan yahay — ka hel dhisayaal iyo ganacsiyo.',
   'state.endOfList': 'Intaas ayay ahayd.',
+  'state.errorTitle': 'Khalad ayaa dhacay',
 
   // Errors — plain language per PRD §27
   'error.offline':

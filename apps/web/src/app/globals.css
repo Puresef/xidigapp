@@ -3698,6 +3698,20 @@ button.xidig-poll__option:disabled,
   border-radius: var(--x-radius-pill);
 }
 
+/* Route-loading shells (Task 9): a tab-sized pill for filter rows and an
+   input-height bar standing in for composer/search fields — same footprint
+   as the controls that replace them, so the loaded page doesn't jump. */
+.xidig-skeleton--chip {
+  min-height: 0;
+  height: 2rem;
+  width: 4.5rem;
+  border-radius: var(--x-radius-pill);
+}
+
+.xidig-skeleton--bar {
+  min-height: 2.75rem;
+}
+
 /* Card silhouette: mirrors .xidig-card's frame, padding and gap exactly, so
    a loading list occupies the same footprint as the content replacing it. */
 .xidig-skeleton-card {

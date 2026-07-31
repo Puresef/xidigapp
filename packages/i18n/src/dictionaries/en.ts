@@ -139,6 +139,7 @@ export const en = {
   'state.comingSoonBody':
     'This part of Xidig opens in a later phase. The Suuq is live now — find builders and businesses.',
   'state.endOfList': 'That’s everything.',
+  'state.errorTitle': 'Something went wrong',
 
   // Errors — plain language per PRD §27: what happened · why · what to do next
   'error.offline':
