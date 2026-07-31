@@ -3278,7 +3278,15 @@ a.xidig-settings-card:hover {
   position: fixed;
   inset-inline: 0;
   bottom: 0;
-  z-index: 50; /* under .xidig-modal (60) — a modal may open above it */
+  /* Fixed-layer ladder: mobile tab bar 40 < consent 50 < .xidig-modal 60
+     (a modal may legitimately open above the banner; the Dialog primitive's
+     body scroll lock is overflow-only, so the clearance padding below
+     composes with it) < toaster 90. In-page popovers (reaction picker z5,
+     mention list z30, user-menu panel z50) are position:absolute inside the
+     scrolled page — the fixed banner paints over all of them regardless of
+     their local values, and the :has() clearance keeps the last card's
+     upward-opening popovers out of the banner's zone entirely. */
+  z-index: 50;
   margin: 0 auto;
   max-width: 42rem;
   padding: 0.9rem 1rem;
@@ -3289,8 +3297,38 @@ a.xidig-settings-card:hover {
   box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.12);
 }
 
+/* Scroll clearance while the banner is mounted (it unmounts once the member
+   chooses): reserve room at the end of the page so the fixed banner never
+   covers the last card's action bar. Generous on purpose — the Manage
+   expansion (two hinted checkboxes), an error banner, and the Lite row all
+   grow the height. Pure padding, no overflow/position, so the Dialog scroll
+   lock (body overflow:hidden) is untouched. body:has() is already
+   load-bearing browser-support-wise (mobile tab-bar rules above), so no
+   class-toggle fallback is needed. */
+body:has(.xidig-consent) {
+  /* Worst case measured: 3-line body + Manage's two hinted checkboxes +
+     error banner + Lite row ≈ 25rem at the 42rem width — the 26rem floor
+     covers it even when 45vh is smaller. */
+  padding-bottom: clamp(26rem, 45vh, 34rem);
+}
+
+/* Mobile: the banner floats ABOVE the tab bar (bottom: 3.75rem + safe area,
+   see the tab-bar block) and text wraps taller — clearance = nav offset +
+   a taller banner allowance. Two :has() clauses outrank the tab bar's own
+   single-:has() 4.5rem padding rule, so this wins by specificity, not
+   order. */
+@media (max-width: 48rem) {
+  body:has(.xidig-nav--app):has(.xidig-consent) {
+    padding-bottom: calc(3.75rem + env(safe-area-inset-bottom) + clamp(26rem, 65vh, 36rem));
+  }
+}
+
 .xidig-consent__title {
   margin: 0 0 0.25rem;
+  /* An <h2> since the a11y pass (headings-list discovery) — pin the size so
+     the UA's 1.5em heading default doesn't balloon the banner; 1rem/600
+     matches the previous <p> rendering exactly. */
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -3318,6 +3356,65 @@ a.xidig-settings-card:hover {
   display: flex;
   flex-wrap: wrap;
   gap: var(--x-space-xs);
+}
+
+/* Lite shortcut (11 Jul full-default/Lite-opt-in directive): a compact
+   SECONDARY row under a hairline — deliberately NOT a fourth .xidig-button,
+   so the three consent choices keep their UK-GDPR equal-prominence parity. */
+.xidig-consent__lite {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--x-space-xs);
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--x-border);
+}
+
+.xidig-consent__lite-text {
+  margin: 0;
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+/* Small link-button. --x-accent-text on --x-bg: 5.77:1 light / 7.57:1 dark
+   (same pair as .xidig-consent__link's inherited link color — token doc at
+   the accent-text definition). Padding keeps the hit area ≥ 24px tall
+   (WCAG 2.5.8). States follow the DESIGN.md §4 sweep conventions; the
+   transition is inside the motion double-gate by construction (the global
+   reduced-motion / data-motion kills zero every transition). */
+.xidig-consent__lite-btn {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  padding: 0.3rem 0.45rem;
+  border-radius: var(--x-radius-s);
+  color: var(--x-accent-text);
+  font-size: var(--x-text-s);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.xidig-consent__lite-btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+}
+
+.xidig-consent__lite-btn:not(:disabled):active {
+  transform: translateY(1px);
+  background: color-mix(in srgb, var(--x-border) 60%, transparent);
+}
+
+.xidig-consent__lite-btn:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+.xidig-consent__lite-btn:disabled {
+  color: var(--x-muted);
+  text-decoration: none;
+  cursor: default;
 }
 
 /* Motion-safe fade only: the global kills (prefers-reduced-motion media query

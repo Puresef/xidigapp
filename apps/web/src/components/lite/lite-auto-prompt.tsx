@@ -71,8 +71,9 @@ export function LiteAutoPrompt({
   if (!show) return null;
 
   function accept(): void {
-    applyLiteBundle('essentials', signedIn);
-    trackClient('low_bandwidth_enabled', { enabled: true });
+    // Shared write sequence — fires the §23 low_bandwidth_enabled event
+    // itself; fire-and-forget is fine before a router.refresh().
+    void applyLiteBundle('essentials', signedIn);
     persistDismissed(); // enabling counts as answered — don't re-offer
     setShow(false);
     router.refresh();

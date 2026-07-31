@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 
 import { useT } from '@xidig/i18n/react';
 
-import { trackClient } from '@/lib/analytics/client';
 import { applyLiteBundle } from '@/lib/lite/apply';
 
 /**
@@ -33,10 +32,10 @@ export function LowBandwidthToggle({
   function toggle() {
     const next = !enabled;
     setEnabled(next);
-    // Shared write sequence (cookies + best-effort server mirror) — on =
-    // `essentials`, off = `everything`; identical to the auto-prompt's Accept.
-    applyLiteBundle(next ? 'essentials' : 'everything', signedIn);
-    trackClient('low_bandwidth_enabled', { enabled: next });
+    // Shared write sequence (cookies + §23 event + best-effort server
+    // mirrors) — on = `essentials`, off = `everything`; identical to the
+    // auto-prompt's Accept and the consent banner's Lite shortcut.
+    void applyLiteBundle(next ? 'essentials' : 'everything', signedIn);
     router.refresh();
   }
 

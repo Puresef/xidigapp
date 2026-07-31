@@ -7,18 +7,13 @@ import { useEffect, useState } from 'react';
 import type { MessageKey } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
-import { trackClient } from '@/lib/analytics/client';
-import { apiPatch } from '@/lib/api-client';
-import { serializeLowBandwidthCookie } from '@/lib/bandwidth';
 import type { PlainError } from '@/lib/errors';
-import { MOTION_COOKIE, serializeAppearanceCookie } from '@/lib/settings/appearance';
+import { applyLitePrefs } from '@/lib/lite/apply';
 import { formatBytes } from '@/lib/lite/estimates';
 import {
-  isLiteActive,
   LITE_BUNDLES,
   LITE_PREF_KEYS,
   matchLiteBundle,
-  serializeLitePrefsCookie,
   type LiteBundleName,
   type LitePrefs,
 } from '@/lib/lite/prefs';
@@ -70,19 +65,11 @@ export function DataSettings({ initialPrefs }: { initialPrefs: LitePrefs }) {
 
   function apply(next: LitePrefs) {
     setPrefs(next);
-    document.cookie = serializeLitePrefsCookie(next);
-    // The animations pref is the ONLY thing that drives the data-motion CSS
-    // kill-switch (globals.css html[data-motion="off"]) — Lite state alone
-    // never suppressed animations before this. animations:false → 'off'.
-    document.cookie = serializeAppearanceCookie(MOTION_COOKIE, next.animations ? 'system' : 'off');
-    // Legacy cookie + column stay in sync so pre-4.5 call sites keep working.
-    const active = isLiteActive(next);
-    document.cookie = serializeLowBandwidthCookie(active);
-    trackClient('low_bandwidth_enabled', { enabled: active });
-    void apiPatch('/api/me/bandwidth', { enabled: active }).catch(() => undefined);
-    void apiPatch('/api/me/settings', {
-      preferences: { lite: next, liteBundle: matchLiteBundle(next) },
-    }).catch(() => undefined);
+    // Shared write path (lib/lite/apply): cookies flip synchronously (the
+    // rendering source of truth) + §23 event + best-effort server mirrors —
+    // fire-and-forget is fine before a router.refresh(), which re-renders
+    // from the cookie on the next paint.
+    void applyLitePrefs(next);
     router.refresh();
   }
 

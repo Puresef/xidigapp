@@ -1805,6 +1805,9 @@ export const en = {
   'consent.errorMonitoringLabel': 'Error-monitoring extras',
   'consent.errorMonitoringHint':
     'Session replays and performance traces that help us fix problems faster. Basic error reports stay on — they keep Xidig running.',
+  'consent.liteLabel': 'Low-data mode (Xawli yar)',
+  'consent.liteHint': 'Heavy images and media wait behind a tap.',
+  'consent.liteCta': 'Turn on',
   'consent.settingsTitle': 'Privacy choices',
   'consent.settingsIntro':
     'Control the optional data Xidig may collect about your account. Changes apply right away.',

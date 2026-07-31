@@ -1720,6 +1720,9 @@ export const so = {
   'consent.errorMonitoringLabel': 'La-socodka khaladaadka (dheeraad)',
   'consent.errorMonitoringHint':
     'Dib-u-ciyaarid fadhi iyo raad-raac waxqabad oo naga caawiya inaanu dhibaatooyinka si dhaqso ah u hagaajinno. Warbixinnada aasaasiga ah ee khaladaadku way sii shaqeeyaan — waxay ilaaliyaan Xidig.',
+  'consent.liteLabel': 'Xawli yar',
+  'consent.liteHint': 'Sawirrada iyo muuqaallada culus waxay sugaan ilaa aad taabato.',
+  'consent.liteCta': 'Daar',
   'consent.settingsTitle': 'Doorashooyinka sirta',
   'consent.settingsIntro':
     'Xakamee xogta ikhtiyaariga ah ee Xidig ka ururin karo akoonkaaga. Isbeddeladu isla markiiba way dhaqan galaan.',
