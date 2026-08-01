@@ -10,8 +10,8 @@ import { AnimatedMark } from './animated-mark';
  * AnimatedMark contract (mark-redesign spec §4): final-frame base state,
  * decorative layers hidden from the tree, and — the load-bearing gate —
  * the component's geometry must stay byte-identical to the canonical
- * apps/web/src/app/icon.svg (C2). An icon change without a component change
- * fails here, not in production chrome.
+ * apps/web/src/components/brand/mark-canonical.svg (C2). An icon change
+ * without a component change fails here, not in production chrome.
  */
 
 function render(props: Parameters<typeof AnimatedMark>[0]): string {
@@ -50,9 +50,9 @@ describe('AnimatedMark', () => {
     expect(render({ mode: 'static', label: 'X' }).match(/<svg /g)?.length).toBe(1);
   });
 
-  it('GATE: geometry is byte-identical to the canonical icon.svg (C2)', () => {
+  it('GATE: geometry is byte-identical to the canonical mark SVG (C2)', () => {
     const icon = readFileSync(
-      join(__dirname, '..', '..', 'app', 'icon.svg'),
+      join(__dirname, 'mark-canonical.svg'),
       'utf8',
     );
     const iconPaths = [...icon.matchAll(/<path d="([^"]+)" fill="([^"]+)"\/>/g)];

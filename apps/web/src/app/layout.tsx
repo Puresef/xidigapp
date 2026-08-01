@@ -1,7 +1,7 @@
 import './globals.css';
 import './front.css';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk } from 'next/font/google';
 import { cookies, headers } from 'next/headers';
 import type { ReactNode } from 'react';
@@ -42,6 +42,16 @@ const spaceGrotesk = Space_Grotesk({
   display: 'swap',
 });
 
+// Browser + PWA chrome colour = the mark's Somali Blue (#0077cc) — the ruled
+// identity anchor (docs/brand-direction.md §6; the in-app #2e78b0 accent
+// unifies onto it in a queued follow-up). width/initialScale keep Next's
+// responsive defaults explicit alongside it.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#0077cc',
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const t = await getT();
@@ -68,6 +78,23 @@ export async function generateMetadata(): Promise<Metadata> {
       alternateLocale: [OG_LOCALES[locale === 'so' ? 'en' : 'so']],
     },
     twitter: { card: 'summary_large_image' },
+    // Install / brand identity — the approved C2 mark recoloured to Somali Blue
+    // #0077cc. Assets live in public/ and are wired here; no app/ file-convention
+    // icons remain, so this metadata is authoritative (Next only overrides
+    // metadata when an app/ icon FILE exists). favicon.svg wins in modern
+    // browsers, favicon.ico is the legacy fallback — which is exactly why the
+    // ICO is declared 32x32, NEVER sizes="any": Chromium treats an "any" icon
+    // link as scalable and would pick the 32px raster over the SVG
+    // (crbug.com/1162276), softening the tab icon on high-DPI displays.
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: '32x32' },
+        { url: '/favicon.svg', type: 'image/svg+xml' },
+      ],
+      apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    },
+    // iOS Add-to-Home-Screen: standalone launch + the brand name under the icon.
+    appleWebApp: { capable: true, title: t('app.name'), statusBarStyle: 'default' },
     // Env-gated indexing: everything is noindex until this deployment IS
     // xidig.net, so the old marketing site stays the sole indexed owner of
     // its URLs during the overlap (no duplicate-content window). Per-page

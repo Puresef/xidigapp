@@ -62,7 +62,7 @@ export function organizationJsonLd(opts: { description: string }) {
     '@id': `${appUrl}/#organization`,
     name: 'Xidig',
     url: appUrl,
-    logo: `${appUrl}/apple-icon.png`,
+    logo: `${appUrl}/icon-512.png`,
     description: opts.description,
     // No contactPoint: the old site's info@xidig.net is not a verified live
     // inbox and the app's contact surface is the /contact form. Add one only

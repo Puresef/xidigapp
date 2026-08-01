@@ -22,8 +22,13 @@ import type { ReactNode } from 'react';
  * `label` is the accessible name — pass a translated brand string (t('app.name'))
  * so the component stays locale-pure under the i18n lint.
  *
- * Geometry: the canonical C2 pieces from apps/web/src/app/icon.svg — the X body
- * (3 paths) and the two woven star halves. Keep them in sync with the icon.
+ * Geometry: the canonical C2 pieces from
+ * apps/web/src/components/brand/mark-canonical.svg — the X body (3 paths) and
+ * the two woven star halves. Keep them in sync with that canonical SVG (the
+ * GATE test in animated-mark.test.tsx enforces it). Note: the browser-tab /
+ * PWA favicon (public/favicon.svg) is the same geometry at Somali Blue
+ * #0077cc; this component is still #2e78b0 only until the ruled unification
+ * lands (docs/brand-direction.md §6 — recolor queued as its own task).
  */
 
 export type AnimatedMarkMode = 'static' | 'assemble' | 'flap' | 'ceremony' | 'hero';

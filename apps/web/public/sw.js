@@ -13,6 +13,10 @@ self.addEventListener('push', (event) => {
       body: 'You have new activity on Xidig.',
       tag: 'xidig-activity',
       renotify: false,
+      // Branded notification icon — same install-identity asset set (the
+      // #0077cc mark on the dawn plate). No `badge`: a spec-correct badge is a
+      // monochrome silhouette, which would be new art — deliberately skipped.
+      icon: '/icon-192.png',
       data: { url: '/notifications' },
     }),
   );
