@@ -259,7 +259,12 @@ export function PeopleDirectory() {
             {profile.bio ? <p className="xidig-card__body">{profile.bio}</p> : null}
             {profile.skills.length > 0 || profile.lanes.length > 0 ? (
               <p className="xidig-chip-row">
-                {[...profile.lanes, ...profile.skills].slice(0, 6).map((chip) => (
+                {/* Lanes + skills share ONE undifferentiated chip row, and a
+                    member can legitimately hold the same word in both (lane +
+                    skill "construction") — dedupe exact repeats BEFORE the
+                    6-chip cap: one chip per word, unique React keys, and a
+                    duplicate never burns a slot. */}
+                {[...new Set([...profile.lanes, ...profile.skills])].slice(0, 6).map((chip) => (
                   <span key={chip} className="xidig-tag">
                     {chip}
                   </span>
