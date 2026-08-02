@@ -11,8 +11,8 @@ import type { MetadataRoute } from 'next';
  * theme_color = the mark's Somali Blue (browser/PWA chrome); background_color
  * stays the dawn canvas so the launch splash reads calm, premium, and branded
  * (ruled: install identity = dawn plate; app/marketing = dark-first).
- * The in-app AnimatedMark is still #2e78b0 pending the ruled unification onto
- * #0077cc (docs/brand-direction.md §6 — queued as its own task).
+ * The in-app AnimatedMark shares this #0077cc (§6 unification, part a landed);
+ * the wider --x-accent sweep is part (b), tracked separately.
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
