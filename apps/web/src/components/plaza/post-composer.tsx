@@ -7,6 +7,8 @@ import { formatRelativeTime, type MessageKey } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
 import { ButtonTabs } from '@/components/button-tabs';
+import { XidigIcon } from '@/components/icons/XidigIcon';
+import { XIDIG_POST_TYPE_ICON } from '@/components/icons/paths';
 import { MentionAutocomplete } from '@/components/social/mention-autocomplete';
 import { ApiRequestError, apiDelete, apiGet, apiPatch, apiPost } from '@/lib/api-client';
 import { detectLink } from '@/lib/embeds';
@@ -438,7 +440,20 @@ export function PostComposer({
         onChange={setType}
         tabs={POST_TYPES.map((candidate) => ({
           value: candidate,
-          label: t(TYPE_LABEL_KEYS[candidate]),
+          // D3 glyph beside each type label — decorative (ButtonTabs renders
+          // the visible text); the picked type wears the filled variant.
+          label: (
+            <>
+              <XidigIcon
+                name={XIDIG_POST_TYPE_ICON[candidate]}
+                variant={type === candidate ? 'filled' : 'outline'}
+                size={16}
+                tone="inherit"
+                className="x-ic--lead"
+              />
+              {t(TYPE_LABEL_KEYS[candidate])}
+            </>
+          ),
         }))}
       />
 

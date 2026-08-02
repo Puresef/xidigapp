@@ -6,6 +6,7 @@ import type { Enums } from '@xidig/db';
 import { useT } from '@xidig/i18n/react';
 
 import { AnimatedMark } from '@/components/brand/animated-mark';
+import { XidigIcon } from '@/components/icons/XidigIcon';
 import { ApiRequestError, apiDelete, apiPost } from '@/lib/api-client';
 import type { InterestCounts } from '@/lib/capital/views';
 import type { PlainError } from '@/lib/errors';
@@ -106,6 +107,17 @@ export function InterestBar({
           aria-pressed={mine.has('cosign')}
           onClick={() => toggle('cosign')}
         >
+          {/* D3 dabqaad — Garab is never a like/heart/thumb. Outline = unlit;
+              co-signed = lit (filled) with the smoke wisps (CSS double-gated).
+              Decorative: the visible button text carries the meaning. */}
+          <XidigIcon
+            name="garab"
+            variant={mine.has('cosign') ? 'filled' : 'outline'}
+            size={18}
+            tone="inherit"
+            animateSmoke={mine.has('cosign')}
+            className="x-ic--lead"
+          />
           {mine.has('cosign') ? t('capital.cosignDone') : t('action.garab')}
         </button>
         <button

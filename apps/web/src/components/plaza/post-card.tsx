@@ -8,6 +8,8 @@ import { useLocale, useT } from '@xidig/i18n/react';
 
 import { Avatar } from '@/components/media/avatar';
 import { ContentSourceBadge } from '@/components/content-source-badge';
+import { XidigIcon } from '@/components/icons/XidigIcon';
+import { XIDIG_POST_TYPE_ICON } from '@/components/icons/paths';
 import { MediaSlot } from '@/components/media/media-slot';
 import { ShareActions } from '@/components/share-actions';
 import { BookmarkButton } from '@/components/social/bookmark-button';
@@ -164,6 +166,17 @@ export function PostCard({
 
       <p className="xidig-chip-row">
         <span className={`xidig-tag xidig-post-type xidig-post-type--${post.type}`}>
+          {/* D3 glyph (docs/d3-icon-handoff): decorative — the text label is
+              adjacent, so no `label` (icon renders aria-hidden). tone="inherit"
+              keeps icon+text on the chip's own color (Guul's chip already rides
+              the trust treatment; the icon must match its text exactly). */}
+          <XidigIcon
+            name={XIDIG_POST_TYPE_ICON[post.type]}
+            variant="filled"
+            size={14}
+            tone="inherit"
+            className="x-ic--lead"
+          />
           {t(TYPE_KEYS[post.type])}
         </span>
         <ContentSourceBadge source={post.source} />

@@ -1,5 +1,6 @@
 import './globals.css';
 import './front.css';
+import '../components/icons/xidig-icon.css';
 
 import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk } from 'next/font/google';

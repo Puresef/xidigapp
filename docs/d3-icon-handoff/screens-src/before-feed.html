@@ -1,0 +1,58 @@
+<!-- BEFORE capture copy for D3 — @dsCard group="App" viewport="1280x800" name="Plaza feed" subtitle="Signed-in home: header chrome, five tabs, lane switcher, composer, live PostCards" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><script src="./theme-init.js"></script><title>Xidig — Madal / Plaza</title><link rel="stylesheet" href="../../_ds/xidig-design-system-1373cba0-8686-4da2-8ce7-e26df0a84ace/styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds/xidig-design-system-1373cba0-8686-4da2-8ce7-e26df0a84ace/_ds_bundle.js"></script>
+<style>.xidig-header-search input{width:220px}.xidig-nav__item a[aria-current='page']{color:var(--x-accent-text);font-weight:700}</style></head>
+<body data-screen-label="Plaza feed"><div id="root"></div>
+<script type="text/babel">
+const {AnimatedMark,Avatar,ButtonTabs,Button,PostCard,LanguageToggle,SiteFooter,Toaster,SystemNotice}=window.XidigDesignSystem_1373cb;
+const NAV=[['Hoy','#'],['Madal','index.html'],['Warshad','#'],['Suuq','#'],['Fariimo','messages.html']];
+function Header(){
+  return <header className="xidig-header">
+    <div className="xidig-nav">
+      <a href="index.html" className="xidig-brand" aria-label="Xidig"><AnimatedMark mode="assemble" size={20} label="Xidig" /></a>
+      <nav aria-label="Main" className="xidig-nav--app"><ul className="xidig-nav__list">
+        {NAV.map(([label,href],i)=><li key={label} className="xidig-nav__item"><a href={href} aria-current={i===1?'page':undefined}><span className="xidig-nav__label">{label}</span>{i===4?<span className="xidig-nav__badge" aria-label="2">2</span>:null}</a></li>)}
+      </ul></nav>
+    </div>
+    <div className="xidig-header__actions" style={{display:'flex',alignItems:'center',gap:'0.6rem'}}>
+      <span className="xidig-header-search"><input className="xidig-field__input" type="search" placeholder="Magac, ganacsi, meel ama qoraal…" aria-label="Search" /></span>
+      <Button>Abuur</Button>
+      <button type="button" className="xidig-icon-button" aria-label="Notifications" title="Notifications"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 0 1-3.4 0" /></svg></button>
+      <LanguageToggle locale="so" />
+      <Avatar name="Ayaan Warsame" handle="ayaan" size={32} />
+    </div>
+  </header>;
+}
+function Composer(){
+  const [toast,setToast]=React.useState([]);
+  return <>
+    <div className="xidig-card" style={{display:'flex',gap:'0.75rem',alignItems:'center'}}>
+      <Avatar name="Ayaan Warsame" handle="ayaan" size={40} />
+      <input className="xidig-field__input" style={{flex:1}} placeholder="Share something with the Plaza…" aria-label="Share with the Plaza" onFocus={()=>{setToast(['Composer opens as a bottom sheet on phones.']);setTimeout(()=>setToast([]),2500);}} />
+      <Button>Qor</Button>
+    </div>
+    <Toaster messages={toast} />
+  </>;
+}
+function App(){
+  const [lane,setLane]=React.useState('all');
+  return <>
+    <Header />
+    <main style={{maxWidth:'44rem'}}>
+      <ButtonTabs label="Feed lanes" idBase="lane" value={lane} onChange={setLane} tabs={[{value:'all',label:'Dhammaan'},{value:'following',label:'La socodka'}]} panelId="feed" />
+      <div id="feed" role="tabpanel" style={{display:'flex',flexDirection:'column',gap:'1rem',marginTop:'1rem'}}>
+        <Composer />
+        <PostCard author={{name:'Ayaan Warsame',handle:'ayaan',city:'Toronto',verified:true}} time="2h" type="win" typeLabel="Guul" title="First 100 pre-orders" body="Alhamdulillah — the tailoring studio hit 100 pre-orders this week. Thank you to everyone who co-signed the launch." tags={['muqdisho','fashion']} counts={{fire:4,mashallah:2}} mine={['fire']} commentCount={3} latestComment={{name:'Bilan Yusuf',handle:'bilan',snippet:'Congratulations! The stitching photos were beautiful.'}} />
+        {lane==='all'?<PostCard author={{name:'Cali Maxamed',handle:'cali',city:'Minneapolis'}} time="5h" type="ask" typeLabel="Weydiin" askStatusLabel="Furan" body="Looking for a Somali-speaking accountant familiar with US small-business filing — who should I talk to?" counts={{idea:2}} commentCount={7} image={{alt:'Storefront photo',estBytes:182000,washColor:'#39506a',width:800,height:600}} />:null}
+        <PostCard author={{name:'Deeqa Axmed',handle:'deeqa',city:'London'}} time="1d" type="update" typeLabel="War" source="seed" body="Warshad update: the delivery co-op finished its second pilot week. Full write-up in the Lab." tags={['logistics']} counts={{watching:3}} commentCount={1} bookmarked />
+        {lane==='following'?<PostCard author={{name:'Faysal Hirsi',handle:'faysal',city:'Nairobi'}} time="3h" type="intro" typeLabel="Is-barasho" body="Salaan! Product designer, 6 years in fintech, moving back to build. Open to Labs that need design help." counts={{}} commentCount={2} systemNotice={<SystemNotice tone="info">Your post is awaiting review.</SystemNotice>} />:null}
+      </div>
+      <SiteFooter />
+    </main>
+  </>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>

@@ -1,0 +1,73 @@
+{
+  "version": "2026-08-02",
+  "task": "D2",
+  "grid": 24,
+  "stroke": 2,
+  "detail_stroke": 1.4,
+  "color": {
+    "default": "var(--x-accent)",
+    "text_adjacent_dark": "var(--x-accent-text)",
+    "guul_default": "var(--x-trust)",
+    "earned_states": "var(--x-trust)"
+  },
+  "glyphs": [
+    {
+      "key": "salaan",
+      "so": "Salaan",
+      "en": "Intro / Greeting",
+      "post_type": "is-barasho",
+      "outline": "salaan-outline.svg",
+      "filled": "salaan-filled.svg",
+      "color": "accent"
+    },
+    {
+      "key": "codsi",
+      "so": "Codsi",
+      "en": "Ask / Request",
+      "post_type": "weydiin",
+      "outline": "codsi-outline.svg",
+      "filled": "codsi-filled.svg",
+      "color": "accent",
+      "note": "filled uses evenodd knockout"
+    },
+    {
+      "key": "guul",
+      "so": "Guul",
+      "en": "Win",
+      "post_type": "guul",
+      "outline": "guul-outline.svg",
+      "filled": "guul-filled.svg",
+      "color": "trust",
+      "note": "only default-orange glyph (DESIGN.md §2)"
+    },
+    {
+      "key": "war",
+      "so": "War",
+      "en": "Update",
+      "post_type": "war",
+      "outline": "war-outline.svg",
+      "filled": "war-filled.svg",
+      "color": "accent"
+    },
+    {
+      "key": "cod",
+      "so": "Cod",
+      "en": "Poll / Vote",
+      "post_type": "codbixin",
+      "outline": "cod-outline.svg",
+      "filled": "cod-filled.svg",
+      "color": "accent"
+    },
+    {
+      "key": "garab",
+      "so": "Garab",
+      "en": "Co-sign",
+      "post_type": null,
+      "action": true,
+      "outline": "garab-outline.svg",
+      "filled": "garab-filled.svg",
+      "color": "accent",
+      "note": "approved D1 dabqaad; filled = lit (smoke). Bronze treatment = open brand question, not shipped. Active stays --x-accent."
+    }
+  ]
+}

@@ -117,6 +117,9 @@ export default tseslint.config(
       // broken eslint setup) — deleted entirely once the reports port lands
       // (docs/front-door-plan.md §7).
       'xidig/**',
+      // Verbatim Claude Design handoff (docs, incl. screen-capture fixtures) —
+      // provenance record, not app code (docs/d3-icon-handoff/NOTE.md).
+      'docs/d3-icon-handoff/**',
     ],
   },
   ...tseslint.configs.recommended,

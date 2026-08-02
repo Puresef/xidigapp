@@ -1,0 +1,53 @@
+/* apps/web/src/components/icons/xidig-icon.css
+   Tones ride the shipped tokens (globals.css); interactive states follow DESIGN.md.
+   Import once from the app layout. */
+
+.x-ic { display: inline-flex; line-height: 0; flex: none; }
+/* Glyph leading inline text (type chips, filter tabs, buttons) — the house
+   0.4rem lead (cf. .xidig-flap-inline) + a baseline nudge for inline-flex. */
+.x-ic--lead { margin-right: 0.4rem; vertical-align: -0.15em; }
+.x-ic--accent { color: var(--x-accent); }          /* #0077cc */
+.x-ic--accent-text { color: var(--x-accent-text); } /* #0068b3 light / #7bb8e5 dark — use when the glyph must read like text on dark */
+.x-ic--trust { color: var(--x-trust); }             /* #ff8c00 — Guul default + earned states ONLY */
+
+/* Icon action button (Garab, bookmark, share rows). ≥44px hit target via padding. */
+.x-icbtn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  min-height: 2.75rem; padding: 0.45rem 0.8rem 0.45rem 0.65rem;
+  border-radius: var(--x-radius-pill); border: 1px solid transparent;
+  background: transparent; color: var(--x-muted);
+  font: inherit; cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, transform .15s ease, color .15s ease;
+}
+.x-icbtn:hover {
+  border-color: color-mix(in srgb, var(--x-accent) 45%, transparent); /* hover = 45% border tint */
+  transform: translateY(-1px);
+}
+.x-icbtn:active { transform: translateY(1px); background: color-mix(in srgb, var(--x-accent) 10%, transparent); } /* pressed = darken + 1px sink */
+.x-icbtn:focus-visible { outline: 2px solid var(--x-accent); outline-offset: 2px; }
+.x-icbtn:disabled { opacity: .55; transform: none; border-color: transparent; background: transparent; cursor: default; }
+/* selected / toggled-on (aria-pressed) — pressed-in-flight stays visibly ON */
+.x-icbtn[aria-pressed='true'] {
+  background: var(--x-accent-soft);
+  border-color: color-mix(in srgb, var(--x-accent) 50%, transparent);
+  color: var(--x-accent-text);
+}
+
+/* Filter chip selected state (post-type chips) */
+.x-chip[aria-pressed='true'], .x-chip[data-selected='true'] {
+  background: var(--x-accent-soft);
+  border-color: color-mix(in srgb, var(--x-accent) 55%, transparent);
+  color: var(--x-fg);
+}
+
+/* Garab smoke — runs only when .x-ic-smk--on is set, double-gated per DESIGN.md */
+@keyframes x-ic-smoke {
+  0% { transform: translateY(2.2px); opacity: 0; }
+  22% { opacity: .8; }
+  100% { transform: translateY(-2.8px); opacity: 0; }
+}
+.x-ic-smk { opacity: .85; }
+.x-ic-smk--on { transform-box: fill-box; animation: x-ic-smoke 2.6s cubic-bezier(.4,0,.6,1) infinite; }
+.x-ic-smk--on.x-ic-smk--2 { animation-delay: 1.25s; }
+@media (prefers-reduced-motion: reduce) { .x-ic-smk--on { animation: none; } }
+html[data-motion='off'] .x-ic-smk--on { animation: none; }

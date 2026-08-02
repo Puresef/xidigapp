@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 
 import type { MessageKey } from '@xidig/i18n';
 
+import { XidigIcon } from '@/components/icons/XidigIcon';
+import { XIDIG_POST_TYPE_ICON } from '@/components/icons/paths';
 import { PlazaFeed } from '@/components/plaza/plaza-feed';
 import { PostComposer } from '@/components/plaza/post-composer';
 import { getAuthContext } from '@/lib/auth/guards';
@@ -72,6 +74,15 @@ export default async function PlazaPage({
             href={`/plaza?type=${value}`}
             aria-current={type === value ? 'page' : undefined}
           >
+            {/* D3 glyph — decorative beside the tab text; the active filter
+                wears the filled variant (16px chip floor). */}
+            <XidigIcon
+              name={XIDIG_POST_TYPE_ICON[value]}
+              variant={type === value ? 'filled' : 'outline'}
+              size={16}
+              tone="inherit"
+              className="x-ic--lead"
+            />
             {t(TYPE_TAB_KEYS[value])}
           </Link>
         ))}
