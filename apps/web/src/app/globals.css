@@ -4,7 +4,7 @@
 
 /* Xidig palette (18 Jul "one sky" overhaul; 31 Jul full-quality pass): the
    app joins the front door's identity. Accent = the mark's own blue
-   (#2e78b0 — Somali-flag family; white on it is 4.75:1). Light mode is a
+   (#0077cc — Somali Blue, the mark's own; white on it is 4.66:1). Light mode is a
    dawn sky: blue-tinted near-white canvas with white surfaces floating on
    it. Duotone discipline (DESIGN.md §2): ONE functional accent plus the
    reserved trust/celebration orange (--x-trust — Verified, Wins, Founding
@@ -24,13 +24,13 @@
   --x-muted: #556075;
   --x-border: #d9e0ec;
   --x-border-strong: #b9c4d8;
-  --x-accent: #2e78b0;
+  --x-accent: #0077cc;
   --x-accent-fg: #ffffff;
-  --x-accent-soft: rgba(46, 120, 176, 0.1);
-  /* Accent as TEXT: #2e78b0 holds AA on white (4.74:1) but only 3.74:1 on
+  --x-accent-soft: rgba(0, 119, 204, 0.1);
+  /* Accent as TEXT: #0077cc holds AA on white (4.66:1) but only 3.81:1 on
      the dark surface — this per-palette variant is for text/icons in the
-     accent hue. 5.77:1 on #fff, 5.09:1 on accent-soft-over-white. */
-  --x-accent-text: #276a9e;
+     accent hue. 5.78:1 on #fff, 5.06:1 on accent-soft-over-white. */
+  --x-accent-text: #0068b3;
   /* Trust & celebration orange (DESIGN.md §2) — reserved: Verified, Wins,
      Founding Member, Garab, Capital entry. Base #ff8c00 is fill/ring only
      (2.33:1 on white); as text use --x-trust-fg (5.21:1 on #fff, 4.69:1 on
@@ -105,7 +105,7 @@ body:not(:has(main.xidig-front))::before {
   pointer-events: none;
   background:
     radial-gradient(56rem 30rem at 82% -6rem, var(--x-accent-soft), transparent 65%),
-    radial-gradient(40rem 24rem at 6% -2rem, rgba(46, 120, 176, 0.05), transparent 60%);
+    radial-gradient(40rem 24rem at 6% -2rem, rgba(0, 119, 204, 0.05), transparent 60%);
 }
 
 [data-theme='dark'] body:not(:has(main.xidig-front))::before {
@@ -225,8 +225,8 @@ main {
 
   /* Beats the desktop underline rule on specificity; weight keeps a
      non-color active cue beside the blue. Text variant, not raw accent:
-     5.77:1 (light) / 8.32:1 (dark) on the surface-toned tab bar — the raw
-     accent is only 3.74:1 on the dark surface. */
+     5.78:1 (light) / 8.31:1 (dark) on the surface-toned tab bar — the raw
+     accent is only 3.81:1 on the dark surface. */
   .xidig-nav--app .xidig-nav__list .xidig-nav__item a[aria-current='page'] {
     color: var(--x-accent-text);
     font-weight: 700;
@@ -330,16 +330,16 @@ main {
 }
 
 /* Gradient runs DOWN into a deeper blue: every stop keeps white ≥ 4.5:1
-   (#2e78b0 = 4.74, #276a9e = 5.77) — a lighter top stop would fail AA. */
+   (#0077cc = 4.66, #0068b3 = 5.78) — a lighter top stop would fail AA. */
 .xidig-button--primary {
-  background: linear-gradient(180deg, var(--x-accent), #276a9e);
+  background: linear-gradient(180deg, var(--x-accent), #0068b3);
   border-color: transparent;
   color: var(--x-accent-fg);
   box-shadow: 0 1px 2px rgba(10, 14, 26, 0.25);
 }
 
 .xidig-button--primary:hover {
-  background: #276a9e;
+  background: #0068b3;
 }
 
 .xidig-button--secondary {
@@ -507,7 +507,7 @@ main {
    pending states, system information) and moderation (muted rule — a
    decision; administrative, not shaming). AA on --x-surface-2, gated in
    globals-tokens.test.ts: fg 17.03:1 / 14.37:1, muted 6.33:1 / 7.63:1,
-   accent-text (icon + link) 5.77:1 / 7.57:1 (light / dark). */
+   accent-text (icon + link) 5.78:1 / 7.55:1 (light / dark). */
 .xidig-system-notice {
   display: flex;
   align-items: flex-start;
@@ -660,7 +660,7 @@ button.xidig-tag:disabled {
 
 /* Designed badge chip (lab kind chrome, and any classified label that is a
    statement, not a filter). Default wears the accent tint — text variant
-   5.09:1 (light) / 6.64:1 (dark) on accent-soft-over-surface. */
+   5.06:1 (light) / 6.72:1 (dark) on accent-soft-over-surface. */
 .xidig-badge {
   display: inline-block;
   border-radius: var(--x-radius-pill);
@@ -2109,7 +2109,7 @@ html[data-motion='off'] .xidig-avatar {
 
 /* Dark: the front door's ink night sky (--xf-ink family). Contrast kept ≥ AA
    on the new canvas (fg 15.2:1, muted 8.6:1 vs #0a0e1a; fg 12.4:1, muted
-   7.0:1 vs the #101828 surface; white on the blue accent 4.75:1). */
+   7.0:1 vs the #101828 surface; white on the blue accent 4.66:1). */
 [data-theme='dark'] {
   color-scheme: dark;
   --x-bg: #0a0e1a;
@@ -2122,12 +2122,12 @@ html[data-motion='off'] .xidig-avatar {
   --x-muted: #a7b3c9;
   --x-border: rgba(151, 173, 214, 0.16);
   --x-border-strong: rgba(151, 173, 214, 0.3);
-  --x-accent: #2e78b0;
+  --x-accent: #0077cc;
   --x-accent-fg: #ffffff;
-  --x-accent-soft: rgba(77, 166, 232, 0.14);
+  --x-accent-soft: rgba(77, 160, 219, 0.14);
   /* Accent-as-text lightened for ink surfaces (the --x-danger/--x-ok dark
-     pattern): 8.32:1 on #101828, 5.97:1 on accent-soft-over-surface-2. */
-  --x-accent-text: #7ab8e8;
+     pattern): 8.31:1 on #101828, 6.04:1 on accent-soft-over-surface-2. */
+  --x-accent-text: #7bb8e5;
   /* Trust text lightened the same way: 9.15:1 on #101828, 7.10:1 on
      trust-soft-over-surface. Base --x-trust stays #ff8c00 (fills/rings). */
   --x-trust-fg: #ffa733;
@@ -2740,8 +2740,8 @@ a.xidig-settings-card:hover {
   gap: var(--x-space-2xs);
   margin: 0.75rem 0;
 }
-/* Accent-as-text state colors: --x-accent itself is only 3.74:1 on the dark
-   surface — the per-palette text variant holds 5.77:1 (light) / 8.32:1
+/* Accent-as-text state colors: --x-accent itself is only 3.81:1 on the dark
+   surface — the per-palette text variant holds 5.78:1 (light) / 8.31:1
    (dark) on the card surface. */
 .xidig-icon-button--on {
   color: var(--x-accent-text);
@@ -2754,7 +2754,7 @@ a.xidig-settings-card:hover {
 
 /* ── Post-type chips: duotone (DESIGN.md §2). Win is the celebration chip
    and wears trust orange (4.69:1 light / 7.10:1 dark on the tint); update
-   keeps the accent-soft treatment (5.09:1 / 6.64:1); ask/poll/intro are
+   keeps the accent-soft treatment (5.06:1 / 6.72:1); ask/poll/intro are
    neutral — the LABEL differentiates them (5.59:1 / 7.44:1). The five-hue
    palette is retired and gated by globals-tokens.test.ts. ───────────────── */
 .xidig-post-type {
@@ -3049,8 +3049,8 @@ a.xidig-settings-card:hover {
    compact dots + labels, ALL four stages always shown, current in accent.
    Dots are decorative (aria-current="step" + the visible label carry the
    state) yet still clear the 3:1 non-text minimum: --x-accent on the surface
-   4.74:1 light / 3.74:1 dark. Labels: current --x-accent-text (5.77:1 on
-   #fff / 8.32:1 on #101828), others --x-muted (6.33:1 / 7.0:1). */
+   4.66:1 light / 3.81:1 dark. Labels: current --x-accent-text (5.78:1 on
+   #fff / 8.31:1 on #101828), others --x-muted (6.33:1 / 7.0:1). */
 .xidig-stage-track {
   list-style: none;
   display: flex;
@@ -3873,7 +3873,7 @@ body:has(.xidig-consent) {
   font-weight: 600;
 }
 
-/* Small link-button. --x-accent-text on --x-bg: 5.77:1 light / 7.57:1 dark
+/* Small link-button. --x-accent-text on --x-bg: 5.29:1 light / 9.01:1 dark
    (same pair as .xidig-consent__link's inherited link color — token doc at
    the accent-text definition). Padding keeps the hit area ≥ 24px tall
    (WCAG 2.5.8). States follow the DESIGN.md §4 sweep conventions; the
@@ -4022,9 +4022,9 @@ body:has(.xidig-lite-prompt):not(:has(.xidig-consent)) {
 
 /* Focus ring — one grouped rule for every control the recon found bare.
    The raw accent is the ring in BOTH palettes: a focus indicator needs
-   ≥ 3:1 against the adjacent surface (WCAG 1.4.11), and #2e78b0 holds it on
-   every elevation step — light 4.74:1 on #ffffff / 4.34:1 on #f2f5fa; dark
-   4.06:1 on #0a0e1a / 3.74:1 on #101828 / 3.40:1 on #16203a — so no
+   ≥ 3:1 against the adjacent surface (WCAG 1.4.11), and #0077cc holds it on
+   every elevation step — light 4.66:1 on #ffffff / 4.26:1 on #f2f5fa; dark
+   4.14:1 on #0a0e1a / 3.81:1 on #101828 / 3.47:1 on #16203a — so no
    --x-accent-text swap is needed. (.xidig-button, .xidig-vote-card and
    .xidig-user-menu__trigger already wear this same ring at their own
    definitions.) */
@@ -4078,9 +4078,9 @@ button.xidig-poll__option:not(:disabled):hover,
 }
 
 /* An ON switch stays visibly on — hover deepens the accent instead of
-   washing it out (white on #276a9e is 5.77:1). */
+   washing it out (white on #0068b3 is 5.78:1). */
 .xidig-switch[aria-pressed='true']:not(:disabled):hover {
-  background: #276a9e;
+  background: #0068b3;
 }
 
 /* Pressed (:active) — everything settles 1px. The 1px offset itself is a
@@ -4110,10 +4110,10 @@ button.xidig-tag:not([aria-pressed='true']):not(:disabled):active,
 }
 
 /* Accent-filled states darken WITHIN the family: the fills press to the
-   hover stop #276a9e (white 5.77:1); the primary pill — whose hover already
-   is #276a9e — presses one stop deeper to #245e8c (white 6.87:1). */
+   hover stop #0068b3 (white 5.78:1); the primary pill — whose hover already
+   is #0068b3 — presses one stop deeper to #005d9f (white 6.85:1). */
 .xidig-button--primary:not(:disabled):active {
-  background: #245e8c;
+  background: #005d9f;
 }
 
 .xidig-button--secondary:not([aria-pressed='true']):not(:disabled):active {
@@ -4126,7 +4126,7 @@ button.xidig-tag:not([aria-pressed='true']):not(:disabled):active,
 .xidig-tabs__tab[aria-current='page']:active,
 .xidig-switch[aria-pressed='true']:not(:disabled):active,
 .xidig-language-toggle__option[aria-pressed='true']:active {
-  background: #276a9e;
+  background: #0068b3;
 }
 
 /* Disabled — the flat-and-muted house pattern (.xidig-button:disabled):

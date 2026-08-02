@@ -45,8 +45,8 @@ Every token is defined twice: light in `:root`, dark under
 | `--x-fg`                             | `#131c2e`               | `#eef2f9`                   | Body text                                     |
 | `--x-muted`                          | `#556075`               | `#a7b3c9`                   | Secondary text (AA on bg *and* surface)       |
 | `--x-border` / `--x-border-strong`   | `#d9e0ec` / `#b9c4d8`   | `rgba(151,173,214,.16/.3)`  | Card texture / boundaries                     |
-| `--x-accent` (+ `-fg`, `-soft`)      | `#2e78b0`               | `#2e78b0`                   | THE functional accent (fills, rings, links)   |
-| `--x-accent-text`                    | `#276a9e`               | `#7ab8e8`                   | Accent as *text/icon* — AA on both surfaces   |
+| `--x-accent` (+ `-fg`, `-soft`)      | `#0077cc`               | `#0077cc`                   | THE functional accent (fills, rings, links)   |
+| `--x-accent-text`                    | `#0068b3`               | `#7bb8e5`                   | Accent as *text/icon* — AA on both surfaces   |
 | `--x-trust` (+ `-fg`, `-soft`)       | `#ff8c00` / `#a85700`   | `#ff8c00` / `#ffa733`       | Trust & celebration — reserved (see below)    |
 | `--x-ok` / `--x-danger` (+ `-bg`)    | semantic pair           | lightened for dark          | Success / destructive only                    |
 | `--x-field-bg` / `--x-field-border`  | `#ffffff` / `#8794a8`   | `#0c1220` / 0.55-alpha      | Form fields (3:1 non-text minimum on borders) |
@@ -57,8 +57,9 @@ is orientation.
 
 ### Color rules (duotone discipline)
 
-- **One functional accent.** `--x-accent: #2e78b0` in both palettes — the
-  mark's own blue (18 Jul "one sky" decision; white on it 4.75:1). Links,
+- **One functional accent.** `--x-accent: #0077cc` in both palettes — the
+  mark's own Somali Blue (18 Jul "one sky" decision; accent unified onto the
+  mark's #0077cc 1 Aug, docs/brand-direction.md §6; white on it 4.66:1). Links,
   primary buttons, focus rings, active states all use it.
 - **Trust orange is reserved.** `--x-trust` (#FF8C00 family) marks trust and
   celebration ONLY: Verified (avatar ring/check, listing chip), Wins, Founding

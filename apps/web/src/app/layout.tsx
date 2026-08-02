@@ -43,9 +43,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 // Browser + PWA chrome colour = the mark's Somali Blue (#0077cc) — the ruled
-// identity anchor (docs/brand-direction.md §6; the in-app #2e78b0 accent
-// unifies onto it in a queued follow-up). width/initialScale keep Next's
-// responsive defaults explicit alongside it.
+// identity anchor (docs/brand-direction.md §6; mark AND app accent are both
+// unified on it). width/initialScale keep Next's responsive defaults
+// explicit alongside it.
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,

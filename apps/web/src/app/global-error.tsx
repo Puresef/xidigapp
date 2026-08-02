@@ -133,14 +133,14 @@ const GLOBAL_ERROR_CSS = `
     text-decoration: none;
     transition: background-color 0.15s ease, border-color 0.15s ease;
   }
-  /* Brand accent (--x-accent #2e78b0 — tokens don't load here, so inlined).
-     AA: white on #2e78b0 = 4.75:1; white on hover #276a9e = 5.77:1. */
+  /* Brand accent (--x-accent #0077cc — tokens don't load here, so inlined).
+     AA: white on #0077cc = 4.66:1; white on hover #0068b3 = 5.78:1. */
   .xidig-global-error__btn {
-    border: 1px solid #2e78b0;
-    background: #2e78b0;
+    border: 1px solid #0077cc;
+    background: #0077cc;
     color: #ffffff;
   }
-  .xidig-global-error__btn:hover { background: #276a9e; border-color: #276a9e; }
+  .xidig-global-error__btn:hover { background: #0068b3; border-color: #0068b3; }
   .xidig-global-error__link {
     border: 1px solid #d3d9e6;
     background: #ffffff;
@@ -149,7 +149,7 @@ const GLOBAL_ERROR_CSS = `
   .xidig-global-error__link:hover { background: #f4f6fb; border-color: #b9c2d6; }
   .xidig-global-error__btn:focus-visible,
   .xidig-global-error__link:focus-visible {
-    outline: 2px solid #2e78b0;
+    outline: 2px solid #0077cc;
     outline-offset: 2px;
   }
   @media (prefers-color-scheme: dark) {

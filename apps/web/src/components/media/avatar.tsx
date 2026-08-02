@@ -23,7 +23,7 @@ import type { LitePrefs } from '@/lib/lite/prefs';
  * regression gate in avatar.test.tsx.
  */
 export const AVATAR_PALETTE = [
-  { from: '#2a72ab', to: '#20598a' }, // somali blue (deepened #2E78B0)
+  { from: '#0072c3', to: '#0060a5' }, // somali blue (deepened #0077cc)
   { from: '#0f7d6c', to: '#0d6357' }, // teal
   { from: '#5563a8', to: '#4a5591' }, // indigo / slate
   { from: '#8d4d88', to: '#7b427a' }, // plum
