@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
+import { AnimatedMark } from '@/components/brand/animated-mark';
 import { OnboardingChecklist } from '@/components/onboarding/onboarding-checklist';
 import { SuggestedFollows } from '@/components/profile/suggested-follows';
 import { getAuthContext } from '@/lib/auth/guards';
@@ -29,6 +30,12 @@ export default async function OnboardingPage() {
 
   return (
     <main className="xidig-auth">
+      {/* Warm entry surface (mark-redesign §4): the controlled brand mark — the
+          interim 🦋 marker in its color-safe form, never the raw emoji — assembles
+          once above the welcome title. Decorative: the h1 carries the name. */}
+      <p className="xidig-auth__mark">
+        <AnimatedMark mode="assemble" size={44} />
+      </p>
       <h1 className="xidig-auth__title">{t('onboarding.title')}</h1>
       {progress.allDone ? (
         <p className="xidig-card__meta">{t('onboarding.done')}</p>

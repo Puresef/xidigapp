@@ -11,7 +11,6 @@ import type { PlainError } from '@/lib/errors';
 import type { MuteItem } from '@/lib/social/views';
 
 import { PlainErrorBanner } from '../auth/plain-error';
-import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * The caller's mute list (Phase 4.5) — self-contained management UI embedded
@@ -74,7 +73,13 @@ export function MutedList() {
   return (
     <section aria-label={t('social.mutedListTitle')}>
       {error ? <PlainErrorBanner error={error} /> : null}
-      {!loaded ? <LoadingFlap /> : null}
+      {/* Block-adjacent boundary surface (a member's muted people/topics) —
+          keep the mascot marker off. Plain, mark-free loading status. */}
+      {!loaded ? (
+        <p className="xidig-card__meta" role="status">
+          {t('state.loading')}
+        </p>
+      ) : null}
       {loaded && items.length === 0 && !error ? (
         <p className="xidig-card__meta">{t('social.mutedEmpty')}</p>
       ) : null}

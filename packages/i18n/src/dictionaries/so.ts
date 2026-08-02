@@ -246,7 +246,7 @@ export const so = {
   'onboarding.checklistTitle': 'Diyaargarow',
   'onboarding.progress': '{completed} / {total} la dhammeeyay',
   'onboarding.dismiss': 'Xir',
-  'onboarding.done': 'Waad diyaar tahay',
+  'onboarding.done': 'Waad diyaar tahay 🦋',
 
   // Looking-for matching (PRD §20)
   'matching.labsSeekingTitle': 'Warshadaha raadinaya xirfadahaaga',

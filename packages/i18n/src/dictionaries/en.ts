@@ -306,7 +306,7 @@ export const en = {
   'onboarding.checklistTitle': 'Get set up',
   'onboarding.progress': '{completed} of {total} done',
   'onboarding.dismiss': 'Dismiss',
-  'onboarding.done': 'You’re all set',
+  'onboarding.done': 'You’re all set 🦋',
 
   // Looking-for matching (PRD §20)
   'matching.labsSeekingTitle': 'Labs looking for your skills',

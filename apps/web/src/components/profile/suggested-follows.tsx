@@ -7,6 +7,7 @@ import { useT } from '@xidig/i18n/react';
 import type { Translator } from '@xidig/i18n';
 
 import { Avatar } from '@/components/media/avatar';
+import { EmptyState } from '@/components/empty-state';
 import { LoadingFlap } from '@/components/loading-flap';
 import { apiGet } from '@/lib/api-client';
 import { OPEN_TO_KEYS } from './open-to';
@@ -127,16 +128,19 @@ export function SuggestedFollows({
 
   if (people.length === 0 && labs.length === 0) {
     if (!showEmptyState) return null;
+    // Onboarding teaching empty state — route through the shared EmptyState so
+    // it wears the controlled brand mark like every other empty surface (was a
+    // hand-rolled card that missed the marker the rest get for free).
     return (
-      <section className="xidig-section xidig-card" aria-label={t('matching.suggestEmptyTitle')}>
-        <div className="xidig-card__body">
-          <h2 className="xidig-card__title">{t('matching.suggestEmptyTitle')}</h2>
-          <p className="xidig-card__meta">{t('matching.suggestEmptyBody')}</p>
+      <EmptyState
+        titleKey="matching.suggestEmptyTitle"
+        messageKey="matching.suggestEmptyBody"
+        action={
           <Link href="/settings/account" className="xidig-button xidig-button--secondary">
             {t('matching.suggestEmptyCta')} →
           </Link>
-        </div>
-      </section>
+        }
+      />
     );
   }
 

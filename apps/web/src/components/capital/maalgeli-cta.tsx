@@ -11,7 +11,6 @@ import type { PlainError } from '@/lib/errors';
 import { Banner } from '../banner';
 import { AttestationModal } from './attestation-modal';
 import { VentureFundModal } from './venture-fund-modal';
-import { LoadingFlap } from '@/components/loading-flap';
 
 /**
  * Maalgeli (Invest) CTA — the region gate's UI face (§17, compliance-critical).
@@ -94,7 +93,14 @@ export function MaalgeliCta({ candidateId }: { candidateId?: string | null }) {
   }
 
   if (phase === 'checking') {
-    return <LoadingFlap />;
+    // §17 money-critical invest gate — a forbidden surface for the mascot
+    // marker. Plain, mark-free loading status: no butterfly on the invest
+    // funnel (the LoadingFlap gesture mounts the brand mark, barred here).
+    return (
+      <p className="xidig-card__meta" role="status">
+        {t('state.loading')}
+      </p>
+    );
   }
 
   if (phase === 'informational') {
