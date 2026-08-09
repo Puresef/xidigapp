@@ -56,6 +56,19 @@ describe('canonical product terms', () => {
     expect(en['action.abuur']).toBe('Create');
     expect(so['action.abuur']).toBe('Abuur');
   });
+
+  it('P1 dictionary migration (HANDOFF-P1, 6 Aug): Codsi replaces Weydiin, Salaan replaces Is-barasho', () => {
+    expect(en['plaza.typeAsk']).toBe('Ask');
+    expect(so['plaza.typeAsk']).toBe('Codsi');
+    expect(en['plaza.typeIntro']).toBe('Intro');
+    expect(so['plaza.typeIntro']).toBe('Salaan');
+  });
+
+  it('Codsi lifecycle vocabulary (Codsi Detail 1a–3b): Furan → Waa la caawinayaa → La xaliyay', () => {
+    expect(so['plaza.askOpen']).toBe('Furan');
+    expect(so['plaza.askInProgress']).toBe('Waa la caawinayaa');
+    expect(so['plaza.askFulfilled']).toBe('La xaliyay');
+  });
 });
 
 describe('language identity', () => {

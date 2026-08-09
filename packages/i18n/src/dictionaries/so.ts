@@ -864,20 +864,23 @@ export const so = {
   // Madal / Plaza (§15, §20, §27)
   'plaza.filterAll': 'Dhammaan',
   'plaza.pinnedHeading': 'Xulka toddobaadkan',
-  'plaza.typeIntro': 'Is-barasho',
-  'plaza.typeAsk': 'Weydiin',
+  // P1 dictionary migration (HANDOFF-P1, 6 Aug): weydiin → codsi,
+  // is-barasho → salaan. Somali vocabulary only — the DB post_type enum and
+  // the CSS classes (--ask/--intro) stay on their internal English slugs.
+  'plaza.typeIntro': 'Salaan',
+  'plaza.typeAsk': 'Codsi',
   'plaza.typeWin': 'Guul',
   'plaza.typeUpdate': 'War',
   'plaza.typePoll': 'Codbixin',
   'plaza.typeIntroHint': 'Bulshada isu soo bandhig.',
-  'plaza.typeAskHint': 'Caawimaad weydiiso — xul jawaabta kugu anfacda.',
+  'plaza.typeAskHint': 'Caawimaad codso — kuwa ku caawin karaa si gaar ah ayay kuula soo xiriirayaan.',
   'plaza.typeWinHint': 'Wadaag guul — weyn iyo yarba.',
   'plaza.typeUpdateHint': 'Horumarka waxa aad dhisayso.',
   'plaza.typePollHint': 'Su’aal u dhig codka bulshada.',
   'plaza.emptyIntro':
-    'Weli is-barasho ma jirto. Ma ku cusub tahay? Is-bandhig — yaad tahay, maxaad dhisaysaa, maxaad u baahan tahay.',
+    'Weli salaan ma jirto. Ma ku cusub tahay? Is-bandhig — yaad tahay, maxaad dhisaysaa, maxaad u baahan tahay.',
   'plaza.emptyAsk':
-    'Weydiimo furan ma jiraan. Wax ma kaa xiran yihiin? Weydiiso — caawiyayaashu halkan aqoonsi bay ku kasbadaan.',
+    'Codsiyo furan ma jiraan. Wax ma kaa xiran yihiin? Codso — caawiyayaashu halkan aqoonsi bay ku kasbadaan.',
   'plaza.emptyWin':
     'Weli guul lama faafin. Wax ma dhammaystirtay? Faafi guusha — caddayntu waa awoodda bulshadan.',
   'plaza.emptyUpdate': 'Weli war ma jiro. Wax ma dhisaysaa? Wadaag horumarkaaga.',
@@ -908,6 +911,8 @@ export const so = {
   'plaza.pollDurationLabel': 'Codbixintu waxay socanaysaa',
   'plaza.pollDurationDays': { one: '{count} maalin', other: '{count} maalmood' },
   'plaza.askOpen': 'Furan',
+  'plaza.askInProgress': 'Waa la caawinayaa',
+  'plaza.askFulfilled': 'La xaliyay',
   'plaza.askAnswered': 'La jawaabay',
   'plaza.askClosed': 'Xiran',
   'plaza.pollClosed': 'Codbixin xiran',
@@ -935,12 +940,12 @@ export const so = {
   'plaza.commentLabel': 'Faallo ku dar',
   'plaza.creditAnswer': 'Ka dhig jawaabta',
   'plaza.creditedBadge': 'Jawaabta la xushay',
-  'plaza.closeAsk': 'Xir Weydiintan',
+  'plaza.closeAsk': 'Xir Codsigan',
   'plaza.askStaleTitle': 'Weli caawimaad ma raadinaysaa?',
   'plaza.askStaleBody':
-    'Weydiintaadu {days} maalmood ayay furnayd. Xul jawaab haddii aad heshay, ama xir haddii ay xallisantay.',
+    'Codsigaagu {days} maalmood ayuu furnaa. Haddii la xaliyay, calaamadee — haddii kale, sii fur.',
   'plaza.helperCredited': 'Jawaabta waa la xushay — caawiyuhu wuxuu kasbaday dhibco Caawiye.',
-  'plaza.askClosedNotice': 'Weydiinta waa la xiray.',
+  'plaza.askClosedNotice': 'Codsiga waa la xiray.',
   'plaza.voteButton': 'Codee',
   'plaza.changeVote': 'Beddel codkaaga',
   'plaza.votesCount': { one: '{count} cod', other: '{count} cod' },
@@ -1115,7 +1120,7 @@ export const so = {
   'notif.dmRequest': '{name} wuxuu doonayaa inuu ku fariimo',
   'notif.dmAccepted': '{name} wuu aqbalay codsigaaga fariinta',
   'notif.askCredited': 'Jawaabtaada waa la xushay — waxaad kasbatay dhibco Caawiye',
-  'notif.askStale': 'Weydiintaadu muddo ayay furnayd — xul jawaab ama xir',
+  'notif.askStale': 'Codsigaagu muddo ayuu furnaa — haddii la xaliyay, calaamadee',
   'notif.moderationHold': 'Qoraalkaaga waa la eegayaa',
   'notif.moderationRemoved': 'Qoraalkaaga waa la saaray',
   'notif.candidateStatus': 'Mashruuc aad raacdo ayaa xaaladdiisu isbeddeshay',
@@ -1530,7 +1535,7 @@ export const so = {
     'Grupka qoyska u hay. Xidig waa bulshada Soomaalida ee aad raadin karto, raaci karto, wax la dhisan karto, kuna soo laaban karto.',
   'marketing.blockPlazaTitle': 'Quudin ujeeddo leh',
   'marketing.blockPlazaBody':
-    'Qor is-barasho, codsiyo, guulo, iyo ra’yi-ururin — kuna fal-celi si inoo eg. Wadahadaladu waxay noqdaan xusuusta bulshada, ma aha buuq la dhaafo.',
+    'Qor salaan, codsiyo, guulo, iyo ra’yi-ururin — kuna fal-celi si inoo eg. Wadahadaladu waxay noqdaan xusuusta bulshada, ma aha buuq la dhaafo.',
   'marketing.blockProfilesTitle': 'Boggaaga internetka Soomaalida',
   'marketing.blockProfilesBody':
     'Muuji xirfadahaaga, magaaladaada, xiriiriyayaashaada, Warshadahaaga, sumadahaaga, iyo waxa aad u furan tahay. Wadaag hal xiriiriye halkii aad mar walba is-sharxi lahayd.',

@@ -18,7 +18,7 @@ Before: text-only chip (`typeLabel`), five-hue palette retired. After: glyph + t
 // PostCard type chip — icon is decorative (text label adjacent) => no label prop
 <span className={`xidig-chip ${type === 'win' ? 'xidig-chip--trust' : ''}`}>
   <XidigIcon name={POST_TYPE_ICON[type]} variant="filled" size={14} tone={type === 'win' ? 'trust' : 'inherit'} />
-  {t(`post.type.${type}`)} {/* Guul · Weydiin · War · Codbixin · Is-barasho */}
+  {t(`post.type.${type}`)} {/* Guul · Codsi · War · Codbixin · Salaan (P1 dictionary migration) */}
 </span>
 
 const POST_TYPE_ICON = { intro: 'salaan', ask: 'codsi', win: 'guul', update: 'war', poll: 'cod' } as const;

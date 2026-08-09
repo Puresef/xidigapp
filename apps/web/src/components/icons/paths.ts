@@ -117,7 +117,8 @@ export const XIDIG_ICON_DEFAULT_TONE: Record<XidigIconName, XidigIconTone> = {
 /**
  * Post-type → glyph, in ONE place (like the tone map above) so PostCard, the
  * plaza filter tabs, and the composer picker can never drift apart. Keys match
- * the plaza PostType literals (Is-barasho · Weydiin · Guul · War · Codbixin).
+ * the plaza PostType literals (Salaan · Codsi · Guul · War · Codbixin — P1
+ * dictionary migration renamed the first two Somali terms).
  */
 export const XIDIG_POST_TYPE_ICON = {
   intro: 'salaan',

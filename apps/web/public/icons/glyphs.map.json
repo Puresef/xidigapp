@@ -1,6 +1,6 @@
 {
-  "version": "2026-08-02",
-  "task": "D2",
+  "version": "2026-08-09",
+  "task": "D2 + P1 dictionary migration",
   "grid": 24,
   "stroke": 2,
   "detail_stroke": 1.4,
@@ -15,7 +15,8 @@
       "key": "salaan",
       "so": "Salaan",
       "en": "Intro / Greeting",
-      "post_type": "is-barasho",
+      "post_type": "salaan",
+      "legacy_post_type": "is-barasho",
       "outline": "salaan-outline.svg",
       "filled": "salaan-filled.svg",
       "color": "accent"
@@ -24,7 +25,8 @@
       "key": "codsi",
       "so": "Codsi",
       "en": "Ask / Request",
-      "post_type": "weydiin",
+      "post_type": "codsi",
+      "legacy_post_type": "weydiin",
       "outline": "codsi-outline.svg",
       "filled": "codsi-filled.svg",
       "color": "accent",
@@ -69,5 +71,27 @@
       "color": "accent",
       "note": "approved D1 dabqaad; filled = lit (smoke). Bronze treatment = open brand question, not shipped. Active stays --x-accent."
     }
-  ]
+  ],
+  "dictionary_migration": {
+    "applies_from": "P1",
+    "shape": "Somali vocabulary migration — display labels + this map's product slugs",
+    "note": "The design handoff assumed post_type stored the Somali slugs; in this repo the DB enum has always been English (intro/ask/win/update/poll), so there is no row backfill to run for the rename. The product slugs here and the SO dictionary values are the record of the migration; legacy_post_type keeps the old slug resolvable. i18n: SO labels shipped in the same commit as this map (packages/i18n vocabulary lock asserts the canon).",
+    "renames": [
+      {
+        "from": "weydiin",
+        "to": "codsi",
+        "db_post_type": "ask",
+        "so": "Codsi",
+        "en": "Ask / Request"
+      },
+      {
+        "from": "is-barasho",
+        "to": "salaan",
+        "db_post_type": "intro",
+        "so": "Salaan",
+        "en": "Intro / Greeting"
+      }
+    ],
+    "unaffected": "CSS classes stay semantic (.xidig-post-type--ask / --win / --update) — the rename is Somali vocabulary only, so no stylesheet churn."
+  }
 }
