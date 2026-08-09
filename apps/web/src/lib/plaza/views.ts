@@ -29,7 +29,7 @@ import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
  */
 
 export const POST_COLUMNS =
-  'id, author_user_id, lab_id, type, title, body, link_url, image_urls, ask_status, ask_nudged_at, poll_status, poll_closes_at, status, source, pinned_at, edited_at, created_at';
+  'id, author_user_id, lab_id, type, title, body, link_url, image_urls, ask_status, ask_nudged_at, ask_helper_user_id, ask_helped_at, ask_fulfilled_at, poll_status, poll_closes_at, status, source, pinned_at, edited_at, created_at';
 
 export const COMMENT_COLUMNS =
   'id, post_id, author_user_id, body, is_credited_answer, status, source, edited_at, created_at';
@@ -60,6 +60,10 @@ export interface PostRow {
   image_urls: string[];
   ask_status: Enums<'ask_status'> | null;
   ask_nudged_at: string | null;
+  /** Codsi lifecycle (P1): the asker-accepted helper + transition stamps. */
+  ask_helper_user_id: string | null;
+  ask_helped_at: string | null;
+  ask_fulfilled_at: string | null;
   poll_status: Enums<'poll_status'> | null;
   poll_closes_at: string | null;
   status: Enums<'content_status'>;
@@ -152,6 +156,8 @@ export interface PostView {
   poll: PollView | null;
   /** Whether the VIEWER has bookmarked this post (Phase 4.5 Saved). */
   bookmarked: boolean;
+  /** The named helper on an in-progress/fulfilled Codsi ("Waxaa caawinaya…"). */
+  askHelper: AuthorRef | null;
 }
 
 export interface CommentView {
@@ -165,7 +171,7 @@ export function emptyReactionCounts(): ReactionCounts {
   return { fire: 0, strong: 0, mashallah: 0, idea: 0, watching: 0 };
 }
 
-async function fetchAuthors(
+export async function fetchAuthors(
   admin: SupabaseClient<Database>,
   userIds: string[],
 ): Promise<Map<string, AuthorRef>> {
@@ -494,7 +500,15 @@ export async function hydratePosts(
 
   const postIds = rows.map((row) => row.id);
   const pollPostIds = rows.filter((row) => row.type === 'poll').map((row) => row.id);
-  const authorIds = [...new Set(rows.map((row) => row.author_user_id))];
+  // Helpers ride the author batch — one profile fetch hydrates bylines AND
+  // the "Waxaa caawinaya {name}" strip.
+  const authorIds = [
+    ...new Set(
+      rows.flatMap((row) =>
+        row.ask_helper_user_id ? [row.author_user_id, row.ask_helper_user_id] : [row.author_user_id],
+      ),
+    ),
+  ];
 
   const [authors, reactions, polls, comments, tags, imageMeta, bookmarkedIds, mutes] =
     await Promise.all([
@@ -553,6 +567,7 @@ export async function hydratePosts(
     myReactions: reactions.mine.get(post.id) ?? [],
     poll: polls.get(post.id) ?? null,
     bookmarked: bookmarkedIds.has(post.id),
+    askHelper: post.ask_helper_user_id ? (authors.get(post.ask_helper_user_id) ?? null) : null,
   }));
 
   if (!mutes) return views;

@@ -637,6 +637,19 @@ button.xidig-tag:disabled {
   border-color: color-mix(in srgb, var(--x-trust) 45%, var(--x-bg));
 }
 
+/* Codsi in-progress chip ("Waa la caawinayaa", P1): the cold accent tint —
+   deliberately NOT trust orange, nothing is earned until fulfilment. Same
+   pairing the AA gate already asserts (accent-text on accent-soft). */
+.xidig-tag--accent {
+  color: var(--x-accent-text);
+  background: var(--x-accent-soft);
+  border-color: color-mix(in srgb, var(--x-accent) 30%, white);
+}
+
+[data-theme='dark'] .xidig-tag--accent {
+  border-color: color-mix(in srgb, var(--x-accent) 30%, var(--x-bg));
+}
+
 /* Phase 8: seeded / AI-assisted content + AI-account chips (§21). A distinct
    violet so seeded/AI content is unmistakable and never reads as member content. */
 .xidig-tag--seeded {
@@ -4252,4 +4265,436 @@ button.xidig-poll__option:disabled,
   margin-top: 0.4rem;
   height: 1.75rem;
   width: 55%;
+}
+
+/* ===========================================================================
+   Codsi detail (P1 · frames 1a–3b + E2 states). Temperature discipline:
+   cold accent through open/in-progress; trust orange appears ONLY on the
+   fulfilled surfaces (status chip · Guul band · guul glyph) — DESIGN.md §2.
+   =========================================================================== */
+
+/* Desktop = main column + 300px rail (frames 1b/2b/3b); mobile stacks the
+   rail directly under the article — full capability, responsive presentation. */
+.xidig-codsi-layout {
+  display: grid;
+  gap: var(--x-space);
+  align-items: start;
+}
+
+.xidig-codsi-layout__main {
+  display: grid;
+  gap: var(--x-space);
+  min-width: 0;
+}
+
+.xidig-codsi-rail {
+  display: grid;
+  gap: var(--x-space);
+  min-width: 0;
+}
+
+@media (min-width: 64rem) {
+  .xidig-codsi-layout {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .xidig-codsi-rail {
+    position: sticky;
+    top: var(--x-space);
+  }
+}
+
+.xidig-codsi-rail-card {
+  gap: 0.6rem;
+}
+
+.xidig-codsi-rail-card__title {
+  margin: 0;
+  font-family: var(--x-display);
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--x-muted);
+}
+
+.xidig-codsi-rail-card__action {
+  width: 100%;
+  justify-content: center;
+}
+
+.xidig-codsi-rail-card__note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--x-muted);
+  text-wrap: pretty;
+}
+
+/* The Guul band (3a/3b): flush across the card top — one of the three
+   sanctioned orange surfaces. Negative margins undo the card padding. */
+.xidig-codsi-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin: calc(-1 * var(--x-space)) calc(-1 * var(--x-space)) 0.4rem;
+  padding: 0.8rem var(--x-space);
+  background: var(--x-trust-soft);
+  border-bottom: 1px solid color-mix(in srgb, var(--x-trust) 40%, transparent);
+  border-radius: var(--x-radius) var(--x-radius) 0 0;
+}
+
+.xidig-codsi-banner__glyph {
+  color: var(--x-trust-fg);
+  flex: none;
+  margin-top: 0.1rem;
+}
+
+.xidig-codsi-banner__text {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.xidig-codsi-banner__title {
+  font-family: var(--x-display);
+  font-weight: 700;
+  color: var(--x-trust-fg);
+}
+
+.xidig-codsi-banner__line {
+  font-size: 0.88rem;
+  color: var(--x-fg);
+  text-wrap: pretty;
+}
+
+/* "Waxaa caawinaya …" (2a/2b): system chrome in the cold accent — never
+   member content, never orange before fulfilment. */
+.xidig-codsi-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  background: var(--x-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--x-accent) 30%, transparent);
+  border-radius: var(--x-radius-s);
+}
+
+.xidig-codsi-strip__text {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-codsi-strip__name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--x-accent-text);
+}
+
+.xidig-codsi-strip__meta {
+  font-size: 0.78rem;
+  color: var(--x-muted);
+}
+
+.xidig-codsi-strip__link {
+  flex: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Fulfilled helper card keeps neutral chrome — the CREDIT is the content. */
+.xidig-codsi-helper-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+  color: var(--x-fg);
+}
+
+.xidig-codsi-helper-link .xidig-codsi-strip__name {
+  color: var(--x-fg);
+}
+
+.xidig-codsi-garab {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.xidig-codsi-garab__button {
+  width: 100%;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+/* Lit dabqaad = Somali Blue, per D3 — no bronze, no orange. */
+.xidig-codsi-garab__button[aria-pressed='true'] {
+  color: var(--x-accent-text);
+  background: var(--x-accent-soft);
+  border-color: color-mix(in srgb, var(--x-accent) 45%, transparent);
+}
+
+.xidig-codsi-garab__note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--x-muted);
+  text-wrap: pretty;
+}
+
+/* Offer CTA card (rail): the privacy promise rides under the button. */
+.xidig-codsi-offer {
+  display: grid;
+  gap: 0.5rem;
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: var(--x-space);
+}
+
+.xidig-codsi-offer__cta {
+  width: 100%;
+  justify-content: center;
+}
+
+.xidig-codsi-offer__note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--x-muted);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.xidig-codsi-offers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.xidig-codsi-offers__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Socodka codsiga: done = filled accent, current = filled + soft ring,
+   pending = hollow; the final step earns trust ONLY when reached. */
+.xidig-codsi-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.xidig-codsi-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.xidig-codsi-step__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: none;
+  margin-top: 0.3rem;
+  border: 2px solid var(--x-border-strong);
+  box-sizing: border-box;
+}
+
+.xidig-codsi-step--done .xidig-codsi-step__dot {
+  border: none;
+  background: var(--x-accent);
+}
+
+.xidig-codsi-step--current .xidig-codsi-step__dot {
+  border: none;
+  background: var(--x-accent);
+  box-shadow: 0 0 0 3px var(--x-accent-soft);
+}
+
+.xidig-codsi-step--trust .xidig-codsi-step__dot {
+  border: none;
+  background: var(--x-trust);
+  box-shadow: 0 0 0 3px var(--x-trust-soft);
+}
+
+.xidig-codsi-step__text {
+  display: grid;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.xidig-codsi-step__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.xidig-codsi-step--pending .xidig-codsi-step__label,
+.xidig-codsi-step--skipped .xidig-codsi-step__label {
+  color: var(--x-muted);
+  font-weight: 500;
+}
+
+.xidig-codsi-step--trust .xidig-codsi-step__label {
+  color: var(--x-trust-fg);
+}
+
+.xidig-codsi-step__meta {
+  font-size: 0.78rem;
+  color: var(--x-muted);
+}
+
+/* Faahfaahin fact grid. */
+.xidig-codsi-facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 0.9rem;
+  font-size: 0.88rem;
+}
+
+.xidig-codsi-facts dt {
+  color: var(--x-muted);
+}
+
+.xidig-codsi-facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Empty thread (s2): a fact, not a plea. */
+.xidig-codsi-thread-empty {
+  display: grid;
+  gap: 0.3rem;
+  justify-items: center;
+  padding: 1.4rem 0.8rem;
+  border: 1px dashed var(--x-border-strong);
+  border-radius: var(--x-radius);
+  text-align: center;
+}
+
+.xidig-codsi-thread-empty__title {
+  font-size: 0.92rem;
+}
+
+.xidig-codsi-thread-empty__body {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--x-muted);
+  max-width: 34ch;
+  text-wrap: pretty;
+}
+
+.xidig-codsi-thread-error__body {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+  justify-items: start;
+}
+
+/* Offline queue rows (s4): clock chip + the send-when-back promise + Tirtir. */
+.xidig-codsi-queue {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.xidig-codsi-queue__row {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius-s);
+  opacity: 0.88;
+}
+
+.xidig-codsi-queue__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  justify-self: start;
+}
+
+.xidig-codsi-queue__body {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.xidig-codsi-queue__meta {
+  font-size: 0.78rem;
+  color: var(--x-muted);
+}
+
+.xidig-codsi-queue__remove {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--x-accent-text);
+  cursor: pointer;
+}
+
+.xidig-codsi-queue__remove:hover {
+  text-decoration: underline;
+}
+
+/* Offline read banner (s4). */
+.xidig-offline-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius-s);
+  color: var(--x-muted);
+  font-size: 0.82rem;
+}
+
+/* Guul prompt (3a): dismissible, never auto-posted. */
+.xidig-codsi-guul-prompt {
+  background: var(--x-surface-2);
+  box-shadow: var(--x-shadow-2);
+  gap: 0.7rem;
+}
+
+.xidig-codsi-guul-prompt__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.xidig-codsi-guul-prompt__title {
+  font-family: var(--x-display);
+  font-size: 0.95rem;
+}
+
+.xidig-codsi-guul-prompt__body {
+  font-size: 0.85rem;
+  color: var(--x-muted);
+  text-wrap: pretty;
+}
+
+.xidig-codsi-guul-prompt__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Detail media block silhouette for the route skeleton (s1). */
+.xidig-skeleton--media {
+  width: 100%;
+  aspect-ratio: 800 / 450;
+  border-radius: var(--x-radius-s);
 }

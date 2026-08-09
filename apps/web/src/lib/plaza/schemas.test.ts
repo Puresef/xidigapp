@@ -142,15 +142,21 @@ describe('postUpdateSchema', () => {
   });
 });
 
-describe('askActionSchema', () => {
-  it('credit requires a comment uuid', () => {
-    expect(askActionSchema.safeParse({ action: 'credit', commentId: UUID }).success).toBe(true);
-    expect(askActionSchema.safeParse({ action: 'credit', commentId: 'nope' }).success).toBe(false);
-    expect(askActionSchema.safeParse({ action: 'credit' }).success).toBe(false);
+describe('askActionSchema (P1 Codsi lifecycle)', () => {
+  it('fulfill and reopen take no extra fields', () => {
+    expect(askActionSchema.safeParse({ action: 'fulfill' }).success).toBe(true);
+    expect(askActionSchema.safeParse({ action: 'reopen' }).success).toBe(true);
   });
 
-  it('close takes no extra fields', () => {
-    expect(askActionSchema.safeParse({ action: 'close' }).success).toBe(true);
+  it('accept_offer names a concrete offer by uuid', () => {
+    expect(askActionSchema.safeParse({ action: 'accept_offer', offerId: UUID }).success).toBe(true);
+    expect(askActionSchema.safeParse({ action: 'accept_offer', offerId: 'nope' }).success).toBe(false);
+    expect(askActionSchema.safeParse({ action: 'accept_offer' }).success).toBe(false);
+  });
+
+  it('the retired credit/close actions are refused', () => {
+    expect(askActionSchema.safeParse({ action: 'credit', commentId: UUID }).success).toBe(false);
+    expect(askActionSchema.safeParse({ action: 'close' }).success).toBe(false);
   });
 });
 

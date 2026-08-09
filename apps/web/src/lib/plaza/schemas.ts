@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   COMMENT_BODY_MAX,
   LINK_URL_MAX,
+  OFFER_MESSAGE_MAX,
   POLL_DEFAULT_DAYS,
   POLL_MAX_DAYS,
   POLL_MIN_DAYS,
@@ -101,12 +102,23 @@ export const commentCreateSchema = z.object({
 
 export const commentUpdateSchema = commentCreateSchema;
 
+/**
+ * Codsi lifecycle actions (P1): the asker marks it solved, walks it back to
+ * open, or accepts a concrete offer (which names the helper). The retired
+ * credit/close actions live on in legacy data only.
+ */
 export const askActionSchema = z.discriminatedUnion('action', [
-  z.object({ action: z.literal('credit'), commentId: z.string().uuid() }),
-  z.object({ action: z.literal('close') }),
+  z.object({ action: z.literal('fulfill') }),
+  z.object({ action: z.literal('reopen') }),
+  z.object({ action: z.literal('accept_offer'), offerId: z.string().uuid() }),
 ]);
 
 export type AskActionInput = z.infer<typeof askActionSchema>;
+
+/** "Waan caawin karaa" — the private message that opens the offer DM. */
+export const offerCreateSchema = z.object({
+  message: z.string().trim().min(1).max(OFFER_MESSAGE_MAX),
+});
 
 export const voteSchema = z.object({ optionId: z.string().uuid() });
 

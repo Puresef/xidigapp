@@ -527,7 +527,7 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 ## 15) Plaza spec
 
 - Post types: Intro / Ask / Win / Update / Poll
-- **Ask lifecycle:** Open → Answered (asker credits an answer; helper earns Helper score) → Closed; stale Asks auto-nudge after 7 days
+- **Ask lifecycle (P1 Codsi model, 9 Aug 2026):** Open → In progress (asker accepts a private offer; the helper is named publicly) → Fulfilled (terminal; the named helper earns Helper score). Offers arrive as private DMs — no public offer counts; the asker alone moves the lifecycle (reopen walks an in-progress ask back). Stale Asks auto-nudge after 7 days. Garab (co-sign) exists on fulfilled Asks only. *(Supersedes the v1.0 credit-an-answer flow: Answered rows were backfilled to Fulfilled with the credited answerer as helper; Closed survives read-only as a legacy terminal state.)*
 - **Feed (default):** chronological + post-type filters + pinned weekly highlights — no engagement-bait algorithm
 - **Images/memes:** direct upload, 1–5MB, auto-compressed to WebP (+ ~480px thumbnail variant), EXIF stripped, AI moderation pre-scan; **alt text required on all uploads** (accessibility AA + doubles as the Lite-mode placeholder label); **blurhash/LQIP string (~30 bytes) generated and stored at upload** for ~0-byte Lite placeholders
 - **Video:** embed-first — paste a YouTube/TikTok/Vimeo/X/Instagram link and it plays in-app; no native video uploads in v1.0 (see section 24 options)

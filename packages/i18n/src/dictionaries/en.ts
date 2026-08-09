@@ -134,6 +134,11 @@ export const en = {
   // Shared UI states
   'state.loading': 'Loading…',
   'state.empty': 'Nothing here yet.',
+  // Offline read + queued-write grammar (shared pattern: clock chip +
+  // "it sends when the internet returns" + Delete; true timestamps kept).
+  'state.offlineCached': 'No internet — you’re reading a saved copy. Your replies will wait.',
+  'state.queuedChip': 'Waiting',
+  'state.queuedNote': 'It will send when the internet comes back.',
   'state.emptyFeed': 'Be the first to post — the Plaza is open.',
   'state.comingSoon': 'Coming soon',
   'state.comingSoonBody':
@@ -219,12 +224,10 @@ export const en = {
     'That file doesn’t look like an image we can use. We accept JPG, PNG, GIF, and WebP.',
   'error.imageModerationBlocked':
     'That image didn’t pass our content check, so it wasn’t uploaded. Try a different image — or contact support if you think this is a mistake.',
-  'error.askAlreadyAnswered':
-    'This Ask has been marked as answered. You can still comment if you have something to add.',
+  'error.askAlreadyFulfilled':
+    'This Ask has been marked solved — its status can’t change any more. You can still comment if you have something to add.',
   'error.askNotOpen':
-    'This Ask has been closed. Comments stay open if you have something to add.',
-  'error.askCreditInvalid':
-    'That comment can’t be credited — pick an answer from someone else on this Ask.',
+    'This Ask can’t move to that state right now — its status may have just changed. Refresh the page and check again.',
   'error.pollClosed':
     'This poll has closed, so votes can’t be added or changed. The results are final.',
   'error.pollOptionsInvalid': 'Polls need {min} to {max} options. Adjust your options and try again.',
@@ -1064,6 +1067,52 @@ export const en = {
   'plaza.askFulfilled': 'Solved',
   'plaza.askAnswered': 'Answered',
   'plaza.askClosed': 'Closed',
+  // Codsi detail (P1 · frames 1a–3b): offer = private DM, helper named on
+  // acceptance, asker-only lifecycle.
+  'plaza.offerCta': 'I can help',
+  'plaza.offerCtaSecondary': 'I can help too',
+  'plaza.offerPrivacyNote': 'A private message goes to {name} — it never appears in this thread.',
+  'plaza.offerStillOpenNote': 'This ask is still open — {name} can still hear from other helpers.',
+  'plaza.offerMessageLabel': 'Your offer message',
+  'plaza.offerMessagePlaceholder': 'Say how you can help…',
+  'plaza.offersCardTitle': 'Offers to help',
+  'plaza.offerAccept': 'Accept',
+  'plaza.helperHelping': '{name} is helping',
+  'plaza.helperHelpingOwn': '{name} is helping you',
+  'plaza.helperHelped': '{name} helped',
+  'plaza.helperAcceptedAgo': '{name} accepted · {time}',
+  'plaza.helperAcceptedYouAgo': 'You accepted {time}',
+  'plaza.helperOpenDm': 'Open the message',
+  'plaza.helperCardTitle': 'Helper',
+  'plaza.helperViewProfile': 'View profile',
+  'plaza.ownerCardTitle': 'This ask is yours',
+  'plaza.markFulfilled': 'Mark as solved',
+  'plaza.reopenAsk': 'Reopen it',
+  'plaza.ownerOnlyNote': 'Only you can change this ask’s status. Xidig never changes it on its own.',
+  'plaza.fulfilledTitle': 'This ask is solved',
+  'plaza.fulfilledByAfter': '{helper} helped — solved after {duration}.',
+  'plaza.fulfilledAfter': 'Solved after {duration}.',
+  'plaza.durationDays': { one: '{count} day', other: '{count} days' },
+  'plaza.guulPromptTitle': 'Make it a Guul?',
+  'plaza.guulPromptBody': 'Share the story on the Plaza so others learn what worked. You write it.',
+  'plaza.guulPromptCta': 'Write the Guul',
+  'plaza.guulPromptDismiss': 'No, thanks',
+  'plaza.guulPromptClose': 'Dismiss this suggestion',
+  'plaza.garabHelperNote': 'You stood with them. The count shows only after you take part.',
+  'plaza.timelineTitle': 'Ask timeline',
+  'plaza.detailsTitle': 'Details',
+  'plaza.detailsCategory': 'Category',
+  'plaza.detailsLocation': 'Location',
+  'plaza.detailsDuration': 'Duration',
+  'plaza.threadHeadingCount': 'Thread · {count}',
+  'plaza.emptyThreadTitle': 'No replies yet',
+  'plaza.emptyThreadBody':
+    'This ask opened {duration}. If you know something, write the first reply.',
+  'plaza.threadError':
+    'The thread couldn’t load. You can still read the ask — the replies are missing. Try again.',
+  'plaza.commentLabelOwner': 'Add an update',
+  'plaza.threadPublicNote':
+    'The help conversation happens in Fariimo. What’s written here is public — the whole community sees it.',
   'plaza.pollClosed': 'Poll closed',
   'plaza.pollClosesIn': 'Closes {when}',
   'plaza.commentsCount': { one: '{count} comment', other: '{count} comments' },
@@ -1089,14 +1138,12 @@ export const en = {
   // Detail page — comments, Ask lifecycle, polls
   'plaza.commentsHeading': 'Comments',
   'plaza.commentLabel': 'Add a comment',
-  'plaza.creditAnswer': 'Mark as the answer',
+  // plaza.creditedBadge survives the P1 helper migration: pre-migration
+  // credited answers keep their badge in old threads (record stays honest).
   'plaza.creditedBadge': 'Credited answer',
-  'plaza.closeAsk': 'Close this Ask',
   'plaza.askStaleTitle': 'Still looking for help?',
   'plaza.askStaleBody':
     'Your Ask has been open for {days} days. Mark it solved if it’s sorted — or leave it open if you’re still looking.',
-  'plaza.helperCredited': 'Answer credited — the helper earned Helper score.',
-  'plaza.askClosedNotice': 'Ask closed.',
   'plaza.voteButton': 'Vote',
   'plaza.changeVote': 'Change vote',
   'plaza.votesCount': { one: '{count} vote', other: '{count} votes' },
@@ -1202,7 +1249,8 @@ export const en = {
   'notif.newDm': { one: '{name} sent you a message', other: '{name} sent you {count} messages' },
   'notif.dmRequest': '{name} wants to message you',
   'notif.dmAccepted': '{name} accepted your message request',
-  'notif.askCredited': 'Your answer was credited — you earned Helper score',
+  'notif.askCredited': 'The ask you helped was marked solved — you earned Helper score',
+  'notif.askHelperNamed': 'Your offer was accepted — you’re named as the helper on this Ask',
   'notif.askStale': 'Your Ask has been open a while — mark it solved if it’s sorted',
   'notif.moderationHold': 'A post of yours is being reviewed',
   'notif.moderationRemoved': 'A post of yours was removed',

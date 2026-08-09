@@ -25,6 +25,9 @@ function fakePostView(id: string): PostView {
       image_urls: [],
       ask_status: null,
       ask_nudged_at: null,
+      ask_helper_user_id: null,
+      ask_helped_at: null,
+      ask_fulfilled_at: null,
       poll_status: null,
       poll_closes_at: null,
       status: 'published',
@@ -43,6 +46,7 @@ function fakePostView(id: string): PostView {
     myReactions: [],
     poll: null,
     bookmarked: false,
+    askHelper: null,
   } as PostView;
 }
 

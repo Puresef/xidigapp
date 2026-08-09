@@ -17,6 +17,7 @@ export const NOTIFICATION_TYPES = [
   // Phase 2 (Plaza) — in-app only until Phase 3 lights up the push channel.
   'reply',
   'ask_credited',
+  'ask_helper_named',
   'ask_stale',
   'moderation_hold',
   'moderation_removed',
@@ -85,6 +86,9 @@ export const NOTIFICATION_CHANNELS: Record<NotificationType, NotificationChannel
   dm_accepted: { inApp: true, email: false, push: false },
   candidate_status: { inApp: true, email: true, push: false },
   ask_credited: { inApp: true, email: false, push: false },
+  // Being named someone's helper is public the moment it happens — worth an
+  // in-app row, not a push (§26 push stays DMs/mentions/replies).
+  ask_helper_named: { inApp: true, email: false, push: false },
   ask_stale: { inApp: true, email: false, push: false },
   moderation_hold: { inApp: true, email: false, push: false },
   moderation_removed: { inApp: true, email: false, push: false },

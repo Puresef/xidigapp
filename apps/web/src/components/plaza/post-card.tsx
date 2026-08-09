@@ -48,10 +48,26 @@ const TYPE_KEYS: Record<PostType, MessageKey> = {
   poll: 'plaza.typePoll',
 };
 
+/**
+ * Codsi lifecycle chip (P1): the stage is legible from color alone —
+ * plain while open, accent while being helped, trust once solved (the one
+ * earned state; orange never appears earlier). Legacy 'answered' rows were
+ * backfilled to 'fulfilled'; the mapping stays as a belt for stragglers.
+ */
 const ASK_STATUS_KEYS: Record<AskStatus, MessageKey> = {
   open: 'plaza.askOpen',
-  answered: 'plaza.askAnswered',
+  in_progress: 'plaza.askInProgress',
+  fulfilled: 'plaza.askFulfilled',
+  answered: 'plaza.askFulfilled',
   closed: 'plaza.askClosed',
+};
+
+const ASK_STATUS_CLASS: Record<AskStatus, string> = {
+  open: 'xidig-tag',
+  in_progress: 'xidig-tag xidig-tag--accent',
+  fulfilled: 'xidig-tag xidig-tag--trust',
+  answered: 'xidig-tag xidig-tag--trust',
+  closed: 'xidig-tag',
 };
 
 export function PostCard({
@@ -62,6 +78,8 @@ export function PostCard({
   detail = false,
   canSeeHistory = false,
   revisionCount = 0,
+  codsiBanner,
+  codsiHelper,
 }: {
   view: PostView;
   viewerId: string;
@@ -74,6 +92,10 @@ export function PostCard({
   canSeeHistory?: boolean;
   /** post_revisions count (detail page hydrates it when canSeeHistory). */
   revisionCount?: number;
+  /** Codsi detail (P1): the fulfilled Guul band, flush across the card top. */
+  codsiBanner?: React.ReactNode;
+  /** Codsi detail (P1): the "Waxaa caawinaya …" strip, above the reactions. */
+  codsiHelper?: React.ReactNode;
 }) {
   const t = useT();
   const { locale } = useLocale();
@@ -109,6 +131,7 @@ export function PostCard({
 
   return (
     <article className="xidig-card">
+      {codsiBanner}
       <div className="xidig-card__top">
         <div className="xidig-byline">
           {author ? (
@@ -182,7 +205,9 @@ export function PostCard({
         <ContentSourceBadge source={post.source} />
         {post.pinned_at ? <span className="xidig-tag">{t('plaza.pinned')}</span> : null}
         {post.ask_status ? (
-          <span className="xidig-tag">{t(ASK_STATUS_KEYS[post.ask_status])}</span>
+          <span className={ASK_STATUS_CLASS[post.ask_status]}>
+            {t(ASK_STATUS_KEYS[post.ask_status])}
+          </span>
         ) : null}
         {post.edited_at ? <span className="xidig-card__meta">{t('plaza.edited')}</span> : null}
       </p>
@@ -283,6 +308,8 @@ export function PostCard({
           isAuthor={isOwn}
         />
       ) : null}
+
+      {codsiHelper}
 
       <ReactionBar
         targetKind="post"

@@ -2,6 +2,7 @@
 
 import { type FormEvent, useId, useState } from 'react';
 
+import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
 import { MentionAutocomplete } from '@/components/social/mention-autocomplete';
@@ -16,13 +17,24 @@ import { PlainErrorBanner } from '../auth/plain-error';
  * Add-a-comment form on /p/[id] (§15). The daily comment limit (§26) comes
  * back as a 429 with §27 copy — rendered verbatim by PlainErrorBanner.
  * The box has @mention autocomplete (Phase 4.5 §13) — mentioning notifies.
+ *
+ * Offline path (E2 s4): when the network is down (or the POST dies without
+ * an HTTP response), the reply hands off to the thread's offline queue via
+ * `onNetworkFail` instead of erroring — work is never lost, and nothing
+ * pretends to be sent. Server-refused comments (§27 errors) still error.
  */
 export function CommentForm({
   postId,
   onCreated,
+  labelKey = 'plaza.commentLabel',
+  onNetworkFail,
 }: {
   postId: string;
   onCreated: (comment: CommentView) => void;
+  /** The asker adds "warbixin" (updates); everyone else adds a comment. */
+  labelKey?: MessageKey;
+  /** Return true to claim the body for the offline queue. */
+  onNetworkFail?: (body: string) => boolean;
 }) {
   const t = useT();
   const fieldId = useId();
@@ -34,6 +46,13 @@ export function CommentForm({
     event.preventDefault();
     const trimmed = body.trim();
     if (trimmed === '' || pending) return;
+
+    if (typeof navigator !== 'undefined' && !navigator.onLine && onNetworkFail?.(trimmed)) {
+      setBody('');
+      setError(null);
+      return;
+    }
+
     void (async () => {
       setPending(true);
       setError(null);
@@ -46,6 +65,7 @@ export function CommentForm({
         onCreated(comment);
       } catch (cause) {
         if (cause instanceof ApiRequestError) setError(cause.plain);
+        else if (onNetworkFail?.(trimmed)) setBody('');
         else setError({ code: 'server_error', message: '' });
       } finally {
         setPending(false);
@@ -58,7 +78,7 @@ export function CommentForm({
       {error ? <PlainErrorBanner error={error} /> : null}
       <div className="xidig-field">
         <label className="xidig-field__label" htmlFor={fieldId}>
-          {t('plaza.commentLabel')}
+          {t(labelKey)}
         </label>
         <MentionAutocomplete
           id={fieldId}

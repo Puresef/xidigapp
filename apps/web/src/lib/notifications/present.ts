@@ -38,6 +38,8 @@ export function bundleSummary(b: NotificationBundle, t: Translator): string {
       return t('notif.dmAccepted', { name });
     case 'ask_credited':
       return t('notif.askCredited');
+    case 'ask_helper_named':
+      return t('notif.askHelperNamed');
     case 'ask_stale':
       return t('notif.askStale');
     case 'moderation_hold':

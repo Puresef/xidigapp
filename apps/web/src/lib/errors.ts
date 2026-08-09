@@ -146,9 +146,8 @@ export const ERROR_DEFS = {
   },
   image_invalid: { messageKey: 'error.imageInvalid' },
   image_moderation_blocked: { messageKey: 'error.imageModerationBlocked' },
-  ask_already_answered: { messageKey: 'error.askAlreadyAnswered' },
+  ask_already_fulfilled: { messageKey: 'error.askAlreadyFulfilled' },
   ask_not_open: { messageKey: 'error.askNotOpen' },
-  ask_credit_invalid: { messageKey: 'error.askCreditInvalid' },
   poll_closed: { messageKey: 'error.pollClosed' },
   poll_options_invalid: {
     messageKey: 'error.pollOptionsInvalid',

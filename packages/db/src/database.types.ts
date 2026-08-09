@@ -2764,6 +2764,39 @@ export type Database = {
           },
         ]
       }
+      post_cosigns: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_cosigns_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_cosigns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_drafts: {
         Row: {
           created_at: string
@@ -2802,6 +2835,55 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_offers: {
+        Row: {
+          accepted_at: string | null
+          conversation_id: string | null
+          created_at: string
+          helper_user_id: string
+          id: string
+          post_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          helper_user_id: string
+          id?: string
+          post_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          helper_user_id?: string
+          id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_offers_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_offers_helper_user_id_fkey"
+            columns: ["helper_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_offers_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
             referencedColumns: ["id"]
           },
         ]
@@ -2889,6 +2971,9 @@ export type Database = {
       }
       posts: {
         Row: {
+          ask_fulfilled_at: string | null
+          ask_helped_at: string | null
+          ask_helper_user_id: string | null
           ask_nudged_at: string | null
           ask_status: Database["public"]["Enums"]["ask_status"] | null
           author_user_id: string
@@ -2898,6 +2983,7 @@ export type Database = {
           id: string
           image_urls: string[]
           lab_id: string | null
+          legacy_ask_status: string | null
           link_url: string | null
           pinned_at: string | null
           poll_closes_at: string | null
@@ -2909,6 +2995,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ask_fulfilled_at?: string | null
+          ask_helped_at?: string | null
+          ask_helper_user_id?: string | null
           ask_nudged_at?: string | null
           ask_status?: Database["public"]["Enums"]["ask_status"] | null
           author_user_id: string
@@ -2918,6 +3007,7 @@ export type Database = {
           id?: string
           image_urls?: string[]
           lab_id?: string | null
+          legacy_ask_status?: string | null
           link_url?: string | null
           pinned_at?: string | null
           poll_closes_at?: string | null
@@ -2929,6 +3019,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ask_fulfilled_at?: string | null
+          ask_helped_at?: string | null
+          ask_helper_user_id?: string | null
           ask_nudged_at?: string | null
           ask_status?: Database["public"]["Enums"]["ask_status"] | null
           author_user_id?: string
@@ -2938,6 +3031,7 @@ export type Database = {
           id?: string
           image_urls?: string[]
           lab_id?: string | null
+          legacy_ask_status?: string | null
           link_url?: string | null
           pinned_at?: string | null
           poll_closes_at?: string | null
@@ -2949,6 +3043,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "posts_ask_helper_user_id_fkey"
+            columns: ["ask_helper_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "posts_author_user_id_fkey"
             columns: ["author_user_id"]
@@ -4577,7 +4678,7 @@ export type Database = {
         | "pending_deletion"
         | "deleted"
       appeal_status: "pending" | "upheld" | "overturned"
-      ask_status: "open" | "answered" | "closed"
+      ask_status: "open" | "answered" | "closed" | "in_progress" | "fulfilled"
       award_category:
         | "best_lab"
         | "best_win"
@@ -4847,7 +4948,7 @@ export const Constants = {
         "deleted",
       ],
       appeal_status: ["pending", "upheld", "overturned"],
-      ask_status: ["open", "answered", "closed"],
+      ask_status: ["open", "answered", "closed", "in_progress", "fulfilled"],
       award_category: [
         "best_lab",
         "best_win",

@@ -42,9 +42,16 @@ export interface AnalyticsEventMap {
   // --- Plaza (§23) --------------------------------------------------------
   post_created: { type: Enums<'post_type'> };
   comment_created: { on: 'post' | 'candidate' };
-  // Ask closed by its asker: credited = an answer was credited (helper paid),
-  // false = closed without crediting.
+  // Ask fulfilled by its asker: credited = a helper was named (helper paid),
+  // false = solved without a named helper.
   ask_resolved: { credited: boolean };
+  // Codsi lifecycle (P1): the private-offer trail. Payload-free — the events
+  // are the signal; who offered whom stays out of analytics.
+  ask_offer_sent: Record<string, never>;
+  ask_offer_accepted: Record<string, never>;
+  ask_reopened: Record<string, never>;
+  // Garab on a resolved ask (post-scoped; candidate co-signs stay interest_expressed).
+  post_cosigned: Record<string, never>;
   report_submitted: { target_type: Enums<'entity_type'>; reason: Enums<'report_reason'> };
   report_resolved: { action: string };
 

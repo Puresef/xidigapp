@@ -39,6 +39,10 @@ export const MEDIA_BUCKET = 'post-media';
 
 export const ASK_NUDGE_AFTER_DAYS = 7; // §15/§26 stale-Ask nudge
 
+// Codsi offer (P1): the offer IS a DM — its first message shares the DM
+// body ceiling so nothing truncates when it lands in the Fariimo thread.
+export const OFFER_MESSAGE_MAX = 4_000;
+
 // Window event that expands + focuses the (collapsed-by-default) composer —
 // dispatched by the feed's empty-state CTA; the composer listens.
 export const COMPOSE_EVENT = 'xidig:compose';

@@ -128,6 +128,11 @@ export const so = {
   // Shared UI states
   'state.loading': 'Waa la soo dejinayaa…',
   'state.empty': 'Weli waxba ma jiraan.',
+  // Offline read + queued-write grammar (HANDOFF shared pattern: clock chip +
+  // "waxay baxaysaa…" + Tirtir; true timestamps preserved).
+  'state.offlineCached': 'Internet ma jiro — waxaad akhrinaysaa kayd. Jawaabahaagu way sugayaan.',
+  'state.queuedChip': 'Sugaysa',
+  'state.queuedNote': 'Waxay baxaysaa marka internetku soo noqdo.',
   'state.emptyFeed': 'Noqo qofka ugu horreeya ee wax qora — Madashu waa furan tahay.',
   'state.comingSoon': 'Dhawaan ayay furmaysaa',
   'state.comingSoonBody':
@@ -217,11 +222,10 @@ export const so = {
     'Faylkaasi uma eka sawir aan isticmaali karno. Waxaan aqbalnaa JPG, PNG, GIF iyo WebP.',
   'error.imageModerationBlocked':
     'Sawirkaasi kama gudbin baaritaanka nuxurka, lamana gelin. Isku day sawir kale — ama la xiriir kooxda taageerada haddii aad u malaynayso inay khalad tahay.',
-  'error.askAlreadyAnswered':
-    'Weydiintan waxaa lagu calaamadeeyay in laga jawaabay. Weli faallo waad qori kartaa haddii aad wax ku dartid.',
-  'error.askNotOpen': 'Weydiintan waa la xiray. Faallooyinku way furan yihiin haddii aad wax ku dartid.',
-  'error.askCreditInvalid':
-    'Faalladaas jawaab looma xulan karo — dooro jawaab qof kale ka bixiyay Weydiintan.',
+  'error.askAlreadyFulfilled':
+    'Codsigan waa la xaliyay — heerkiisu kama beddelmi karo. Weli faallo waad qori kartaa haddii aad wax ku dartid.',
+  'error.askNotOpen':
+    'Codsigan heerkaas hadda looma wareejin karo — waxaa laga yaabaa in xaaladdiisu isbeddeshay. Bogga cusboonaysii oo mar kale eeg.',
   'error.pollClosed':
     'Codbixintan waa la xiray — cod lama darin karo, lamana beddeli karo. Natiijadu waa kama-dambays.',
   'error.pollOptionsInvalid':
@@ -915,6 +919,56 @@ export const so = {
   'plaza.askFulfilled': 'La xaliyay',
   'plaza.askAnswered': 'La jawaabay',
   'plaza.askClosed': 'Xiran',
+  // Codsi detail (P1 · frames 1a–3b): offer = fariin gaar ah, caawiyaha ayaa
+  // la magacaabaa, qoraagu kaliya ayaa heerka beddela.
+  'plaza.offerCta': 'Waan caawin karaa',
+  'plaza.offerCtaSecondary': 'Anigana waan caawin karaa',
+  'plaza.offerPrivacyNote': 'Fariin gaar ah ayaa u tagaysa {name} — kuma muuqato wada-hadalka.',
+  'plaza.offerStillOpenNote':
+    'Codsigu weli wuu furan yahay — {name} wuu arki karaa dad kale oo caawinaya.',
+  'plaza.offerMessageLabel': 'Fariintaada caawinta',
+  'plaza.offerMessagePlaceholder': 'Sheeg sida aad u caawin karto…',
+  'plaza.offersCardTitle': 'Codsiyada caawinta',
+  'plaza.offerAccept': 'Aqbal',
+  'plaza.helperHelping': 'Waxaa caawinaya {name}',
+  'plaza.helperHelpingOwn': 'Waxaa ku caawinaya {name}',
+  'plaza.helperHelped': 'Waxaa caawiyay {name}',
+  'plaza.helperAcceptedAgo': '{name} baa aqbalay · {time}',
+  'plaza.helperAcceptedYouAgo': 'Waxaad aqbashay {time}',
+  'plaza.helperOpenDm': 'Fur fariinta',
+  'plaza.helperCardTitle': 'Caawiyaha',
+  'plaza.helperViewProfile': 'Fiiri profile-ka',
+  'plaza.ownerCardTitle': 'Adigu waad leedahay codsigan',
+  'plaza.markFulfilled': 'Calaamadee: waa la xaliyay',
+  'plaza.reopenAsk': 'Dib ugu celi Furan',
+  'plaza.ownerOnlyNote':
+    'Adiga kaliya ayaa beddeli kara heerka codsiga. Xidig waxba iskama beddelo.',
+  'plaza.fulfilledTitle': 'Codsigan waa la xaliyay',
+  'plaza.fulfilledByAfter': '{helper} ayaa caawiyay — {duration} ka dib.',
+  'plaza.fulfilledAfter': 'Waa la xaliyay — {duration} ka dib.',
+  'plaza.durationDays': { one: '{count} maalin', other: '{count} maalmood' },
+  'plaza.guulPromptTitle': 'Guul ka dhig?',
+  'plaza.guulPromptBody':
+    'Wadaag sheekada Madasha si dadka kale ay u ogaadaan waxa shaqeeyay. Adigaa qora.',
+  'plaza.guulPromptCta': 'Qor Guul',
+  'plaza.guulPromptDismiss': 'Maya, mahadsanid',
+  'plaza.guulPromptClose': 'Xir talooyinka',
+  'plaza.garabHelperNote':
+    'Waad garab istaagtay. Tiradu waxay muuqataa oo keliya markaad ka qaybqaadato.',
+  'plaza.timelineTitle': 'Socodka codsiga',
+  'plaza.detailsTitle': 'Faahfaahin',
+  'plaza.detailsCategory': 'Qaybta',
+  'plaza.detailsLocation': 'Goobta',
+  'plaza.detailsDuration': 'Muddo',
+  'plaza.threadHeadingCount': 'Wada-hadal · {count}',
+  'plaza.emptyThreadTitle': 'Wali jawaab ma jirto',
+  'plaza.emptyThreadBody':
+    'Codsigan waxa la furay {duration}. Haddii aad wax taqaan, qor jawaabta kowaad.',
+  'plaza.threadError':
+    'Wada-hadalka lama soo rari karin. Codsiga ayaad akhrin kartaa — jawaabaha ayaa maqan. Isku day mar kale.',
+  'plaza.commentLabelOwner': 'Warbixin ku dar',
+  'plaza.threadPublicNote':
+    'Wada-hadalka caawinta wuxuu ka dhacayaa Fariimo. Waxa halkan ku qoran waa mid furan oo bulshadu aragto.',
   'plaza.pollClosed': 'Codbixin xiran',
   'plaza.pollClosesIn': 'Waxay xirmaysaa {when}',
   'plaza.commentsCount': { one: '{count} faallo', other: '{count} faallo' },
@@ -938,14 +992,12 @@ export const so = {
   'plaza.lowBandwidthMedia': 'Sawirrada iyo muuqaalladu waa damsan yihiin habka isticmaalka-yar.',
   'plaza.commentsHeading': 'Faallooyinka',
   'plaza.commentLabel': 'Faallo ku dar',
-  'plaza.creditAnswer': 'Ka dhig jawaabta',
+  // plaza.creditedBadge survives the P1 helper migration: pre-migration
+  // credited answers keep their badge in old threads (record stays honest).
   'plaza.creditedBadge': 'Jawaabta la xushay',
-  'plaza.closeAsk': 'Xir Codsigan',
   'plaza.askStaleTitle': 'Weli caawimaad ma raadinaysaa?',
   'plaza.askStaleBody':
     'Codsigaagu {days} maalmood ayuu furnaa. Haddii la xaliyay, calaamadee — haddii kale, sii fur.',
-  'plaza.helperCredited': 'Jawaabta waa la xushay — caawiyuhu wuxuu kasbaday dhibco Caawiye.',
-  'plaza.askClosedNotice': 'Codsiga waa la xiray.',
   'plaza.voteButton': 'Codee',
   'plaza.changeVote': 'Beddel codkaaga',
   'plaza.votesCount': { one: '{count} cod', other: '{count} cod' },
@@ -1119,7 +1171,8 @@ export const so = {
   },
   'notif.dmRequest': '{name} wuxuu doonayaa inuu ku fariimo',
   'notif.dmAccepted': '{name} wuu aqbalay codsigaaga fariinta',
-  'notif.askCredited': 'Jawaabtaada waa la xushay — waxaad kasbatay dhibco Caawiye',
+  'notif.askCredited': 'Codsigii aad caawisay waa la xaliyay — waxaad kasbatay dhibco Caawiye',
+  'notif.askHelperNamed': 'Codsigaagii caawinta waa la aqbalay — waxaa lagu magacaabay caawiyaha',
   'notif.askStale': 'Codsigaagu muddo ayuu furnaa — haddii la xaliyay, calaamadee',
   'notif.moderationHold': 'Qoraalkaaga waa la eegayaa',
   'notif.moderationRemoved': 'Qoraalkaaga waa la saaray',
