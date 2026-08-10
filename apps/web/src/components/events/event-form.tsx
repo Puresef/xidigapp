@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useT } from '@xidig/i18n/react';
 
@@ -49,9 +49,13 @@ export function EventForm({ options }: { options: EventFormOptions }) {
   const [container, setContainer] = useState(containerChoices[0]?.value ?? 'none');
   const [startsAt, setStartsAt] = useState('');
   const [endsAt, setEndsAt] = useState('');
-  const [timezone] = useState(
-    () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-  );
+  // Resolved after mount only: during SSR this would resolve the SERVER's
+  // zone and bake it into the markup, hydration-mismatching for every visitor
+  // in a different zone. Empty until then; the hint renders once known.
+  const [timezone, setTimezone] = useState('');
+  useEffect(() => {
+    setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+  }, []);
   const [mode, setMode] = useState<'online' | 'in_person' | 'hybrid'>('in_person');
   const [venueName, setVenueName] = useState('');
   const [venueAddress, setVenueAddress] = useState('');
@@ -77,7 +81,7 @@ export function EventForm({ options }: { options: EventFormOptions }) {
         category,
         startsAt: new Date(startsAt).toISOString(),
         endsAt: endsAt ? new Date(endsAt).toISOString() : null,
-        timezone,
+        timezone: timezone || 'UTC',
         mode,
         venueName: showVenue && venueName ? venueName : null,
         venueAddress: showVenue && venueAddress ? venueAddress : null,
@@ -183,7 +187,11 @@ export function EventForm({ options }: { options: EventFormOptions }) {
           onChange={(e) => setStartsAt(e.target.value)}
           required
         />
-        <p className="xidig-field__hint">{t('events.formTimezone')}: {timezone}</p>
+        {timezone ? (
+          <p className="xidig-field__hint">
+            {t('events.formTimezone')}: {timezone}
+          </p>
+        ) : null}
       </div>
 
       <div className="xidig-field">
