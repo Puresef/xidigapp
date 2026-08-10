@@ -778,6 +778,10 @@ export const en = {
   'a11y.removeRow': 'Remove row',
   'a11y.search': 'Search',
   'a11y.userMenu': 'Account menu',
+  'a11y.userMenuUnread': {
+    one: 'Account menu, {count} unread message',
+    other: 'Account menu, {count} unread messages',
+  },
   'a11y.moveUp': 'Move up',
   'a11y.moveDown': 'Move down',
 

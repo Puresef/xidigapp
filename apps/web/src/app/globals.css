@@ -186,6 +186,21 @@ main {
    user-menu/consent (50), modals (60), and toasts (90) — the modal scrim
    must cover it, and consent must stay answerable. ── */
 @media (max-width: 48rem) {
+  /* Ruling 3 as amended (Fariimo dispatch): the mobile bar holds no Fariimo
+     slot — entry lives in the account menu, unread rides the avatar badge.
+     Desktop keeps the tab + per-destination count. */
+  .xidig-nav--app .xidig-nav__item--messages {
+    display: none;
+  }
+
+  /* The avatar unread chip is mobile-only — desktop already carries the count
+     on the Messages tab, and a second number would double-report. Calm accent
+     (the shared xidig-nav__badge), never red, no pulse. Two-class selector so
+     this opt-in beats the single-class base hide regardless of source order. */
+  .xidig-user-menu__trigger .xidig-user-menu__badge {
+    display: inline-flex;
+  }
+
   .xidig-nav--app .xidig-nav__list {
     position: fixed;
     inset-inline: 0;
@@ -3458,12 +3473,22 @@ a.xidig-capital-entry:active {
   flex: none;
 }
 .xidig-user-menu__trigger {
+  position: relative;
   display: inline-flex;
   padding: 0;
   border: 0;
   background: transparent;
   border-radius: 999px;
   cursor: pointer;
+}
+
+/* Mobile unread home (ruling 3 as amended): the count pins to the avatar's
+   top-right corner. Hidden on desktop — the media block above opts it in. */
+.xidig-user-menu__badge {
+  display: none;
+  position: absolute;
+  top: -0.3rem;
+  inset-inline-end: -0.3rem;
 }
 .xidig-user-menu__trigger:focus-visible {
   outline: 2px solid var(--x-accent);
@@ -3496,6 +3521,17 @@ a.xidig-capital-entry:active {
   color: var(--x-muted);
   font-size: var(--x-text-s);
 }
+/* Fariimo entry (ruling 3): the unread chip sits at the row's end. The item
+   stays display:block for plain rows; the badge floats via flex when present. */
+.xidig-user-menu__item:has(.xidig-user-menu__item-badge) {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+}
+.xidig-user-menu__item .xidig-user-menu__item-badge {
+  margin-inline-start: auto;
+}
+
 .xidig-user-menu__item {
   display: block;
   width: 100%;

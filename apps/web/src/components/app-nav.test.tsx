@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -61,5 +64,41 @@ describe('AppNav', () => {
     // aria-label lives on the tab <nav> (not an outer wrapper), so the landmark
     // survives being portaled out of the header on mobile.
     expect(render()).toMatch(/<nav[^>]*aria-label="[^"]+"[^>]*class="[^"]*xidig-nav--app/);
+  });
+
+  it('marks the Messages tab for the mobile hide — the dock stays clean (ruling 3)', () => {
+    // Ruling 3 as amended (platform split): desktop keeps the per-destination
+    // count on the Messages tab; the mobile bottom bar holds no Fariimo slot.
+    // The DOM stays identical across breakpoints — a modifier class + the
+    // mobile media block do the hiding, so there is no hydration flash.
+    const html = render();
+    expect(html.match(/xidig-nav__item--messages/g)?.length).toBe(1);
+    const messagesItem = html.match(/<li[^>]*xidig-nav__item--messages[^>]*>[\s\S]*?<\/li>/)?.[0];
+    expect(messagesItem).toBeDefined();
+    expect(messagesItem).toContain('href="/messages"');
+  });
+
+  it('hides the Messages tab inside the mobile bar media block (CSS contract)', () => {
+    const css = readFileSync(join(__dirname, '../app/globals.css'), 'utf8');
+    const ruleIdx = css.indexOf('.xidig-nav--app .xidig-nav__item--messages');
+    expect(ruleIdx).toBeGreaterThan(-1);
+    const mediaIdx = css.lastIndexOf('@media', ruleIdx);
+    expect(css.slice(mediaIdx, mediaIdx + 40)).toContain('max-width: 48rem');
+    const ruleBody = css.slice(ruleIdx, css.indexOf('}', ruleIdx));
+    expect(ruleBody).toContain('display: none');
+  });
+
+  it('opts the avatar badge in on mobile with enough specificity to beat the base hide', () => {
+    // The base .xidig-user-menu__badge rule hides the chip (desktop default);
+    // the mobile media block must re-enable it with a TWO-class selector —
+    // a single-class opt-in loses to the later base rule at equal specificity
+    // (caught live, 9 Aug).
+    const css = readFileSync(join(__dirname, '../app/globals.css'), 'utf8');
+    const optInIdx = css.indexOf('.xidig-user-menu__trigger .xidig-user-menu__badge');
+    expect(optInIdx).toBeGreaterThan(-1);
+    const mediaIdx = css.lastIndexOf('@media', optInIdx);
+    expect(css.slice(mediaIdx, mediaIdx + 40)).toContain('max-width: 48rem');
+    const optInBody = css.slice(optInIdx, css.indexOf('}', optInIdx));
+    expect(optInBody).toContain('display: inline-flex');
   });
 });

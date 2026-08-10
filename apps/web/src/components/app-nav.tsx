@@ -21,6 +21,12 @@ import { useBadges } from '@/components/nav/badge-provider';
  *
  * The Messages tab carries a live unread badge (§22/§26) from the shared
  * BadgeProvider — the count is fetched once for the whole header.
+ *
+ * Ruling 3 as amended (9 Aug, Fariimo dispatch): platform split. Desktop keeps
+ * the Messages tab with its per-destination count (the tab row is the
+ * power-triage surface). The MOBILE bottom bar holds no Fariimo slot — the
+ * `--messages` modifier is hidden by the bar's media block, entry moves to the
+ * account menu, and the unread count rides the avatar trigger (UserMenu).
  */
 const NAV_ITEMS: ReadonlyArray<{ labelKey: MessageKey; href: string }> = [
   { labelKey: 'nav.home', href: '/' },
@@ -143,7 +149,10 @@ function NavTabs() {
         {NAV_ITEMS.map((item) => {
           const badge = item.href === '/messages' ? messages : 0;
           return (
-            <li key={item.href} className="xidig-nav__item">
+            <li
+              key={item.href}
+              className={`xidig-nav__item${item.href === '/messages' ? ' xidig-nav__item--messages' : ''}`}
+            >
               <Link href={item.href} aria-current={isActive(pathname, item.href) ? 'page' : undefined}>
                 <NavIcon href={item.href} />
                 <span className="xidig-nav__label">{t(item.labelKey)}</span>

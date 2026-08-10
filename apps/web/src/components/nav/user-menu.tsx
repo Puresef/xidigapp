@@ -8,6 +8,7 @@ import { useT } from '@xidig/i18n/react';
 
 import { LanguageToggle } from '@/components/language-toggle';
 import { Avatar } from '@/components/media/avatar';
+import { useBadges } from '@/components/nav/badge-provider';
 import type { HeaderViewer } from '@/lib/auth/header-viewer';
 import { apiPost } from '@/lib/api-client';
 import { createClient } from '@/lib/supabase-browser';
@@ -17,9 +18,15 @@ import { createClient } from '@/lib/supabase-browser';
  * (Profile / Saved / Settings) plus the language toggle and sign-out, behind an
  * avatar button. Server-provided viewer identity (no fetch/flash). Signed-out
  * visitors get a plain Sign-in link instead of the menu.
+ *
+ * Ruling 3 as amended (Fariimo dispatch): on mobile the bottom bar carries no
+ * Fariimo slot, so this menu is the entry — Fariimo leads the list with its
+ * unread count, and the same count rides the avatar trigger as a calm accent
+ * chip (mobile-only via CSS; desktop's Messages tab already shows it).
  */
 
 const LINKS: ReadonlyArray<{ labelKey: MessageKey; href: string }> = [
+  { labelKey: 'nav.messages', href: '/messages' },
   { labelKey: 'nav.profile', href: '/profile' },
   { labelKey: 'nav.events', href: '/events' },
   { labelKey: 'nav.saved', href: '/saved' },
@@ -30,6 +37,7 @@ const LINKS: ReadonlyArray<{ labelKey: MessageKey; href: string }> = [
 
 export function UserMenu({ viewer }: { viewer: HeaderViewer }) {
   const t = useT();
+  const { messages } = useBadges();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -132,7 +140,9 @@ export function UserMenu({ viewer }: { viewer: HeaderViewer }) {
         ref={triggerRef}
         type="button"
         className="xidig-user-menu__trigger"
-        aria-label={t('a11y.userMenu')}
+        aria-label={
+          messages > 0 ? t('a11y.userMenuUnread', { count: messages }) : t('a11y.userMenu')
+        }
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
@@ -144,6 +154,11 @@ export function UserMenu({ viewer }: { viewer: HeaderViewer }) {
           blurhash={viewer.avatarBlurhash}
           size={32}
         />
+        {messages > 0 ? (
+          <span className="xidig-nav__badge xidig-user-menu__badge" aria-hidden="true">
+            {messages > 99 ? '99+' : messages}
+          </span>
+        ) : null}
       </button>
 
       {open ? (
@@ -163,6 +178,14 @@ export function UserMenu({ viewer }: { viewer: HeaderViewer }) {
               onClick={close}
             >
               {t(item.labelKey)}
+              {item.href === '/messages' && messages > 0 ? (
+                <span
+                  className="xidig-nav__badge xidig-user-menu__item-badge"
+                  aria-label={t('messages.unreadCount', { count: messages })}
+                >
+                  {messages > 99 ? '99+' : messages}
+                </span>
+              ) : null}
             </Link>
           ))}
           <div className="xidig-user-menu__row">
