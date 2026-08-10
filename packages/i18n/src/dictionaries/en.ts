@@ -1087,6 +1087,9 @@ export const en = {
   'plaza.helperViewProfile': 'View profile',
   'plaza.ownerCardTitle': 'This ask is yours',
   'plaza.markFulfilled': 'Mark as solved',
+  // Ruling 8 follow-up (9 Aug): the terminal action confirms via Dialog.
+  'plaza.fulfillConfirmBody': 'The ask becomes "Solved" — this can’t be undone.',
+  'plaza.fulfillConfirmCta': 'Yes, mark it solved',
   'plaza.reopenAsk': 'Reopen it',
   'plaza.ownerOnlyNote': 'Only you can change this ask’s status. Xidig never changes it on its own.',
   'plaza.fulfilledTitle': 'This ask is solved',

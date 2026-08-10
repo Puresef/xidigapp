@@ -940,6 +940,9 @@ export const so = {
   'plaza.helperViewProfile': 'Fiiri profile-ka',
   'plaza.ownerCardTitle': 'Adigu waad leedahay codsigan',
   'plaza.markFulfilled': 'Calaamadee: waa la xaliyay',
+  // Ruling 8 follow-up (9 Aug): the terminal action confirms via Dialog.
+  'plaza.fulfillConfirmBody': 'Codsigu wuxuu noqonayaa "La xaliyay" — tallaabadan lama celin karo.',
+  'plaza.fulfillConfirmCta': 'Haa, calaamadee',
   'plaza.reopenAsk': 'Dib ugu celi Furan',
   'plaza.ownerOnlyNote':
     'Adiga kaliya ayaa beddeli kara heerka codsiga. Xidig waxba iskama beddelo.',
