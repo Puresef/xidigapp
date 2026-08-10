@@ -1181,34 +1181,81 @@ export const en = {
 
   // Fariimo — Messages / DMs (§13, §27). Trust surface: full Somali at launch.
   'messages.subtitle': 'Your 1:1 conversations with other builders.',
-  'messages.tabChats': 'Chats',
-  'messages.tabRequests': 'Requests',
-  'messages.empty': 'No conversations yet. Open a builder’s profile and tap Message to start one.',
-  'messages.emptyCta': 'Find people in the Directory',
+  // 6c empty — a warm surface: one fact, one route out.
+  'messages.empty':
+    'Conversations start on the Plaza — reply to an ask, or send a salaan to someone you’d like to know.',
+  'messages.emptyTitle': 'No messages yet',
+  'messages.emptyCta': 'Open the Plaza',
+  'messages.emptyFootnote':
+    'Anyone can send you one message before you accept. You decide who you talk to.',
   'messages.emptyRequests': 'No message requests right now.',
+  // 6a/6d inline sections (tabs retired — requests are never a second inbox).
   'messages.requestsHeading': 'Message requests',
+  'messages.chatsHeading': 'Chats',
+  'messages.requestTag': 'Request',
+  'messages.requestsFootnote':
+    'They can send one message until you accept. Declining is silent — they are never told.',
   'messages.you': 'You',
   'messages.new': 'New',
   'messages.unreadCount': { one: '{count} unread', other: '{count} unread' },
   'messages.noPreview': 'No messages yet.',
   'messages.emptyThread': 'No messages yet — say salaam to break the ice.',
+  // 6d request pane — the informed-consent chrome.
   'messages.requestExplainer':
-    '{name} wants to message you. Accept to start chatting, or decline — they won’t be told.',
+    'This is a message request. {name} can’t see that you’ve read it, and they can send only one message until you accept.',
+  'messages.acceptAndReply': 'Accept and reply',
+  'messages.senderContextTitle': 'What you know about {name}',
+  'messages.contextLabs': 'Labs',
+  'messages.contextLabsShared': '{name} — you both',
+  'messages.contextPlaza': 'Plaza',
+  'messages.contextRepliedYourAsk': 'Replied to your ask: {title}',
+  'messages.contextVerification': 'Verification',
+  'messages.contextNotVerified': 'Not yet verified',
+  'messages.contextVerified': 'Verified',
+  'messages.declineFootnote':
+    'Declining is silent — {name} is never told. The message deletes after 30 days.',
+  'messages.memberSince': 'Member {year}',
   'messages.accepted': 'Request accepted — you can chat now.',
-  'messages.declinedByYou': 'Request declined.',
-  'messages.pendingSentTitle': 'Request sent',
-  'messages.pendingSentBody':
-    'Waiting for {name} to accept. You’ll be able to keep chatting once they do.',
-  'messages.declinedNotice': 'This request wasn’t accepted.',
+  'messages.acceptedDivider': 'You accepted the request · {time}',
+  // f5 — the silence is the design: the sender sees "sent", a normalising
+  // note, and a closed composer. Declined renders EXACTLY the same.
+  'messages.pendingSentMeta': 'Request · sent {time}',
+  'messages.sentAt': 'Sent · {time}',
+  'messages.pendingSentNotice':
+    'You can send one message until {name} responds. No answer means busy or not interested — both are normal.',
+  'messages.pendingSentFooter': 'The composer opens if {name} accepts.',
+  // f4 — blocker's view: chrome, not content. The neutral blockedNotice
+  // below stays for the OTHER side (restricted — never reveals a block).
+  'messages.blockedHeaderName': 'Blocked member',
+  'messages.blockedByMeNotice':
+    'You blocked this member — {date}. They can’t message you, and you can’t message them. The history stays in case you need it for a report.',
+  'messages.blockedComposer': 'The composer is closed.',
+  'messages.unblock': 'Unblock',
   'messages.blockedNotice': 'You can’t message this member.',
   'messages.composerPlaceholder': 'Write a message…',
-  'messages.requestComposerPlaceholder': 'Say hello and introduce yourself…',
+  'messages.newMessage': 'New message',
+  'messages.searchMembers': 'Search members…',
   'messages.loadOlder': 'Load older messages',
   'messages.historyStart': 'This is the start of your conversation.',
   'messages.messageRemoved': 'This message was removed.',
   'messages.sendFailed': 'Message didn’t send. Check your connection and try again.',
+  // f2 — per-message failure: dim in place, retry/delete, order preserved.
+  'messages.sendFailedChip': 'Not sent',
+  'messages.retrySend': 'Send again',
+  // f3 — offline outbox: composer stays live, the queue chip promises.
+  'messages.queuedChip': 'Waiting — it will send when the internet returns',
   'messages.reconnecting': 'Reconnecting…',
-  'messages.offline': 'You’re offline — messages will send when you’re back online.',
+  'messages.offline': 'No internet — your messages will wait.',
+  // 6b — voice notes: self-recorded, duration shown, no transcription.
+  'messages.voiceNote': 'Voice note',
+  'messages.voiceNoteWithDuration': 'Voice note — {duration}',
+  'messages.voicePlay': 'Play',
+  'messages.voicePause': 'Pause',
+  'messages.voiceRecord': 'Record a voice note',
+  'messages.voiceStop': 'Stop recording',
+  'messages.voiceDiscard': 'Discard recording',
+  'messages.voiceRecording': 'Recording… {duration}',
+  'messages.voiceUnavailable': 'Voice isn’t available',
   // §27 DMs block (success notices)
   'messages.requestSent': 'Your message request has been sent. They’ll see it when they next open Xidig.',
   'messages.reportSubmitted':

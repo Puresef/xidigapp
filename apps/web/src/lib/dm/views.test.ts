@@ -48,3 +48,65 @@ describe('toParticipant', () => {
     expect(p.avatarBlurhash).toBe('LEHV6nWB2yk8pyo0adR*.7kCMdnj');
   });
 });
+
+// ---------------------------------------------------------------------------
+// f5 — silent decline. "The silence is the design": these two functions are
+// the single presentation boundary; if either regresses, the sender learns
+// they were declined and the consent grammar collapses.
+// ---------------------------------------------------------------------------
+
+import { presentConversationStatus, presentInboxRow } from './views';
+
+function inboxRow(overrides: Record<string, unknown> = {}) {
+  return {
+    conversation_id: 'c1',
+    other_user_id: 'u2',
+    status: 'pending' as const,
+    is_initiator: true,
+    last_message_body: 'salaan',
+    last_message_at: '2026-08-01T00:00:00Z',
+    last_message_sender: 'u1',
+    last_message_deleted: false,
+    unread_count: 0,
+    created_at: '2026-08-01T00:00:00Z',
+    updated_at: '2026-08-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
+describe('presentInboxRow — f5 silent decline', () => {
+  it('presents a declined request as PENDING to its initiator (indistinguishable)', () => {
+    const declined = presentInboxRow(
+      inboxRow({ status: 'declined', is_initiator: true }) as never,
+    );
+    const pending = presentInboxRow(inboxRow({ status: 'pending', is_initiator: true }) as never);
+    expect(declined).not.toBeNull();
+    expect(declined!.status).toBe('pending');
+    // Structural indistinguishability: same row shape, same status.
+    expect(declined).toEqual(pending);
+  });
+
+  it('drops the declined row entirely for the recipient who declined', () => {
+    expect(presentInboxRow(inboxRow({ status: 'declined', is_initiator: false }) as never)).toBeNull();
+  });
+
+  it('passes every other status through untouched', () => {
+    for (const status of ['pending', 'accepted'] as const) {
+      const row = presentInboxRow(inboxRow({ status }) as never);
+      expect(row!.status).toBe(status);
+    }
+  });
+});
+
+describe('presentConversationStatus — f5 for the thread header', () => {
+  it('lies to the initiator only', () => {
+    expect(presentConversationStatus('declined', true)).toBe('pending');
+    expect(presentConversationStatus('declined', false)).toBe('declined');
+  });
+
+  it('never touches other statuses', () => {
+    expect(presentConversationStatus('pending', true)).toBe('pending');
+    expect(presentConversationStatus('accepted', true)).toBe('accepted');
+    expect(presentConversationStatus('blocked', true)).toBe('blocked');
+  });
+});

@@ -9,9 +9,15 @@ export const startConversationSchema = z.object({
   message: z.string().trim().min(1).max(MESSAGE_MAX_LENGTH).optional(),
 });
 
-export const sendMessageSchema = z.object({
-  body: z.string().trim().min(1).max(MESSAGE_MAX_LENGTH),
-});
+/** Text, voice, or both — never neither (mirrors messages_body_or_voice). */
+export const sendMessageSchema = z
+  .object({
+    body: z.string().trim().min(1).max(MESSAGE_MAX_LENGTH).optional(),
+    voiceUploadId: z.string().uuid().optional(),
+  })
+  .refine((value) => value.body !== undefined || value.voiceUploadId !== undefined, {
+    message: 'body or voiceUploadId required',
+  });
 
 export const respondSchema = z.object({
   action: z.enum(['accept', 'decline']),

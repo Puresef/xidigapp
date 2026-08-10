@@ -36,6 +36,9 @@ export async function POST(request: Request): Promise<Response> {
     // (a) DM privacy guard — only a conversation participant may report a
     // message/conversation, which also bounds whose private content gets
     // snapshotted below.
+    // body is null for voice-only messages — the snapshot records the fact
+    // as a marker; the audio itself stays in the private bucket, reachable
+    // by moderation through the service role if the report is actioned.
     let messageSnapshot: { body: string; conversationId: string; senderUserId: string; createdAt: string } | null =
       null;
     if (input.targetType === 'message' || input.targetType === 'conversation') {
@@ -51,7 +54,7 @@ export async function POST(request: Request): Promise<Response> {
         if (!message) throw new ApiError('not_found', 404);
         conversationId = message.conversation_id;
         messageSnapshot = {
-          body: message.body,
+          body: message.body ?? '[fariin cod ah]',
           conversationId: message.conversation_id,
           senderUserId: message.sender_user_id,
           createdAt: message.created_at,

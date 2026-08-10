@@ -59,6 +59,7 @@ export async function GET(
       ctx.appUser.id,
       query.cursor ?? null,
       query.limit,
+      admin,
     );
     return apiOk(page);
   } catch (error) {
@@ -74,7 +75,7 @@ export async function POST(
     const ctx = await requireUser();
     const parsed = paramsSchema.safeParse(await context.params);
     if (!parsed.success) throw new ApiError('not_found', 404);
-    const { body } = sendMessageSchema.parse(await request.json());
+    const input = sendMessageSchema.parse(await request.json());
 
     await enforceRateLimit(`dm_send:${ctx.appUser.id}`, {
       max: MESSAGE_BURST_MAX,
@@ -85,9 +86,18 @@ export async function POST(
     const convo = await loadConversationForUser(admin, parsed.data.id, ctx.appUser.id);
     if (!convo) throw new ApiError('not_found', 404);
 
-    const message = await sendMessage(admin, ctx.appUser.id, convo, body);
-    emitServer(event('dm_sent', {}), { distinctId: ctx.appUser.id, userId: ctx.appUser.id });
-    return apiOk({ message: toMessageView(message, ctx.appUser.id) }, 201);
+    const sent = await sendMessage(admin, ctx.appUser.id, convo, {
+      body: input.body,
+      voiceUploadId: input.voiceUploadId,
+    });
+    emitServer(event('dm_sent', { voice: sent.voice !== null }), {
+      distinctId: ctx.appUser.id,
+      userId: ctx.appUser.id,
+    });
+    const durations = sent.voice
+      ? new Map([[sent.voice.uploadId, sent.voice.durationSeconds]])
+      : undefined;
+    return apiOk({ message: toMessageView(sent.message, ctx.appUser.id, durations) }, 201);
   } catch (error) {
     return handleApiError(error);
   }

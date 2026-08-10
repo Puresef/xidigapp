@@ -58,7 +58,8 @@ export interface AnalyticsEventMap {
   // --- Social (§23) -------------------------------------------------------
   follow_created: { target_type: Enums<'follow_target_type'> };
   dm_request_sent: Record<string, never>;
-  dm_sent: Record<string, never>;
+  // voice = the message carried a self-recorded voice note (F2 §4).
+  dm_sent: { voice: boolean };
   // Where the @mention was authored (a taxonomy slug, never the handle).
   mention_sent: { source: 'post' | 'comment' | 'message' };
 

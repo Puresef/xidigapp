@@ -2188,6 +2188,7 @@ export type Database = {
           bucket: string
           bytes: number
           created_at: string
+          duration_seconds: number | null
           height: number | null
           id: string
           kind: string
@@ -2206,6 +2207,7 @@ export type Database = {
           bucket?: string
           bytes: number
           created_at?: string
+          duration_seconds?: number | null
           height?: number | null
           id?: string
           kind?: string
@@ -2224,6 +2226,7 @@ export type Database = {
           bucket?: string
           bytes?: number
           created_at?: string
+          duration_seconds?: number | null
           height?: number | null
           id?: string
           kind?: string
@@ -2340,28 +2343,31 @@ export type Database = {
       }
       messages: {
         Row: {
-          body: string
+          body: string | null
           conversation_id: string
           created_at: string
           deleted_at: string | null
           id: string
           sender_user_id: string
+          voice_upload_id: string | null
         }
         Insert: {
-          body: string
+          body?: string | null
           conversation_id: string
           created_at?: string
           deleted_at?: string | null
           id?: string
           sender_user_id: string
+          voice_upload_id?: string | null
         }
         Update: {
-          body?: string
+          body?: string | null
           conversation_id?: string
           created_at?: string
           deleted_at?: string | null
           id?: string
           sender_user_id?: string
+          voice_upload_id?: string | null
         }
         Relationships: [
           {
@@ -2376,6 +2382,13 @@ export type Database = {
             columns: ["sender_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_voice_upload_id_fkey"
+            columns: ["voice_upload_id"]
+            isOneToOne: false
+            referencedRelation: "media_uploads"
             referencedColumns: ["id"]
           },
         ]
@@ -4604,6 +4617,7 @@ export type Database = {
           last_message_body: string
           last_message_deleted: boolean
           last_message_sender: string
+          last_message_voice: boolean
           other_user_id: string
           status: Database["public"]["Enums"]["conversation_status"]
           unread_count: number

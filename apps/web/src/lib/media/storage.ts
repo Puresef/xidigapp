@@ -14,6 +14,43 @@ import { IMAGE_MAX_BYTES, MEDIA_BUCKET } from '@/lib/plaza/constants';
  * unguessable UUIDs, and §28's public share pages need the images anyway.
  */
 
+/**
+ * DM voice notes live in their OWN bucket — PRIVATE, unlike post-media.
+ * No storage policies exist for it: every byte is served through the
+ * participant-checked API route via short-lived signed URLs. Declared in
+ * migration 20260810000000 too (idempotent on real Supabase); this runtime
+ * path covers environments where the migration's storage-schema guard
+ * no-opped.
+ */
+export const DM_MEDIA_BUCKET = 'dm-media';
+
+const DM_AUDIO_MIME_TYPES = ['audio/webm', 'audio/ogg', 'audio/mp4'];
+
+let dmBucketReady = false;
+
+export async function ensureDmMediaBucket(
+  admin: SupabaseClient<Database>,
+  maxBytes: number,
+): Promise<void> {
+  if (dmBucketReady) return;
+
+  const { data } = await admin.storage.getBucket(DM_MEDIA_BUCKET);
+  if (data) {
+    dmBucketReady = true;
+    return;
+  }
+
+  const { error } = await admin.storage.createBucket(DM_MEDIA_BUCKET, {
+    public: false,
+    fileSizeLimit: maxBytes,
+    allowedMimeTypes: DM_AUDIO_MIME_TYPES,
+  });
+  if (error && !/already exists/i.test(error.message)) {
+    throw new Error(`dm media bucket setup failed: ${error.message}`);
+  }
+  dmBucketReady = true;
+}
+
 let bucketReady = false;
 
 export async function ensureMediaBucket(admin: SupabaseClient<Database>): Promise<void> {

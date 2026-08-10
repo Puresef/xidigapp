@@ -30,8 +30,17 @@ const REASONS: ReadonlyArray<{ value: string; labelKey: MessageKey }> = [
   { value: 'other', labelKey: 'messages.reportReasonOther' },
 ];
 
-/** The reportable non-DM surfaces this control is wired into. */
-export type ReportTargetType = 'candidate' | 'listing' | 'comment' | 'post' | 'lab_update' | 'profile';
+/** The reportable surfaces this control is wired into. `conversation` is the
+ * DM case (6d decision bar / f4): the reports API snapshots participant-scoped
+ * evidence server-side. */
+export type ReportTargetType =
+  | 'candidate'
+  | 'listing'
+  | 'comment'
+  | 'post'
+  | 'lab_update'
+  | 'profile'
+  | 'conversation';
 
 export function ReportControl({
   targetType,

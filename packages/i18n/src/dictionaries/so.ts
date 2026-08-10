@@ -1102,34 +1102,81 @@ export const so = {
 
   // Fariimo — Messages / DMs
   'messages.subtitle': 'Sheekooyinkaaga 1:1 ee dhisayaasha kale.',
-  'messages.tabChats': 'Sheekooyin',
-  'messages.tabRequests': 'Codsiyo',
-  'messages.empty': 'Weli sheeko ma jirto. Fur bogga dhisaha, kadibna taabo Fariin si aad u bilowdo.',
-  'messages.emptyCta': 'Dad ka hel Suuqa',
+  // 6c empty — a warm surface: one fact, one route out (frame copy verbatim).
+  'messages.empty':
+    'Wada-hadalladu waxay ka bilaabmaan Madasha — ka jawaab Codsi ama salaan dir qof aad rabto inaad barato.',
+  'messages.emptyTitle': 'Wali fariin ma jirto',
+  'messages.emptyCta': 'Fur Madasha',
+  'messages.emptyFootnote':
+    "Qof kastaa hal fariin ayuu kuu soo diri karaa ka hor intaadan aqbalin. Adigaa go'aansada cidda kula hadasha.",
   'messages.emptyRequests': 'Hadda codsi fariin ah ma jiro.',
-  'messages.requestsHeading': 'Codsiyada fariinta',
+  // 6a/6d inline sections (tabs retired — requests are never a second inbox).
+  'messages.requestsHeading': 'Codsi salaan',
+  'messages.chatsHeading': 'Wada-hadallo',
+  'messages.requestTag': 'Codsi salaan',
+  'messages.requestsFootnote':
+    'Hal fariin ayay diri karaan ilaa aad aqbasho. Diidmadu waa mid aamusan — lama ogeysiiyo.',
   'messages.you': 'Adiga',
   'messages.new': 'Cusub',
   'messages.unreadCount': { one: '{count} aan la akhriyin', other: '{count} aan la akhriyin' },
   'messages.noPreview': 'Weli fariin ma jirto.',
   'messages.emptyThread': 'Fariin ma jirto weli — salaan ka bilow.',
+  // 6d request pane — the informed-consent chrome.
   'messages.requestExplainer':
-    '{name} wuxuu doonayaa inuu ku fariimo. Aqbal si aad u bilowdo sheekada, ama diid — lama ogeysiin doono.',
+    'Kani waa codsi salaan. {name} ma arki karo inaad akhriday, hal fariin oo keliya ayuuna diri karaa ilaa aad aqbasho.',
+  'messages.acceptAndReply': 'Aqbal oo ka jawaab',
+  'messages.senderContextTitle': 'Waxa aad ka og tahay {name}',
+  'messages.contextLabs': 'Warshado',
+  'messages.contextLabsShared': '{name} — labadiinuba',
+  'messages.contextPlaza': 'Madal',
+  'messages.contextRepliedYourAsk': 'Waxay ka jawaabeen Codsigaaga: {title}',
+  'messages.contextVerification': 'Xaqiijin',
+  'messages.contextNotVerified': 'Weli lama xaqiijin',
+  'messages.contextVerified': 'Waa la xaqiijiyay',
+  'messages.declineFootnote':
+    'Diidmadu waa mid aamusan — {name} lama ogeysiiyo. Fariinta waa la tirtirayaa 30 maalmood ka dib.',
+  'messages.memberSince': 'Xubin {year}',
   'messages.accepted': 'Codsiga waa la aqbalay — hadda waad sheekaysan kartaa.',
-  'messages.declinedByYou': 'Codsiga waa la diiday.',
-  'messages.pendingSentTitle': 'Codsiga waa la diray',
-  'messages.pendingSentBody':
-    'Waxaa la sugayaa {name} inuu aqbalo. Waad sii wadi doontaa sheekada marka uu aqbalo.',
-  'messages.declinedNotice': 'Codsigan lama aqbalin.',
+  'messages.acceptedDivider': 'Waxaad aqbashay codsiga salaanta · {time}',
+  // f5 — the silence is the design: the sender sees "sent", a normalising
+  // note, and a closed composer. Declined renders EXACTLY the same.
+  'messages.pendingSentMeta': 'Codsi salaan · la diray {time}',
+  'messages.sentAt': 'La diray · {time}',
+  'messages.pendingSentNotice':
+    "Hal fariin ayaad diri kartaa ilaa {name} ka jawaabto. Jawaab la'aantu macnaheedu waa mashquul ama ma xiiseynayso — labaduba waa caadi.",
+  'messages.pendingSentFooter': 'Qoraalku wuxuu furmayaa haddii {name} aqbasho.',
+  // f4 — blocker's view: chrome, not content. The neutral blockedNotice
+  // below stays for the OTHER side (restricted — never reveals a block).
+  'messages.blockedHeaderName': 'Xubin la xannibay',
+  'messages.blockedByMeNotice':
+    'Waad xannibtay xubintan — {date}. Fariin kuma soo diri karaan, adiguna uma diri kartid. Taariikhdu way taagan tahay haddii aad u baahato warbixin.',
+  'messages.blockedComposer': 'Qoraalku waa xiran yahay.',
+  'messages.unblock': 'Ka fur xannibaadda',
   'messages.blockedNotice': 'Ma fariimi kartid xubintan.',
   'messages.composerPlaceholder': 'Qor fariin…',
-  'messages.requestComposerPlaceholder': 'Salaan bixi oo is-baro…',
+  'messages.newMessage': 'Fariin cusub',
+  'messages.searchMembers': 'Raadi xubin…',
   'messages.loadOlder': 'Soo raro fariimo hore',
   'messages.historyStart': 'Kani waa bilowga sheekadiina.',
   'messages.messageRemoved': 'Fariintan waa la saaray.',
   'messages.sendFailed': 'Fariinta lama dirin. Hubi xiriirkaaga oo mar kale isku day.',
+  // f2 — per-message failure: dim in place, retry/delete, order preserved.
+  'messages.sendFailedChip': 'Lama dirin',
+  'messages.retrySend': 'Dir mar kale',
+  // f3 — offline outbox: composer stays live, the queue chip promises.
+  'messages.queuedChip': 'Sugaysa — waxay baxaysaa marka internetku soo noqdo',
   'messages.reconnecting': 'Dib-u-xiriirid…',
-  'messages.offline': 'Waad offline tahay — fariimaha waa la diri doonaa marka aad online noqoto.',
+  'messages.offline': 'Internet ma jiro — fariimahaagu way sugayaan.',
+  // 6b — voice notes: self-recorded, duration shown, no transcription.
+  'messages.voiceNote': 'Fariin cod ah',
+  'messages.voiceNoteWithDuration': 'Fariin cod ah — {duration}',
+  'messages.voicePlay': 'Ciyaar',
+  'messages.voicePause': 'Jooji',
+  'messages.voiceRecord': 'Duub fariin cod ah',
+  'messages.voiceStop': 'Jooji duubista',
+  'messages.voiceDiscard': 'Tirtir duubista',
+  'messages.voiceRecording': 'Waa la duubayaa… {duration}',
+  'messages.voiceUnavailable': 'Codka lama heli karo',
   'messages.requestSent':
     'Codsigaaga fariinta waa la diray. Way arki doonaan marka xigta ee ay furaan Xidig.',
   'messages.reportSubmitted':

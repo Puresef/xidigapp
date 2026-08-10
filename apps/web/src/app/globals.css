@@ -1565,30 +1565,44 @@ button.xidig-poll__option {
   gap: 0.4rem;
 }
 
+/* Bubble grammar (6b): theirs = surface-2 + border, 14/14/14/4; mine =
+   accent fill, 14/14/4/14. The li is a bare grid; the bubble carries the
+   visuals so chips/meta can sit beside it. */
 .xidig-dm-msg {
   display: grid;
-  gap: 0.15rem;
+  gap: 0.2rem;
   max-width: 80%;
-  padding: 0.5rem 0.7rem;
-  border-radius: var(--x-radius);
-  border: 1px solid var(--x-border);
 }
 
 .xidig-dm-msg--mine {
   justify-self: end;
-  background: var(--x-accent);
-  color: var(--x-accent-fg);
-  border-color: transparent;
+  justify-items: end;
 }
 
 .xidig-dm-msg--theirs {
   justify-self: start;
-  background: var(--x-bg);
+  justify-items: start;
 }
 
-.xidig-dm-msg__body {
+.xidig-dm-msg__bubble {
+  display: inline-block;
+  padding: 0.55rem 0.8rem;
+  font-size: var(--x-text-s);
+  line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+.xidig-dm-msg--theirs .xidig-dm-msg__bubble {
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  border-radius: 14px 14px 14px 4px;
+}
+
+.xidig-dm-msg--mine .xidig-dm-msg__bubble {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+  border-radius: 14px 14px 4px 14px;
 }
 
 .xidig-dm-msg__meta {
@@ -1596,10 +1610,40 @@ button.xidig-poll__option {
   opacity: 0.75;
 }
 
-/* Own bubbles are the mid-blue accent now — dimmed white there drops below
-   AA; the bubble fill itself already separates the meta line. */
-.xidig-dm-msg--mine .xidig-dm-msg__meta {
-  opacity: 1;
+/* f3/f2 — outbox states: queued dims a little, failed dims harder; the chip
+   under the bubble carries the fact + the actions. Order is preserved. */
+.xidig-dm-msg--queued .xidig-dm-msg__bubble {
+  opacity: 0.75;
+}
+
+.xidig-dm-msg--failed .xidig-dm-msg__bubble {
+  opacity: 0.65;
+}
+
+.xidig-dm-msg__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-dm-msg__chip--failed {
+  color: var(--x-danger);
+}
+
+.xidig-dm-msg__chipaction {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--x-text-xs);
+  color: var(--x-accent-text);
+}
+
+.xidig-dm-msg__chipaction--muted {
+  color: var(--x-muted);
 }
 
 .xidig-dm-composer {
@@ -1610,9 +1654,497 @@ button.xidig-poll__option {
   border-top: 1px solid var(--x-border);
 }
 
+.xidig-dm-composer {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.xidig-dm-composer__row {
+  display: flex;
+  gap: var(--x-space-xs);
+  align-items: center;
+}
+
 .xidig-dm-composer textarea {
   flex: 1;
-  resize: vertical;
+  resize: none;
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: var(--x-text-s);
+  min-height: 0;
+}
+
+.xidig-dm-composer__clip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-self: start;
+  padding: 0.25rem 0.4rem 0.25rem 0.8rem;
+  border: 1px solid var(--x-border);
+  border-radius: 999px;
+  background: var(--x-surface-2);
+  font-size: var(--x-text-xs);
+}
+
+/* ---- Fariimo additions (6a/6c/6d + E2 family) -------------------------- */
+
+/* f3 offline banner — a fact bar, not an alarm. */
+.xidig-dm-offlinebar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius-s);
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-dm-pagehead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--x-space-xs);
+}
+
+/* Section headers: "CODSI SALAAN · 2" / "WADA-HADALLO" with the hairline. */
+.xidig-dm-section {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.4rem 0 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.xidig-dm-section::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--x-border);
+}
+
+/* 6a request card — the accent left rail is the request's identity. */
+.xidig-dm-requests {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--x-space-2xs);
+}
+
+.xidig-dm-reqcard {
+  display: grid;
+  gap: 0.6rem;
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-inline-start: 3px solid var(--x-accent);
+  border-radius: var(--x-radius);
+  padding: 0.8rem 0.95rem;
+}
+
+.xidig-dm-reqcard__id {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-dm-reqcard__toprow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.xidig-dm-reqcard__name {
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xidig-dm-reqcard__tag {
+  padding: 0.05rem 0.5rem;
+  font-size: 10.5px;
+  flex: none;
+}
+
+.xidig-dm-reqcard__spacer {
+  flex: 1;
+}
+
+.xidig-dm-reqcard__message {
+  margin: 0;
+  font-size: var(--x-text-s);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.xidig-dm-reqcard__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.xidig-dm-reqcard__actions .xidig-button {
+  flex: 1;
+  justify-content: center;
+}
+
+.xidig-dm-inbox__footnote {
+  margin: 0.1rem 0 0.4rem;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* Chat rows: unread leads with weight; the trust ring marks verified. */
+.xidig-dm-row--unread .xidig-dm-row__name,
+.xidig-dm-row--unread .xidig-dm-row__preview {
+  font-weight: 700;
+  color: var(--x-fg);
+}
+
+.xidig-dm-row--active {
+  background: var(--x-accent-soft);
+  border-color: color-mix(in srgb, var(--x-accent) 30%, transparent);
+}
+
+.xidig-dm-row__toprow,
+.xidig-dm-row__bottomrow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.xidig-dm-row__time {
+  margin-inline-start: auto;
+  flex: none;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-dm-row--unread .xidig-dm-row__time {
+  color: var(--x-accent-text);
+  font-weight: 600;
+}
+
+.xidig-dm-row__bottomrow .xidig-nav__badge {
+  margin-inline-start: auto;
+  flex: none;
+}
+
+.xidig-dm-row__disc {
+  display: inline-flex;
+  flex: none;
+  border-radius: 999px;
+}
+
+.xidig-dm-row__disc--verified {
+  box-shadow:
+    0 0 0 2px var(--x-surface),
+    0 0 0 3.5px var(--x-trust);
+}
+
+/* 6d two-pane: rail + thread at ≥64rem; below, the rail hides and the
+   thread page is the whole screen (mobile back link carries orientation). */
+.xidig-dm-twopane {
+  display: grid;
+  gap: var(--x-space-m);
+}
+
+.xidig-dm-twopane__rail {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .xidig-dm-twopane {
+    grid-template-columns: 336px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .xidig-dm-twopane__rail {
+    display: block;
+    border-inline-end: 1px solid var(--x-border);
+    padding-inline-end: var(--x-space-m);
+  }
+
+  .xidig-dm-twopane__main .xidig-backlink {
+    display: none;
+  }
+}
+
+/* 6b pinned Codsi context — a quiet card, not a notification. */
+.xidig-dm-codsicard {
+  display: grid;
+  gap: 0.35rem;
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.7rem 0.85rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.xidig-dm-codsicard__chips {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.xidig-dm-codsicard__spacer {
+  flex: 1;
+}
+
+.xidig-dm-codsicard__title {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+/* 6d sender-context card. */
+.xidig-dm-context {
+  display: grid;
+  gap: 0.55rem;
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.9rem 1rem;
+  max-width: 420px;
+}
+
+.xidig-dm-context__title {
+  margin: 0;
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+  color: var(--x-muted);
+  text-transform: uppercase;
+}
+
+.xidig-dm-context__grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 0.9rem;
+  margin: 0;
+  font-size: var(--x-text-s);
+}
+
+.xidig-dm-context__grid dt {
+  color: var(--x-muted);
+}
+
+.xidig-dm-context__grid dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.xidig-dm-context__muted {
+  color: var(--x-muted);
+  font-weight: 400 !important;
+}
+
+/* 6d decision bar — where the composer would be. */
+.xidig-dm-decision {
+  display: grid;
+  gap: 0.5rem;
+  border-top: 1px solid var(--x-border);
+  padding-top: var(--x-space-xs);
+}
+
+.xidig-dm-decision__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.xidig-dm-decision__spacer {
+  flex: 1;
+}
+
+.xidig-dm-decision__note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-dm-footerline {
+  margin: 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--x-border);
+  text-align: center;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+/* f4 blocked: chrome anonymised, history dimmed but kept. */
+.xidig-dm-header__anon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  color: var(--x-muted);
+  flex: none;
+}
+
+.xidig-dm-header__name--muted {
+  color: var(--x-muted);
+}
+
+.xidig-dm-header__id {
+  display: grid;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.xidig-dm-header__profilelink {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.xidig-dm-thread--dimmed .xidig-dm-msglist {
+  opacity: 0.55;
+}
+
+.xidig-system-notice__stack {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* 6b voice bubble + composer recorder. */
+.xidig-dm-voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.xidig-dm-voice__play {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--x-accent);
+  color: #fff;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+}
+
+.xidig-dm-voice__play:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+.xidig-dm-msg--mine .xidig-dm-voice__play {
+  background: color-mix(in srgb, #ffffff 22%, var(--x-accent));
+}
+
+.xidig-dm-voice__wave {
+  color: var(--x-muted);
+}
+
+.xidig-dm-msg--mine .xidig-dm-voice__wave {
+  color: color-mix(in srgb, var(--x-accent-fg) 75%, transparent);
+}
+
+.xidig-dm-voice__duration {
+  font-size: var(--x-text-xs);
+  color: var(--x-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.xidig-dm-msg--mine .xidig-dm-voice__duration {
+  color: var(--x-accent-fg);
+}
+
+.xidig-dm-voice__recbtn--live {
+  color: var(--x-danger);
+  gap: 0.3rem;
+}
+
+.xidig-dm-voice__ticker {
+  font-size: var(--x-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.xidig-dm-voice__unavailable {
+  align-self: center;
+  white-space: nowrap;
+}
+
+/* Compose dialog (Fariin cusub). */
+.xidig-dm-compose__hits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.xidig-dm-compose__hit {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 0;
+  background: transparent;
+  border-radius: var(--x-radius-s);
+  cursor: pointer;
+  text-align: start;
+  color: inherit;
+}
+
+.xidig-dm-compose__hit:hover {
+  background: var(--x-surface-2);
+}
+
+.xidig-dm-compose__picked {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.xidig-dm-compose__pickedname {
+  font-weight: 600;
+}
+
+/* f1 skeleton rows (loading.tsx). */
+.xidig-skeleton-stack {
+  display: grid;
+  gap: var(--x-space-s);
+}
+
+.xidig-dm-rowskeleton {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.xidig-dm-rowskeleton__lines {
+  display: grid;
+  gap: 0.4rem;
+  flex: 1;
 }
 
 .xidig-dm-request {

@@ -114,15 +114,55 @@ async function insertMessage(
   admin: SupabaseClient<Database>,
   conversationId: string,
   senderId: string,
-  body: string,
+  body: string | null,
+  voiceUploadId: string | null = null,
 ): Promise<Tables<'messages'>> {
   const { data, error } = await admin
     .from('messages')
-    .insert({ conversation_id: conversationId, sender_user_id: senderId, body })
+    .insert({
+      conversation_id: conversationId,
+      sender_user_id: senderId,
+      body,
+      // Only name the column when a voice note is attached — text sends stay
+      // deployable against a DB that predates migration 20260810000000.
+      ...(voiceUploadId ? { voice_upload_id: voiceUploadId } : {}),
+    })
     .select('*')
     .single();
-  if (error || !data) throw new Error(`message insert failed: ${error?.message ?? 'no row'}`);
+  if (error || !data) {
+    // 23505 = messages_voice_upload_idx: the upload is already attached to a
+    // message — replaying it (into this or ANY conversation) is refused.
+    if (error?.code === '23505') throw new ApiError('invalid_request', 409);
+    throw new Error(`message insert failed: ${error?.message ?? 'no row'}`);
+  }
   return data;
+}
+
+export interface VoiceAttachment {
+  uploadId: string;
+  durationSeconds: number | null;
+}
+
+/**
+ * A voice attachment is only sendable by the member who RECORDED it (§ F2:
+ * self-recorded only): owner must match the sender, kind must be 'voice'.
+ * Returns the duration for the response view. The one-message-per-upload
+ * invariant is the DB's (unique partial index) — see insertMessage.
+ */
+async function requireOwnVoiceUpload(
+  admin: SupabaseClient<Database>,
+  senderId: string,
+  uploadId: string,
+): Promise<VoiceAttachment> {
+  const { data } = await admin
+    .from('media_uploads')
+    .select('id, owner_user_id, kind, duration_seconds')
+    .eq('id', uploadId)
+    .maybeSingle();
+  if (!data || data.owner_user_id !== senderId || data.kind !== 'voice') {
+    throw new ApiError('invalid_request', 400);
+  }
+  return { uploadId: data.id, durationSeconds: data.duration_seconds };
 }
 
 /** Best-effort email to the recipient of a new DM request (§26 email = DM
@@ -333,15 +373,21 @@ export async function respondToRequest(
   return data;
 }
 
-/** Send a message in an accepted thread. Enforces the accept gate + live block
- * check (a block after acceptance halts sends). Notifies the recipient
- * (new_dm: in-app + push per §26). */
+export interface SentMessage {
+  message: Tables<'messages'>;
+  voice: VoiceAttachment | null;
+}
+
+/** Send a message (text, voice, or both) in an accepted thread. Enforces the
+ * accept gate + live block check (a block after acceptance halts sends).
+ * Notifies the recipient (new_dm: in-app + push per §26); a voice-only
+ * message carries no preview text — the notification stays neutral. */
 export async function sendMessage(
   admin: SupabaseClient<Database>,
   senderId: string,
   conversation: Conversation,
-  body: string,
-): Promise<Tables<'messages'>> {
+  input: { body?: string | undefined; voiceUploadId?: string | undefined },
+): Promise<SentMessage> {
   if (conversation.status !== 'accepted') {
     // pending (waiting on accept) or declined/blocked — cannot send into it.
     throw new ApiError(conversation.status === 'pending' ? 'dm_not_accepted' : 'dm_blocked', 409);
@@ -351,7 +397,13 @@ export async function sendMessage(
     throw new ApiError('dm_blocked', 403);
   }
 
-  const message = await insertMessage(admin, conversation.id, senderId, body);
+  const voice = input.voiceUploadId
+    ? await requireOwnVoiceUpload(admin, senderId, input.voiceUploadId)
+    : null;
+  const body = input.body ?? null;
+  if (body === null && voice === null) throw new ApiError('invalid_request', 400);
+
+  const message = await insertMessage(admin, conversation.id, senderId, body, voice?.uploadId ?? null);
 
   await notify(admin, {
     userId: recipientId,
@@ -360,10 +412,10 @@ export async function sendMessage(
     entityType: 'conversation',
     entityId: conversation.id,
     bundleKey: `dm:${conversation.id}`,
-    payload: { preview: preview(body) },
+    payload: { preview: preview(body ?? undefined), voice: voice !== null },
   });
 
-  return message;
+  return { message, voice };
 }
 
 /** Block a member: record the block and halt any live conversation with them. */

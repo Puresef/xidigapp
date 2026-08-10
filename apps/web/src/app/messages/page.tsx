@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { MessagesInbox } from '@/components/messages/messages-inbox';
+import { NewMessageButton } from '@/components/messages/new-message-button';
 import { getAuthContext } from '@/lib/auth/guards';
 import { DM_INBOX_PAGE_SIZE } from '@/lib/dm/constants';
 import { hydrateInbox } from '@/lib/dm/views';
@@ -34,7 +35,13 @@ export default async function MessagesPage() {
 
   return (
     <main className="xidig-section">
-      <h1 className="xidig-auth__title">{t('nav.messages')}</h1>
+      <div className="xidig-dm-pagehead">
+        <h1 className="xidig-auth__title">{t('nav.messages')}</h1>
+        {/* 6a header: compose sits beside the title. (The Raadi search icon
+            from the frame is deferred — no conversation-search backend yet;
+            flagged in the dispatch report.) */}
+        <NewMessageButton />
+      </div>
       <p className="xidig-card__meta">{t('messages.subtitle')}</p>
       <MessagesInbox meId={ctx.appUser.id} initial={{ conversations, nextCursor }} prefs={prefs} />
     </main>

@@ -1,28 +1,33 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { formatRelativeTime } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
-import { ApiRequestError, apiGet } from '@/lib/api-client';
+import { ApiRequestError, apiGet, apiPost } from '@/lib/api-client';
 import type { InboxItem } from '@/lib/dm/views';
 import type { PlainError } from '@/lib/errors';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { createClient } from '@/lib/supabase-browser';
 
 import { Avatar } from '../media/avatar';
-import { ButtonTabs } from '../button-tabs';
 import { EmptyState } from '../empty-state';
 import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
- * Conversation list (§13 inbox). Two tabs — Chats and incoming Requests. No
- * polling: a Supabase Realtime subscription to `conversations` (RLS limits the
- * stream to the caller's own rows) re-fetches on any change, so new messages,
- * new requests, and read-state all keep the list live. Low-bandwidth-safe:
- * text only, explicit load-more.
+ * Fariimo inbox (6a mobile / 6d desktop rail). Requests sit INLINE above the
+ * chats — never a hidden second inbox — but carry their own grammar: accent
+ * left rail, "Codsi salaan" chip, the sender's ONE message, and Aqbal/Diid
+ * right on the card. Declining removes the card and nothing else happens
+ * anywhere (f5: silent). Accepted threads render as plain rows: unread rows
+ * lead with weight + the accent time + a count chip; verified members wear
+ * the trust ring on the disc.
+ *
+ * No polling: the Realtime subscription on `conversations`/`messages`
+ * re-syncs the list (RLS scopes the stream to the caller).
  */
 
 interface InboxResponse {
@@ -30,24 +35,36 @@ interface InboxResponse {
   nextCursor: string | null;
 }
 
-type Tab = 'chats' | 'requests';
+function isVerified(item: InboxItem): boolean {
+  return (
+    item.other?.verificationStatus === 'community_verified' ||
+    item.other?.verificationStatus === 'identity_verified'
+  );
+}
 
 export function MessagesInbox({
   meId,
   initial,
   prefs,
+  activeId,
+  compact = false,
 }: {
   meId: string;
   initial: InboxResponse;
   /** Viewer Lite prefs (SSR page passes them) — text-only Lite keeps initials. */
   prefs?: LitePrefs | undefined;
+  /** The open conversation (6d two-pane rail) — its row is marked current. */
+  activeId?: string | undefined;
+  /** Rail presentation: tighter rows, clamped previews. */
+  compact?: boolean;
 }) {
   const t = useT();
   const { locale } = useLocale();
+  const router = useRouter();
   const [items, setItems] = useState<InboxItem[]>(initial.conversations);
   const [nextCursor, setNextCursor] = useState<string | null>(initial.nextCursor);
-  const [tab, setTab] = useState<Tab>('chats');
   const [pending, setPending] = useState(false);
+  const [respondingId, setRespondingId] = useState<string | null>(null);
   const [error, setError] = useState<PlainError | null>(null);
 
   const refetch = useCallback(async () => {
@@ -78,9 +95,6 @@ export function MessagesInbox({
     }
   }, [nextCursor]);
 
-  // Realtime: any change to one of my conversations (new message bumps
-  // updated_at; a request/accept flips status) re-syncs the list. RLS scopes
-  // the stream to me, so no client-side ownership filter is needed.
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
@@ -97,6 +111,30 @@ export function MessagesInbox({
     };
   }, [refetch]);
 
+  /** Aqbal from the card: accept, then step into the open thread. Diid:
+   * remove the card — no toast, no counter, no trace (the silence IS the
+   * feedback; the sender never learns either way). */
+  async function respond(conversationId: string, action: 'accept' | 'decline') {
+    if (respondingId) return;
+    setRespondingId(conversationId);
+    setError(null);
+    try {
+      await apiPost<{ status: string }>(`/api/conversations/${conversationId}/respond`, {
+        action,
+      });
+      if (action === 'accept') {
+        router.push(`/messages/${conversationId}`);
+      } else {
+        setItems((current) => current.filter((c) => c.conversationId !== conversationId));
+      }
+    } catch (cause) {
+      if (cause instanceof ApiRequestError) setError(cause.plain);
+      else setError({ code: 'server_error', message: '' });
+    } finally {
+      setRespondingId(null);
+    }
+  }
+
   const requests = useMemo(
     () => items.filter((c) => c.status === 'pending' && !c.isInitiator),
     [items],
@@ -105,106 +143,189 @@ export function MessagesInbox({
     () => items.filter((c) => !(c.status === 'pending' && !c.isInitiator)),
     [items],
   );
-  const shown = tab === 'requests' ? requests : chats;
+
+  const empty = requests.length === 0 && chats.length === 0;
 
   return (
-    <section aria-label={t('nav.messages')}>
+    <section
+      aria-label={t('nav.messages')}
+      className={compact ? 'xidig-dm-inboxwrap xidig-dm-inboxwrap--rail' : 'xidig-dm-inboxwrap'}
+    >
       {error ? <PlainErrorBanner error={error} /> : null}
 
-      <ButtonTabs<Tab>
-        label={t('nav.messages')}
-        idBase="inbox"
-        panelId="inbox-panel"
-        value={tab}
-        onChange={setTab}
-        tabs={[
-          { value: 'chats', label: t('messages.tabChats') },
-          {
-            value: 'requests',
-            label: (
-              <>
-                {t('messages.tabRequests')}
-                {requests.length > 0 ? (
-                  <span className="xidig-dm-badge">{requests.length}</span>
-                ) : null}
-              </>
-            ),
-          },
-        ]}
-      />
-
-      <div role="tabpanel" id="inbox-panel" aria-labelledby={`inbox-tab-${tab}`}>
-      {shown.length === 0 ? (
-        tab === 'requests' ? (
-          <EmptyState messageKey="messages.emptyRequests" />
-        ) : (
+      {empty ? (
+        <>
           <EmptyState
+            titleKey="messages.emptyTitle"
             messageKey="messages.empty"
             action={
-              <Link className="xidig-button xidig-button--primary" href="/suuq">
+              <Link className="xidig-button xidig-button--primary" href="/plaza">
                 {t('messages.emptyCta')}
               </Link>
             }
           />
-        )
+          <p className="xidig-dm-inbox__footnote">{t('messages.emptyFootnote')}</p>
+        </>
       ) : (
-        <ul className="xidig-dm-inbox">
-          {shown.map((c) => {
-            const name = c.other?.displayName || c.other?.handle || '—';
-            const mine = c.lastMessage?.senderUserId === meId;
-            const previewText = c.lastMessage?.deleted
-              ? t('messages.messageRemoved')
-              : (c.lastMessage?.body ?? t('messages.noPreview'));
-            return (
-              <li key={c.conversationId}>
-                <Link className="xidig-dm-row" href={`/messages/${c.conversationId}`}>
-                  <Avatar
-                    name={name}
-                    handle={c.other?.handle ?? ''}
-                    src={c.other?.avatarThumbUrl}
-                    blurhash={c.other?.avatarBlurhash}
-                    size={40}
-                    prefs={prefs}
-                  />
-                  <span className="xidig-dm-row__main">
-                    <span className="xidig-dm-row__name">{name}</span>
-                    <span className="xidig-dm-row__preview">
-                      {mine ? `${t('messages.you')}: ` : ''}
-                      {previewText}
-                    </span>
-                  </span>
-                  <span className="xidig-dm-row__side">
-                    {c.lastMessage?.at ? (
-                      <time className="xidig-card__meta" dateTime={c.lastMessage.at}>
-                        {formatRelativeTime(new Date(c.lastMessage.at), locale)}
-                      </time>
-                    ) : null}
-                    {c.unreadCount > 0 ? (
-                      <span className="xidig-dm-badge" aria-label={t('messages.unreadCount', { count: c.unreadCount })}>
-                        {c.unreadCount}
-                      </span>
-                    ) : null}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+        <>
+          {requests.length > 0 ? (
+            <>
+              <h2 className="xidig-dm-section">
+                <span>
+                  {t('messages.requestsHeading')} · {requests.length}
+                </span>
+              </h2>
+              <ul className="xidig-dm-requests" aria-label={t('messages.requestsHeading')}>
+                {requests.map((c) => {
+                  const name = c.other?.displayName || c.other?.handle || '—';
+                  return (
+                    <li key={c.conversationId}>
+                      <article className="xidig-dm-reqcard">
+                        <div className="xidig-byline">
+                          <Avatar
+                            name={name}
+                            handle={c.other?.handle ?? ''}
+                            src={c.other?.avatarThumbUrl}
+                            blurhash={c.other?.avatarBlurhash}
+                            size={38}
+                            prefs={prefs}
+                          />
+                          <span className="xidig-dm-reqcard__id">
+                            <span className="xidig-dm-reqcard__toprow">
+                              <Link
+                                className="xidig-dm-reqcard__name"
+                                href={`/messages/${c.conversationId}`}
+                              >
+                                {name}
+                              </Link>
+                              <span className="xidig-tag xidig-dm-reqcard__tag">
+                                {t('messages.requestTag')}
+                              </span>
+                              <span className="xidig-dm-reqcard__spacer" />
+                              {c.lastMessage?.at ? (
+                                <time suppressHydrationWarning className="xidig-card__meta" dateTime={c.lastMessage.at}>
+                                  {formatRelativeTime(new Date(c.lastMessage.at), locale)}
+                                </time>
+                              ) : null}
+                            </span>
+                          </span>
+                        </div>
+                        {c.lastMessage?.body ? (
+                          <p className="xidig-dm-reqcard__message">{c.lastMessage.body}</p>
+                        ) : c.lastMessage?.voice ? (
+                          <p className="xidig-dm-reqcard__message">
+                            <em>{t('messages.voiceNote')}</em>
+                          </p>
+                        ) : null}
+                        <div className="xidig-dm-reqcard__actions">
+                          <button
+                            type="button"
+                            className="xidig-button xidig-button--primary"
+                            disabled={respondingId !== null}
+                            onClick={() => void respond(c.conversationId, 'accept')}
+                          >
+                            {t('action.accept')}
+                          </button>
+                          <button
+                            type="button"
+                            className="xidig-button xidig-button--secondary"
+                            disabled={respondingId !== null}
+                            onClick={() => void respond(c.conversationId, 'decline')}
+                          >
+                            {t('action.decline')}
+                          </button>
+                        </div>
+                      </article>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="xidig-dm-inbox__footnote">{t('messages.requestsFootnote')}</p>
+            </>
+          ) : null}
 
-      {tab === 'chats' && nextCursor ? (
-        <p>
-          <button
-            type="button"
-            className="xidig-button xidig-button--secondary"
-            disabled={pending}
-            onClick={() => void loadMore()}
-          >
-            {t('action.loadMore')}
-          </button>
-        </p>
-      ) : null}
-      </div>
+          {chats.length > 0 ? (
+            <h2 className="xidig-dm-section">
+              <span>{t('messages.chatsHeading')}</span>
+            </h2>
+          ) : null}
+          <ul className="xidig-dm-inbox">
+            {chats.map((c) => {
+              const name = c.other?.displayName || c.other?.handle || '—';
+              const mine = c.lastMessage?.senderUserId === meId;
+              const unread = c.unreadCount > 0;
+              const previewText = c.lastMessage?.deleted
+                ? t('messages.messageRemoved')
+                : c.lastMessage?.voice && !c.lastMessage.body
+                  ? t('messages.voiceNote')
+                  : (c.lastMessage?.body ?? t('messages.noPreview'));
+              return (
+                <li key={c.conversationId}>
+                  <Link
+                    className={`xidig-dm-row${unread ? ' xidig-dm-row--unread' : ''}${
+                      activeId === c.conversationId ? ' xidig-dm-row--active' : ''
+                    }`}
+                    href={`/messages/${c.conversationId}`}
+                    aria-current={activeId === c.conversationId ? 'page' : undefined}
+                  >
+                    <span
+                      className={
+                        isVerified(c) ? 'xidig-dm-row__disc xidig-dm-row__disc--verified' : 'xidig-dm-row__disc'
+                      }
+                    >
+                      <Avatar
+                        name={name}
+                        handle={c.other?.handle ?? ''}
+                        src={c.other?.avatarThumbUrl}
+                        blurhash={c.other?.avatarBlurhash}
+                        size={38}
+                        prefs={prefs}
+                      />
+                    </span>
+                    <span className="xidig-dm-row__main">
+                      <span className="xidig-dm-row__toprow">
+                        <span className="xidig-dm-row__name">{name}</span>
+                        {c.lastMessage?.at ? (
+                          <time suppressHydrationWarning className="xidig-dm-row__time" dateTime={c.lastMessage.at}>
+                            {formatRelativeTime(new Date(c.lastMessage.at), locale)}
+                          </time>
+                        ) : null}
+                      </span>
+                      <span className="xidig-dm-row__bottomrow">
+                        <span className="xidig-dm-row__preview">
+                          {mine ? `${t('messages.you')}: ` : ''}
+                          {previewText}
+                        </span>
+                        {unread ? (
+                          <span
+                            className="xidig-nav__badge"
+                            aria-label={t('messages.unreadCount', { count: c.unreadCount })}
+                          >
+                            {c.unreadCount}
+                          </span>
+                        ) : null}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          {nextCursor ? (
+            <p>
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                disabled={pending}
+                onClick={() => void loadMore()}
+              >
+                {t('action.loadMore')}
+              </button>
+            </p>
+          ) : null}
+        </>
+      )}
     </section>
   );
 }

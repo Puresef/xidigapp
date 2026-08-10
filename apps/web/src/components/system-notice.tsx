@@ -25,18 +25,21 @@ export function SystemNotice({
   tone,
   messageKey,
   link,
+  params,
 }: {
   tone: 'info' | 'moderation';
   messageKey: MessageKey;
   /** Rendered into the message's `{link}` placeholder as an internal link. */
   link?: { href: string; textKey: MessageKey } | undefined;
+  /** Plain placeholder values (e.g. a member name) — composes with `link`. */
+  params?: Record<string, string | number> | undefined;
 }) {
   const t = useT();
 
-  let message: ReactNode = t(messageKey);
+  let message: ReactNode = t(messageKey, params);
   if (link) {
     const mark = '[[link]]';
-    message = t(messageKey, { link: mark })
+    message = t(messageKey, { ...params, link: mark })
       .split(/(\[\[link\]\])/)
       .map((part, index) =>
         part === mark ? (

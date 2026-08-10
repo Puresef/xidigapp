@@ -22,3 +22,17 @@ export const DM_INBOX_PAGE_SIZE = 20;
 
 /** Length of the message preview stored in a notification payload / inbox. */
 export const DM_PREVIEW_LENGTH = 140;
+
+// Voice notes (F2 §4): self-recorded only, duration shown, no transcription.
+// 3MB ≈ well over 120s of Opus; the duration cap is the real limit.
+export const VOICE_MAX_BYTES = 3 * 1024 * 1024;
+export const VOICE_MIN_SECONDS = 1;
+export const VOICE_MAX_SECONDS = 120;
+/** Signed-URL lifetime for DM audio — long enough to buffer, short enough
+ * that a leaked URL goes stale before it travels. */
+export const VOICE_SIGNED_URL_TTL_SECONDS = 300;
+
+/** Requests auto-delete after 30 idle days (HANDOFF Fariimo row): pending
+ * AND declined conversations — sender-side, a declined request is
+ * indistinguishable from a pending one, so they must age out together. */
+export const DM_REQUEST_TTL_DAYS = 30;
