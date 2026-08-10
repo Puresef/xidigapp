@@ -41,6 +41,7 @@ export async function GET(
         other,
         createdAt: convo.created_at,
         updatedAt: convo.updated_at,
+        acceptedAt: convo.accepted_at ?? null,
       },
     });
   } catch (error) {

@@ -222,6 +222,9 @@ export const en = {
     'That image is over {maxMb}MB. Compress it or choose a smaller one — we accept JPG, PNG, GIF, and WebP.',
   'error.imageInvalid':
     'That file doesn’t look like an image we can use. We accept JPG, PNG, GIF, and WebP.',
+  'error.voiceTooLarge':
+    'That voice note is over the 3MB limit. Record a shorter one and try again.',
+  'error.voiceInvalid': 'That file doesn’t look like a voice note we can use. Record it again.',
   'error.imageModerationBlocked':
     'That image didn’t pass our content check, so it wasn’t uploaded. Try a different image — or contact support if you think this is a mistake.',
   'error.askAlreadyFulfilled':
@@ -1216,6 +1219,9 @@ export const en = {
     'Declining is silent — {name} is never told. The message deletes after 30 days.',
   'messages.memberSince': 'Member {year}',
   'messages.accepted': 'Request accepted — you can chat now.',
+  // RECIPIENT-side confirmation only (screen-reader live region) — the
+  // silent-decline contract governs what the SENDER observes, never this.
+  'messages.declinedByYou': 'Request declined.',
   'messages.acceptedDivider': 'You accepted the request · {time}',
   // f5 — the silence is the design: the sender sees "sent", a normalising
   // note, and a closed composer. Declined renders EXACTLY the same.
@@ -1233,8 +1239,13 @@ export const en = {
   'messages.unblock': 'Unblock',
   'messages.blockedNotice': 'You can’t message this member.',
   'messages.composerPlaceholder': 'Write a message…',
+  'messages.composerKeyHint': 'Enter sends; Shift+Enter adds a new line.',
   'messages.newMessage': 'New message',
   'messages.searchMembers': 'Search members…',
+  'messages.searchResultsCount': {
+    one: '{count} member found',
+    other: '{count} members found',
+  },
   'messages.loadOlder': 'Load older messages',
   'messages.historyStart': 'This is the start of your conversation.',
   'messages.messageRemoved': 'This message was removed.',

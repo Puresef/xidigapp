@@ -113,26 +113,26 @@ export default async function ConversationPage({
   const otherId = otherParticipant(convo, ctx.appUser.id);
   const isIncomingRequest = convo.status === 'pending' && !isInitiator;
 
-  const [other, page, prefs, inboxRows] = await Promise.all([
+  const [other, page, prefs, inboxRows, requestContext, offerRow] = await Promise.all([
     participantProfile(admin, otherId),
     loadMessagesPage(ctx.supabase, id, ctx.appUser.id, null, undefined, admin),
     getLitePrefs(),
     // 6d two-pane rail (hidden below 64rem by CSS).
     ctx.supabase.rpc('dm_inbox', { p_limit: DM_INBOX_PAGE_SIZE }),
+    isIncomingRequest ? computeRequestContext(admin, ctx.appUser.id, otherId) : null,
+    // The Codsi that opened this conversation (post_offers linkage) — pinned
+    // context, not a notification (6b). In the same round trip as the rest
+    // (review #23).
+    admin
+      .from('post_offers')
+      .select('post_id, posts(title, ask_status)')
+      .eq('conversation_id', id)
+      .maybeSingle()
+      .then((res) => res.data),
   ]);
 
-  const requestContext = isIncomingRequest
-    ? await computeRequestContext(admin, ctx.appUser.id, otherId)
-    : null;
-
-  // The Codsi that opened this conversation (post_offers linkage) — pinned
-  // context, not a notification (6b).
   let codsiContext: CodsiContext | null = null;
-  const { data: offer } = await admin
-    .from('post_offers')
-    .select('post_id, posts(title, ask_status)')
-    .eq('conversation_id', id)
-    .maybeSingle();
+  const offer = offerRow;
   if (offer) {
     const post = offer.posts as { title?: string | null; ask_status?: string | null } | null;
     codsiContext = {
@@ -188,6 +188,7 @@ export default async function ConversationPage({
               isInitiator,
               other,
               createdAt: convo.created_at,
+              acceptedAt: convo.accepted_at ?? null,
             }}
             initialMessages={page.messages}
             initialNextCursor={page.nextCursor}

@@ -10,6 +10,7 @@ import { notify } from '@/lib/notifications/notify';
 import { isChannelEnabled } from '@/lib/notifications/prefs';
 
 import { DM_PREVIEW_LENGTH, DM_REQUEST_WINDOW_SECONDS } from './constants';
+import { presentConversationStatus } from './presentation';
 
 /**
  * Fariimo DM domain logic (§13): request-to-chat, accept/decline, send, block.
@@ -258,15 +259,20 @@ export async function startConversation(
 
     if (existing.status === 'pending') {
       if (existing.initiator_user_id === initiatorId) {
-        return { conversation: existing, state: 'pending_exists' }; // idempotent re-request
+        // Idempotent re-request — and identical whether the recipient has
+        // silently declined or simply not answered (the decline lives in a
+        // table this branch never consults; the response must not differ).
+        return { conversation: existing, state: 'pending_exists' };
       }
-      // The other member had a pending request to me — replying accepts it.
+      // The other member had a pending request to me — replying accepts it
+      // (acceptance by conduct also clears any silent decline I recorded).
       const { data: accepted } = await admin
         .from('conversations')
-        .update({ status: 'accepted' })
+        .update({ status: 'accepted', accepted_at: new Date().toISOString() })
         .eq('id', existing.id)
         .select('*')
         .single();
+      await admin.from('conversation_declines').delete().eq('conversation_id', existing.id);
       if (message) await insertMessage(admin, existing.id, initiatorId, message);
       await notify(admin, {
         userId: existing.initiator_user_id,
@@ -339,38 +345,58 @@ export async function startConversation(
   return { conversation: created, state: 'requested' };
 }
 
-/** Recipient accepts/declines a pending request. */
+/**
+ * Recipient accepts/declines a pending request.
+ *
+ * DECLINE IS NOT A STATUS (wire-hardening, 10 Aug): the shared conversations
+ * row stays 'pending' — no UPDATE fires, so Supabase Realtime broadcasts
+ * NOTHING to the initiator, and every downstream surface (row reads, error
+ * codes, re-request behaviour, sweep timing) is identical to an unanswered
+ * request by construction. The decline is a row in conversation_declines —
+ * zero client grants, not in the realtime publication — consulted only by
+ * the SECURITY DEFINER inbox/badge functions to settle the RECIPIENT's view.
+ * Declining again is idempotent; accepting clears any decline record (a
+ * recipient who changes their mind — or replies later — reopens the door).
+ */
 export async function respondToRequest(
   admin: SupabaseClient<Database>,
   userId: string,
   conversation: Conversation,
   action: 'accept' | 'decline',
-): Promise<Conversation> {
+): Promise<{ conversation: Conversation; status: 'accepted' | 'declined' }> {
   if (conversation.status !== 'pending' || conversation.recipient_user_id !== userId) {
     throw new ApiError('invalid_request', 409);
   }
-  const nextStatus = action === 'accept' ? 'accepted' : 'declined';
+
+  if (action === 'decline') {
+    const { error } = await admin
+      .from('conversation_declines')
+      .upsert({ conversation_id: conversation.id }, { ignoreDuplicates: true });
+    if (error) throw new Error(`decline failed: ${error.message}`);
+    // Silent by design: no notification, no status flip, no realtime event.
+    return { conversation, status: 'declined' };
+  }
+
   const { data, error } = await admin
     .from('conversations')
-    .update({ status: nextStatus })
+    .update({ status: 'accepted', accepted_at: new Date().toISOString() })
     .eq('id', conversation.id)
     .select('*')
     .single();
   if (error || !data) throw new Error(`respond failed: ${error?.message ?? 'no row'}`);
+  await admin.from('conversation_declines').delete().eq('conversation_id', conversation.id);
 
   // Notify the initiator only on accept (in-app; §26 keeps accept off email/
-  // push). A decline is silent — the initiator sees the state in their inbox,
-  // and no notification avoids rewarding a rejected requester with a ping.
-  if (action === 'accept') {
-    await notify(admin, {
-      userId: conversation.initiator_user_id,
-      actorUserId: userId,
-      type: 'dm_accepted',
-      entityType: 'conversation',
-      entityId: conversation.id,
-    });
-  }
-  return data;
+  // push). A decline is silent — no notification avoids rewarding a rejected
+  // requester with a ping.
+  await notify(admin, {
+    userId: conversation.initiator_user_id,
+    actorUserId: userId,
+    type: 'dm_accepted',
+    entityType: 'conversation',
+    entityId: conversation.id,
+  });
+  return { conversation: data, status: 'accepted' };
 }
 
 export interface SentMessage {
@@ -389,8 +415,15 @@ export async function sendMessage(
   input: { body?: string | undefined; voiceUploadId?: string | undefined },
 ): Promise<SentMessage> {
   if (conversation.status !== 'accepted') {
-    // pending (waiting on accept) or declined/blocked — cannot send into it.
-    throw new ApiError(conversation.status === 'pending' ? 'dm_not_accepted' : 'dm_blocked', 409);
+    // f5 holds on the SEND path too (adversarial review #1): the initiator
+    // of a DECLINED request gets byte-identical refusal to a pending one —
+    // otherwise one probing POST is a decline oracle. Blocked keeps its own
+    // §27 copy (blocked is not a masked state).
+    const presented = presentConversationStatus(
+      conversation.status,
+      conversation.initiator_user_id === senderId,
+    );
+    throw new ApiError(presented === 'pending' ? 'dm_not_accepted' : 'dm_blocked', 409);
   }
   const recipientId = otherParticipant(conversation, senderId);
   if (await isBlockedBetween(admin, senderId, recipientId)) {

@@ -54,6 +54,9 @@ export interface ConversationHeader {
   other: Participant | null;
   /** conversation.created_at — the f5 "sent {time}" meta. */
   createdAt?: string | undefined;
+  /** Set on accept (ruling 4) — renders the honest acceptance divider.
+   * Null for legacy accepts: no honest time exists, so no divider. */
+  acceptedAt?: string | null | undefined;
 }
 
 /** 6d — what the recipient knows about the requester (server-computed). */
@@ -550,6 +553,18 @@ export function ConversationView({
           <p className="xidig-card__meta xidig-dm-thread__start">{t('messages.historyStart')}</p>
         ) : null}
 
+        {/* 6b acceptance divider (ruling 4): recipient-voiced ("Waxaad
+            aqbashay…"), rendered only when the honest moment is recorded. */}
+        {header.status === 'accepted' && !header.isInitiator && header.acceptedAt ? (
+          <p className="xidig-dm-divider">
+            <span>
+              {t('messages.acceptedDivider', {
+                time: formatRelativeTime(new Date(header.acceptedAt), locale),
+              })}
+            </span>
+          </p>
+        ) : null}
+
         <ul className="xidig-dm-msglist">
           {messages.map((m) => (
             <li
@@ -741,7 +756,8 @@ export function ConversationView({
           }}
         >
           {clip ? (
-            <span className="xidig-dm-composer__clip">
+            // role=status: parking the clip is announced (review #11/#12).
+            <span role="status" className="xidig-dm-composer__clip">
               <span className="xidig-dm-voice__duration">
                 {t('messages.voiceNoteWithDuration', {
                   duration: formatVoiceDuration(clip.durationSeconds),
@@ -767,6 +783,7 @@ export function ConversationView({
               value={draft}
               placeholder={t('messages.composerPlaceholder')}
               aria-label={t('messages.composerPlaceholder')}
+              aria-describedby="dm-composer-keys"
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -775,7 +792,18 @@ export function ConversationView({
                 }
               }}
             />
-            <VoiceRecorderButton disabled={sending || offline || clip !== null} onClip={setClip} />
+            <span id="dm-composer-keys" className="xidig-visually-hidden">
+              {t('messages.composerKeyHint')}
+            </span>
+            <VoiceRecorderButton
+              disabled={sending || offline || clip !== null}
+              onClip={(recorded) => {
+                setClip(recorded);
+                // The mic button disables once a clip parks — hand focus to
+                // the composer so it never drops to <body> (review #12).
+                setTimeout(() => composerRef.current?.focus(), 0);
+              }}
+            />
             <button
               type="submit"
               className="xidig-button xidig-button--primary"

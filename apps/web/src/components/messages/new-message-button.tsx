@@ -38,6 +38,10 @@ export function NewMessageButton() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const messageRef = useRef<HTMLTextAreaElement | null>(null);
+  // Out-of-order guard (review #22): a slow earlier response must never
+  // overwrite fresher hits.
+  const searchSeqRef = useRef(0);
 
   useEffect(() => {
     if (!open) return;
@@ -48,9 +52,14 @@ export function NewMessageButton() {
     }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
+      const seq = ++searchSeqRef.current;
       apiGet<{ profiles: ProfileHit[] }>(`/api/profiles?q=${encodeURIComponent(term)}&limit=5`)
-        .then((res) => setHits(res.profiles))
-        .catch(() => setHits([]));
+        .then((res) => {
+          if (seq === searchSeqRef.current) setHits(res.profiles);
+        })
+        .catch(() => {
+          if (seq === searchSeqRef.current) setHits([]);
+        });
     }, 250);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -131,6 +140,9 @@ export function NewMessageButton() {
                 autoComplete="off"
                 onChange={(event) => setQuery(event.target.value)}
               />
+              <p role="status" className="xidig-visually-hidden">
+                {hits.length > 0 ? t('messages.searchResultsCount', { count: hits.length }) : ''}
+              </p>
               {hits.length > 0 ? (
                 <ul className="xidig-dm-compose__hits">
                   {hits.map((hit) => (
@@ -141,6 +153,9 @@ export function NewMessageButton() {
                         onClick={() => {
                           setPicked(hit);
                           setHits([]);
+                          // The picked button unmounts — hand focus to the
+                          // message box (review #14).
+                          setTimeout(() => messageRef.current?.focus(), 0);
                         }}
                       >
                         <Avatar name={hit.display_name} handle={hit.handle} src={null} size={28} />
@@ -157,6 +172,7 @@ export function NewMessageButton() {
           {picked ? (
             <>
               <textarea
+                ref={messageRef}
                 className="xidig-field__input"
                 rows={3}
                 maxLength={MESSAGE_MAX_LENGTH}

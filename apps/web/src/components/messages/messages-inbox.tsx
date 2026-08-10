@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { formatRelativeTime } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
@@ -65,7 +65,9 @@ export function MessagesInbox({
   const [nextCursor, setNextCursor] = useState<string | null>(initial.nextCursor);
   const [pending, setPending] = useState(false);
   const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [declineNotice, setDeclineNotice] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
+  const requestsHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
   const refetch = useCallback(async () => {
     try {
@@ -96,17 +98,29 @@ export function MessagesInbox({
   }, [nextCursor]);
 
   useEffect(() => {
+    // ONE binding + a trailing debounce (review #18): every message send
+    // already bumps conversations.updated_at via the phase-3 touch trigger,
+    // so a messages binding would double-fire — and bursts of events must
+    // collapse into a single dm_inbox refetch.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const scheduleRefetch = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = null;
+        void refetch();
+      }, 400);
+    };
     const supabase = createClient();
     const channel = supabase
       .channel('inbox')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => {
-        void refetch();
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-        void refetch();
-      })
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'conversations' },
+        scheduleRefetch,
+      )
       .subscribe();
     return () => {
+      if (timer) clearTimeout(timer);
       void supabase.removeChannel(channel);
     };
   }, [refetch]);
@@ -126,6 +140,11 @@ export function MessagesInbox({
         router.push(`/messages/${conversationId}`);
       } else {
         setItems((current) => current.filter((c) => c.conversationId !== conversationId));
+        // RECIPIENT-side confirmation only (the silent-decline contract
+        // governs what the SENDER observes): announce + reseat focus so the
+        // vanishing card doesn't strand keyboard/SR users (review #15).
+        setDeclineNotice(true);
+        setTimeout(() => requestsHeadingRef.current?.focus(), 0);
       }
     } catch (cause) {
       if (cause instanceof ApiRequestError) setError(cause.plain);
@@ -152,6 +171,9 @@ export function MessagesInbox({
       className={compact ? 'xidig-dm-inboxwrap xidig-dm-inboxwrap--rail' : 'xidig-dm-inboxwrap'}
     >
       {error ? <PlainErrorBanner error={error} /> : null}
+      <p role="status" className="xidig-visually-hidden">
+        {declineNotice ? t('messages.declinedByYou') : ''}
+      </p>
 
       {empty ? (
         <>
@@ -170,7 +192,7 @@ export function MessagesInbox({
         <>
           {requests.length > 0 ? (
             <>
-              <h2 className="xidig-dm-section">
+              <h2 className="xidig-dm-section" tabIndex={-1} ref={requestsHeadingRef}>
                 <span>
                   {t('messages.requestsHeading')} · {requests.length}
                 </span>
@@ -297,11 +319,16 @@ export function MessagesInbox({
                           {previewText}
                         </span>
                         {unread ? (
-                          <span
-                            className="xidig-nav__badge"
-                            aria-label={t('messages.unreadCount', { count: c.unreadCount })}
-                          >
+                          // ARIA prohibits naming a generic span — the count
+                          // joins the link's name via hidden text instead
+                          // (review #16).
+                          <span className="xidig-nav__badge" aria-hidden="true">
                             {c.unreadCount}
+                          </span>
+                        ) : null}
+                        {unread ? (
+                          <span className="xidig-visually-hidden">
+                            {t('messages.unreadCount', { count: c.unreadCount })}
                           </span>
                         ) : null}
                       </span>

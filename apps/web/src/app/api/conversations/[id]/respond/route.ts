@@ -28,8 +28,10 @@ export async function POST(
     const convo = await loadConversationForUser(admin, parsed.data.id, ctx.appUser.id);
     if (!convo) throw new ApiError('not_found', 404);
 
-    const updated = await respondToRequest(admin, ctx.appUser.id, convo, action);
-    return apiOk({ conversationId: updated.id, status: updated.status });
+    const result = await respondToRequest(admin, ctx.appUser.id, convo, action);
+    // The status here is RECIPIENT-side knowledge ('declined' confirms their
+    // own action); the initiator-observable universe never carries it.
+    return apiOk({ conversationId: result.conversation.id, status: result.status });
   } catch (error) {
     return handleApiError(error);
   }

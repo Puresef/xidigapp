@@ -30,19 +30,60 @@ export interface DmSweepCounts {
   voiceObjects: number;
 }
 
+/**
+ * Expiry anchor for a request: the last MESSAGE time (falling back to the
+ * conversation's creation). Deliberately NOT updated_at — the decline UPDATE
+ * bumps updated_at, which would make a declined request outlive its
+ * pending twin by the pending→decline gap and turn deletion timing into a
+ * decline oracle (adversarial review #3). Messages are the one clock the
+ * decline doesn't touch, so pending and declined age out identically.
+ */
+export function requestExpiryAnchor(
+  conversationCreatedAt: string,
+  lastMessageAt: string | null,
+): string {
+  if (lastMessageAt !== null && lastMessageAt > conversationCreatedAt) return lastMessageAt;
+  return conversationCreatedAt;
+}
+
 export async function sweepStaleDmRequests(
   admin: SupabaseClient<Database>,
   now: Date = new Date(),
 ): Promise<DmSweepCounts> {
   const cutoff = new Date(now.getTime() - DM_REQUEST_TTL_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
-  const { data: stale, error: staleError } = await admin
+  // Candidates by status alone; the expiry decision uses the decline-proof
+  // anchor above, never updated_at.
+  const { data: candidates, error: staleError } = await admin
     .from('conversations')
-    .select('id')
-    .in('status', ['pending', 'declined'])
-    .lt('updated_at', cutoff);
+    .select('id, created_at')
+    .in('status', ['pending', 'declined']);
   if (staleError) throw new Error(`dm sweep lookup failed: ${staleError.message}`);
-  const ids = (stale ?? []).map((row) => row.id);
+  const candidateRows = candidates ?? [];
+  if (candidateRows.length === 0) return { conversations: 0, voiceUploads: 0, voiceObjects: 0 };
+
+  const { data: lastMessages, error: lastError } = await admin
+    .from('messages')
+    .select('conversation_id, created_at')
+    .in(
+      'conversation_id',
+      candidateRows.map((row) => row.id),
+    );
+  if (lastError) throw new Error(`dm sweep message lookup failed: ${lastError.message}`);
+  const lastByConversation = new Map<string, string>();
+  for (const row of lastMessages ?? []) {
+    const current = lastByConversation.get(row.conversation_id);
+    if (!current || row.created_at > current) {
+      lastByConversation.set(row.conversation_id, row.created_at);
+    }
+  }
+
+  const ids = candidateRows
+    .filter(
+      (row) =>
+        requestExpiryAnchor(row.created_at, lastByConversation.get(row.id) ?? null) < cutoff,
+    )
+    .map((row) => row.id);
   if (ids.length === 0) return { conversations: 0, voiceUploads: 0, voiceObjects: 0 };
 
   // Voice uploads referenced by messages of the doomed conversations — grab

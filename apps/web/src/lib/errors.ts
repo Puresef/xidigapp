@@ -144,6 +144,10 @@ export const ERROR_DEFS = {
     messageKey: 'error.imageTooLarge',
     params: { maxMb: IMAGE_MAX_MB },
   },
+  // Voice notes have their own subject, limit, and remedy — the image copy
+  // ("compress it… JPG, PNG") is wrong on all three (review #6).
+  voice_too_large: { messageKey: 'error.voiceTooLarge' },
+  voice_invalid: { messageKey: 'error.voiceInvalid' },
   image_invalid: { messageKey: 'error.imageInvalid' },
   image_moderation_blocked: { messageKey: 'error.imageModerationBlocked' },
   ask_already_fulfilled: { messageKey: 'error.askAlreadyFulfilled' },

@@ -1979,6 +1979,25 @@ button.xidig-poll__option {
   text-wrap: pretty;
 }
 
+/* 6b acceptance divider: hairlines flanking the fact. */
+.xidig-dm-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0.25rem 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-align: center;
+}
+
+.xidig-dm-divider::before,
+.xidig-dm-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--x-border);
+}
+
 .xidig-dm-footerline {
   margin: 0;
   padding-top: 0.5rem;
@@ -2019,8 +2038,10 @@ button.xidig-poll__option {
   white-space: nowrap;
 }
 
+/* Kept-as-evidence history mutes via desaturation, NOT opacity — grayscale
+   preserves luminance so the text stays AA-readable (review #13). */
 .xidig-dm-thread--dimmed .xidig-dm-msglist {
-  opacity: 0.55;
+  filter: grayscale(0.8);
 }
 
 .xidig-system-notice__stack {
@@ -2050,9 +2071,13 @@ button.xidig-poll__option {
   flex: none;
 }
 
+/* Dual-ring focus: the inner light ring reads on the accent disc AND inside
+   the accent mine-bubble; the outer dark halo reads on light surfaces —
+   visible in both palettes wherever the disc sits (review #10). */
 .xidig-dm-voice__play:focus-visible {
-  outline: 2px solid var(--x-accent);
+  outline: 2px solid var(--x-accent-fg);
   outline-offset: 2px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--x-fg) 60%, transparent);
 }
 
 .xidig-dm-msg--mine .xidig-dm-voice__play {

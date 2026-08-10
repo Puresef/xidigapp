@@ -39,15 +39,20 @@ export async function POST(request: Request): Promise<Response> {
     // body is null for voice-only messages — the snapshot records the fact
     // as a marker; the audio itself stays in the private bucket, reachable
     // by moderation through the service role if the report is actioned.
-    let messageSnapshot: { body: string; conversationId: string; senderUserId: string; createdAt: string } | null =
-      null;
+    let messageSnapshot: {
+      body: string;
+      conversationId: string;
+      senderUserId: string;
+      createdAt: string;
+      voiceUploadId?: string;
+    } | null = null;
     if (input.targetType === 'message' || input.targetType === 'conversation') {
       let conversationId = input.targetId;
 
       if (input.targetType === 'message') {
         const { data: message, error: messageError } = await admin
           .from('messages')
-          .select('body, conversation_id, sender_user_id, created_at')
+          .select('body, conversation_id, sender_user_id, created_at, voice_upload_id')
           .eq('id', input.targetId)
           .maybeSingle();
         if (messageError) throw new Error(`report message lookup failed: ${messageError.message}`);
@@ -58,6 +63,10 @@ export async function POST(request: Request): Promise<Response> {
           conversationId: message.conversation_id,
           senderUserId: message.sender_user_id,
           createdAt: message.created_at,
+          // Evidence pointer for voice reports (review #4): the ids survive
+          // in the snapshot even if the sweep later removes the object.
+          // Retention of reported AUDIO itself is a moderation-policy flag.
+          ...(message.voice_upload_id ? { voiceUploadId: message.voice_upload_id } : {}),
         };
       }
 
@@ -134,7 +143,13 @@ async function captureSnapshot(
     reportId: string;
     targetType: (typeof reportSchema)['_output']['targetType'];
     targetId: string;
-    messageSnapshot: { body: string; conversationId: string; senderUserId: string; createdAt: string } | null;
+    messageSnapshot: {
+      body: string;
+      conversationId: string;
+      senderUserId: string;
+      createdAt: string;
+      voiceUploadId?: string;
+    } | null;
   },
 ): Promise<void> {
   try {
@@ -147,6 +162,9 @@ async function captureSnapshot(
         conversationId: args.messageSnapshot.conversationId,
         senderUserId: args.messageSnapshot.senderUserId,
         createdAt: args.messageSnapshot.createdAt,
+        ...(args.messageSnapshot.voiceUploadId
+          ? { voiceUploadId: args.messageSnapshot.voiceUploadId }
+          : {}),
       };
     } else if (args.targetType === 'post') {
       const { data } = await admin

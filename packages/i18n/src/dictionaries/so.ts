@@ -220,6 +220,9 @@ export const so = {
     'Sawirkaasi wuu ka weyn yahay {maxMb}MB. Yaree ama dooro mid ka yar — waxaan aqbalnaa JPG, PNG, GIF iyo WebP.',
   'error.imageInvalid':
     'Faylkaasi uma eka sawir aan isticmaali karno. Waxaan aqbalnaa JPG, PNG, GIF iyo WebP.',
+  'error.voiceTooLarge':
+    'Fariinta codku waa ka weyn tahay xadka 3MB. Duub mid ka gaaban oo mar kale isku day.',
+  'error.voiceInvalid': 'Faylkaasi uma eka fariin cod ah oo aan isticmaali karno. Mar kale duub.',
   'error.imageModerationBlocked':
     'Sawirkaasi kama gudbin baaritaanka nuxurka, lamana gelin. Isku day sawir kale — ama la xiriir kooxda taageerada haddii aad u malaynayso inay khalad tahay.',
   'error.askAlreadyFulfilled':
@@ -1137,6 +1140,9 @@ export const so = {
     'Diidmadu waa mid aamusan — {name} lama ogeysiiyo. Fariinta waa la tirtirayaa 30 maalmood ka dib.',
   'messages.memberSince': 'Xubin {year}',
   'messages.accepted': 'Codsiga waa la aqbalay — hadda waad sheekaysan kartaa.',
+  // RECIPIENT-side confirmation only (screen-reader live region) — the
+  // silent-decline contract governs what the SENDER observes, never this.
+  'messages.declinedByYou': 'Codsiga waa la diiday.',
   'messages.acceptedDivider': 'Waxaad aqbashay codsiga salaanta · {time}',
   // f5 — the silence is the design: the sender sees "sent", a normalising
   // note, and a closed composer. Declined renders EXACTLY the same.
@@ -1154,8 +1160,13 @@ export const so = {
   'messages.unblock': 'Ka fur xannibaadda',
   'messages.blockedNotice': 'Ma fariimi kartid xubintan.',
   'messages.composerPlaceholder': 'Qor fariin…',
+  'messages.composerKeyHint': 'Enter waa dir; Shift+Enter waa sadar cusub.',
   'messages.newMessage': 'Fariin cusub',
   'messages.searchMembers': 'Raadi xubin…',
+  'messages.searchResultsCount': {
+    one: '{count} xubin oo la helay',
+    other: '{count} xubnood oo la helay',
+  },
   'messages.loadOlder': 'Soo raro fariimo hore',
   'messages.historyStart': 'Kani waa bilowga sheekadiina.',
   'messages.messageRemoved': 'Fariintan waa la saaray.',

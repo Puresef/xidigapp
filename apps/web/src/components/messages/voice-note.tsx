@@ -70,9 +70,13 @@ export function VoiceNoteBubble({
   return (
     <span
       role="group"
-      aria-label={t('messages.voiceNoteWithDuration', {
-        duration: formatVoiceDuration(durationSeconds),
-      })}
+      aria-label={
+        durationSeconds === null
+          ? t('messages.voiceNote')
+          : t('messages.voiceNoteWithDuration', {
+              duration: formatVoiceDuration(durationSeconds),
+            })
+      }
       className="xidig-dm-voice"
       data-armed={armed || undefined}
     >
@@ -186,29 +190,41 @@ export function VoiceRecorderButton({
   }
 
   if (unavailable) {
+    // role=status: replacing the focused mic button must ANNOUNCE why the
+    // control vanished, not silently swap it (review #12).
     return (
-      <span className="xidig-dm-voice__unavailable xidig-card__meta">
+      <span role="status" className="xidig-dm-voice__unavailable xidig-card__meta">
         {t('messages.voiceUnavailable')}
       </span>
     );
   }
 
+  // Screen-reader recording narration, throttled to 15s boundaries so the
+  // live region confirms start + progress without chattering every tick
+  // (review #11).
+  const announcedSeconds = Math.floor(seconds / 15) * 15;
+
   if (recording) {
     return (
-      <button
-        type="button"
-        className="xidig-icon-button xidig-dm-voice__recbtn xidig-dm-voice__recbtn--live"
-        aria-label={t('messages.voiceStop')}
-        title={t('messages.voiceRecording', { duration: formatVoiceDuration(seconds) })}
-        onClick={() => recorderRef.current?.stop()}
-      >
-        <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">
-          <rect x="7" y="7" width="10" height="10" rx="1.5" />
-        </svg>
-        <span className="xidig-dm-voice__ticker" aria-hidden="true">
-          {formatVoiceDuration(seconds)}
+      <>
+        <span role="status" className="xidig-visually-hidden">
+          {t('messages.voiceRecording', { duration: formatVoiceDuration(announcedSeconds) })}
         </span>
-      </button>
+        <button
+          type="button"
+          className="xidig-icon-button xidig-dm-voice__recbtn xidig-dm-voice__recbtn--live"
+          aria-label={t('messages.voiceStop')}
+          title={t('messages.voiceRecording', { duration: formatVoiceDuration(seconds) })}
+          onClick={() => recorderRef.current?.stop()}
+        >
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">
+            <rect x="7" y="7" width="10" height="10" rx="1.5" />
+          </svg>
+          <span className="xidig-dm-voice__ticker" aria-hidden="true">
+            {formatVoiceDuration(seconds)}
+          </span>
+        </button>
+      </>
     );
   }
 

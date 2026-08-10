@@ -770,8 +770,32 @@ export type Database = {
           },
         ]
       }
+      conversation_declines: {
+        Row: {
+          conversation_id: string
+          declined_at: string
+        }
+        Insert: {
+          conversation_id: string
+          declined_at?: string
+        }
+        Update: {
+          conversation_id?: string
+          declined_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_declines_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
+          accepted_at: string | null
           created_at: string
           id: string
           initiator_last_read_at: string | null
@@ -782,6 +806,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accepted_at?: string | null
           created_at?: string
           id?: string
           initiator_last_read_at?: string | null
@@ -792,6 +817,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accepted_at?: string | null
           created_at?: string
           id?: string
           initiator_last_read_at?: string | null

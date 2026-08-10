@@ -29,6 +29,12 @@ import type { Json } from '@xidig/db';
 
 const RATE_LIMIT = { max: 30, windowSeconds: 3600 };
 
+// ISO-BMFF major brands MediaRecorder emits for AUDIO on Safari/WebKit.
+// A bare 'ftyp' check would also admit HEIC/MOV/video MP4 (review #5);
+// brand-gating keeps this best-effort (brands are self-declared), but the
+// residual is bounded: private bucket, played via <audio> only, ≤3MB.
+const AUDIO_MP4_BRANDS = new Set(['M4A ', 'M4B ', 'mp42', 'iso5', 'isom']);
+
 function sniffAudio(buffer: Buffer): { mime: string; ext: string } | null {
   if (buffer.length > 4 && buffer.readUInt32BE(0) === 0x1a45dfa3) {
     return { mime: 'audio/webm', ext: 'webm' };
@@ -36,7 +42,11 @@ function sniffAudio(buffer: Buffer): { mime: string; ext: string } | null {
   if (buffer.length > 4 && buffer.toString('latin1', 0, 4) === 'OggS') {
     return { mime: 'audio/ogg', ext: 'ogg' };
   }
-  if (buffer.length > 12 && buffer.toString('latin1', 4, 8) === 'ftyp') {
+  if (
+    buffer.length > 12 &&
+    buffer.toString('latin1', 4, 8) === 'ftyp' &&
+    AUDIO_MP4_BRANDS.has(buffer.toString('latin1', 8, 12))
+  ) {
     return { mime: 'audio/mp4', ext: 'm4a' };
   }
   return null;
@@ -49,7 +59,7 @@ export async function POST(request: Request): Promise<Response> {
     const form = await request.formData();
     const file = form.get('file');
     if (!(file instanceof File)) throw new ApiError('invalid_request', 400);
-    if (file.size > VOICE_MAX_BYTES) throw new ApiError('image_too_large', 413);
+    if (file.size > VOICE_MAX_BYTES) throw new ApiError('voice_too_large', 413);
 
     const rawDuration = form.get('durationSeconds');
     if (typeof rawDuration !== 'string') throw new ApiError('invalid_request', 400);
@@ -66,7 +76,7 @@ export async function POST(request: Request): Promise<Response> {
 
     const input = Buffer.from(await file.arrayBuffer());
     const sniffed = sniffAudio(input);
-    if (!sniffed) throw new ApiError('invalid_request', 400);
+    if (!sniffed) throw new ApiError('voice_invalid', 400);
 
     const admin = getSupabaseAdmin();
     await ensureDmMediaBucket(admin, VOICE_MAX_BYTES);
