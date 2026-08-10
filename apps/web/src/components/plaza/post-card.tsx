@@ -129,6 +129,27 @@ export function PostCard({
   const mayClamp = !detail && (post.body.length > 280 || post.body.split('\n').length > 4);
   const latestComment = detail ? null : (view.latestComment ?? null);
 
+  // D3 glyph (docs/d3-icon-handoff): decorative — the text label is adjacent,
+  // so no `label` (icon renders aria-hidden). tone="inherit" keeps icon+text
+  // on the chip's own color (Guul's chip already rides the trust treatment).
+  const typeChip = (
+    <span className={`xidig-tag xidig-post-type xidig-post-type--${post.type}`}>
+      <XidigIcon
+        name={XIDIG_POST_TYPE_ICON[post.type]}
+        variant="filled"
+        size={14}
+        tone="inherit"
+        className="x-ic--lead"
+      />
+      {t(TYPE_KEYS[post.type])}
+    </span>
+  );
+  const statusChip = post.ask_status ? (
+    <span className={ASK_STATUS_CLASS[post.ask_status]}>
+      {t(ASK_STATUS_KEYS[post.ask_status])}
+    </span>
+  ) : null;
+
   return (
     <article className="xidig-card">
       {codsiBanner}
@@ -177,6 +198,14 @@ export function PostCard({
             {formatRelativeTime(new Date(post.created_at), locale)}
           </p>
         </div>
+        {/* Detail surfaces seat the type + status chips in the byline row
+            itself (dark frames 1a–3b); feed cards keep the row below. */}
+        {detail ? (
+          <span className="xidig-chip-row xidig-chip-row--byline">
+            {typeChip}
+            {statusChip}
+          </span>
+        ) : null}
         <PostOverflowMenu
           authorUserId={post.author_user_id}
           authorName={author?.display_name ?? ''}
@@ -187,30 +216,15 @@ export function PostCard({
         />
       </div>
 
-      <p className="xidig-chip-row">
-        <span className={`xidig-tag xidig-post-type xidig-post-type--${post.type}`}>
-          {/* D3 glyph (docs/d3-icon-handoff): decorative — the text label is
-              adjacent, so no `label` (icon renders aria-hidden). tone="inherit"
-              keeps icon+text on the chip's own color (Guul's chip already rides
-              the trust treatment; the icon must match its text exactly). */}
-          <XidigIcon
-            name={XIDIG_POST_TYPE_ICON[post.type]}
-            variant="filled"
-            size={14}
-            tone="inherit"
-            className="x-ic--lead"
-          />
-          {t(TYPE_KEYS[post.type])}
-        </span>
-        <ContentSourceBadge source={post.source} />
-        {post.pinned_at ? <span className="xidig-tag">{t('plaza.pinned')}</span> : null}
-        {post.ask_status ? (
-          <span className={ASK_STATUS_CLASS[post.ask_status]}>
-            {t(ASK_STATUS_KEYS[post.ask_status])}
-          </span>
-        ) : null}
-        {post.edited_at ? <span className="xidig-card__meta">{t('plaza.edited')}</span> : null}
-      </p>
+      {!detail || post.source !== 'member' || post.pinned_at || post.edited_at ? (
+        <p className="xidig-chip-row">
+          {!detail ? typeChip : null}
+          <ContentSourceBadge source={post.source} />
+          {post.pinned_at ? <span className="xidig-tag">{t('plaza.pinned')}</span> : null}
+          {!detail ? statusChip : null}
+          {post.edited_at ? <span className="xidig-card__meta">{t('plaza.edited')}</span> : null}
+        </p>
+      ) : null}
 
       {isOwn && post.status === 'hidden' ? (
         <SystemNotice tone="info" messageKey="plaza.hiddenOwn" />

@@ -36,6 +36,22 @@ export function parseTheme(raw: string | undefined | null): ThemeOption {
   return raw === 'light' || raw === 'dark' ? raw : 'system';
 }
 
+/**
+ * Signed-in members default to DARK (Codsi fidelity pass, 9 Aug): the design
+ * canon pins the dark night-sky presentation for the app shell, so an unset
+ * cookie means dark — system-follow and light are explicit choices. The
+ * signed-out front door keeps the system default (its dark flip is a separate
+ * marketing decision, flagged, not smuggled in here).
+ */
+export function resolveThemeDefault(
+  raw: string | undefined | null,
+  signedIn: boolean,
+): ThemeOption {
+  const parsed = raw === 'light' || raw === 'dark' || raw === 'system' ? raw : null;
+  if (parsed) return parsed;
+  return signedIn ? 'dark' : 'system';
+}
+
 export function parseTextSize(raw: string | undefined | null): TextSizeOption {
   return raw === 's' || raw === 'l' || raw === 'xl' ? raw : 'm';
 }

@@ -19,6 +19,7 @@ import { OwnerControls } from '@/components/plaza/codsi/owner-controls';
 import { CommentThread } from '@/components/plaza/comment-thread';
 import { PostCard } from '@/components/plaza/post-card';
 import { getAuthContext } from '@/lib/auth/guards';
+import { getHeaderViewer } from '@/lib/auth/header-viewer';
 import { getLowBandwidth } from '@/lib/bandwidth-server';
 import { getLitePrefs } from '@/lib/lite/server';
 import { getT } from '@/lib/locale';
@@ -109,6 +110,9 @@ export default async function PostPermalinkPage({ params }: { params: Promise<{ 
   const lowBandwidth = await getLowBandwidth();
   const prefs = await getLitePrefs();
   const t = await getT();
+  // Composer avatar (dark frames): the pill composer leads the thread with
+  // the signed-in viewer's disc.
+  const headerViewer = await getHeaderViewer();
 
   const post = view.post;
   const isAsker = post.author_user_id === ctx.appUser.id;
@@ -202,7 +206,13 @@ export default async function PostPermalinkPage({ params }: { params: Promise<{ 
         durationDays={durationDays}
       />
       {!isAsker && view.author ? (
-        <ReportControl targetType="post" targetId={post.id} targetName={view.author.display_name} />
+        <ReportControl
+          targetType="post"
+          targetId={post.id}
+          targetName={view.author.display_name}
+          variant="quiet"
+          labelKey="plaza.reportCodsi"
+        />
       ) : null}
     </aside>
   ) : null;
@@ -268,6 +278,12 @@ export default async function PostPermalinkPage({ params }: { params: Promise<{ 
           isAsker,
           askStatus: post.type === 'ask' ? askStatus : null,
           creditedCommentId,
+        }}
+        viewer={{
+          displayName: headerViewer.displayName,
+          handle: headerViewer.handle,
+          avatarThumbUrl: headerViewer.avatarThumbUrl,
+          avatarBlurhash: headerViewer.avatarBlurhash,
         }}
       />
     </>

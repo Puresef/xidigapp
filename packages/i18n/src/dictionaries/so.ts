@@ -974,6 +974,8 @@ export const so = {
   'plaza.threadError':
     'Wada-hadalka lama soo rari karin. Codsiga ayaad akhrin kartaa — jawaabaha ayaa maqan. Isku day mar kale.',
   'plaza.commentLabelOwner': 'Warbixin ku dar',
+  'plaza.commentPlaceholder': 'Qor jawaab…',
+  'plaza.reportCodsi': 'Ka warbixi codsigan',
   'plaza.threadPublicNote':
     'Wada-hadalka caawinta wuxuu ka dhacayaa Fariimo. Waxa halkan ku qoran waa mid furan oo bulshadu aragto.',
   'plaza.pollClosed': 'Codbixin xiran',

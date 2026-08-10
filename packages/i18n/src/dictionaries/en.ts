@@ -1118,6 +1118,8 @@ export const en = {
   'plaza.threadError':
     'The thread couldn’t load. You can still read the ask — the replies are missing. Try again.',
   'plaza.commentLabelOwner': 'Add an update',
+  'plaza.commentPlaceholder': 'Write a reply…',
+  'plaza.reportCodsi': 'Report this ask',
   'plaza.threadPublicNote':
     'The help conversation happens in Fariimo. What’s written here is public — the whole community sees it.',
   'plaza.pollClosed': 'Poll closed',

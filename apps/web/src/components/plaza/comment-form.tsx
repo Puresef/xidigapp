@@ -5,6 +5,7 @@ import { type FormEvent, useId, useState } from 'react';
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
+import { Avatar } from '@/components/media/avatar';
 import { MentionAutocomplete } from '@/components/social/mention-autocomplete';
 import { ApiRequestError, apiPost } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
@@ -23,11 +24,20 @@ import { PlainErrorBanner } from '../auth/plain-error';
  * `onNetworkFail` instead of erroring — work is never lost, and nothing
  * pretends to be sent. Server-refused comments (§27 errors) still error.
  */
+export interface ComposerViewer {
+  displayName: string;
+  handle: string;
+  avatarThumbUrl: string | null;
+  avatarBlurhash: string | null;
+}
+
 export function CommentForm({
   postId,
   onCreated,
   labelKey = 'plaza.commentLabel',
   onNetworkFail,
+  presentation = 'block',
+  viewer,
 }: {
   postId: string;
   onCreated: (comment: CommentView) => void;
@@ -35,6 +45,11 @@ export function CommentForm({
   labelKey?: MessageKey;
   /** Return true to claim the body for the offline queue. */
   onNetworkFail?: (body: string) => boolean;
+  /** 'pill' = the detail-thread composer per the dark frames: avatar +
+   * rounded single-row input + Dir, disabled until typed. */
+  presentation?: 'block' | 'pill';
+  /** Leading avatar for the pill composer (the signed-in viewer). */
+  viewer?: ComposerViewer;
 }) {
   const t = useT();
   const fieldId = useId();
@@ -71,6 +86,43 @@ export function CommentForm({
         setPending(false);
       }
     })();
+  }
+
+  if (presentation === 'pill') {
+    return (
+      <form className="xidig-comment-pill" onSubmit={onSubmit}>
+        {error ? <PlainErrorBanner error={error} /> : null}
+        <div className="xidig-comment-pill__row">
+          {viewer ? (
+            <Avatar
+              name={viewer.displayName}
+              handle={viewer.handle || viewer.displayName}
+              src={viewer.avatarThumbUrl}
+              blurhash={viewer.avatarBlurhash}
+              size={32}
+            />
+          ) : null}
+          <label className="xidig-visually-hidden" htmlFor={fieldId}>
+            {t(labelKey)}
+          </label>
+          <MentionAutocomplete
+            id={fieldId}
+            value={body}
+            onChange={setBody}
+            rows={1}
+            maxLength={COMMENT_BODY_MAX}
+            placeholder={t(labelKey)}
+          />
+          <button
+            type="submit"
+            className="xidig-button xidig-button--primary"
+            disabled={pending || body.trim() === ''}
+          >
+            {t('action.send')}
+          </button>
+        </div>
+      </form>
+    );
   }
 
   return (

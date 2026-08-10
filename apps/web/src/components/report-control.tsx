@@ -37,11 +37,17 @@ export function ReportControl({
   targetType,
   targetId,
   targetName,
+  variant = 'button',
+  labelKey = 'action.report',
 }: {
   targetType: ReportTargetType;
   targetId: string;
   /** Fills the "Report {name}" heading — a candidate/business name or author. */
   targetName: string;
+  /** 'quiet' = the rail treatment from the dark frames: a muted flag link,
+   * not a pill button ("Ka warbixi codsigan"). Same form once opened. */
+  variant?: 'button' | 'quiet';
+  labelKey?: MessageKey;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -123,13 +129,20 @@ export function ReportControl({
             </button>
           </div>
         </form>
+      ) : variant === 'quiet' ? (
+        <button type="button" className="xidig-report-control__quiet" onClick={() => setOpen(true)}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 21V4.5s1.5-1 4-1 4 1.5 7 1.5c1.5 0 3-.5 3-.5v9.5s-1.5.5-3 .5c-3 0-4.5-1.5-7-1.5-2.5 0-4 1-4 1" />
+          </svg>
+          {t(labelKey)}
+        </button>
       ) : (
         <button
           type="button"
           className="xidig-button xidig-button--secondary"
           onClick={() => setOpen(true)}
         >
-          {t('action.report')}
+          {t(labelKey)}
         </button>
       )}
     </div>

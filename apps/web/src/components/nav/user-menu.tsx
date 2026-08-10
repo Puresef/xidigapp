@@ -35,7 +35,15 @@ const LINKS: ReadonlyArray<{ labelKey: MessageKey; href: string }> = [
   { labelKey: 'nav.settings', href: '/settings' },
 ];
 
-export function UserMenu({ viewer }: { viewer: HeaderViewer }) {
+export function UserMenu({
+  viewer,
+  presentation = 'header',
+}: {
+  viewer: HeaderViewer;
+  /** 'rail' renders the trigger as the RailNav account row and opens the
+   * panel upward (the rail sits at the bottom of the viewport). */
+  presentation?: 'header' | 'rail';
+}) {
   const t = useT();
   const { messages } = useBadges();
   const [open, setOpen] = useState(false);
@@ -139,7 +147,9 @@ export function UserMenu({ viewer }: { viewer: HeaderViewer }) {
       <button
         ref={triggerRef}
         type="button"
-        className="xidig-user-menu__trigger"
+        className={
+          presentation === 'rail' ? 'xidig-user-menu__railtrigger' : 'xidig-user-menu__trigger'
+        }
         aria-label={
           messages > 0 ? t('a11y.userMenuUnread', { count: messages }) : t('a11y.userMenu')
         }
@@ -152,9 +162,15 @@ export function UserMenu({ viewer }: { viewer: HeaderViewer }) {
           handle={viewer.handle || viewer.displayName}
           src={viewer.avatarThumbUrl}
           blurhash={viewer.avatarBlurhash}
-          size={32}
+          size={presentation === 'rail' ? 30 : 32}
         />
-        {messages > 0 ? (
+        {presentation === 'rail' ? (
+          <span className="xidig-user-menu__railmeta">
+            <span className="xidig-user-menu__railname">{viewer.displayName}</span>
+            <span className="xidig-user-menu__railhint">{t('plaza.helperViewProfile')}</span>
+          </span>
+        ) : null}
+        {messages > 0 && presentation === 'header' ? (
           <span className="xidig-nav__badge xidig-user-menu__badge" aria-hidden="true">
             {messages > 99 ? '99+' : messages}
           </span>
@@ -162,7 +178,12 @@ export function UserMenu({ viewer }: { viewer: HeaderViewer }) {
       </button>
 
       {open ? (
-        <div className="xidig-user-menu__panel" role="menu" ref={panelRef} onKeyDown={onPanelKeyDown}>
+        <div
+          className={`xidig-user-menu__panel${presentation === 'rail' ? ' xidig-user-menu__panel--up' : ''}`}
+          role="menu"
+          ref={panelRef}
+          onKeyDown={onPanelKeyDown}
+        >
           <div className="xidig-user-menu__identity">
             <span className="xidig-user-menu__name">{viewer.displayName}</span>
             {viewer.handle ? (

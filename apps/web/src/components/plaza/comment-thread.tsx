@@ -12,7 +12,7 @@ import type { CommentView } from '@/lib/plaza/views';
 
 import { Avatar } from '../media/avatar';
 import { PlainErrorBanner } from '../auth/plain-error';
-import { CommentForm } from './comment-form';
+import { CommentForm, type ComposerViewer } from './comment-form';
 import { ReactionBar } from './reaction-bar';
 import { QueuedReplies, type QueuedReply } from './codsi/queued-replies';
 import { ThreadEmpty } from './codsi/thread-empty';
@@ -82,12 +82,15 @@ export function CommentThread({
   viewerId,
   openedAt,
   askContext,
+  viewer,
 }: {
   postId: string;
   viewerId: string;
   /** post.created_at — the empty state states how long the ask has waited. */
   openedAt: string;
   askContext: AskContext;
+  /** Signed-in viewer identity for the pill composer's avatar (dark frames). */
+  viewer?: ComposerViewer;
 }) {
   const t = useT();
   const { locale } = useLocale();
@@ -220,6 +223,19 @@ export function CommentThread({
     <section aria-label={t('plaza.commentsHeading')}>
       {error ? <PlainErrorBanner error={error} /> : null}
 
+      {/* Composer leads the thread (1b/2b): avatar + pill input + Dir. The
+          owner writes "warbixin" (updates); everyone else replies. */}
+      <CommentForm
+        postId={postId}
+        onCreated={(comment) => setItems((current) => [...current, comment])}
+        labelKey={
+          isCodsi && askContext.isAsker ? 'plaza.commentLabelOwner' : 'plaza.commentPlaceholder'
+        }
+        onNetworkFail={enqueue}
+        presentation="pill"
+        {...(viewer ? { viewer } : {})}
+      />
+
       {!loaded && pending ? <LoadingFlap /> : null}
       {loadFailed && !loaded ? <ThreadError onRetry={() => void load(null)} /> : null}
       {loaded && items.length === 0 && queued.length === 0 ? (
@@ -318,15 +334,6 @@ export function CommentThread({
       ) : null}
 
       <QueuedReplies items={queued} onRemove={removeQueued} />
-
-      <CommentForm
-        postId={postId}
-        onCreated={(comment) => setItems((current) => [...current, comment])}
-        labelKey={
-          isCodsi && askContext.isAsker ? 'plaza.commentLabelOwner' : 'plaza.commentLabel'
-        }
-        onNetworkFail={enqueue}
-      />
     </section>
   );
 }

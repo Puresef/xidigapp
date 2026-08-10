@@ -1231,6 +1231,232 @@ button.xidig-poll__option {
  * ========================================================================== */
 
 /* Nav + tab unread badges */
+/* Detail byline chips (dark frames 1a–3b): type + status seat at the end of
+   the byline row on detail surfaces; feed cards keep the row below. */
+.xidig-chip-row--byline {
+  display: inline-flex;
+  gap: 4px;
+  flex: none;
+  margin: 0;
+  align-self: center;
+}
+
+/* At phone widths the chips would crush the single-line byline — they drop
+   to their own row under it instead (the ⋯ menu keeps the top corner). */
+@media (max-width: 48rem) {
+  .xidig-card__top:has(.xidig-chip-row--byline) {
+    flex-wrap: wrap;
+  }
+  /* Byline shares line one with the ⋯ menu (shrinkable basis); the chips
+     take a full row beneath. */
+  .xidig-card__top:has(.xidig-chip-row--byline) .xidig-byline {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .xidig-chip-row--byline {
+    order: 3;
+    flex: 1 0 100%;
+    margin-top: 2px;
+  }
+}
+
+/* Thread pill composer (frames 1b/2b/3a): avatar + rounded single-row input
+   + Dir. The textarea rides the pill radius; focus ring stays intact. */
+.xidig-comment-pill {
+  display: grid;
+  gap: var(--x-space-xs);
+}
+.xidig-comment-pill__row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.xidig-comment-pill__row .xidig-mention {
+  flex: 1;
+  min-width: 0;
+}
+.xidig-comment-pill__row textarea.xidig-field__input {
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-size: var(--x-text-s);
+  resize: none;
+  min-height: 0;
+}
+.xidig-comment-pill__row .xidig-button {
+  flex: none;
+}
+
+/* Quiet report entry (frame 1b): a muted flag link, not a pill. */
+.xidig-report-control__quiet {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  cursor: pointer;
+  border-radius: var(--x-radius-s);
+}
+.xidig-report-control__quiet:hover {
+  color: var(--x-fg);
+}
+.xidig-report-control__quiet:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   RailNav — the desktop app shell (RailNav.dc.html canon, Codsi
+   fidelity pass 9 Aug). Hidden by default; at ≥64rem the rail
+   shows, the signed-in header hides, and content shifts right.
+   body:has scoping keeps the signed-out front door untouched.
+   ============================================================ */
+.xidig-rail {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  body:has(.xidig-rail) .xidig-rail {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 232px;
+    box-sizing: border-box;
+    padding: 18px 14px 16px;
+    border-inline-end: 1px solid var(--x-border);
+    background: color-mix(in srgb, var(--x-surface) 55%, transparent);
+  }
+
+  /* The rail replaces the header shell wholesale on wide viewports. */
+  body:has(.xidig-rail) .xidig-header {
+    display: none;
+  }
+
+  body:has(.xidig-rail) main {
+    margin-inline-start: 232px;
+  }
+}
+
+.xidig-rail__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 2px 10px 16px;
+  text-decoration: none;
+  color: var(--x-fg);
+}
+.xidig-rail__wordmark {
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.01em;
+}
+.xidig-rail__item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--x-muted);
+  font-weight: 500;
+  font-size: var(--x-text-ui);
+}
+.xidig-rail__item:hover {
+  background: color-mix(in srgb, var(--x-surface-2) 80%, transparent);
+  color: var(--x-fg);
+}
+.xidig-rail__item:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+.xidig-rail__item[aria-current='page'] {
+  color: var(--x-accent-text);
+  font-weight: 700;
+  background: var(--x-accent-soft);
+}
+.xidig-rail__iconwrap {
+  position: relative;
+  display: inline-flex;
+}
+.xidig-rail__badge {
+  position: absolute;
+  top: -6px;
+  inset-inline-end: -8px;
+}
+.xidig-rail__create {
+  margin: 12px 4px 0;
+  display: grid;
+}
+.xidig-rail__create .xidig-button {
+  justify-content: center;
+}
+.xidig-rail__search {
+  margin: 10px 4px 0;
+}
+.xidig-rail__search .xidig-header-search {
+  width: 100%;
+}
+.xidig-rail__spacer {
+  flex: 1;
+}
+.xidig-rail__account {
+  margin-top: 4px;
+  border-top: 1px solid var(--x-border);
+  padding-top: 6px;
+}
+.xidig-rail__account .xidig-user-menu {
+  width: 100%;
+}
+.xidig-user-menu__railtrigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px 4px;
+  border: 0;
+  background: transparent;
+  border-radius: var(--x-radius-s);
+  cursor: pointer;
+  text-align: start;
+  color: var(--x-fg);
+}
+.xidig-user-menu__railtrigger:hover {
+  background: color-mix(in srgb, var(--x-surface-2) 80%, transparent);
+}
+.xidig-user-menu__railtrigger:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+.xidig-user-menu__railmeta {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+.xidig-user-menu__railname {
+  font-weight: 600;
+  font-size: var(--x-text-s);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xidig-user-menu__railhint {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+.xidig-user-menu__panel--up {
+  top: auto;
+  bottom: calc(100% + 0.4rem);
+  inset-inline-end: auto;
+  inset-inline-start: 0;
+}
+
 .xidig-nav__badge,
 .xidig-dm-badge {
   display: inline-block;

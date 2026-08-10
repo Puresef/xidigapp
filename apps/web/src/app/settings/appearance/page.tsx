@@ -8,7 +8,7 @@ import {
   MOTION_COOKIE,
   parseMotion,
   parseTextSize,
-  parseTheme,
+  resolveThemeDefault,
   TEXTSIZE_COOKIE,
   THEME_COOKIE,
 } from '@/lib/settings/appearance';
@@ -31,7 +31,9 @@ export default async function AppearanceSettingsPage() {
 
   const store = await cookies();
   const snapshot = {
-    theme: parseTheme(store.get(THEME_COOKIE)?.value),
+    // Settings is a signed-in surface: an unset cookie honestly shows the
+    // dark default the shell actually renders (Codsi fidelity pass).
+    theme: resolveThemeDefault(store.get(THEME_COOKIE)?.value, true),
     textSize: parseTextSize(store.get(TEXTSIZE_COOKIE)?.value),
     motion: parseMotion(store.get(MOTION_COOKIE)?.value),
   };

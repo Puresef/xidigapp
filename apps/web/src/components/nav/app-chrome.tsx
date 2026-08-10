@@ -7,6 +7,7 @@ import { CreateButton } from '@/components/nav/create-button';
 import { HeaderSearch } from '@/components/nav/header-search';
 import { KeyboardShortcuts } from '@/components/nav/keyboard-shortcuts';
 import { NotificationsMenu } from '@/components/nav/notifications-menu';
+import { RailNav } from '@/components/nav/rail-nav';
 import { Toaster } from '@/components/toaster';
 import { UserMenu } from '@/components/nav/user-menu';
 import { SentryBoot } from '@/components/sentry-boot';
@@ -39,6 +40,9 @@ export function AppChrome({
     <BadgeProvider initialSignedIn={viewer.signedIn}>
       {/* Client Sentry rides this chunk on purpose — signed-in only (§4.2). */}
       <SentryBoot />
+      {/* Desktop shell (≥64rem): the rail replaces the header — CSS flips the
+          two, both stay in the DOM (Codsi fidelity pass, RailNav.dc.html). */}
+      <RailNav viewer={viewer} />
       <header className="xidig-header">
         <AppNav />
         <div className="xidig-header__actions">

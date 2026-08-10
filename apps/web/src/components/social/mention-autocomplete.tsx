@@ -42,6 +42,7 @@ export function MentionAutocomplete({
   rows = 3,
   maxLength,
   disabled = false,
+  placeholder,
 }: {
   id: string;
   value: string;
@@ -49,6 +50,7 @@ export function MentionAutocomplete({
   rows?: number;
   maxLength?: number | undefined;
   disabled?: boolean;
+  placeholder?: string | undefined;
 }) {
   const t = useT();
   const listId = useId();
@@ -145,6 +147,7 @@ export function MentionAutocomplete({
         className="xidig-field__input"
         rows={rows}
         {...(maxLength !== undefined ? { maxLength } : {})}
+        {...(placeholder !== undefined ? { placeholder } : {})}
         disabled={disabled}
         value={value}
         aria-autocomplete="list"

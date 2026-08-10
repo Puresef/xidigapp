@@ -28,7 +28,7 @@ import {
   MOTION_COOKIE,
   parseMotion,
   parseTextSize,
-  parseTheme,
+  resolveThemeDefault,
   TEXTSIZE_COOKIE,
   THEME_COOKIE,
 } from '../lib/settings/appearance';
@@ -112,13 +112,13 @@ export async function generateMetadata(): Promise<Metadata> {
  * Text size + motion are plain cookie reads, fully server-rendered — no
  * script needed for them.
  */
-const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )xidig_theme=([^;]+)/);var v=m?decodeURIComponent(m[1]):'system';if(v!=='dark'&&v!=='light'){v=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',v);}catch(e){}})();`;
+const THEME_INIT_SCRIPT = `(function(){try{if(document.documentElement.hasAttribute('data-theme'))return;var m=document.cookie.match(/(?:^|; )xidig_theme=([^;]+)/);var v=m?decodeURIComponent(m[1]):'system';if(v!=='dark'&&v!=='light'){v=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',v);}catch(e){}})();`;
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const locale = await getLocale();
 
   const cookieStore = await cookies();
-  const theme = parseTheme(cookieStore.get(THEME_COOKIE)?.value);
+  const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
   const textSize = parseTextSize(cookieStore.get(TEXTSIZE_COOKIE)?.value);
   // data-motion is 'off' when EITHER the Appearance reduced-motion control or
   // the Lite animations pref asks for it — the Lite "animations: off" toggle
@@ -129,6 +129,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const motionOff = motion === 'off' || !lite.animations;
 
   const viewer = await getHeaderViewer();
+
+  // Theme default is viewer-aware (Codsi fidelity pass): signed-in members
+  // get the design-canon dark shell unless they chose otherwise; the
+  // signed-out front door keeps following the system.
+  const theme = resolveThemeDefault(themeCookie, viewer.signedIn);
 
   // §12 consent capture: signed-in members without a CURRENT-version choice
   // get the banner. The cookie answers without a DB read after the first
