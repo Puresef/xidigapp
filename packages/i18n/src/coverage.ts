@@ -90,6 +90,10 @@ export const LAUNCH_FLOOR_NAMESPACES = [
   // acquisition + a privacy-sensitive trust surface (addresses, attendance).
   // Plain-register SO ships now; native review tracked as Alpha Hardening Debt.
   'events',
+  // Relative time (bylines, feeds, notifications, Codsi timeline) renders on
+  // every trust surface above. The strings are dictionary-owned so SSR and
+  // hydration match on any runtime — Somali ships complete by construction.
+  'time',
 ] as const;
 
 export interface NamespaceCoverage {

@@ -1906,4 +1906,27 @@ export const so = {
   // Albaabka hore — kaadhka "kan xiga"
   'marketing.nextEventTitle': 'Kan xiga',
   'marketing.nextEventCta': 'Arag munaasabadda',
+
+  // Waqti qaraabo ah — bylines, feeds, ogeysiisyada, jadwalka Codsi.
+  // Unit forms follow existing so.ts precedents (daqiiqo, saacadood, maalmood,
+  // invariant ilbiriqsi/toddobaad) and the canonical two-word 'ka hor' /
+  // 'ka dib'. bil/bilood + sannad/sannadood are new coinage aligned with CLDR;
+  // native review tracked as Alpha Hardening Debt.
+  'time.now': 'hadda',
+  'time.yesterday': 'shalay',
+  'time.tomorrow': 'berri',
+  'time.secondsAgo': { one: '{count} ilbiriqsi ka hor', other: '{count} ilbiriqsi ka hor' },
+  'time.minutesAgo': { one: '{count} daqiiqad ka hor', other: '{count} daqiiqo ka hor' },
+  'time.hoursAgo': { one: '{count} saacad ka hor', other: '{count} saacadood ka hor' },
+  'time.daysAgo': { one: '{count} maalin ka hor', other: '{count} maalmood ka hor' },
+  'time.weeksAgo': { one: '{count} toddobaad ka hor', other: '{count} toddobaad ka hor' },
+  'time.monthsAgo': { one: '{count} bil ka hor', other: '{count} bilood ka hor' },
+  'time.yearsAgo': { one: '{count} sannad ka hor', other: '{count} sannadood ka hor' },
+  'time.inSeconds': { one: '{count} ilbiriqsi ka dib', other: '{count} ilbiriqsi ka dib' },
+  'time.inMinutes': { one: '{count} daqiiqad ka dib', other: '{count} daqiiqo ka dib' },
+  'time.inHours': { one: '{count} saacad ka dib', other: '{count} saacadood ka dib' },
+  'time.inDays': { one: '{count} maalin ka dib', other: '{count} maalmood ka dib' },
+  'time.inWeeks': { one: '{count} toddobaad ka dib', other: '{count} toddobaad ka dib' },
+  'time.inMonths': { one: '{count} bil ka dib', other: '{count} bilood ka dib' },
+  'time.inYears': { one: '{count} sannad ka dib', other: '{count} sannadood ka dib' },
 } satisfies SomaliDictionary;

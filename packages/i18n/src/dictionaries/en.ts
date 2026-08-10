@@ -1984,6 +1984,29 @@ export const en = {
   // real upcoming public event exists; zero events = block absent)
   'marketing.nextEventTitle': 'Next up',
   'marketing.nextEventCta': 'See the event',
+
+  // Relative time — bylines, feeds, notifications, the Codsi timeline.
+  // Dictionary-owned on purpose: Intl.RelativeTimeFormat output depends on the
+  // runtime's ICU build (a server without Somali CLDR silently emits English —
+  // no throw), which hydration-mismatched every Somali time node. One data
+  // source here keeps SSR and browser output byte-identical (see format.ts).
+  'time.now': 'now',
+  'time.yesterday': 'yesterday',
+  'time.tomorrow': 'tomorrow',
+  'time.secondsAgo': { one: '{count} second ago', other: '{count} seconds ago' },
+  'time.minutesAgo': { one: '{count} minute ago', other: '{count} minutes ago' },
+  'time.hoursAgo': { one: '{count} hour ago', other: '{count} hours ago' },
+  'time.daysAgo': { one: '{count} day ago', other: '{count} days ago' },
+  'time.weeksAgo': { one: '{count} week ago', other: '{count} weeks ago' },
+  'time.monthsAgo': { one: '{count} month ago', other: '{count} months ago' },
+  'time.yearsAgo': { one: '{count} year ago', other: '{count} years ago' },
+  'time.inSeconds': { one: 'in {count} second', other: 'in {count} seconds' },
+  'time.inMinutes': { one: 'in {count} minute', other: 'in {count} minutes' },
+  'time.inHours': { one: 'in {count} hour', other: 'in {count} hours' },
+  'time.inDays': { one: 'in {count} day', other: 'in {count} days' },
+  'time.inWeeks': { one: 'in {count} week', other: 'in {count} weeks' },
+  'time.inMonths': { one: 'in {count} month', other: 'in {count} months' },
+  'time.inYears': { one: 'in {count} year', other: 'in {count} years' },
 } as const satisfies Record<string, Message>;
 
 /** Every valid message key, derived from the English dictionary. */
