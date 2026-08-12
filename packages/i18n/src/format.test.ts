@@ -138,10 +138,82 @@ describe('formatDate', () => {
   it('degrades gracefully on an invalid Date instead of throwing', () => {
     expect(formatDate(new Date('garbage'), 'en')).toBe('—');
   });
+
+  it('honours a valid timeZone', () => {
+    const base = { dateStyle: 'medium', timeStyle: 'short' } as const;
+    const utc = formatDate(NOW, 'en', { ...base, timeZone: 'UTC' });
+    const tokyo = formatDate(NOW, 'en', { ...base, timeZone: 'Asia/Tokyo' });
+    expect(utc).toContain('12:00');
+    expect(tokyo).toContain('9:00');
+  });
+
+  it('survives an invalid timeZone instead of throwing', () => {
+    // Callers hand stored event timezones straight through (formatEventStart),
+    // so one bad row must never take out a whole screen. Retrying the fallback
+    // with the same options would throw exactly as the first attempt did.
+    const options = { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Not/AZone' } as const;
+    expect(() => formatDate(NOW, 'so', options)).not.toThrow();
+    // Degrades by dropping the unusable option, not the requested locale.
+    expect(formatDate(NOW, 'so', options)).toBe(formatDate(NOW, 'so'));
+  });
+
+  it('survives an invalid option value instead of throwing', () => {
+    const options = { dateStyle: 'bogus' } as unknown as Intl.DateTimeFormatOptions;
+    expect(() => formatDate(NOW, 'en', options)).not.toThrow();
+    expect(formatDate(NOW, 'en', options)).toContain('2026');
+  });
+
+  it("degrades to '—' on a finite but out-of-range timestamp", () => {
+    // Number.isFinite admits these, but every Intl attempt rejects them.
+    expect(formatDate(8.64e15 + 1, 'en')).toBe('—');
+  });
 });
 
 describe('formatNumber', () => {
   it('formats with the locale', () => {
     expect(formatNumber(1234, 'en')).toBe('1,234');
+  });
+
+  it('honours valid options', () => {
+    // Asserted loosely: the exact percent glyph and its spacing vary by CLDR.
+    expect(formatNumber(0.5, 'so', { style: 'percent' })).toContain('50');
+    expect(formatNumber(1234.5, 'en', { minimumFractionDigits: 2 })).toBe('1,234.50');
+  });
+
+  it('survives unusable options instead of throwing', () => {
+    // Three separate validation paths — and the first throws TypeError where
+    // the other two throw RangeError, which is why the catch stays bare.
+    const unusable: Intl.NumberFormatOptions[] = [
+      { style: 'currency' }, // currency style with no currency code
+      { notation: 'bogus' } as unknown as Intl.NumberFormatOptions,
+      { minimumFractionDigits: 4, maximumFractionDigits: 2 },
+    ];
+    for (const options of unusable) {
+      expect(() => formatNumber(1234.5, 'so', options)).not.toThrow();
+      // Degrades by dropping the unusable options, not the requested locale.
+      expect(formatNumber(1234.5, 'so', options)).toBe(formatNumber(1234.5, 'so'));
+    }
+  });
+
+  it('loses the style when it degrades, rendering a percent as a bare number', () => {
+    // Documents the price of dropping options wholesale — right digits, wrong
+    // scale — so the trade-off stays visible instead of lurking.
+    const options = { style: 'percent', notation: 'bogus' } as unknown as Intl.NumberFormatOptions;
+    expect(formatNumber(0.5, 'so', options)).toBe(formatNumber(0.5, 'so'));
+  });
+
+  it('formats non-finite numbers rather than degrading them', () => {
+    // No Number.isFinite guard here, unlike formatDate: Intl renders these as
+    // locale text ('so' gives "MaL" for NaN) and a guard would destroy it.
+    expect(formatNumber(Number.NaN, 'so')).not.toBe('—');
+    expect(formatNumber(Number.POSITIVE_INFINITY, 'so')).not.toBe('—');
+  });
+
+  it("degrades to '—' when the value is not really a number", () => {
+    // The never-throws contract has to hold past the type: a null-prototype
+    // object makes Intl and String() both throw.
+    const notANumber = Object.create(null) as unknown as number;
+    expect(() => formatNumber(notANumber, 'so')).not.toThrow();
+    expect(formatNumber(notANumber, 'so')).toBe('—');
   });
 });

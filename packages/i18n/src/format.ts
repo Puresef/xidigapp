@@ -6,13 +6,25 @@ import { isPluralMessage, type Message } from './messages';
 /**
  * Locale-aware formatting helpers.
  *
- * Numbers and dates ride on Intl (falling back to English formatting rather
- * than throwing when data is absent). Relative time deliberately does NOT:
- * Intl.RelativeTimeFormat output depends on the runtime's ICU build, and a
- * server whose ICU lacks Somali CLDR silently falls back to English without
- * throwing — so SSR HTML and browser output diverged and every Somali time
- * node hydration-mismatched. Relative-time copy lives in the dictionaries
- * (`time.*`), giving server and client one data source on every runtime.
+ * One property of Intl governs this whole module, and both designs below fall
+ * out of it: Intl does NOT throw over missing CLDR data. Any well-formed
+ * language tag — 'xx' as much as 'so' — quietly resolves to the host default.
+ * Only a structurally malformed tag ('so_SO', '') throws, and neither member of
+ * Locale is one.
+ *
+ * For numbers and dates that means the locale can never be the fault, so a
+ * fallback that retried under 'en' was dead code — and byte-identical to the
+ * call that just threw whenever the locale was already 'en'. The caller's own
+ * options are the only argument that realistically throws, so each fallback
+ * drops the options and keeps the member's locale.
+ *
+ * For relative time the same silence is the hazard rather than the cure. The
+ * quiet resolution above lands on the HOST default, which is not a fixed
+ * target: a server whose ICU lacks Somali served English while the browser
+ * served Somali, so SSR HTML and client output diverged and every Somali time
+ * node hydration-mismatched. Relative-time copy therefore lives in the
+ * dictionaries (`time.*`) and never touches Intl — giving server and client one
+ * data source on every runtime, whatever their ICU builds disagree about.
  */
 
 export function formatNumber(
@@ -23,22 +35,77 @@ export function formatNumber(
   try {
     return new Intl.NumberFormat(locale, options).format(value);
   } catch {
-    return new Intl.NumberFormat('en', options).format(value);
+    return formatNumberFallback(value, locale);
   }
 }
+
+/**
+ * Cold path. One rung: drop the caller's options, keep the member's locale.
+ * They are dropped wholesale rather than repaired because `currency` and `unit`
+ * are validated whatever `style` says, leaving no partial repair to attempt.
+ *
+ * It passes `undefined` rather than a defaults constant: Intl's own decimal
+ * default IS this product's number presentation (there is no counterpart to
+ * formatDate's `dateStyle: 'medium'` to encode), and a `{}` literal would
+ * inherit from Object.prototype, where a stray `style` key makes this throw too.
+ *
+ * The degradation is lossy and silent — a `{ style: 'percent' }` call that
+ * trips on some other option renders 0.5 as "0.5", not "50%": right digits,
+ * wrong scale. A caller needing its style honoured must validate its own
+ * options; this cannot do it for them.
+ */
+function formatNumberFallback(value: number, locale: Locale): string {
+  try {
+    return new Intl.NumberFormat(locale, undefined).format(value);
+  } catch {
+    // Reaching here already means the types were violated (a malformed tag cast
+    // to Locale, or a value that is not a number), so `value` is not trusted
+    // either: String() throws on anything with no usable primitive conversion —
+    // a null-prototype object, or a throwing toString.
+    return typeof value === 'number' ? String(value) : '—';
+  }
+}
+
+const DEFAULT_DATE_OPTIONS: Intl.DateTimeFormatOptions = { dateStyle: 'medium' };
 
 export function formatDate(
   value: Date | number,
   locale: Locale,
-  options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' },
+  options: Intl.DateTimeFormatOptions = DEFAULT_DATE_OPTIONS,
 ): string {
-  // An invalid Date makes Intl throw RangeError in BOTH branches below —
+  // An invalid Date makes Intl throw RangeError on every attempt below —
   // degrade instead: one bad timestamp must never crash a whole screen.
   if (!Number.isFinite(Number(value))) return '—';
   try {
     return new Intl.DateTimeFormat(locale, options).format(value);
   } catch {
-    return new Intl.DateTimeFormat('en', options).format(value);
+    return formatDateFallback(value, locale);
+  }
+}
+
+/**
+ * Cold path. One rung: drop the caller's options, keep the member's locale. A
+ * bad `timeZone` is the likeliest fault by far, since formatEventStart hands
+ * stored event timezones straight through and only the write path validates
+ * them — so this is the last line of defence for a row that predates that
+ * validation or arrived by seed, import or direct DB write.
+ *
+ * The degradation is lossier than it first looks, because options are dropped
+ * WHOLESALE rather than repaired. For the one options-passing caller in the
+ * tree (formatEventStart, which sends `dateStyle` + `timeStyle` + `timeZone`)
+ * that means the clock time does not shift — it DISAPPEARS: "04-Lul-2026 ee
+ * 12:00 GD" degrades to "04-Lul-2026". A reader loses the hour rather than
+ * being misled about it, which is the right way round, and it still beats a
+ * RangeError taking out a whole server-rendered screen. A caller that needs its
+ * options honoured has to validate them itself.
+ */
+function formatDateFallback(value: Date | number, locale: Locale): string {
+  try {
+    return new Intl.DateTimeFormat(locale, DEFAULT_DATE_OPTIONS).format(value);
+  } catch {
+    // Finite but out-of-range timestamps (|value| > 8.64e15) reach here: the
+    // guard in formatDate admits them, but `.format` rejects them anywhere.
+    return '—';
   }
 }
 
