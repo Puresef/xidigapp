@@ -1660,6 +1660,10 @@ export const en = {
     'No posts matched. Posts are Plaza conversations — intros, asks, wins and updates.',
   'search.emptyPostsCta': 'Go to the Plaza',
   'search.postsMembersOnly': 'Plaza posts are members-only. Sign in to search them.',
+  'search.resultsFor': '{label} · “{query}”',
+  'search.tabsLabel': 'Result types',
+  'search.emptyTitle': 'No matches for “{query}”',
+  'search.crossTabCta': 'See {count} in {label}',
 
   // Capital / Maal (§6/§17/§27). New launch-floor namespace — a trust surface.
   // Canonical terms Maalgeli (Invest) / Garab (Co-sign) are NOT redefined here;

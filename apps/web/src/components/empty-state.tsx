@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-import type { MessageKey } from '@xidig/i18n';
+import type { MessageKey, TranslateParams } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
 import { AnimatedMark } from '@/components/brand/animated-mark';
@@ -17,11 +17,14 @@ import { AnimatedMark } from '@/components/brand/animated-mark';
 export function EmptyState({
   titleKey,
   messageKey,
+  params,
   action,
   className,
 }: {
   titleKey?: MessageKey;
   messageKey: MessageKey;
+  /** Interpolation for the title and message — e.g. echoing a search term. */
+  params?: TranslateParams;
   action?: ReactNode;
   className?: string;
 }) {
@@ -32,8 +35,8 @@ export function EmptyState({
       <span className="xidig-empty__mark">
         <AnimatedMark mode="static" size={26} />
       </span>
-      {titleKey ? <h2 className="xidig-empty__title">{t(titleKey)}</h2> : null}
-      <p className="xidig-card__body">{t(messageKey)}</p>
+      {titleKey ? <h2 className="xidig-empty__title">{t(titleKey, params)}</h2> : null}
+      <p className="xidig-card__body">{t(messageKey, params)}</p>
       {action ?? null}
     </div>
   );

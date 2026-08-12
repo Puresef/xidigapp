@@ -152,14 +152,28 @@ function listing(id: string, ownerId: string | null): Row {
     id,
     owner_user_id: ownerId,
     business_name: `Biz ${id}`,
+    category_id: null,
     short_description: null,
     city: null,
     country: null,
     price_range: null,
+    verification_status: 'unverified',
     created_at: '2026-07-01T00:00:00Z',
     primary_photo_path: null,
     primary_photo_blurhash: null,
     primary_photo_alt: null,
+  };
+}
+
+function postRow(id: string, extra: Row = {}): Row {
+  return {
+    id,
+    author_user_id: 'u1',
+    title: 'Topic one',
+    type: 'update',
+    body: 'Body of the post.',
+    created_at: '2026-07-01T00:00:00Z',
+    ...extra,
   };
 }
 
@@ -419,9 +433,7 @@ describe('searchPosts', () => {
 
   it('member: published, non-lab posts under the caller RLS client only', async () => {
     const member = new FakeClient({
-      posts: [
-        [{ id: 'p1', title: 'Topic one', type: 'update', created_at: '2026-07-01T00:00:00Z' }],
-      ],
+      posts: [[postRow('p1')]],
     });
     const admin = new FakeClient();
     const results = await searchPosts(clientsOf(member, admin), 'topic');
@@ -429,8 +441,65 @@ describe('searchPosts', () => {
     const query = member.queryFor('posts');
     expect(query.has('eq', ['status', 'published'])).toBe(true);
     expect(query.has('is', ['lab_id', null])).toBe(true);
-    expect(admin.queryCount()).toBe(0);
+    // WHICH posts are visible is decided here and only here.
+    expect(admin.queryCount('posts')).toBe(0);
     expect(results.map((row) => row.id)).toEqual(['p1']);
+  });
+
+  it('hydrates byline, tags and reply counts for the rows RLS already returned', async () => {
+    const member = new FakeClient({ posts: [[postRow('p1')]] });
+    const admin = new FakeClient({
+      profiles: [
+        [
+          {
+            user_id: 'u1',
+            display_name: 'Ayaan Warsame',
+            handle: 'ayaan',
+            location_city: 'Toronto',
+            avatar_path: null,
+            avatar_blurhash: null,
+            verification_status: 'identity_verified',
+          },
+        ],
+      ],
+      post_tags: [[{ post_id: 'p1', tags: { id: 't1', name: 'warbixin' } }]],
+      comments: [
+        [
+          { post_id: 'p1', author_user_id: 'u2', body: 'first', created_at: '2026-07-02T00:00:00Z' },
+          { post_id: 'p1', author_user_id: 'u3', body: 'second', created_at: '2026-07-03T00:00:00Z' },
+        ],
+      ],
+    });
+
+    const [post] = await searchPosts(clientsOf(member, admin), 'topic');
+
+    expect(post?.author?.handle).toBe('ayaan');
+    expect(post?.author?.verificationStatus).toBe('identity_verified');
+    expect(post?.tags.map((tag) => tag.name)).toEqual(['warbixin']);
+    expect(post?.replyCount).toBe(2);
+    // Hydration is keyed to the returned ids, never a table-wide scan.
+    expect(admin.queryFor('comments').has('in', ['post_id', ['p1']])).toBe(true);
+    expect(admin.queryFor('post_tags').has('in', ['post_id', ['p1']])).toBe(true);
+  });
+
+  it('renders a row whose author, tags and replies are all absent', async () => {
+    const member = new FakeClient({ posts: [[postRow('p1')]] });
+    const admin = new FakeClient();
+    const [post] = await searchPosts(clientsOf(member, admin), 'topic');
+
+    expect(post?.author).toBeNull();
+    expect(post?.tags).toEqual([]);
+    expect(post?.replyCount).toBe(0);
+  });
+
+  it('flattens and caps the body preview', async () => {
+    const member = new FakeClient({
+      posts: [[postRow('p1', { body: `line one\n\n  line two ${'x'.repeat(900)}` })]],
+    });
+    const [post] = await searchPosts(clientsOf(member, new FakeClient()), 'topic');
+
+    expect(post?.body.startsWith('line one line two')).toBe(true);
+    expect(post?.body).toHaveLength(600);
   });
 });
 

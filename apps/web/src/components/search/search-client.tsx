@@ -8,14 +8,13 @@ import type { MessageKey } from '@xidig/i18n';
 
 import { ApiRequestError, apiGet } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
-import { CHROME_KEYS, STAGE_KEYS } from '@/lib/labs/labels';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { PlainErrorBanner } from '../auth/plain-error';
-import { LoadingComet } from '@/components/loading-comet';
-import { Avatar } from '../media/avatar';
+import { EmptyState } from '@/components/empty-state';
 import { LiteMediaProvider } from '../media/lite-media-provider';
 import { LiteShowAll } from '../media/lite-show-all';
-import { MediaSlot } from '../media/media-slot';
+import { ListingRow, PersonRow, PostRow, SpaceRow } from './result-rows';
+import type { SearchResults } from './types';
 
 /**
  * Global search (Phase 4.5 DISCOVERY, extras item 3): one box, one fetch,
@@ -28,8 +27,12 @@ import { MediaSlot } from '../media/media-slot';
  * links, not client state, so a tab is itself a shareable link. Switching
  * tabs never refetches: the API returns all four groups in one response.
  *
- * Sorting is transparent and labeled next to every group (newest first;
- * Spaces by latest activity) — never a hidden ranking.
+ * Each group renders as ONE card of hairline-separated link rows, and the
+ * member's own term is marked in place inside the row content (never inside
+ * our own copy — a term appearing in UI text is not a hit). Sorting stays
+ * transparent and labeled next to every group; it is never a hidden ranking,
+ * and the label is a statement rather than a control, because there is no
+ * second order to switch to.
  *
  * Works signed-out: the API serves public projections; posts (members-only,
  * §28) come back empty, so a visitor sees a sign-in hint instead.
@@ -39,64 +42,6 @@ export type SearchTab = 'all' | 'people' | 'listings' | 'labs' | 'posts';
 
 const MIN_QUERY_LENGTH = 2;
 const GROUP_LIMIT = 5;
-
-interface SearchPerson {
-  userId: string;
-  displayName: string;
-  handle: string;
-  locationCity: string | null;
-  locationCountry: string | null;
-  verificationStatus: string;
-  avatarThumbUrl: string | null;
-  avatarBlurhash: string | null;
-}
-
-interface SearchListing {
-  id: string;
-  businessName: string;
-  shortDescription: string | null;
-  city: string | null;
-  country: string | null;
-  priceRange: number | null;
-  photoUrl: string | null;
-  photoThumbUrl: string | null;
-  photoBlurhash: string | null;
-  photoAlt: string | null;
-}
-
-interface SearchLab {
-  id: string;
-  name: string;
-  slug: string;
-  spaceMode: string;
-  shortDescription: string | null;
-  stage: string;
-}
-
-interface SearchPost {
-  id: string;
-  title: string;
-  type: string;
-  createdAt: string;
-}
-
-interface SearchResults {
-  people: SearchPerson[];
-  listings: SearchListing[];
-  labs: SearchLab[];
-  posts: SearchPost[];
-}
-
-const POST_TYPE_KEYS: Record<string, MessageKey> = {
-  intro: 'plaza.typeIntro',
-  ask: 'plaza.typeAsk',
-  win: 'plaza.typeWin',
-  update: 'plaza.typeUpdate',
-  poll: 'plaza.typePoll',
-};
-
-/** Thumb WebP (480px pipeline) — the only asset a result row ever loads. */
-const LISTING_THUMB_EST_BYTES = 30_000;
 
 const ENTITY_TABS = ['people', 'listings', 'labs', 'posts'] as const;
 type EntityTab = (typeof ENTITY_TABS)[number];
@@ -128,8 +73,29 @@ const EMPTY_KEYS: Record<EntityTab, { body: MessageKey; cta: MessageKey; href: s
   posts: { body: 'search.emptyPosts', cta: 'search.emptyPostsCta', href: '/plaza' },
 };
 
+function InfoIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5" />
+      <path d="M12 8h.01" />
+    </svg>
+  );
+}
+
 function Group({
   title,
+  count,
   sortNote,
   moreHref,
   moreLabel,
@@ -137,6 +103,7 @@ function Group({
   children,
 }: {
   title: string;
+  count: number;
   sortNote: string;
   moreHref: string;
   moreLabel: string;
@@ -147,7 +114,11 @@ function Group({
     <section className="xidig-search-group">
       <div className="xidig-search-group__header">
         <h2 className="xidig-section__title">{title}</h2>
-        <span className="xidig-card__meta">{sortNote}</span>
+        <span className="xidig-search-group__count">{count}</span>
+        {/* The order is always stated, even when "See more" joins it — a
+            capped group is exactly where a reader most needs to know what
+            the five they can see were picked by. */}
+        <span className="xidig-search-group__sort">{sortNote}</span>
         {showMore ? (
           <Link className="xidig-search-group__more" href={moreHref}>
             {moreLabel}
@@ -156,6 +127,37 @@ function Group({
       </div>
       <ul className="xidig-search-list">{children}</ul>
     </section>
+  );
+}
+
+/** Loading shell: the tab strip and three rows, same footprint as the
+    results that replace them, so nothing jumps when the fetch lands. */
+function ResultsSkeleton() {
+  return (
+    <div className="xidig-search-skeleton">
+      <div className="xidig-search-skeleton__tabs">
+        {[84, 110, 130, 104, 96].map((width) => (
+          <span key={width} className="xidig-skeleton xidig-skeleton--chip" style={{ width }} />
+        ))}
+      </div>
+      {[42, 55, 38].map((lead) => (
+        <div key={lead} className="xidig-skeleton-card">
+          <div className="xidig-search-skeleton__row">
+            <span className="xidig-skeleton xidig-skeleton--avatar" />
+            <div className="xidig-search-skeleton__lines">
+              <span
+                className="xidig-skeleton xidig-skeleton--text"
+                style={{ width: `${lead}%` }}
+              />
+              <span
+                className="xidig-skeleton xidig-skeleton--text"
+                style={{ width: `${lead + 30}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -240,103 +242,21 @@ export function SearchClient({
   };
   const total = counts.people + counts.listings + counts.labs + counts.posts;
 
-  function renderPerson(person: SearchPerson): ReactNode {
-    return (
-      <li key={person.userId} className="xidig-search-row">
-        <Avatar
-          name={person.displayName}
-          handle={person.handle}
-          src={person.avatarThumbUrl}
-          blurhash={person.avatarBlurhash}
-          size={40}
-          prefs={prefs}
-        />
-        <div className="xidig-search-row__body">
-          <p className="xidig-search-row__title">
-            <Link href={`/u/${person.handle}`}>{person.displayName}</Link>
-          </p>
-          <p className="xidig-card__meta">
-            @{person.handle}
-            {person.locationCity || person.locationCountry
-              ? ` · ${[person.locationCity, person.locationCountry].filter(Boolean).join(', ')}`
-              : ''}
-          </p>
-        </div>
-      </li>
-    );
-  }
-
-  function renderListing(listing: SearchListing): ReactNode {
-    return (
-      <li key={listing.id} className="xidig-search-row">
-        {listing.photoThumbUrl ? (
-          <MediaSlot
-            kind="image"
-            src={listing.photoThumbUrl}
-            blurhash={listing.photoBlurhash}
-            alt={listing.photoAlt ?? listing.businessName}
-            estBytes={LISTING_THUMB_EST_BYTES}
-            prefs={prefs}
-            className="xidig-search-row__thumb"
-          />
-        ) : null}
-        <div className="xidig-search-row__body">
-          <p className="xidig-search-row__title">
-            <Link href={`/l/${listing.id}`}>{listing.businessName}</Link>
-          </p>
-          <p className="xidig-card__meta">
-            {[listing.city, listing.country].filter(Boolean).join(', ')}
-            {listing.priceRange ? ` · ${'$'.repeat(listing.priceRange)}` : ''}
-          </p>
-          {listing.shortDescription ? (
-            <p className="xidig-card__meta">{listing.shortDescription}</p>
-          ) : null}
-        </div>
-      </li>
-    );
-  }
-
-  function renderLab(lab: SearchLab): ReactNode {
-    return (
-      <li key={lab.id} className="xidig-search-row">
-        <div className="xidig-search-row__body">
-          <p className="xidig-search-row__title">
-            <Link href={`/labs/${lab.slug}`}>{lab.name}</Link>{' '}
-            <span className="xidig-tag">
-              {lab.spaceMode === 'club' || lab.spaceMode === 'lab'
-                ? t(CHROME_KEYS[lab.spaceMode])
-                : lab.spaceMode}
-            </span>
-          </p>
-          <p className="xidig-card__meta">
-            {lab.stage in STAGE_KEYS ? t(STAGE_KEYS[lab.stage as keyof typeof STAGE_KEYS]) : lab.stage}
-            {lab.shortDescription ? ` · ${lab.shortDescription}` : ''}
-          </p>
-        </div>
-      </li>
-    );
-  }
-
-  function renderPost(post: SearchPost): ReactNode {
-    return (
-      <li key={post.id} className="xidig-search-row">
-        <div className="xidig-search-row__body">
-          <p className="xidig-search-row__title">
-            <Link href={`/p/${post.id}`}>{post.title}</Link>{' '}
-            {POST_TYPE_KEYS[post.type] ? (
-              <span className="xidig-tag">{t(POST_TYPE_KEYS[post.type]!)}</span>
-            ) : null}
-          </p>
-        </div>
-      </li>
-    );
-  }
-
   const GROUP_ROWS: Record<EntityTab, () => ReactNode> = {
-    people: () => results?.people.map(renderPerson),
-    listings: () => results?.listings.map(renderListing),
-    labs: () => results?.labs.map(renderLab),
-    posts: () => results?.posts.map(renderPost),
+    people: () =>
+      results?.people.map((person) => (
+        <PersonRow key={person.userId} person={person} query={searched} prefs={prefs} />
+      )),
+    listings: () =>
+      results?.listings.map((listing) => (
+        <ListingRow key={listing.id} listing={listing} query={searched} prefs={prefs} />
+      )),
+    labs: () =>
+      results?.labs.map((lab) => <SpaceRow key={lab.id} lab={lab} query={searched} />),
+    posts: () =>
+      results?.posts.map((post) => (
+        <PostRow key={post.id} post={post} query={searched} prefs={prefs} />
+      )),
   };
 
   /** People/business "See more" carries the query to the owning surface. */
@@ -348,36 +268,63 @@ export function SearchClient({
     return '/plaza';
   }
 
+  /** The fullest other tab, so an empty tab can point somewhere useful. */
+  function bestOtherTab(tab: EntityTab): EntityTab | null {
+    const others = ENTITY_TABS.filter((other) => other !== tab && counts[other] > 0);
+    if (others.length === 0) return null;
+    return others.reduce((best, other) => (counts[other] > counts[best] ? other : best));
+  }
+
   function renderTabEmpty(tab: EntityTab): ReactNode {
     // Posts are members-only (§28): a visitor's empty posts tab is a
     // sign-in teach, not a "no matches".
     if (tab === 'posts' && !signedIn) {
       return (
-        <div className="xidig-card xidig-search-teach">
-          <p className="xidig-card__body">{t('search.postsMembersOnly')}</p>
-          <p>
+        <EmptyState
+          messageKey="search.postsMembersOnly"
+          action={
             <Link className="xidig-button xidig-button--primary" href="/signin">
               {t('action.signIn')}
             </Link>
-          </p>
-        </div>
+          }
+        />
       );
     }
     const empty = EMPTY_KEYS[tab];
+    // Prefer the cross-tab jump: a search that found nothing HERE but three
+    // posts elsewhere should say so, rather than send the member browsing.
+    const elsewhere = bestOtherTab(tab);
     return (
-      <div className="xidig-card xidig-search-teach">
-        <p className="xidig-card__body">{t(empty.body)}</p>
-        <p>
-          <Link className="xidig-button xidig-button--secondary" href={empty.href}>
-            {t(empty.cta)}
-          </Link>
-        </p>
-      </div>
+      <EmptyState
+        titleKey="search.emptyTitle"
+        messageKey={empty.body}
+        params={{ query: searched }}
+        action={
+          elsewhere ? (
+            <Link
+              className="xidig-button xidig-button--secondary"
+              href={searchHref(searched, elsewhere)}
+            >
+              {t('search.crossTabCta', {
+                count: counts[elsewhere],
+                label: t(TAB_LABEL_KEYS[elsewhere]),
+              })}
+            </Link>
+          ) : (
+            <Link className="xidig-button xidig-button--secondary" href={empty.href}>
+              {t(empty.cta)}
+            </Link>
+          )
+        }
+      />
     );
   }
 
+  const activeLabel =
+    activeTab === 'all' ? t('search.tabAll') : t(TAB_LABEL_KEYS[activeTab as EntityTab]);
+
   return (
-    <div>
+    <div className="xidig-search">
       <form className="xidig-toolbar" onSubmit={onSubmit} role="search">
         <div className="xidig-field xidig-field--grow">
           <label className="xidig-field__label" htmlFor="global-search-q">
@@ -407,7 +354,7 @@ export function SearchClient({
         </p>
       ) : null}
       {error ? <PlainErrorBanner error={error} /> : null}
-      {pending ? <LoadingComet /> : null}
+      {pending ? <ResultsSkeleton /> : null}
 
       {/* Teaching empty state: what one box can find, before any search. */}
       {!results && !pending && !error && !tooShort ? (
@@ -423,14 +370,20 @@ export function SearchClient({
           {/* Lite coordination for result thumbs (listing rows are MediaSlots):
               deferred slots join a page-level "N hidden — Show all". */}
           <LiteMediaProvider>
-            {/* Entity tabs — plain links (?type=), shareable, no client state. */}
-            <div className="xidig-tabs">
+            <p className="xidig-search-eyebrow">
+              {t('search.resultsFor', { label: activeLabel, query: searched })}
+            </p>
+            {/* Entity tabs — plain links (?type=), shareable, no client state.
+                A nav landmark, not a tablist: these navigate, they do not
+                switch panels, and announcing a tab widget would promise
+                arrow-key behavior that links correctly do not have. */}
+            <nav className="xidig-tabs" aria-label={t('search.tabsLabel')}>
               <Link
                 className="xidig-tabs__tab"
                 href={searchHref(searched, 'all')}
                 aria-current={activeTab === 'all' ? 'page' : undefined}
               >
-                {t('search.tabAll')} ({total})
+                {t('lab.tabWithCount', { label: t('search.tabAll'), count: total })}
               </Link>
               {ENTITY_TABS.map((tab) => (
                 <Link
@@ -439,26 +392,38 @@ export function SearchClient({
                   href={searchHref(searched, tab)}
                   aria-current={activeTab === tab ? 'page' : undefined}
                 >
-                  {t(TAB_LABEL_KEYS[tab])} ({counts[tab]})
+                  {t('lab.tabWithCount', { label: t(TAB_LABEL_KEYS[tab]), count: counts[tab] })}
                 </Link>
               ))}
-            </div>
-            <p className="xidig-card__meta">{t('search.sortTransparency')}</p>
+            </nav>
+            <p className="xidig-search-note">
+              <InfoIcon />
+              {t('search.sortTransparency')}
+            </p>
             <LiteShowAll />
 
             {activeTab === 'all' ? (
               total === 0 ? (
-                <div className="xidig-card xidig-search-teach">
-                  <p className="xidig-card__body">{t('search.noResults')}</p>
-                  {!signedIn ? (
-                    <p className="xidig-card__meta">{t('search.signInForMore')}</p>
-                  ) : null}
-                </div>
+                <EmptyState
+                  titleKey="search.emptyTitle"
+                  messageKey="search.noResults"
+                  params={{ query: searched }}
+                  {...(signedIn
+                    ? {}
+                    : {
+                        action: (
+                          <Link className="xidig-button xidig-button--secondary" href="/signin">
+                            {t('action.signIn')}
+                          </Link>
+                        ),
+                      })}
+                />
               ) : (
                 ENTITY_TABS.filter((tab) => counts[tab] > 0).map((tab) => (
                   <Group
                     key={tab}
                     title={t(TAB_LABEL_KEYS[tab])}
+                    count={counts[tab]}
                     sortNote={t(SORT_KEYS[tab])}
                     moreHref={moreHrefFor(tab)}
                     moreLabel={t('search.seeMore')}
@@ -473,6 +438,7 @@ export function SearchClient({
             ) : (
               <Group
                 title={t(TAB_LABEL_KEYS[activeTab])}
+                count={counts[activeTab]}
                 sortNote={t(SORT_KEYS[activeTab])}
                 moreHref={moreHrefFor(activeTab)}
                 moreLabel={t('search.seeMore')}

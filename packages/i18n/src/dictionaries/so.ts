@@ -1582,6 +1582,10 @@ export const so = {
   'search.emptyPostsCta': 'Tag Madasha',
   'search.postsMembersOnly':
     'Qoraallada Madashu waxay u muuqdaan xubnaha keliya. Gal si aad u raadiso.',
+  'search.resultsFor': '{label} · “{query}”',
+  'search.tabsLabel': 'Noocyada natiijada',
+  'search.emptyTitle': 'Wax lama helin “{query}”',
+  'search.crossTabCta': 'Fiiri {count} ee {label}',
 
   // Capital / Maal (§6/§17/§27). Launch-floor — trust surface, full SO.
   // Maalgeli (Invest) / Garab (Co-sign) reuse term.maalgeli / term.garab /

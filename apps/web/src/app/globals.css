@@ -4180,45 +4180,308 @@ a.xidig-capital-entry:active {
 
 /* ===== from discovery agent ===== */
 
-/* Phase 4.5 DISCOVERY — /search grouped results */
+/* Phase 4.5 DISCOVERY — /search grouped results
+   Results-screen spec: each group is ONE card whose rows are hairline-
+   separated link surfaces, so a group reads as a single object rather than
+   a stack of floating rows. The matched term is marked in place. */
 
-.xidig-search-group { margin-top: var(--x-space-l); }
+/* The page shell is a grid, and a grid item's default min-width:auto refuses
+   to shrink below min-content — which the nowrap snippet lines make enormous.
+   Without this the whole results column pushes the page into a sideways
+   scroll instead of ellipsising. */
+.xidig-search {
+  min-width: 0;
+}
 
-.xidig-search-group__header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--x-space-s); }
+/* Eyebrow over the tab strip: names the view and echoes the term back, so a
+   shared /search?q= link says what it is before the results paint. */
+.xidig-search-eyebrow {
+  display: inline-flex;
+  padding: 4px 12px;
+  border-radius: var(--x-radius-pill);
+  border: 1px solid var(--x-border);
+  color: var(--x-muted);
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-.xidig-search-group__more { font-size: var(--x-text-m); white-space: nowrap; }
+/* Sort transparency, with the info glyph — sits directly under the tabs. */
+.xidig-search-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--x-space-s) 2px 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+}
 
-.xidig-search-list { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+.xidig-search-note svg {
+  flex: none;
+}
 
-.xidig-search-row { display: flex; align-items: flex-start; gap: var(--x-space-s); padding: 0.6rem 0; border-top: 1px solid var(--x-border); }
+.xidig-search-group {
+  margin-top: var(--x-space-l);
+}
 
-.xidig-search-row:first-child { border-top: 0; }
+.xidig-search-group__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--x-space-xs);
+  margin: 0 2px;
+}
 
-.xidig-search-row__body { min-width: 0; flex: 1; }
+.xidig-search-group__count {
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+}
 
-.xidig-search-row__title { margin: 0; overflow-wrap: anywhere; }
+/* The sort label trails the header; "See more" trails the sort label. */
+.xidig-search-group__more,
+.xidig-search-group__sort {
+  font-size: var(--x-text-s);
+  white-space: nowrap;
+}
 
-.xidig-search-row__thumb { width: 56px; flex: 0 0 56px; border-radius: calc(var(--x-radius) / 2); overflow: hidden; }
+.xidig-search-group__sort {
+  margin-left: auto;
+  color: var(--x-muted);
+}
+
+/* The group card. The list IS the card: rows can then paint their hover to
+   the card's edge without a padding gutter breaking the sweep. */
+.xidig-search-list {
+  list-style: none;
+  margin: 0.625rem 0 0;
+  padding: 0;
+  min-width: 0;
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  overflow: hidden;
+}
+
+.xidig-search-row + .xidig-search-row {
+  border-top: 1px solid var(--x-border);
+}
+
+.xidig-search-row__link {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-s);
+  padding: 14px 16px;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --x-bg, not --x-surface-2: the two are the same white in light mode, so a
+   surface-2 hover is invisible there. Same tint .xidig-dm-row and
+   .xidig-notif__link already use for a row inside a card. */
+.xidig-search-row__link:hover {
+  background: var(--x-bg);
+}
+
+.xidig-search-row__link:active {
+  background: color-mix(in srgb, var(--x-bg) 70%, var(--x-border));
+}
+
+.xidig-search-row__link:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: -2px;
+}
+
+/* Post rows stack byline / title / excerpt / footer instead of a media row. */
+.xidig-search-row__link--stacked {
+  display: block;
+  padding: 14px 16px;
+}
+
+.xidig-search-row__body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.xidig-search-row__title {
+  margin: 0;
+  font-size: var(--x-text-body);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Identity line and one-line context: both truncate rather than wrap, so a
+   row keeps its height whatever the copy length (Somali runs ~130% of EN). */
+.xidig-search-row__meta,
+.xidig-search-row__snippet {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+}
+
+.xidig-search-row__snippet {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xidig-search-row__thumb {
+  width: 56px;
+  flex: 0 0 56px;
+  border-radius: calc(var(--x-radius) / 2);
+  overflow: hidden;
+}
 
 /* Compact Lite placeholder inside a 56px row thumb: keep the Show button
    (it carries an aria-label with the alt), drop the text that cannot fit. */
 
-.xidig-search-row__thumb .xidig-media-slot__overlay { padding: 2px; gap: 2px; }
+.xidig-search-row__thumb .xidig-media-slot__overlay {
+  padding: 2px;
+  gap: 2px;
+}
 
 .xidig-search-row__thumb .xidig-media-slot__label,
-.xidig-search-row__thumb .xidig-media-slot__size { display: none; }
+.xidig-search-row__thumb .xidig-media-slot__size {
+  display: none;
+}
 
-.xidig-search-teach { margin-top: 1rem; }
+/* --- Post result rows --- */
 
+/* Wraps rather than crushes: at 375px a Somali byline is a name, a handle, a
+   city and "4 saacadood ka hor" — squeezing all four into one row turns each
+   into a two-word column. Wrapping lets the meta take its own line. */
+.xidig-search-post__byline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--x-space-2xs) 10px;
+  min-width: 0;
+}
+
+.xidig-search-post__byline .xidig-byline__name {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Never breaks mid-word — a chip reading "War" is a different word. */
+.xidig-search-post__type {
+  margin-left: auto;
+  flex: none;
+  white-space: nowrap;
+}
+
+.xidig-search-post__title {
+  display: block;
+  margin: var(--x-space-xs) 0 0;
+  font-size: var(--x-text-body);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.xidig-search-post__excerpt {
+  margin: 4px 0 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+  line-height: 1.55;
+}
+
+.xidig-search-post__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  margin-top: 10px;
+}
+
+.xidig-search-post__replies {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  flex: none;
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+}
+
+/* The matched run, marked in place. Accent tint + accent ink is the pairing
+   the contrast gate already asserts; the browser default (yellow/black)
+   would ignore the palette and fail in dark mode. */
+.xidig-search-mark {
+  background: var(--x-accent-soft);
+  color: var(--x-accent-text);
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+.xidig-search-teach {
+  margin-top: 1rem;
+}
+
+/* Loading shell: the tab strip and three result rows, same footprint as the
+   content that replaces them. */
+.xidig-search-skeleton__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--x-space-xs);
+  margin-top: 1rem;
+}
+
+.xidig-search-skeleton__row {
+  display: flex;
+  gap: var(--x-space-s);
+  align-items: center;
+}
+
+.xidig-search-skeleton__lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--x-space-xs);
+}
 
 /* ============================================================================
    Phase 5 — Capital / Maal
    ============================================================================ */
 /* --- Modal — the shared Dialog primitive (components/dialog.tsx) --- */
-.xidig-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(0,0,0,0.5); }
-.xidig-modal__panel { position: relative; width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto; background: var(--x-surface-2); border-radius: var(--x-radius); padding: 1.25rem; box-shadow: var(--x-shadow-2); }
-.xidig-modal__title { font-size: 1.15rem; font-weight: 600; margin-bottom: var(--x-space-xs); padding-inline-end: 2.25rem; }
-.xidig-modal__actions { display: flex; flex-wrap: wrap; gap: var(--x-space-xs); margin-top: 1rem; }
+.xidig-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+}
+.xidig-modal__panel {
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--x-surface-2);
+  border-radius: var(--x-radius);
+  padding: 1.25rem;
+  box-shadow: var(--x-shadow-2);
+}
+.xidig-modal__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: var(--x-space-xs);
+  padding-inline-end: 2.25rem;
+}
+.xidig-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--x-space-xs);
+  margin-top: 1rem;
+}
 
 /* Task 4 (31 Jul) — Dialog primitive chrome. Panel text rides the
    --x-fg/--x-surface-2 pair (AA-gated in globals-tokens.test.ts); the

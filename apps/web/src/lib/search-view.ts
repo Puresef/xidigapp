@@ -3,6 +3,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@xidig/db';
 
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
+import {
+  aggregateComments,
+  fetchAuthors,
+  type CommentAggregateRow,
+} from '@/lib/plaza/views';
 import { applyLocationGranularity } from '@/lib/profile-view';
 import { normalizeSearchName } from '@/lib/search-norm';
 
@@ -83,9 +88,10 @@ async function loadAccountFlags(
 
 // --- People ------------------------------------------------------------
 
+/** `bio` rides the member view only — it is the result row's context line. */
 export const SEARCH_PEOPLE_MEMBER_COLUMNS =
-  'user_id, display_name, handle, location_city, location_country, verification_status, created_at, avatar_path, avatar_blurhash';
-/** Anonymous projection: identity only — no location (share-page parity). */
+  'user_id, display_name, handle, bio, location_city, location_country, verification_status, created_at, avatar_path, avatar_blurhash';
+/** Anonymous projection: identity only — no location, no bio (share-page parity). */
 export const SEARCH_PEOPLE_PUBLIC_COLUMNS =
   'user_id, display_name, handle, verification_status, created_at, avatar_path, avatar_blurhash';
 
@@ -93,6 +99,7 @@ interface PersonRow {
   user_id: string;
   display_name: string;
   handle: string;
+  bio?: string | null;
   location_city?: string | null;
   location_country?: string | null;
   verification_status: string;
@@ -105,6 +112,8 @@ export interface SearchPerson {
   userId: string;
   displayName: string;
   handle: string;
+  /** Member view only — the visitor projection stays identity-only. */
+  bio: string | null;
   locationCity: string | null;
   locationCountry: string | null;
   verificationStatus: string;
@@ -207,6 +216,7 @@ export async function searchPeople(clients: SearchClients, q: string): Promise<S
     userId: row.user_id,
     displayName: row.display_name,
     handle: row.handle,
+    bio: anon ? null : (row.bio ?? null),
     locationCity: anon ? null : (row.location_city ?? null),
     locationCountry: anon ? null : (row.location_country ?? null),
     verificationStatus: row.verification_status,
@@ -219,16 +229,18 @@ export async function searchPeople(clients: SearchClients, q: string): Promise<S
 
 /** owner_user_id rides for the server-side active-owner gate only. */
 export const SEARCH_LISTING_COLUMNS =
-  'id, owner_user_id, business_name, short_description, city, country, price_range, created_at, primary_photo_path, primary_photo_blurhash, primary_photo_alt';
+  'id, owner_user_id, business_name, category_id, short_description, city, country, price_range, verification_status, created_at, primary_photo_path, primary_photo_blurhash, primary_photo_alt';
 
 interface ListingRow {
   id: string;
   owner_user_id: string | null;
   business_name: string;
+  category_id: string | null;
   short_description: string | null;
   city: string | null;
   country: string | null;
   price_range: number | null;
+  verification_status: string;
   created_at: string;
   primary_photo_path: string | null;
   primary_photo_blurhash: string | null;
@@ -238,14 +250,39 @@ interface ListingRow {
 export interface SearchListing {
   id: string;
   businessName: string;
+  /** Both names travel; the client picks by locale (listing-view parity). */
+  categoryName: { en: string; so: string | null } | null;
   shortDescription: string | null;
   city: string | null;
   country: string | null;
   priceRange: number | null;
+  verificationStatus: string;
   photoUrl: string | null;
   photoThumbUrl: string | null;
   photoBlurhash: string | null;
   photoAlt: string | null;
+}
+
+/**
+ * Category names for the surviving rows. Rides the SAME client as the listing
+ * query — the caller's RLS on the member path (listing_categories has a
+ * select-for-authenticated policy), the service role for visitors — so the
+ * member path still issues no service-role query at all. A missing row simply
+ * leaves the category line off the result.
+ */
+async function loadCategoryNames(
+  client: AnyClient,
+  categoryIds: string[],
+): Promise<Map<string, { en: string; so: string | null }>> {
+  const names = new Map<string, { en: string; so: string | null }>();
+  if (categoryIds.length === 0) return names;
+  const { data, error } = await client
+    .from('listing_categories')
+    .select('id, name_en, name_so')
+    .in('id', categoryIds);
+  if (error) throw new Error(`category lookup failed: ${error.message}`);
+  for (const row of data ?? []) names.set(row.id, { en: row.name_en, so: row.name_so });
+  return names;
 }
 
 export async function searchListings(clients: SearchClients, q: string): Promise<SearchListing[]> {
@@ -294,13 +331,20 @@ export async function searchListings(clients: SearchClients, q: string): Promise
       .slice(0, SEARCH_GROUP_LIMIT);
   }
 
+  const categories = await loadCategoryNames(
+    client,
+    [...new Set(rows.map((row) => row.category_id).filter((id): id is string => id !== null))],
+  );
+
   return rows.map((row) => ({
     id: row.id,
     businessName: row.business_name,
+    categoryName: row.category_id ? (categories.get(row.category_id) ?? null) : null,
     shortDescription: row.short_description,
     city: row.city,
     country: row.country,
     priceRange: row.price_range,
+    verificationStatus: row.verification_status,
     photoUrl: row.primary_photo_path ? publicMediaUrl(row.primary_photo_path) : null,
     photoThumbUrl: row.primary_photo_path
       ? publicMediaUrl(derivedThumbPath(row.primary_photo_path))
@@ -332,6 +376,29 @@ export interface SearchLab {
   spaceMode: string;
   shortDescription: string | null;
   stage: string;
+  memberCount: number;
+}
+
+/**
+ * Active-member counts for the result Spaces. Service role, ids in / count
+ * out — a headcount carries no roster, which is why /api/labs already serves
+ * one for Spaces whose member list is hidden. Aggregated in JS rather than
+ * with `count: 'exact'` so the shape stays a plain row fetch.
+ */
+async function loadLabMemberCounts(
+  admin: AnyClient,
+  labIds: string[],
+): Promise<Map<string, number>> {
+  const counts = new Map<string, number>();
+  if (labIds.length === 0) return counts;
+  const { data, error } = await admin
+    .from('lab_members')
+    .select('lab_id')
+    .in('lab_id', labIds)
+    .eq('status', 'active');
+  if (error) throw new Error(`member count lookup failed: ${error.message}`);
+  for (const row of data ?? []) counts.set(row.lab_id, (counts.get(row.lab_id) ?? 0) + 1);
+  return counts;
 }
 
 export async function searchLabs(clients: SearchClients, q: string): Promise<SearchLab[]> {
@@ -374,35 +441,105 @@ export async function searchLabs(clients: SearchClients, q: string): Promise<Sea
     .limit(SEARCH_GROUP_LIMIT);
   if (error) throw new Error(`lab search failed: ${error.message}`);
 
-  return ((data ?? []) as unknown as LabSearchRow[]).map((row) => ({
+  const rows = (data ?? []) as unknown as LabSearchRow[];
+  const counts = await loadLabMemberCounts(
+    clients.admin,
+    rows.map((row) => row.id),
+  );
+
+  return rows.map((row) => ({
     id: row.id,
     name: row.name,
     slug: row.slug,
     spaceMode: row.space_mode,
     shortDescription: row.short_description,
     stage: row.stage,
+    memberCount: counts.get(row.id) ?? 0,
   }));
 }
 
 // --- Posts -------------------------------------------------------------
+
+/** Body preview budget. Five rows only, so a generous window costs nothing. */
+export const SEARCH_POST_BODY_MAX = 600;
+
+export interface SearchPostAuthor {
+  displayName: string;
+  handle: string;
+  locationCity: string | null;
+  avatarThumbUrl: string | null;
+  avatarBlurhash: string | null;
+  verificationStatus: string;
+}
 
 export interface SearchPost {
   id: string;
   title: string;
   type: string;
   createdAt: string;
+  /** Whitespace-flattened body head — the row windows it around the match. */
+  body: string;
+  author: SearchPostAuthor | null;
+  tags: { id: string; name: string }[];
+  replyCount: number;
+}
+
+/** Post rows fetched under the caller's RLS, before hydration. */
+interface PostSearchRow {
+  id: string;
+  author_user_id: string;
+  title: string | null;
+  type: string;
+  body: string;
+  created_at: string;
+}
+
+async function loadPostTags(
+  admin: AnyClient,
+  postIds: string[],
+): Promise<Map<string, { id: string; name: string }[]>> {
+  const tagsByPost = new Map<string, { id: string; name: string }[]>();
+  if (postIds.length === 0) return tagsByPost;
+  const { data, error } = await admin
+    .from('post_tags')
+    .select('post_id, tags ( id, name )')
+    .in('post_id', postIds);
+  if (error) throw new Error(`post tags hydration failed: ${error.message}`);
+  for (const row of data ?? []) {
+    const tag = row.tags as unknown as { id: string; name: string } | null;
+    if (!tag) continue;
+    tagsByPost.set(row.post_id, [...(tagsByPost.get(row.post_id) ?? []), tag]);
+  }
+  return tagsByPost;
+}
+
+/** Published-reply rows for the result posts; counted in JS by aggregateComments. */
+async function loadReplyRows(
+  admin: AnyClient,
+  postIds: string[],
+): Promise<CommentAggregateRow[]> {
+  if (postIds.length === 0) return [];
+  const { data, error } = await admin
+    .from('comments')
+    .select('post_id, author_user_id, body, created_at')
+    .in('post_id', postIds)
+    .eq('status', 'published');
+  if (error) throw new Error(`reply count lookup failed: ${error.message}`);
+  return (data ?? []) as unknown as CommentAggregateRow[];
 }
 
 export async function searchPosts(clients: SearchClients, q: string): Promise<SearchPost[]> {
   // Posts are members-only in v1 (§28) — visitors get an empty group without
-  // a query ever being issued (the strongest non-leak guarantee).
+  // a query ever being issued (the strongest non-leak guarantee). EVERY
+  // hydration below sits after this return, so the anonymous path still
+  // touches no client at all.
   if (clients.member === null) return [];
   const term = sanitizeTerm(q);
   if (!term) return [];
 
   const { data, error } = await clients.member
     .from('posts')
-    .select('id, title, type, created_at')
+    .select('id, author_user_id, title, type, body, created_at')
     .eq('status', 'published')
     .is('lab_id', null)
     .not('title', 'is', null)
@@ -411,10 +548,43 @@ export async function searchPosts(clients: SearchClients, q: string): Promise<Se
     .limit(SEARCH_GROUP_LIMIT);
   if (error) throw new Error(`post search failed: ${error.message}`);
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    title: row.title as string,
-    type: row.type,
-    createdAt: row.created_at,
-  }));
+  const rows = (data ?? []) as unknown as PostSearchRow[];
+  if (rows.length === 0) return [];
+
+  // WHICH posts are visible was already decided by the caller's RLS above.
+  // These three batches only decorate rows the member may already read, and
+  // ride the service role because another member's profile row, and the
+  // tag/comment tables, are not readable under the caller's own client.
+  const postIds = rows.map((row) => row.id);
+  const [authors, tagsByPost, replyRows] = await Promise.all([
+    fetchAuthors(clients.admin, [...new Set(rows.map((row) => row.author_user_id))]),
+    loadPostTags(clients.admin, postIds),
+    loadReplyRows(clients.admin, postIds),
+  ]);
+  const replies = aggregateComments(replyRows).counts;
+
+  return rows.map((row) => {
+    const author = authors.get(row.author_user_id) ?? null;
+    return {
+      id: row.id,
+      title: row.title as string,
+      type: row.type,
+      createdAt: row.created_at,
+      // posts.body is NOT NULL, but a projection must not 500 a whole search
+      // over one unexpected row.
+      body: (row.body ?? '').replace(/\s+/g, ' ').trim().slice(0, SEARCH_POST_BODY_MAX),
+      author: author
+        ? {
+            displayName: author.display_name,
+            handle: author.handle,
+            locationCity: author.location_city,
+            avatarThumbUrl: author.avatar_thumb_url,
+            avatarBlurhash: author.avatar_blurhash,
+            verificationStatus: author.verification_status,
+          }
+        : null,
+      tags: tagsByPost.get(row.id) ?? [],
+      replyCount: replies.get(row.id) ?? 0,
+    };
+  });
 }
