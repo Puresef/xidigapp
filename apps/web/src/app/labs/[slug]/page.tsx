@@ -2,22 +2,30 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import type { MessageKey } from '@xidig/i18n';
+import { getLocale } from '@/lib/locale';
 
 import { UpcomingEventsSection } from '@/components/events/upcoming-events-section';
 import { ContentComposer } from '@/components/labs/content-composer';
 import { MembershipActions } from '@/components/labs/membership-actions';
+import { VentureBoard } from '@/components/maal/venture-board';
+import { VentureCapital } from '@/components/maal/venture-capital';
+import { VentureDormantNotice } from '@/components/maal/dormant-notice';
+import { VentureLedger } from '@/components/maal/venture-ledger';
+import { VentureOverview } from '@/components/maal/venture-overview';
+import {
+  SPACE_TAB_KEYS,
+  VENTURE_TAB_KEYS,
+  resolveTab,
+  spaceTabs,
+  type SpaceTab,
+} from '@/components/maal/venture-tabs';
 import { ShareActions } from '@/components/share-actions';
 import { Avatar } from '@/components/media/avatar';
 import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
-import {
-  getPublicLabView,
-  hydrateOneLab,
-  loadLabBySlugForViewer,
-} from '@/lib/labs-api';
+import { getPublicLabView, hydrateOneLab } from '@/lib/labs-api';
 import {
   ARTIFACT_COLUMNS,
   DECISION_COLUMNS,
@@ -33,6 +41,15 @@ import {
 } from '@/lib/labs/views';
 import { CHROME_KEYS, STAGE_KEYS, eventKey } from '@/lib/labs/labels';
 import { LAB_SLUG_REGEX } from '@/lib/labs/schemas';
+import { boardQuerySchema, ledgerQuerySchema } from '@/lib/maal/schemas';
+import {
+  getVentureBoard,
+  getVentureCapital,
+  getVentureLedger,
+  getVentureOverview,
+  getVentureViewer,
+  loadVentureBySlugForViewer,
+} from '@/lib/maal/views';
 import { getLitePrefs } from '@/lib/lite/server';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { getT } from '@/lib/locale';
@@ -41,17 +58,17 @@ import { BackLink } from '@/components/back-link';
 
 export const dynamic = 'force-dynamic';
 
-const TABS = ['overview', 'updates', 'artifacts', 'decisions', 'members', 'history'] as const;
-type Tab = (typeof TABS)[number];
+/**
+ * The Space cover, as delivered by the media pipeline (a 1600px wide JPEG at
+ * the current quality settings). A real number rather than MediaSlot's generic
+ * 250 KB fallback: the Lite placeholder promises the member a size before they
+ * spend it, and an estimate that is not the actual asset class is a promise
+ * about somebody else's image.
+ */
+const SPACE_COVER_EST_BYTES = 190_000;
 
-const TAB_KEYS: Record<Tab, MessageKey> = {
-  overview: 'lab.tabOverview',
-  updates: 'lab.tabUpdates',
-  artifacts: 'lab.tabArtifacts',
-  decisions: 'lab.tabDecisions',
-  members: 'lab.tabMembers',
-  history: 'lab.tabHistory',
-};
+/** Whole weeks of silence, for the m3 dormancy sentence. */
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function generateMetadata({
   params,
@@ -92,14 +109,34 @@ export default async function LabDetailPage({
     return <PublicLabView slug={slug} />;
   }
 
-  const lab = await loadLabBySlugForViewer(ctx, slug);
+  // One load for every Space: VENTURE_COLUMNS is LAB_COLUMNS plus the venture
+  // columns, all of which live on `labs` for every space_mode. A Koox and a
+  // Warshad simply carry nulls there — a second query keyed on the mode would
+  // buy nothing and add a way for the two reads to disagree.
+  const lab = await loadVentureBySlugForViewer(ctx, slug);
   const admin = getSupabaseAdmin();
   const view = await hydrateOneLab(admin, ctx.appUser.id, lab);
 
   const sp = await searchParams;
-  const tab: Tab = TABS.find((x) => x === sp.tab) ?? 'overview';
   const t = await getT();
+  const locale = await getLocale();
   const litePrefs = await getLitePrefs();
+
+  const isVenture = lab.space_mode === 'venture';
+  // Resolved once and threaded down: the tab row and every venture surface must
+  // agree about who this viewer is (7e's "absent, not disabled" only holds if
+  // one answer drives both).
+  const ventureViewer = isVenture ? await getVentureViewer(ctx, lab, admin) : null;
+  const tabs = spaceTabs({
+    isVenture,
+    isMember: Boolean(ventureViewer?.isMember || ventureViewer?.isMod),
+    canReadLedger: ventureViewer?.canReadLedger ?? true,
+  });
+  // resolveTab falls back to 'overview' for anything not in this viewer's own
+  // list, so a hand-typed ?tab=ledger on a leads-only ledger lands on the
+  // overview rather than walking into getVentureLedger's 403.
+  const tab: SpaceTab = resolveTab(sp.tab, tabs);
+  const tabKeys = isVenture ? VENTURE_TAB_KEYS : SPACE_TAB_KEYS;
 
   const isContributor = ['lead', 'core', 'member'].includes(view.viewerRelation);
   const isManager = view.viewerRelation === 'lead' || ctx.appUser.role === 'admin';
@@ -113,7 +150,7 @@ export default async function LabDetailPage({
 
   return (
     <main className="xidig-section">
-      <BackLink href="/labs" labelKey="nav.labs" />
+      <BackLink href={isVenture ? '/capital' : '/labs'} labelKey={isVenture ? 'maal.backToIndex' : 'nav.labs'} />
       <LiteMediaProvider>
         <LiteShowAll />
         <SpaceArtHeader
@@ -135,7 +172,22 @@ export default async function LabDetailPage({
             : ''}
         </p>
 
-        {view.isDormant ? <p className="xidig-card__body">{t('lab.dormantBanner')}</p> : null}
+        {/* m3: a dormant venture gets the designed early-warning block —
+            encouragement first, the timeout rule last, with the appeal
+            attached. Everything else keeps the existing one-line banner. */}
+        {view.isDormant && isVenture ? (
+          <VentureDormantNotice
+            name={lab.name}
+            weeks={Math.max(
+              1,
+              Math.floor((Date.now() - Date.parse(lab.dormant_since ?? lab.last_activity_at)) / WEEK_MS),
+            )}
+            slug={slug}
+            canContribute={Boolean(ventureViewer?.canContribute)}
+          />
+        ) : view.isDormant ? (
+          <p className="xidig-card__body">{t('lab.dormantBanner')}</p>
+        ) : null}
 
         <MembershipActions
           labId={lab.id}
@@ -147,14 +199,14 @@ export default async function LabDetailPage({
         <ShareActions path={`/labs/${slug}`} text={t('share.labText', { name: lab.name })} />
 
         <div className="xidig-tabs">
-          {TABS.map((value) => (
+          {tabs.map((value) => (
             <Link
               key={value}
               className="xidig-tabs__tab"
               href={`/labs/${slug}?tab=${value}`}
               aria-current={tab === value ? 'page' : undefined}
             >
-              {t(TAB_KEYS[value])}
+              {t(tabKeys[value])}
             </Link>
           ))}
           {isManager ? (
@@ -166,12 +218,65 @@ export default async function LabDetailPage({
 
         {tab === 'overview' ? (
           <>
-            <Overview view={view} />
+            {isVenture ? (
+              <VentureOverview
+                overview={await getVentureOverview(ctx, lab)}
+                slug={slug}
+                labId={lab.id}
+                locale={locale}
+                prefs={litePrefs}
+              />
+            ) : (
+              <Overview view={view} />
+            )}
             {/* Merged discovery (extras item 8): the Space's upcoming events.
                 Member surface — public + members visibility rows (space_only
-                events stay on their own page, see lib/events/views.ts). */}
+                events stay on their own page, see lib/events/views.ts).
+                This is also where a venture's meetings live: the frames' own
+                "Kulamo" tab has no repo mechanic (plan flag F4), and events
+                already surface here. */}
             <UpcomingEventsSection target={{ labId: lab.id }} publicOnly={false} />
           </>
+        ) : null}
+
+        {tab === 'work' ? (
+          <VentureBoard
+            board={await getVentureBoard(
+              ctx,
+              lab,
+              // safeParse, not parse: a hand-edited ?ws= is a bad link, not a
+              // crash. An unrecognised filter falls back to the whole board.
+              boardQuerySchema.safeParse({
+                workstreamId: typeof sp.ws === 'string' ? sp.ws : undefined,
+              }).data ?? {},
+            )}
+            slug={slug}
+            labId={lab.id}
+            locale={locale}
+            prefs={litePrefs}
+          />
+        ) : null}
+
+        {tab === 'ledger' ? (
+          <VentureLedger
+            ledger={await getVentureLedger(
+              ctx,
+              lab,
+              ledgerQuerySchema.safeParse({
+                memberId: typeof sp.member === 'string' ? sp.member : undefined,
+                type: typeof sp.type === 'string' ? sp.type : undefined,
+                days: typeof sp.days === 'string' ? sp.days : undefined,
+              }).data ?? {},
+            )}
+            slug={slug}
+            labId={lab.id}
+            locale={locale}
+            prefs={litePrefs}
+          />
+        ) : null}
+
+        {tab === 'capital' ? (
+          <VentureCapital capital={await getVentureCapital(ctx, lab)} locale={locale} />
         ) : null}
         {tab === 'updates' ? (
           <TabUpdates labId={lab.id} isContributor={isContributor} />
@@ -220,6 +325,7 @@ function SpaceArtHeader({
           thumbSrc={media.coverThumbUrl ?? undefined}
           blurhash={media.coverBlurhash}
           alt={coverAlt}
+          estBytes={SPACE_COVER_EST_BYTES}
           prefs={prefs}
           className="xidig-space-cover"
           width={1600}
@@ -424,7 +530,7 @@ async function TabHistory({ labId }: { labId: string }) {
       <ul className="xidig-post-list">
         {items.map((e) => (
           <li key={e.id} className="xidig-card__meta">
-            {t(eventKey(e.event_type))}
+            {t(eventKey(e.event_type, e.metadata))}
             {e.author ? ` · ${e.author.display_name}` : ''}
           </li>
         ))}

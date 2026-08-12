@@ -46,7 +46,9 @@ export function XidigIcon({
   className,
   ...rest
 }: XidigIconProps) {
-  const paths = XIDIG_ICONS[name][variant];
+  // Ruling 8's small-size rule: detail paths that merge into mud when drawn too
+  // small (the maal sheaf bindings at ≤16px) drop out; the glyph is otherwise whole.
+  const paths = XIDIG_ICONS[name][variant].filter((p) => p.minSize === undefined || size >= p.minSize);
   const resolvedTone = tone ?? XIDIG_ICON_DEFAULT_TONE[name];
   const toneClass = TONE_CLASS[resolvedTone];
   return (

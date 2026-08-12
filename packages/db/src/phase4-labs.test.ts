@@ -416,11 +416,13 @@ describe('mark_dormant_labs(): 28-day sweep marks dormancy only (not the demotio
 // publicly logged in the Governance Log, and never rewrites the venture's
 // work history, ledger, or prior decisions (it changes current stage only).
 //
-// What is testable TODAY: the forbidden direction. All client writes to labs
-// are revoked (API-only write model), so no user/member path can flip
-// space_mode or stage. The system timeout function itself does NOT exist yet
-// (mark_dormant_labs() above only flags dormancy); its positive invariants are
-// recorded below as pending specs owned by Maal F2.
+// Both directions are testable since Maal F2 (20260813000100_maal_venture.sql).
+// The forbidden direction: all client writes to labs are revoked (API-only
+// write model), so no user/member path can flip space_mode or stage — and that
+// stays true for a mod, because demotion is not a moderation action. The
+// permitted direction: demote_timed_out_ventures() is service_role-only, and
+// the specs below are the three invariants the doctrine names.
+// (mark_dormant_labs() above is still only the dormancy flag, not this path.)
 
 describe('stage demotion is system-owned: user-initiated demotion is forbidden', () => {
   it('neither the lead nor a mod can demote a launched Venture by writing space_mode or stage', async () => {
@@ -453,19 +455,135 @@ describe('stage demotion is system-owned: user-initiated demotion is forbidden',
     expect(row.stage).toBe('launched');
   });
 
-  // Pending specifications — owned by Maal F2, which builds the system timeout
-  // demotion path. These CANNOT be written today (no such function exists in
-  // any applied migration); they are recorded as required future coverage so
-  // the invariants are visible without passing vacuously or breaking the gate.
-  it.todo(
-    'Maal F2: the system/service-role timeout path CAN demote a timed-out Maal Venture back to Warshad',
-  );
-  it.todo(
-    'Maal F2: an auto-demotion writes a publicly visible Governance Log entry',
-  );
-  it.todo(
-    'Maal F2: an auto-demotion preserves the ledger, work history, lab_events, and prior decisions — it changes current stage/status only',
-  );
+  it('the system/service-role timeout path CAN demote a timed-out Maal Venture back to Warshad', async () => {
+    const lead = await seedMember('demote_sys_lead');
+    const lab = await seedLab(lead, {
+      slug: 'demote-timeout',
+      spaceMode: 'lab',
+      stage: 'launched',
+    });
+    await db.admin.query(
+      `update labs
+          set space_mode = 'venture',
+              venture_since = now() - interval '200 days',
+              last_activity_at = now() - interval '120 days',
+              demotion_warned_at = now() - interval '30 days'
+        where id = $1`,
+      [lab],
+    );
+
+    // A member cannot even call it — the grant is service_role-only.
+    await expect(
+      db.asUser(lead, (tx) => tx.query(`select demote_timed_out_ventures()`)),
+    ).rejects.toThrow(/permission denied/);
+
+    const demoted = await db.withRole('service_role', null, (tx) =>
+      tx.query(`select demote_timed_out_ventures() as id`),
+    );
+    expect(demoted.rows).toContainEqual({ id: lab });
+
+    const after = await db.admin.query(
+      `select space_mode, stage, demoted_at from labs where id = $1`,
+      [lab],
+    );
+    const row = after.rows[0] as { space_mode: string; stage: string; demoted_at: unknown };
+    expect(row.space_mode).toBe('lab');
+    // Only the current stage moved: the lab_stage ladder is untouched.
+    expect(row.stage).toBe('launched');
+    expect(row.demoted_at).not.toBeNull();
+  });
+
+  it('an auto-demotion writes a publicly visible Governance Log entry', async () => {
+    const lead = await seedMember('demote_log_lead');
+    const reader = await seedMember('demote_log_reader');
+    const lab = await seedLab(lead, { slug: 'demote-governance', spaceMode: 'lab' });
+    await db.admin.query(
+      `update labs
+          set space_mode = 'venture',
+              last_activity_at = now() - interval '120 days',
+              demotion_warned_at = now() - interval '30 days'
+        where id = $1`,
+      [lab],
+    );
+    await db.withRole('service_role', null, (tx) =>
+      tx.query(`select demote_timed_out_ventures()`),
+    );
+
+    // "Publicly logged" means an ordinary member can read it, not just an admin.
+    const seen = await db.asUser(reader, (tx) =>
+      tx.query(
+        `select title, body from governance_log_entries
+          where category = 'stage_demotion'
+            and published_at is not null
+            and body like '%demote-governance%'`,
+      ),
+    );
+    expect(seen.rows).toHaveLength(1);
+    expect((seen.rows[0] as { body: string }).body).toMatch(/system made this change, not a member/);
+
+    const history = await db.admin.query(
+      `select metadata from lab_events
+        where lab_id = $1 and event_type = 'demoted_timeout'`,
+      [lab],
+    );
+    expect(history.rows).toHaveLength(1);
+    expect((history.rows[0] as { metadata: Record<string, unknown> }).metadata).toMatchObject({
+      from: 'venture',
+      to: 'lab',
+      actor: 'system',
+    });
+  });
+
+  it('an auto-demotion preserves the ledger, work history, lab_events, and prior decisions — it changes current stage/status only', async () => {
+    const lead = await seedMember('demote_keep_lead');
+    const lab = await seedLab(lead, { slug: 'demote-preserve', spaceMode: 'lab' });
+    await db.admin.query(`update labs set space_mode = 'venture' where id = $1`, [lab]);
+
+    await db.admin.query(
+      `insert into work_events
+         (lab_id, member_user_id, event_type, quantity, unit_weight, units,
+          occurred_at, prev_hash, hash)
+       values ($1, $2, 'hours', 6, 8, 48, now(), '', ''),
+              ($1, $2, 'code',  2, 12, 24, now(), '', '')`,
+      [lab, lead],
+    );
+    await db.admin.query(
+      `insert into venture_workstreams (lab_id, name, owner_user_id) values ($1, 'Sharci', $2)`,
+      [lab, lead],
+    );
+    await db.admin.query(
+      `insert into lab_decisions (lab_id, title, decision, created_by_user_id)
+       values ($1, 'Stripe Connect', 'Adyen is dear at this volume', $2)`,
+      [lab, lead],
+    );
+
+    const snapshot = `select
+        (select count(*) from work_events where lab_id = $1)          as events,
+        (select sum(units) from work_events where lab_id = $1)        as units,
+        (select count(*) from venture_workstreams where lab_id = $1)  as streams,
+        (select count(*) from lab_decisions where lab_id = $1)        as decisions,
+        (select count(*) from lab_events where lab_id = $1
+           and event_type <> 'demoted_timeout')                       as history,
+        (select count(*) from lab_members where lab_id = $1)          as members`;
+    const before = await db.admin.query(snapshot, [lab]);
+
+    await db.admin.query(
+      `update labs set last_activity_at = now() - interval '120 days',
+                       demotion_warned_at = now() - interval '30 days'
+        where id = $1`,
+      [lab],
+    );
+    await db.withRole('service_role', null, (tx) =>
+      tx.query(`select demote_timed_out_ventures()`),
+    );
+
+    const after = await db.admin.query(snapshot, [lab]);
+    expect(after.rows[0]).toEqual(before.rows[0]);
+
+    // And the ledger still verifies: demotion is not a rewrite.
+    const chain = await db.admin.query(`select * from verify_work_chain($1)`, [lab]);
+    expect(chain.rows[0]).toMatchObject({ ok: true, broken_seq: null });
+  });
 });
 
 // --- skills-gap sweep -------------------------------------------------------

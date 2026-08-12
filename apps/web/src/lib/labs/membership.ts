@@ -21,8 +21,32 @@ type Admin = SupabaseClient<Database>;
 
 export type JoinResult = { status: 'active' | 'requested' };
 
-/** Join per the Space's join_mode: open→active, request→queued, invite→closed. */
-export async function joinLab(admin: Admin, lab: LabRow, userId: string): Promise<JoinResult> {
+/**
+ * Join per the Space's join_mode: open→active, request→queued, invite→closed.
+ *
+ * `workstreamId` is the Maal seat the applicant asked for (7e). It is recorded
+ * on the pending row so the lead's applications rail can say which box the
+ * person wants to work in — the promise `maal.joinNote` makes. A seat that does
+ * not belong to this Space is dropped rather than stored: a wrong seat on the
+ * application would mislead the lead, which is worse than no seat at all.
+ */
+export async function joinLab(
+  admin: Admin,
+  lab: LabRow,
+  userId: string,
+  workstreamId?: string,
+): Promise<JoinResult> {
+  let requestedWorkstreamId: string | null = null;
+  if (workstreamId) {
+    const { data: seat } = await admin
+      .from('venture_workstreams')
+      .select('id')
+      .eq('id', workstreamId)
+      .eq('lab_id', lab.id)
+      .maybeSingle();
+    requestedWorkstreamId = seat?.id ?? null;
+  }
+
   const { data: existing } = await admin
     .from('lab_members')
     .select('status')
@@ -37,7 +61,11 @@ export async function joinLab(admin: Admin, lab: LabRow, userId: string): Promis
     if (existing.status === 'invited' || lab.join_mode === 'open') {
       await admin
         .from('lab_members')
-        .update({ status: 'active', joined_at: new Date().toISOString() })
+        .update({
+          status: 'active',
+          joined_at: new Date().toISOString(),
+          ...(requestedWorkstreamId ? { requested_workstream_id: requestedWorkstreamId } : {}),
+        })
         .eq('lab_id', lab.id)
         .eq('user_id', userId);
       await logLabEvent(admin, lab.id, userId, 'member_joined', {});
@@ -62,6 +90,7 @@ export async function joinLab(admin: Admin, lab: LabRow, userId: string): Promis
     status,
     requested_at: new Date().toISOString(),
     joined_at: status === 'active' ? new Date().toISOString() : null,
+    requested_workstream_id: requestedWorkstreamId,
   });
   if (error) throw new Error(`join failed: ${error.message}`);
 

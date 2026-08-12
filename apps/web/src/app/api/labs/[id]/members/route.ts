@@ -58,7 +58,7 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
 
     switch (input.action) {
       case 'join': {
-        const result = await joinLab(admin, lab, ctx.appUser.id);
+        const result = await joinLab(admin, lab, ctx.appUser.id, input.workstreamId);
         if (result.status === 'requested') return apiNotice('lab_join_requested');
         // Fire only when the caller actually became active (open join / accepted invite).
         emitServer(event('lab_joined', {}), {

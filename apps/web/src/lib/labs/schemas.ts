@@ -188,7 +188,11 @@ export type DecisionCreateInput = z.infer<typeof decisionCreateSchema>;
 
 export const memberActionSchema = z.discriminatedUnion('action', [
   // Caller joins/requests (open Spaces join instantly; request Spaces queue).
-  z.object({ action: z.literal('join') }),
+  // `workstreamId` is the Maal seat the applicant picked on 7e ("Waxaad
+  // dooranaysaa qaybta aad ka shaqeyn rabto"); it is optional because a Koox or
+  // a Warshad has no workstreams, and it is validated against the Space before
+  // it is stored.
+  z.object({ action: z.literal('join'), workstreamId: z.string().uuid().optional() }),
   // Caller leaves.
   z.object({ action: z.literal('leave') }),
   // Lead/admin responds to a pending request.

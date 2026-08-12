@@ -331,18 +331,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "award_results_quarter_fkey"
-            columns: ["quarter"]
-            isOneToOne: false
-            referencedRelation: "award_cycles"
-            referencedColumns: ["quarter"]
-          },
-          {
             foreignKeyName: "award_results_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "award_results_quarter_fkey"
+            columns: ["quarter"]
+            isOneToOne: false
+            referencedRelation: "award_cycles"
+            referencedColumns: ["quarter"]
           },
         ]
       }
@@ -1628,6 +1628,7 @@ export type Database = {
           joined_at: string | null
           lab_id: string
           requested_at: string | null
+          requested_workstream_id: string | null
           role: Database["public"]["Enums"]["lab_member_role"]
           specialization:
             | Database["public"]["Enums"]["lab_member_specialization"]
@@ -1642,6 +1643,7 @@ export type Database = {
           joined_at?: string | null
           lab_id: string
           requested_at?: string | null
+          requested_workstream_id?: string | null
           role?: Database["public"]["Enums"]["lab_member_role"]
           specialization?:
             | Database["public"]["Enums"]["lab_member_specialization"]
@@ -1656,6 +1658,7 @@ export type Database = {
           joined_at?: string | null
           lab_id?: string
           requested_at?: string | null
+          requested_workstream_id?: string | null
           role?: Database["public"]["Enums"]["lab_member_role"]
           specialization?:
             | Database["public"]["Enums"]["lab_member_specialization"]
@@ -1677,6 +1680,13 @@ export type Database = {
             columns: ["lab_id"]
             isOneToOne: false
             referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_members_requested_workstream_fk"
+            columns: ["requested_workstream_id"]
+            isOneToOne: false
+            referencedRelation: "venture_workstreams"
             referencedColumns: ["id"]
           },
           {
@@ -1880,7 +1890,14 @@ export type Database = {
           cover_blurhash: string | null
           cover_path: string | null
           created_at: string
+          demoted_at: string | null
+          demotion_warned_at: string | null
           dormant_since: string | null
+          goal_progress: number
+          goal_statement: string | null
+          goal_target: number | null
+          goal_unit: string | null
+          hours_visibility: Database["public"]["Enums"]["venture_scope"]
           hypothesis: string | null
           icon_blurhash: string | null
           icon_path: string | null
@@ -1890,6 +1907,7 @@ export type Database = {
           join_mode: Database["public"]["Enums"]["lab_join_mode"]
           last_activity_at: string
           lead_user_id: string
+          ledger_visibility: Database["public"]["Enums"]["venture_scope"]
           member_list_visibility: Database["public"]["Enums"]["lab_visibility"]
           name: string
           playbook_id: string | null
@@ -1905,6 +1923,7 @@ export type Database = {
           stage: Database["public"]["Enums"]["lab_stage"]
           success_definition: string | null
           updated_at: string
+          venture_since: string | null
           visibility: Database["public"]["Enums"]["lab_visibility"]
         }
         Insert: {
@@ -1912,7 +1931,14 @@ export type Database = {
           cover_blurhash?: string | null
           cover_path?: string | null
           created_at?: string
+          demoted_at?: string | null
+          demotion_warned_at?: string | null
           dormant_since?: string | null
+          goal_progress?: number
+          goal_statement?: string | null
+          goal_target?: number | null
+          goal_unit?: string | null
+          hours_visibility?: Database["public"]["Enums"]["venture_scope"]
           hypothesis?: string | null
           icon_blurhash?: string | null
           icon_path?: string | null
@@ -1922,6 +1948,7 @@ export type Database = {
           join_mode?: Database["public"]["Enums"]["lab_join_mode"]
           last_activity_at?: string
           lead_user_id: string
+          ledger_visibility?: Database["public"]["Enums"]["venture_scope"]
           member_list_visibility?: Database["public"]["Enums"]["lab_visibility"]
           name: string
           playbook_id?: string | null
@@ -1937,6 +1964,7 @@ export type Database = {
           stage?: Database["public"]["Enums"]["lab_stage"]
           success_definition?: string | null
           updated_at?: string
+          venture_since?: string | null
           visibility?: Database["public"]["Enums"]["lab_visibility"]
         }
         Update: {
@@ -1944,7 +1972,14 @@ export type Database = {
           cover_blurhash?: string | null
           cover_path?: string | null
           created_at?: string
+          demoted_at?: string | null
+          demotion_warned_at?: string | null
           dormant_since?: string | null
+          goal_progress?: number
+          goal_statement?: string | null
+          goal_target?: number | null
+          goal_unit?: string | null
+          hours_visibility?: Database["public"]["Enums"]["venture_scope"]
           hypothesis?: string | null
           icon_blurhash?: string | null
           icon_path?: string | null
@@ -1954,6 +1989,7 @@ export type Database = {
           join_mode?: Database["public"]["Enums"]["lab_join_mode"]
           last_activity_at?: string
           lead_user_id?: string
+          ledger_visibility?: Database["public"]["Enums"]["venture_scope"]
           member_list_visibility?: Database["public"]["Enums"]["lab_visibility"]
           name?: string
           playbook_id?: string | null
@@ -1969,6 +2005,7 @@ export type Database = {
           stage?: Database["public"]["Enums"]["lab_stage"]
           success_definition?: string | null
           updated_at?: string
+          venture_since?: string | null
           visibility?: Database["public"]["Enums"]["lab_visibility"]
         }
         Relationships: [
@@ -4258,13 +4295,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_badges_reputation_event_id_fkey"
-            columns: ["reputation_event_id"]
-            isOneToOne: false
-            referencedRelation: "reputation_events"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "user_badges_awarded_by_user_id_fkey"
             columns: ["awarded_by_user_id"]
             isOneToOne: false
@@ -4276,6 +4306,13 @@ export type Database = {
             columns: ["badge_id"]
             isOneToOne: false
             referencedRelation: "badge_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_reputation_event_id_fkey"
+            columns: ["reputation_event_id"]
+            isOneToOne: false
+            referencedRelation: "reputation_events"
             referencedColumns: ["id"]
           },
           {
@@ -4547,6 +4584,229 @@ export type Database = {
             columns: ["lab_id"]
             isOneToOne: false
             referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venture_capital_needs: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          currency: string
+          decision_id: string | null
+          declared_at: string
+          id: string
+          lab_id: string
+          purpose: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          decision_id?: string | null
+          declared_at?: string
+          id?: string
+          lab_id: string
+          purpose: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          decision_id?: string | null
+          declared_at?: string
+          id?: string
+          lab_id?: string
+          purpose?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venture_capital_needs_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "lab_decisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_capital_needs_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venture_tasks: {
+        Row: {
+          assignee_user_id: string | null
+          attested_by_user_id: string | null
+          created_at: string
+          created_by_user_id: string | null
+          id: string
+          lab_id: string
+          status: Database["public"]["Enums"]["venture_task_status"]
+          title: string
+          updated_at: string
+          verified_by_user_id: string | null
+          workstream_id: string | null
+        }
+        Insert: {
+          assignee_user_id?: string | null
+          attested_by_user_id?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          lab_id: string
+          status?: Database["public"]["Enums"]["venture_task_status"]
+          title: string
+          updated_at?: string
+          verified_by_user_id?: string | null
+          workstream_id?: string | null
+        }
+        Update: {
+          assignee_user_id?: string | null
+          attested_by_user_id?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
+          id?: string
+          lab_id?: string
+          status?: Database["public"]["Enums"]["venture_task_status"]
+          title?: string
+          updated_at?: string
+          verified_by_user_id?: string | null
+          workstream_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venture_tasks_assignee_user_id_fkey"
+            columns: ["assignee_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_tasks_attested_by_user_id_fkey"
+            columns: ["attested_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_tasks_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_tasks_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_tasks_verified_by_user_id_fkey"
+            columns: ["verified_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_tasks_workstream_id_fkey"
+            columns: ["workstream_id"]
+            isOneToOne: false
+            referencedRelation: "venture_workstreams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venture_weight_schemes: {
+        Row: {
+          created_at: string
+          decision_id: string | null
+          effective_from: string
+          id: string
+          lab_id: string
+          weights: Json
+        }
+        Insert: {
+          created_at?: string
+          decision_id?: string | null
+          effective_from?: string
+          id?: string
+          lab_id: string
+          weights: Json
+        }
+        Update: {
+          created_at?: string
+          decision_id?: string | null
+          effective_from?: string
+          id?: string
+          lab_id?: string
+          weights?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venture_weight_schemes_decision_id_fkey"
+            columns: ["decision_id"]
+            isOneToOne: false
+            referencedRelation: "lab_decisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_weight_schemes_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venture_workstreams: {
+        Row: {
+          created_at: string
+          id: string
+          lab_id: string
+          name: string
+          owner_user_id: string | null
+          position: number
+          status: Database["public"]["Enums"]["venture_workstream_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lab_id: string
+          name: string
+          owner_user_id?: string | null
+          position?: number
+          status?: Database["public"]["Enums"]["venture_workstream_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lab_id?: string
+          name?: string
+          owner_user_id?: string | null
+          position?: number
+          status?: Database["public"]["Enums"]["venture_workstream_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venture_workstreams_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venture_workstreams_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -4855,6 +5115,132 @@ export type Database = {
           },
         ]
       }
+      work_event_attestations: {
+        Row: {
+          attester_user_id: string
+          created_at: string
+          work_event_id: string
+        }
+        Insert: {
+          attester_user_id: string
+          created_at?: string
+          work_event_id: string
+        }
+        Update: {
+          attester_user_id?: string
+          created_at?: string
+          work_event_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_event_attestations_attester_user_id_fkey"
+            columns: ["attester_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_event_attestations_work_event_id_fkey"
+            columns: ["work_event_id"]
+            isOneToOne: false
+            referencedRelation: "work_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_events: {
+        Row: {
+          event_type: Database["public"]["Enums"]["work_event_type"]
+          hash: string
+          id: string
+          lab_id: string
+          member_user_id: string
+          note: string | null
+          occurred_at: string
+          prev_hash: string
+          quantity: number
+          recorded_at: string
+          recorded_by_user_id: string | null
+          reverses_event_id: string | null
+          seq: number
+          task_id: string | null
+          unit_weight: number
+          units: number
+        }
+        Insert: {
+          event_type: Database["public"]["Enums"]["work_event_type"]
+          hash: string
+          id?: string
+          lab_id: string
+          member_user_id: string
+          note?: string | null
+          occurred_at: string
+          prev_hash: string
+          quantity: number
+          recorded_at?: string
+          recorded_by_user_id?: string | null
+          reverses_event_id?: string | null
+          seq: number
+          task_id?: string | null
+          unit_weight: number
+          units: number
+        }
+        Update: {
+          event_type?: Database["public"]["Enums"]["work_event_type"]
+          hash?: string
+          id?: string
+          lab_id?: string
+          member_user_id?: string
+          note?: string | null
+          occurred_at?: string
+          prev_hash?: string
+          quantity?: number
+          recorded_at?: string
+          recorded_by_user_id?: string | null
+          reverses_event_id?: string | null
+          seq?: number
+          task_id?: string | null
+          unit_weight?: number
+          units?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_events_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_events_member_user_id_fkey"
+            columns: ["member_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_events_recorded_by_user_id_fkey"
+            columns: ["recorded_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_events_reverses_event_id_fkey"
+            columns: ["reverses_event_id"]
+            isOneToOne: false
+            referencedRelation: "work_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "venture_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       following_feed: {
@@ -4945,6 +5331,8 @@ export type Database = {
       can_read_candidate: { Args: { cand: string }; Returns: boolean }
       can_read_lab: { Args: { p_lab_id: string }; Returns: boolean }
       can_read_lab_roster: { Args: { p_lab_id: string }; Returns: boolean }
+      can_read_venture_hours: { Args: { p_lab_id: string }; Returns: boolean }
+      can_read_venture_ledger: { Args: { p_lab_id: string }; Returns: boolean }
       can_review_candidate: { Args: { cand: string }; Returns: boolean }
       candidate_interest_counts: {
         Args: { cand: string }
@@ -4967,6 +5355,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       dearmor: { Args: { "": string }; Returns: string }
+      demote_timed_out_ventures: {
+        Args: { p_timeout_days?: number; p_warned_days?: number }
+        Returns: string[]
+      }
       dm_inbox: {
         Args: { p_before?: string; p_before_id?: string; p_limit?: number }
         Returns: {
@@ -5003,11 +5395,12 @@ export type Database = {
       is_active_account: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_advisor: { Args: never; Returns: boolean }
-      is_feature_enabled: { Args: { p_key: string }; Returns: boolean }
       is_candidate_lab_member: { Args: { cand: string }; Returns: boolean }
+      is_feature_enabled: { Args: { p_key: string }; Returns: boolean }
       is_lab_member: { Args: { p_lab_id: string }; Returns: boolean }
       is_mod: { Args: never; Returns: boolean }
       is_supporter: { Args: never; Returns: boolean }
+      is_venture_lead: { Args: { p_lab_id: string }; Returns: boolean }
       is_verifier: { Args: never; Returns: boolean }
       list_visible_tiers: {
         Args: never
@@ -5051,6 +5444,31 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      venture_contribution_tally: {
+        Args: { p_lab_id: string }
+        Returns: {
+          code_count: number
+          design_count: number
+          event_count: number
+          hours: number
+          intro_count: number
+          member_user_id: string
+          money_cents: number
+          units: number
+          verified_units: number
+        }[]
+      }
+      verify_work_chain: {
+        Args: { p_lab_id: string }
+        Returns: {
+          broken_seq: number
+          ok: boolean
+        }[]
+      }
+      warn_timed_out_ventures: {
+        Args: { p_warn_after_days?: number }
+        Returns: string[]
+      }
       xidig_name_norm: { Args: { input: string }; Returns: string }
     }
     Enums: {
@@ -5183,10 +5601,18 @@ export type Database = {
         | "misinformation"
         | "other"
       report_status: "open" | "in_review" | "resolved" | "dismissed"
-      space_mode: "club" | "lab"
+      space_mode: "club" | "lab" | "venture"
       term_suggestion_kind: "lane" | "listing_category"
       term_suggestion_status: "pending" | "approved" | "declined"
       user_role: "member" | "mod" | "admin"
+      venture_scope: "members" | "leads"
+      venture_task_status:
+        | "open"
+        | "claimed"
+        | "submitted"
+        | "attested"
+        | "verified"
+      venture_workstream_status: "active" | "waiting"
       verification_request_status:
         | "pending"
         | "scheduled"
@@ -5196,6 +5622,7 @@ export type Database = {
       verification_type: "identity" | "business"
       vote_choice: "approve" | "reject"
       waitlist_status: "pending" | "invited" | "joined"
+      work_event_type: "hours" | "code" | "design" | "intro" | "money"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5462,10 +5889,19 @@ export const Constants = {
         "other",
       ],
       report_status: ["open", "in_review", "resolved", "dismissed"],
-      space_mode: ["club", "lab"],
+      space_mode: ["club", "lab", "venture"],
       term_suggestion_kind: ["lane", "listing_category"],
       term_suggestion_status: ["pending", "approved", "declined"],
       user_role: ["member", "mod", "admin"],
+      venture_scope: ["members", "leads"],
+      venture_task_status: [
+        "open",
+        "claimed",
+        "submitted",
+        "attested",
+        "verified",
+      ],
+      venture_workstream_status: ["active", "waiting"],
       verification_request_status: [
         "pending",
         "scheduled",
@@ -5476,6 +5912,7 @@ export const Constants = {
       verification_type: ["identity", "business"],
       vote_choice: ["approve", "reject"],
       waitlist_status: ["pending", "invited", "joined"],
+      work_event_type: ["hours", "code", "design", "intro", "money"],
     },
   },
 } as const

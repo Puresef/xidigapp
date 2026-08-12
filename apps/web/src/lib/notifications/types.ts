@@ -39,6 +39,12 @@ export const NOTIFICATION_TYPES = [
   'lab_skill_gap',
   'lab_collab_invite',
   'lab_collab_response',
+  // Maal (F2 §5) — the demotion clock (ruling 2), in-app only like every other
+  // Space event. The warning is the "ogeysiis hore" the Maal index law
+  // promises: a Maal is never demoted without having been told first, and the
+  // demotion itself is announced as well as publicly logged.
+  'venture_demotion_warning',
+  'venture_demoted',
   // Phase 6 (Admin / Moderation / Verification / Account) — all in-app only.
   // Trust surfaces: the copy must never reveal a reporter's identity or the
   // internal rule triggered (§19). Account-critical events (suspension,
@@ -103,6 +109,8 @@ export const NOTIFICATION_CHANNELS: Record<NotificationType, NotificationChannel
   lab_skill_gap: { inApp: true, email: false, push: false },
   lab_collab_invite: { inApp: true, email: false, push: false },
   lab_collab_response: { inApp: true, email: false, push: false },
+  venture_demotion_warning: { inApp: true, email: false, push: false },
+  venture_demoted: { inApp: true, email: false, push: false },
   report_resolved: { inApp: true, email: false, push: false },
   account_warned: { inApp: true, email: false, push: false },
   account_suspended: { inApp: true, email: false, push: false },

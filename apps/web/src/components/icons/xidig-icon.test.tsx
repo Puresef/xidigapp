@@ -38,6 +38,28 @@ describe('XidigIcon', () => {
     expect(render({ name: 'guul', tone: 'inherit' })).not.toContain('x-ic--trust');
   });
 
+  it('maal never defaults to trust — ZERO orange on Maal surfaces (ruling 8 + §2)', () => {
+    expect(XIDIG_ICON_DEFAULT_TONE.maal).toBe('inherit');
+    expect(render({ name: 'maal' })).not.toContain('x-ic--trust');
+    expect(render({ name: 'maal', variant: 'filled' })).not.toContain('x-ic--trust');
+  });
+
+  it('maal drops its two bindings at ≤16px and keeps them above (ruling 8 small-size rule)', () => {
+    const bindings = (html: string) => (html.match(/stroke-width="1.4"/g) ?? []).length;
+    const strokes = (html: string) => (html.match(/<path/g) ?? []).length;
+    expect(bindings(render({ name: 'maal' }))).toBe(2); // 24px default
+    expect(bindings(render({ name: 'maal', size: 18 }))).toBe(2);
+    expect(bindings(render({ name: 'maal', size: 16 }))).toBe(0); // chip floor = three stalks only
+    expect(strokes(render({ name: 'maal', size: 16 }))).toBe(3);
+    // The filled wedge is one evenodd path — its band is negative space, nothing to drop.
+    expect(strokes(render({ name: 'maal', variant: 'filled', size: 16 }))).toBe(1);
+    // Nothing else in the family carries the flag, so no other glyph changes with size.
+    for (const name of Object.keys(XIDIG_ICONS) as (keyof typeof XIDIG_ICONS)[]) {
+      if (name === 'maal') continue;
+      expect(strokes(render({ name, size: 16 })), name).toBe(strokes(render({ name, size: 24 })));
+    }
+  });
+
   it('post-type map covers every plaza type with a real glyph, garab excluded', () => {
     expect(Object.keys(XIDIG_POST_TYPE_ICON).sort()).toEqual(
       ['ask', 'intro', 'poll', 'update', 'win'].sort(),

@@ -315,6 +315,15 @@ const FOCUS_VISIBLE_CLASSES = [
   // Munaasabado 9b detail: the named-wall person links + the host card link.
   'a.xidig-event-wall__person',
   'a.xidig-event-host',
+  // Maal 7a: the index row's name link (the only bespoke interactive shape on
+  // the index — chips are a.xidig-tag, the verb is .xidig-button).
+  '.xidig-maal-row__name',
+  // Maal 7b–7g workspace: the member-set visibility switch and the two quiet
+  // anchors the venture cards use. Everything else on those tabs reuses
+  // .xidig-button / .xidig-tag / .xidig-icon-button.
+  '.xidig-vis-switch',
+  'a.xidig-venture__card-link',
+  'a.xidig-ledger-row__events',
 ];
 
 const ACTIVE_CLASSES = [
@@ -343,6 +352,12 @@ const ACTIVE_CLASSES = [
   'a.xidig-event-host',
   // Task 7 e7 Digniino reminder row: Fiiri / Ka noqo RSVP inline actions.
   '.xidig-notif__action',
+  // Maal 7a index row name link.
+  '.xidig-maal-row__name',
+  // Maal 7b–7g workspace shapes.
+  '.xidig-vis-switch',
+  'a.xidig-venture__card-link',
+  'a.xidig-ledger-row__events',
 ];
 
 const DISABLED_CLASSES = [
@@ -359,6 +374,11 @@ const DISABLED_CLASSES = [
   '.xidig-amanager__queue-cancel',
   // Task 7: the unrsvp button disables itself while its DELETE is in flight.
   '.xidig-notif__action',
+  // Maal 7b: the visibility switch is inert while its PATCH is in flight.
+  '.xidig-vis-switch',
+  // Maal 7f: the pledge field ships DISABLED on purpose — present so the
+  // member can see the shape of it, inert because the escrow does not exist.
+  '.xidig-field__input',
 ];
 
 describe('interaction-state coverage', () => {

@@ -61,6 +61,13 @@ export const LAUNCH_FLOOR_NAMESPACES = [
   // §27 error/notice copy, investment intent). Ships fully translated; native
   // review is tracked as Alpha Hardening Debt.
   'capital',
+  // Maal (venture workspace, F2 §5): the contribution ledger, the weight
+  // scheme, the declared capital need and the demotion law. Compliance copy
+  // about what a share is NOT — no legal force, never a vote weight — must
+  // never fall back to English on a Somali-first surface, so this is a launch
+  // floor by construction. The Somali here is the design's own register (frames
+  // 7a–7g), not a draft: it needs no native review pass.
+  'maal',
   // `notice.*` — informational success-path copy the API returns (region gate,
   // etc.); a trust surface alongside `error.*`.
   'notice',

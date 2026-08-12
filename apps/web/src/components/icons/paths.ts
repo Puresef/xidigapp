@@ -2,7 +2,7 @@
 // Xidig post/action glyph family — D2 exports (Icons / Mark project), 24px grid.
 // Geometry is canon: do not re-draw here; regenerate from exports/glyphs/*.svg.
 
-export type XidigIconName = 'salaan' | 'codsi' | 'guul' | 'war' | 'cod' | 'garab';
+export type XidigIconName = 'salaan' | 'codsi' | 'guul' | 'war' | 'cod' | 'garab' | 'maal';
 export type XidigIconVariant = 'outline' | 'filled';
 export type XidigIconTone = 'inherit' | 'accent' | 'accentText' | 'trust';
 
@@ -18,6 +18,8 @@ export interface IconPath {
   sw?: number;
   /** garab smoke wisp — animatable, second wisp delayed */
   smoke?: 1 | 2;
+  /** draw only at size ≥ this — ruling 8's small-size rule (maal bindings drop at ≤16px) */
+  minSize?: number;
 }
 
 const P = (d: string, extra: Partial<IconPath> = {}): IconPath => ({ d, ...extra });
@@ -97,6 +99,27 @@ export const XIDIG_ICONS: Record<XidigIconName, Record<XidigIconVariant, IconPat
       P('M14.3 8.9c-.7-1 .7-1.9.1-2.9', { sw: 1.7, smoke: 2 }),
     ],
   },
+  maal: {
+    // Xidhmo sheaf — ruled canon 9 Aug (ruling 8). Outline = three stalks bound
+    // twice; filled = wedge construction (tapered stalks, binding band as
+    // negative space — the rejected kite read as a shield). Below 17px the two
+    // bindings merge into mud, so they drop and three strokes carry the glyph;
+    // the filled wedge is one evenodd path, so its band has nothing to drop.
+    // The rail draws its own 1.8/1.3 nav variant inline (nav/rail-nav.tsx).
+    outline: [
+      P('M12 20.4V5.2'),
+      P('M12 20.4 7.2 6.6'),
+      P('m12 20.4 4.8-13.8'),
+      P('M8.6 13.2c2.2.9 4.6.9 6.8 0', { sw: 1.4, minSize: 17 }),
+      P('M9.3 15.6c1.8.7 3.6.7 5.4 0', { sw: 1.4, minSize: 17 }),
+    ],
+    filled: [
+      P(
+        'M10.6 3.7 L13.4 3.7 L12.7 20.6 L11.3 20.6 Z M5.7 7.0 L8.3 6.0 L12.2 19.9 L10.9 20.4 Z M18.3 7.0 L15.7 6.0 L11.8 19.9 L13.1 20.4 Z M8.1 12.7 C10.4 13.7 13.6 13.7 15.9 12.7 L15.4 14.8 C13.3 15.7 10.7 15.7 8.6 14.8 Z',
+        { fill: true, evenodd: true, stroke: false },
+      ),
+    ],
+  },
 };
 
 /**
@@ -112,6 +135,7 @@ export const XIDIG_ICON_DEFAULT_TONE: Record<XidigIconName, XidigIconTone> = {
   war: 'inherit',
   cod: 'inherit',
   garab: 'inherit',
+  maal: 'inherit', // ZERO orange on Maal surfaces — an orange sheaf would break the colour law
 };
 
 /**

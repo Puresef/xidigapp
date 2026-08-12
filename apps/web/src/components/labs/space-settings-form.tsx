@@ -35,7 +35,8 @@ export interface SettingsInitial {
   problemStatement: string;
   hypothesis: string;
   successDefinition: string;
-  spaceMode: 'club' | 'lab';
+  /** Maal (F2 §5) added a third rung — 'venture'. Promotion controls key off it. */
+  spaceMode: 'club' | 'lab' | 'venture';
 }
 
 /**

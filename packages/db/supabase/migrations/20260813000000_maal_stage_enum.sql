@@ -1,0 +1,11 @@
+-- Maal P1 — the stage value, alone in its own migration.
+--
+-- `space_mode` grows a third rung: club (Koox) -> lab (Warshad) -> venture (Maal).
+-- PRD §16 merit ladder; DECISIONS-2026-08-06 ruling 4 (Koox is social-only and
+-- never appears on the Maal index) and ruling 2 (the way back down is the system
+-- timeout path, never a member action).
+--
+-- This is a file of its own for the same reason 20260809000000_codsi_lifecycle_enum
+-- was: a new enum value cannot be USED in the transaction that adds it, and the
+-- Maal migration that follows needs to write policies and CHECKs against it.
+alter type space_mode add value if not exists 'venture';

@@ -527,6 +527,8 @@ export const so = {
   'settings.notifTypeLabCollabResponse': 'Jawaabaha wada-shaqaynta',
   'settings.notifTypeWeeklyDigest': 'Warbixinta toddobaadlaha',
   'settings.notifTypeMentorSlotBooked': 'Ballamada la-taliyaha',
+  'settings.notifTypeVentureDemotionWarning': 'Digniinta heerka Maal',
+  'settings.notifTypeVentureDemoted': 'Isbeddelka heerka Maal',
   'settings.quietHoursTitle': 'Saacadaha aamusnaanta',
   'settings.quietHoursEnable': 'Daar saacadaha aamusnaanta',
   'settings.quietHoursHint':
@@ -1472,7 +1474,10 @@ export const so = {
   'lab.badgeDormant': 'Hurdo',
   'lab.signInToJoin': 'Gal si aad ugu biirto ama u raacdo Meeshan.',
   'lab.eventCreated': 'Meesha waa la sameeyay',
-  'lab.eventPromoted': 'Waxaa loo dallaciyay Warshad',
+  // Laba heer ayaa dallaciddu haysaa hadda (Koox → Warshad, Warshad → Maal),
+  // sidaas darteed furahan guud wuu dhexdhexaad yahay.
+  'lab.eventPromoted': 'Waa la dallaciyay',
+  'lab.eventPromotedLab': 'Waxaa loo dallaciyay Warshad',
   'lab.eventSettingsChanged': 'Dejinta waa la beddelay',
   'lab.eventUpdatePublished': 'Warbixin waa la qoray',
   'lab.eventUpdateCrossposted': 'Warbixin waa la wadaajiyay',
@@ -1594,6 +1599,9 @@ export const so = {
   'capital.indexTitle': 'Maal',
   'capital.indexSubtitle': 'Mashaariicda bulshadu dhistayso oo taageerayso.',
   'capital.labsEntryLink': 'Fiiri Maalka',
+  // Magaca guddiga musharrixiinta. /capital hadda waa tusmada Maalka (D1),
+  // sidaas darteed guddigu wuxuu u guuray /capital/candidates.
+  'capital.candidatesTitle': 'Musharrixiinta Maalka',
   'capital.filterAll': 'Dhammaan',
   'capital.fromLab': 'Ka timid',
   'capital.emptyTitle': 'Weli ma jiraan Musharrixiin',
@@ -2404,4 +2412,364 @@ export const so = {
   // casaan-oobaan; labelka aqoonsiga iyo tooltip-yada dhaadheer kor bay yaalliin.
   'profile.badgeFounder': 'Aasaase',
   'profile.badgeAuthor': 'Qoraaga',
+
+  // --- Maal (venture workspace) ---------------------------------------------
+  // Frames 7a–7g + states m1–m5 — frame-verbatim. This surface was written in
+  // Somali first and English is the translation of it, so nothing below is a
+  // draft awaiting native review: it IS the native copy. Do not "improve" it.
+  // Reused rather than restated: capital.indexTitle ('Maal'), term.lab
+  // ('Warshad'), lab.badgeDormant ('Hurdo'), lab.tabDecisions ("Go'aanno"),
+  // lab.actionJoin ('Ku biir'), lab.actionView ('Fiiri'), lab.actionRequestJoin
+  // ('Codso inaad ku biirto'), lab.role* , profile.badgeFounder ('Aasaase'),
+  // action.accept/decline/retry/delete/back, lite.*.
+
+  // 7a — tusmada Maal
+  'maal.indexSubtitle':
+    'Warshado iyo ventures. Ku biir mid, ama Warshaddaada u kordhi Maal marka ay yeelato ujeeddo iyo qaab-dhismeed.',
+  'maal.teaserTitle': 'Maal — ururrada shaqada ee aad ku biiri karto',
+  'maal.teaserBody':
+    "Warshado iyo ventures hal meel: ujeeddo la qoray, qaybo shaqo oo mid kastaa mas'uul leeyahay, diiwaan go'aanno, iyo diiwaan wax-ku-darsi oo furan. Heerku waa shaqo la qabtay, ma aha abaalmarin — lacagna Xidig kama dhex marto.",
+  'maal.newLab': 'Warshad cusub',
+  'maal.chipAll': 'Dhammaan · {count}',
+  'maal.chipVentures': 'Maal · {count}',
+  'maal.chipLabs': 'Warshad · {count}',
+  'maal.chipMine': 'Kuwa aan ku jiro · {count}',
+  'maal.sortLabel': 'U kala hormari:',
+  'maal.sortActivity': 'Firfircoonida',
+  'maal.colName': 'Magaca & ujeeddada',
+  'maal.colStage': 'Heerka',
+  'maal.colMembers': 'Xubno',
+  'maal.colOpenWork': 'Shaqo furan',
+  'maal.stageVenture': 'Maal',
+  'maal.stageDemoted': 'Dib loo celiyay Maal-nimada',
+  'maal.demotedPremise':
+    'Waqti-dhaaf awgeed waxay ku noqotay Warshad — diiwaanka guud ayay ku qoran tahay.',
+  'maal.rowFounder': 'Aasaase {name}',
+  'maal.rowOpenedBy': 'Furay {name}',
+  'maal.rowRound': {
+    one: 'Wareegga {round}aad — {count} maalin harsan',
+    other: 'Wareegga {round}aad — {count} maalmood harsan',
+  },
+  'maal.rowLastActivity': 'Firfircoonidii ugu dambeysay {time}',
+  'maal.openSeats': { one: '{count} boos', other: '{count} boos' },
+  'maal.openToAnyone': 'Furan cid walba',
+  // Unugga "Shaqo furan" wuxuu muujiyaa "—" marka aan boos furan jirin. Dashku
+  // waa calaamadda naqshadda; tanna waa jumladda akhristaha shaashadda hesho.
+  'maal.noOpenWork': 'Shaqo furan ma jirto',
+  'maal.actionOpen': 'Fur',
+  'maal.actionRequest': 'Codso',
+  // Xiriirka aamusan ee guddiga musharrixiinta (D1: wuxuu u guuray
+  // /capital/candidates — waxba lama tirtirin, sidaas darteed waxba yaanay
+  // gaari waynin).
+  'maal.candidatesLink': 'Guddiga musharrixiinta Maalka',
+  'maal.indexLaw':
+    "Maal-nimadu waa heer, ma aha abaalmarin. Warshad waxay noqotaa Maal marka ay qorto ujeeddo, magacowdo hoggaan, oo qaadato qaab-dhismeedka shaqada — waxayna ku noqotaa Warshad haddii firfircooni-la'aantu dhaafto xadka waqti-dhaafka — si toos ah, ogeysiis hore, iyo diiwaan guud. Celintu waxba ma lumiso: axdiga, diiwaanka iyo go'aannadu way sii jiraan, waxayna dib u noqonaysaa Maal marka shuruudaha dib loo buuxiyo. Labadooduba isku meel ayay ku jiraan si aan qofna u qarsoodin heerka dhabta ah.",
+
+  // 7b — guudmarka Maalka. Safka tab-yadu waa kan frame-ka: Guud / Wada-hadal /
+  // Lifaaqyo, halka Warshaddu tiraahdo Guudmar / Warbixino / Wax-soo-saar.
+  'maal.backToIndex': 'Dhammaan Maal',
+  'maal.actionAdd': 'Wax ku dar',
+  'maal.tabOverview': 'Guud',
+  'maal.tabWork': 'Shaqo',
+  'maal.tabUpdates': 'Wada-hadal',
+  'maal.tabArtifacts': 'Lifaaqyo',
+  'maal.tabLedger': 'Wax-ku-darsi',
+  'maal.tabCapital': 'Maalgashi',
+  'maal.charterTitle': 'Axdiga',
+  'maal.charterUpdated': 'La cusboonaysiiyay {time} · {name}',
+  'maal.goalAria': '{done} ka mid ah {target} {unit}',
+  'maal.workstreamsTitle': 'Qaybaha shaqada',
+  'maal.workstreamsNote': "Qof kastaa wuxuu leeyahay mid uu ka mas'uul yahay",
+  'maal.colWorkstream': 'Qaybta',
+  'maal.colOwner': "Mas'uul",
+  'maal.colTasks': 'Hawlo',
+  'maal.colStatus': 'Heerka',
+  'maal.openSeat': 'Boos furan',
+  'maal.workstreamActive': 'Socda',
+  'maal.workstreamWaiting': 'Sugaya',
+  'maal.decisionsTitle': "Go'aannada ugu dambeeyay",
+  'maal.decisionsAll': 'Diiwaanka oo dhan',
+  'maal.decisionTally': {
+    one: '{count} xubin oo raacay, {rejected} diiday',
+    other: '{count} xubin oo raacay, {rejected} diiday',
+  },
+  'maal.decisionTallyUnanimous': {
+    one: '{count} xubin oo raacay',
+    other: '{count} xubin oo raacay',
+  },
+  'maal.membersWithCount': 'Xubno · {count}',
+  'maal.activeNow': '{count} firfircoon hadda',
+  'maal.activeDot': 'Firfircoon',
+  'maal.applicationsTitle': 'Codsiyada xubinnimada · {count}',
+  'maal.applicationRequested': 'wuxuu codsanaya qaybta {workstream}',
+  'maal.visibilityTitle': 'Muuqaalka',
+  'maal.visPublicPage': 'Bogga dadweynaha',
+  'maal.visPublicPageHint': 'Ujeeddada iyo xubnaha ayaa muuqda',
+  'maal.visLedgerMembers': 'Wax-ku-darsi furan xubnaha',
+  'maal.visLedgerMembersHint': 'Qof kastaa wuu arkaa waxa kastaa ku daray',
+  'maal.visHoursLeads': 'Saacadaha hoggaamiyayaasha kaliya',
+  'maal.visHoursLeadsHint': 'Xubnaha kale waxay arkaan wadar',
+  'maal.visibilityFooter':
+    'Xubnaha ayaa doortay. Xidig ma dooranayo — mana jiro wax si qarsoodi ah loo diiwaangeliyo.',
+  'maal.capitalDormantTitle': 'Maalgashi — hurdo',
+  'maal.capitalDormantBody':
+    'Qaab-dhismeedku diyaar wuu yahay: saami, diiwaan, iyo ballanqaad. Lacag ma dhaqaaqi karto ilaa amaanka Xidig la dhiso.',
+  'maal.capitalDormantLink': 'Fiiri qaab-dhismeedka',
+
+  // 7c — sabuuradda shaqada
+  'maal.logContribution': 'Diiwaangeli wax-ku-darsi',
+  'maal.newTask': 'Hawl',
+  'maal.filterAllWorkstreams': 'Qayb walba',
+  'maal.weekLogged': {
+    one: 'Toddobaadkan waxaad diiwaangelisay {count} saac',
+    other: 'Toddobaadkan waxaad diiwaangelisay {count} saac',
+  },
+  'maal.boardPlanned': 'Qorshe',
+  'maal.boardInProgress': 'Socda',
+  'maal.boardAttestation': 'Marag & ansixin',
+  'maal.boardDone': 'Dhammaystiran',
+  'maal.hoursShort': { one: '{count} saac', other: '{count} saac' },
+  'maal.unassignedAria': "Mas'uul lama magacaabin",
+  'maal.attestedAria': 'Wax-ku-darsi la xaqiijiyay',
+  'maal.logTaskLabel': 'Hawsha',
+  'maal.logTypeLabel': 'Nooca',
+  'maal.logAmountLabel': 'Inta',
+  // Lacagtu waa nooca kaliya ee cabbirkiisu laba macne yeelan karo — diiwaanku
+  // wuxuu kaydiyaa senti, qofkuna wuxuu ku fikiraa doollar — sidaas darteed
+  // goobtu waxay sheegaysaa cabbirkeeda, tilmaantuna waxay muujinaysaa tirada
+  // saxda ah ee la darayo. Diiwaanku waa lifaaq-kaliya: khalad halkan ka dhaca
+  // waxaa kaliya lagu saxi karaa dhacdo celin ah oo weligeed silsiladda ku jirta.
+  'maal.logAmountMoneyLabel': 'Qaddarka ({currency})',
+  'maal.logAmountMoneyHint':
+    'Ku qor qaddarka {currency}, ma aha senti. Waa la diiwaangelinayaa — lacagtu ma dhaqaaqayso.',
+  'maal.logAmountMoneyPreview': 'Waxaa loo diiwaangelinayaa {amount}',
+  'maal.logSubmit': 'Diiwaangeli',
+  'maal.typeHours': 'Saacado',
+  'maal.typeCode': 'Koodh',
+  'maal.typeDesign': 'Naqshad',
+  'maal.typeIntro': 'Xiriir',
+  'maal.typeMoney': 'Lacag',
+  // Dhaqdhaqaaqa saldhigga. Marag-fur iyo Ansixi waa laba eray oo kala duwan:
+  // marag-furku wuxuu leeyahay "waan arkay", ansixintuna "way tirsan tahay" —
+  // hal badhan oo la isku daray wuxuu tirtirayaa xeerka recusal-ka.
+  'maal.taskClaim': 'Qaado',
+  'maal.taskRelease': 'Dib u dhig',
+  'maal.taskSubmit': 'Gudbi',
+  'maal.taskAttest': 'Marag-fur',
+  // Doorashada "hawl la'aan" / "qayb la'aan" ee foomamka. Hal fure: waa isla
+  // maqnaanshaha labadaba, laba eray oo u gaarna way kala tagi lahaayeen.
+  'maal.optionNone': "La'aan",
+
+  // 7d — diiwaanka wax-ku-darsiga
+  'maal.ledgerNotice':
+    'Diiwaankan wuu shaqeeyaa oo waa dhab: wuxuu diiwaangelinayaa waxa qof kastaa ku daray. Saamiga la muujiyay xoog sharci ma leh ilaa shirkad la diiwaangeliyo, codbixintana marnaba ma miisaamo — xubin kasta oo la xaqiijiyay hal cod. Waa heshiis xubnaha dhexdooda — Xidig dhexdhexaadin uma galo. Diiwaanku waa lifaaq-kaliya oo silsilad-hash ah: wax lama beddelo, lamana tirtiro — saxitaanku waa dhacdo-celin cusub.',
+  'maal.statTotalHours': 'Saac wadar ah',
+  'maal.statEventsLogged': 'Wax-ku-darsi la diiwaangeliyay',
+  'maal.statContributors': 'Xubno ku darsaday',
+  'maal.statMoneyClosed': 'Lacag — weli lama furin',
+  'maal.colMember': 'Xubin',
+  'maal.colUnits': 'Halbeeg',
+  'maal.colShare': 'Saami',
+  'maal.unitsValue': { one: '{count} halbeeg', other: '{count} halbeeg' },
+  'maal.prCount': { one: '{count} PR', other: '{count} PR' },
+  'maal.weightsTitle': 'Sida halbeegga loo xisaabiyo',
+  // Tirooyinka miisaanku waa param — xubnaha ayaa cod ku beddeli kara
+  // (venture_weight_schemes); erayada oo dhan waa kuwii frame-ka.
+  'maal.weightsBody':
+    "Xubnaha ayaa doortay miisaanka: saac = {hours} halbeeg, PR la ansixiyay = {code}, naqshad la ansixiyay = {design}, xiriir keenay ganacsi = {intro}. Wixii wax ka beddela miisaanka waa go'aan la cod-bixiyo — xubin kasta hal cod, saamigu codka ma miisaamo — wuxuuna galayaa diiwaanka go'aannada. Saamigu waa xisaab laga akhriyo dhacdooyinka — qorshaha waa la beddeli karaa iyadoo aan taariikhda la taaban. Halbeeg la xaqiijiyay wuxuu u baahan yahay marag: co-sign xubno ah ama hoggaamiye — hoggaamiyuhu hawshiisa ma ansixin karo.",
+  'maal.weightsLink': 'Fiiri miisaanka',
+  'maal.moneyCardTitle': 'Lacag oo wax-ku-darsi ah',
+  'maal.moneyCardBody':
+    'Nooca lacageed ee wax-ku-darsiga wuu jiraa diiwaanka, laakiin ma furan yahay. Marka amaanka Xidig la dhiso, wuxuu ku shaqeynayaa isla miisaankan — wax kale iskama beddelayo.',
+  'maal.exportCsv': 'Soo deji CSV',
+  // Safka madaxa ee CSV-ga. Ereyada kale waxay ka yimaadaan furayaasha miiska
+  // (colMember / logTypeLabel / logAmountLabel / colUnits / logTaskLabel).
+  'maal.csvSeq': 'Tartiib',
+  'maal.csvWhen': 'Waqtiga',
+  'maal.csvWitnesses': 'Marag',
+  'maal.csvNote': 'Qoraal',
+
+  // 7g — isla diiwaankaas mobilada (xukun 1: waxba lagama jarin)
+  'maal.ledgerSubtitle': '{name} · diiwaanka oo dhan',
+  'maal.filterSheet': 'Shaandhee',
+  'maal.filterMember': 'Xubin: {value}',
+  'maal.filterType': 'Nooc: {value}',
+  'maal.filterAll': 'Dhammaan',
+  'maal.filterDays': { one: '{count} maalin', other: '{count} maalmood' },
+  'maal.statHoursShort': 'Saac',
+  'maal.statEventsShort': 'Dhacdo',
+  'maal.statMembersShort': 'Xubno',
+  'maal.statMoneyShort': 'Lacag',
+  'maal.statPrShort': 'PR',
+  'maal.statIntrosShort': 'Xiriir',
+  'maal.statUnitsShort': 'Halbeeg',
+  'maal.ledgerNoticeCompact':
+    'Lifaaq-kaliya, silsilad-hash. Saamigu xoog sharci ma leh ilaa shirkad la diiwaangeliyo, codbixintana ma miisaamo — xubin kasta hal cod.',
+  'maal.memberEventsLink': {
+    one: '{count} dhacdo · fur diiwaanka',
+    other: '{count} dhacdo · fur diiwaanka',
+  },
+  'maal.eventTrailTitle': 'Dhacdooyinkii ugu dambeeyay',
+  'maal.eventTrailAll': 'Dhammaan · {count}',
+  'maal.eventHours': {
+    one: '{name} · {count} saac {task}',
+    other: '{name} · {count} saac {task}',
+  },
+  'maal.eventCode': '{name} · PR #{ref} la ansixiyay',
+  // Isla dhacdada marka aan tixraac la bixin. Tiradu waa TIRO PR ah, ma aha
+  // lambarka PR-ka — "3 PR" oo loo qoro "PR #3" wuxuu abuurayaa PR aan jirin.
+  'maal.eventCodeCount': {
+    one: '{name} · {count} PR la ansixiyay',
+    other: '{name} · {count} PR la ansixiyay',
+  },
+  'maal.eventDesign': {
+    one: '{name} · {count} naqshad la ansixiyay',
+    other: '{name} · {count} naqshad la ansixiyay',
+  },
+  'maal.eventIntro': {
+    one: '{name} · {count} xiriir keenay ganacsi',
+    other: '{name} · {count} xiriir keenay ganacsi',
+  },
+  'maal.eventMoney': '{name} · {amount} la diiwaangeliyay — lama dhaqaajin',
+  // Celintu waxay magacawdaa NOOCA ay saxayso — hal fure nooc kasta, oo ah
+  // muraayadda shanta jumlado ee kor ku xusan. Hal jumlad oo "{count} saac" ah
+  // waxay xiriir, PR ama lacag u qori lahayd saacado — oo diiwaan lifaaq-kaliya
+  // ah taasi waa been joogto ah oo lagu qoro waxa la celiyay.
+  'maal.eventReversalHours': {
+    one: 'Celin: {name} · {count} saac ({reason})',
+    other: 'Celin: {name} · {count} saac ({reason})',
+  },
+  'maal.eventReversalCode': {
+    one: 'Celin: {name} · {count} PR la ansixiyay ({reason})',
+    other: 'Celin: {name} · {count} PR la ansixiyay ({reason})',
+  },
+  'maal.eventReversalDesign': {
+    one: 'Celin: {name} · {count} naqshad la ansixiyay ({reason})',
+    other: 'Celin: {name} · {count} naqshad la ansixiyay ({reason})',
+  },
+  'maal.eventReversalIntro': {
+    one: 'Celin: {name} · {count} xiriir keenay ganacsi ({reason})',
+    other: 'Celin: {name} · {count} xiriir keenay ganacsi ({reason})',
+  },
+  'maal.eventReversalMoney': 'Celin: {name} · {amount} ({reason})',
+  'maal.reversalTag': 'Celin',
+  'maal.attestationCount': { one: '{count} marag', other: '{count} marag' },
+
+  // 7e — muuqaalka qofka aan xubinta ahayn
+  'maal.shareAria': 'La wadaag',
+  'maal.moreAria': 'Wax badan',
+  'maal.joinNote':
+    'Hoggaamiyayaashu ayaa eegaya codsiga. Waxaad dooranaysaa qaybta aad ka shaqeyn rabto.',
+  'maal.openSeatsTitle': 'Boosas furan · {count}',
+  'maal.seatWaitingUnowned': {
+    one: "{count} hawl sugaya · mas'uul lama magacaabin",
+    other: "{count} hawlood sugaya · mas'uul lama magacaabin",
+  },
+  'maal.seatLedNeedsHelp': '{name} ayaa hoggaaminaya · gacan loo baahan yahay',
+  'maal.allMembers': 'Dhammaan xubnaha',
+  'maal.publicSeesTitle': 'Waxa dadweynahu arkaan',
+  'maal.publicSeesBody':
+    'Ujeeddada, xubnaha, iyo boosaska furan. Shaqada, faylalka, iyo diiwaanka wax-ku-darsiga waxay u furan yihiin xubnaha kaliya — xubnaha ayaa taas doortay.',
+
+  // 7f — maalgashi (hurdo). Taariikh lama ballanqaadayo meelna.
+  'maal.escrowNotice':
+    'Qaybtan dhan waa la dhisay, laakiin lacag ma dhaqaaqi karto. Xidig weli ma laha amaan (escrow) — waxaan diidnay inaan lacagta dadka gacanta ku qabano ka hor inta aan taas la dhisin.',
+  'maal.needTitle': 'Baahida la sheegay',
+  'maal.needAmount': 'Qaddarka',
+  'maal.needPurpose': 'Ujeeddada',
+  'maal.needDecision': "Go'aankii",
+  'maal.pledgeTitle': 'Ballanqaad',
+  'maal.pledgeCta': 'Ballanqaad',
+  'maal.pledgeAmountAria': 'Qaddarka ballanqaadka',
+  'maal.pledgeLockNote':
+    'Xiran ilaa amaanka la dhiso. Marka la furo, lacagtu waxay gashaa amaan — ma tagto akoonka aasaasaha si toos ah.',
+  'maal.worksNowTitle': 'Waxa hadda shaqeeya',
+  'maal.worksLedger': 'Diiwaanka wax-ku-darsiga iyo saamiga',
+  'maal.worksNeed': "Baahida la sheegay iyo go'aankeeda",
+  'maal.worksMoneyWeight': 'Miisaanka lacagta sida wax-ku-darsi',
+  'maal.worksPledgeLocked': 'Ballanqaad lacageed — xiran',
+  'maal.worksEscrow': 'Amaan (escrow) — weli lama dhisin',
+  'maal.capitalFooter':
+    'Ma ballanqaadno taariikh. Marka amaanku diyaar noqdo, waxaan idin ogeysiinaynaa — ilaa markaas, shaqada ayaa muhiim.',
+
+  // Xaaladaha m1–m5
+  'maal.loadingAria': 'Waa la soo rarayaa',
+  'maal.emptyTitle': 'Wali ventures ma jiraan',
+  'maal.emptyBody':
+    'Kuwa waaweyn waxay ka bilaabmaan Warshad — fikrad, koox, ujeeddo. Marka ay diyaar noqdaan, halkan ayay ka muuqdaan.',
+  'maal.emptyCta': 'Fur Warshadaha',
+  'maal.emptyFooter': {
+    one: '{count} Warshad ayaa hadda shaqeynaya. Midkoodna kuma khasbana inuu Maal noqdo.',
+    other: '{count} Warshad ayaa hadda shaqeynaya. Midkoodna kuma khasbana inuu Maal noqdo.',
+  },
+  'maal.dormantNotice': {
+    one: '{name} wax dhaqdhaqaaq ah ma yeelan {count} toddobaad. Heerkeeda, xubnaheeda iyo taariikhdeeda waxba ma isbeddelin — hal cusboonaysiin ayaa dib u firfircoonaysa. Haddii ay sii socoto, xadka waqti-dhaafka ayaa si toos ah ugu celinaya Warshad — ogeysiis hore iyo diiwaan guud ayay la socdaan.',
+    other:
+      '{name} wax dhaqdhaqaaq ah ma yeelan {count} toddobaad. Heerkeeda, xubnaheeda iyo taariikhdeeda waxba ma isbeddelin — hal cusboonaysiin ayaa dib u firfircoonaysa. Haddii ay sii socoto, xadka waqti-dhaafka ayaa si toos ah ugu celinaya Warshad — ogeysiis hore iyo diiwaan guud ayay la socdaan.',
+  },
+  'maal.resumeTitle': 'Halka laga sii wado',
+  'maal.resumePostUpdate': 'Qor cusboonaysiin',
+  'maal.resumeCallMembers': 'U yeedh xubnaha',
+  'maal.dormantFooter':
+    'Hurdadu waa calaamad iyo digniin hore. Waqti-dhaaf dheeri ah ayaa heerka si toos ah u celinaya Warshad — qaanuun cad, ogeysiis hore, iyo diiwaan guud. Shaqadu meesheeda way ku sii jirtaa: marka shuruudaha dib loo buuxiyo, waxay dib u noqonaysaa Maal.',
+  'maal.ledgerErrorNotice':
+    'Diiwaanka faahfaahsan lama soo rari karin. Wadarrada kor ku qoran waa kuwii ugu dambeeyay ee la xaqiijiyay — diiwaanka laftiisa waxba kama maqna. Isku day mar kale.',
+  'maal.ledgerErrorFooter':
+    'Diiwaanku waa lifaaq-kaliya — khalad soo-rarid waligiis ma beddelo waxa la qoray.',
+  'maal.offlineBar': 'Internet ma jiro — diiwaangelintu way sugaysaa.',
+  'maal.queuedCount': {
+    one: '{count} diiwaangelin ayaa sugaysa',
+    other: '{count} diiwaangelin ayaa sugaysa',
+  },
+  'maal.queuedNote':
+    '“{label}” · waxay baxaysaa marka internetku soo noqdo. Waqtiga dhabta ah ee aad gelisay ayaa la kaydinayaa, ma aha waqtiga dirista.',
+  // Diiwaangelin sugaysay oo aan gelin. Aamusnaantu waxay noqon lahayd shaqo
+  // lagu lumiyay DIIWAAN — sidaas darteed labada dhammaad way sheegayaan waxa
+  // dhacay iyo waxa xiga: server-ku wuu diiday (waxba lama darin), ama waqtigii
+  // baa dhaafay oo aan la dirin, marka waa in mar kale la geliyaa.
+  'maal.queueRefused': {
+    one: '{count} diiwaangelin oo sugaysay ma gelin — server-ku wuu diiday. Waxba diiwaanka lagu ma darin.',
+    other:
+      '{count} diiwaangelin oo sugaysay ma gelin — server-ku wuu diiday. Waxba diiwaanka lagu ma darin.',
+  },
+  'maal.queueExpired': {
+    one: '{count} diiwaangelin oo sugaysay ayaa waqtigeedu dhaafay, lamana dirin. Mar kale geli — waxba diiwaanka ma gaarin.',
+    other:
+      '{count} diiwaangelin oo sugaysay ayaa waqtigeedu dhaafay, lamana dirin. Mar kale geli — waxba diiwaanka ma gaarin.',
+  },
+
+  // Maal — calaamadaha taariikhda Meesha
+  'maal.eventPromotedVenture': 'Waxaa loo dallaciyay Maal',
+  'maal.eventDemotedTimeout': 'Waxay ku noqotay Warshad — waqti-dhaaf',
+  'maal.eventGoalUpdated': 'Ujeeddada waa la cusboonaysiiyay',
+  'maal.eventVisibilityChanged': 'Muuqaalka diiwaanka waa la beddelay',
+  'maal.eventWorkstreamAdded': 'Qayb shaqo waa lagu daray',
+  'maal.eventWorkstreamChanged': 'Qayb shaqo waa la beddelay',
+  'maal.eventWorkstreamRemoved': 'Qayb shaqo waa la saaray',
+  'maal.eventTaskAdded': 'Hawl waa lagu daray',
+  'maal.eventTaskChanged': 'Hawl waa la beddelay',
+  'maal.eventTaskMoved': 'Hawl waa la dhaqaajiyay',
+  'maal.eventContributionReversed': 'Wax-ku-darsi waa la saxay',
+  'maal.eventWeightsChanged': 'Miisaannada waa la beddelay (cod)',
+  'maal.eventCapitalNeedDeclared': 'Baahida maalgashi waa la sheegay',
+
+  // Maal — khaladaadka §27
+  'error.ventureNotReady':
+    'Warshaddu waxay noqotaa Maal marka ay qorto ujeeddo oo ay leedahay ugu yaraan hal qayb shaqo oo mas’uul la magacaabay. Ku dar kuwaas, kadibna isku day mar kale.',
+  'error.taskRecusal':
+    'Hawshaada ma marag furi kartid, mana ansixin kartid. Xubin kale ayaa taas sameynaya — taasaa ansixinta macno siisa.',
+  'error.attestationRecusal':
+    'Wax-ku-darsigaaga ma marag furi kartid. Weydiiso xubin ama hoggaamiye inuu co-sign kuu sameeyo.',
+  'error.ledgerLocked':
+    'Meeshan hadda waa Warshad, sidaas darteed diiwaankeedu ma qaadanayo gelin cusub. Waxba ma lumin — wixii la qoray weli way jiraan, wuuna furmayaa haddii ay mar kale Maal noqoto.',
+  'error.contributionAlreadyReversed':
+    'Gelintaas horey ayaa loo saxay. Diiwaanku wuxuu hayaa labadaba — tii asalka ahayd iyo saxitaanka — saxitaanna mar labaad lama saxo.',
+
+  // Maal — ogeysiisyada waqti-dhaafka. Rafcaan lama balan qaadayo: rafcaanku
+  // wuxuu ku xiran yahay ficillada maamulka (§19), waqti-dhaafna ma aha ficil
+  // maamul. Waxa jira waa dib-u-dallacaad.
+  'notif.ventureDemotionWarning':
+    '{name} waxay ku noqonaysaa Warshad haddii aan wax dhicin — hal wax-ku-darsi ama hal cusboonaysiin ayaa ku filan. Isbeddelka diiwaanka guud ayaa lagu qorayaa, waxbana ma lumayaan',
+  'notif.ventureDemoted':
+    '{name} waxay ku noqotay Warshad waqti-dhaaf awgeed. Shaqadeeda, diiwaankeeda, go’aannadeeda iyo taariikhdeeda waxba kama beddelmin — mar kale u dallaci marka shaqadu dib u bilaabato',
 } satisfies SomaliDictionary;

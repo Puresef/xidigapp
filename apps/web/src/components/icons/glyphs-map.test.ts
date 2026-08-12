@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { XIDIG_POST_TYPE_ICON } from './paths';
+import { XIDIG_ICONS, XIDIG_POST_TYPE_ICON, type XidigIconName } from './paths';
 
 /**
  * One-map convention (docs/d3-icon-handoff): public/icons/glyphs.map.json is
@@ -16,8 +16,11 @@ interface GlyphEntry {
   key: string;
   post_type: string | null;
   legacy_post_type?: string;
+  /** product slug for glyphs that name a surface rather than a post type (maal) */
+  product?: string;
   outline: string;
   filled: string;
+  brand_check?: Record<string, string | number>;
 }
 
 interface GlyphsMap {
@@ -56,12 +59,41 @@ describe('glyphs.map.json — P1 dictionary migration record', () => {
   });
 });
 
+describe('glyphs.map.json — ruling 8 maal glyph', () => {
+  it('maal is a product glyph, not a post type', () => {
+    expect(entry('maal').post_type).toBeNull();
+    expect(entry('maal').product).toBe('maal');
+  });
+
+  it('records the brand-check verdict: outline + nav pass, filled reworked, ≤16px drops the bindings', () => {
+    const check = entry('maal').brand_check ?? {};
+    expect(check.ruling).toBe(8);
+    expect(check.verdict).toBe('canon');
+    expect(String(check.filled)).toMatch(/wedge/i);
+    expect(String(check.nav_variant)).toContain('1.8/1.3');
+    expect(String(check.small_size_rule)).toContain('16px');
+  });
+});
+
 describe('glyphs.map.json — asset and code coherence', () => {
   it('every mapped SVG pair exists on disk', () => {
     for (const glyph of map.glyphs) {
       expect(existsSync(join(ICONS_DIR, glyph.outline)), glyph.outline).toBe(true);
       expect(existsSync(join(ICONS_DIR, glyph.filled)), glyph.filled).toBe(true);
     }
+  });
+
+  it('every mapped glyph is a registered XidigIcon name', () => {
+    for (const glyph of map.glyphs) {
+      expect(XIDIG_ICONS[glyph.key as XidigIconName], glyph.key).toBeDefined();
+    }
+  });
+
+  it('the shipped maal SVGs carry the same geometry as paths.ts (no asset drift)', () => {
+    const outline = readFileSync(join(ICONS_DIR, entry('maal').outline), 'utf8');
+    for (const path of XIDIG_ICONS.maal.outline) expect(outline).toContain(path.d);
+    const filled = readFileSync(join(ICONS_DIR, entry('maal').filled), 'utf8');
+    expect(filled).toContain(XIDIG_ICONS.maal.filled[0]!.d);
   });
 
   it('every XIDIG_POST_TYPE_ICON target is a mapped glyph', () => {

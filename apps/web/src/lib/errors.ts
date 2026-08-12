@@ -268,6 +268,24 @@ export const ERROR_DEFS = {
   // Host check-in before starts_at — the door opens when the event does.
   event_checkin_not_open: { messageKey: 'error.eventCheckinNotOpen' },
 
+  // --- Maal / venture workspace (F2 §5) ----------------------------------------------
+  // Warshad → Maal refused: the goal is missing, or no workstream has a named
+  // owner. Charter gaps answer charter_incomplete (above) — the three are
+  // separate sentences because they have separate fixes.
+  venture_not_ready: { messageKey: 'error.ventureNotReady' },
+  // Witness/approve on your own task, or co-sign your own contribution. Two
+  // codes because the surfaces differ (board card vs ledger row) and the copy
+  // has to name the right thing; the rule behind both is one rule (recusal).
+  task_recusal: { messageKey: 'error.taskRecusal' },
+  attestation_recusal: { messageKey: 'error.attestationRecusal' },
+  // A ledger write against a space that is not (or is no longer) a Maal. The
+  // ledger stays READABLE forever — demotion preserves it — but a Warshad has
+  // no contribution surface to append to.
+  ledger_locked: { messageKey: 'error.ledgerLocked' },
+  // One correction per event (work_events_reversal_once_uq), surfaced as this
+  // instead of a raw 23505. A correction of a correction would be an edit.
+  contribution_already_reversed: { messageKey: 'error.contributionAlreadyReversed' },
+
   // --- Mentor-in-residence bookable slots (Munaasabado Task 9) ------------------------
   // The atomic claim UPDATE matched zero rows: someone else already booked it,
   // or it's no longer in the future. Also covers a past/nonexistent slot id —

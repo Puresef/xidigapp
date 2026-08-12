@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+import { XidigIcon } from '@/components/icons/XidigIcon';
 import { LabsFeed } from '@/components/labs/labs-feed';
 import { getAuthContext } from '@/lib/auth/guards';
 import { fetchLabCounts, fetchLabMembershipIds } from '@/lib/labs/views';
@@ -87,28 +88,20 @@ export default async function LabsPage({
       </div>
       <p className="xidig-card__body">{t('lab.listSubtitle')}</p>
 
-      {/* Capital / Maal entry (§12: Capital has no bottom tab — it lives here).
-          Trust-orange treatment per DESIGN.md §2: orange as border/fill, ink
-          text — never orange text on white. */}
+      {/* Maal entry (§12: Maal has no bottom tab — it lives here). /capital is
+          the Maal index since F2 §5, so the pitch is maal.indexSubtitle and the
+          glyph is the canon xidhmo sheaf: ruling 8 upholds the finance-imagery
+          ban, and the rising-chart line this card used to carry was exactly
+          that. The trust-orange treatment is unchanged and is flagged (F10) —
+          DESIGN.md §2 still enumerates "Capital entry" as sanctioned orange,
+          which predates the reframe from funding board to work organisation. */}
       <Link href="/capital" className="xidig-capital-entry">
         <span className="xidig-capital-entry__icon" aria-hidden="true">
-          <svg
-            viewBox="0 0 24 24"
-            width="22"
-            height="22"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 17l5.5-5.5 3.5 3L19 7.5" />
-            <path d="M14.5 7.5H19V12" />
-          </svg>
+          <XidigIcon name="maal" size={22} />
         </span>
         <span className="xidig-capital-entry__text">
           <span className="xidig-capital-entry__title">{t('capital.indexTitle')}</span>
-          <span className="xidig-capital-entry__pitch">{t('capital.indexSubtitle')}</span>
+          <span className="xidig-capital-entry__pitch">{t('maal.indexSubtitle')}</span>
         </span>
         <span className="xidig-capital-entry__cta">{t('capital.labsEntryLink')} →</span>
       </Link>

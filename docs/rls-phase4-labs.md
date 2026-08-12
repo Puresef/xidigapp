@@ -75,8 +75,13 @@ guarantee while unlocking the surface for members.
   demotion is allowed** and is the decided mechanism (12 Aug 2026) — Maal
   auto-demotes back to Warshad on timeout, writing a public Governance Log
   entry and preserving history (work, ledger, contribution record, prior
-  decisions; only current stage changes). The system timeout path is **not yet
-  implemented**; it lands in Maal F2.
+  decisions; only current stage changes). The system timeout path **shipped in
+  Maal F2** (`20260813000100_maal_venture.sql`): `warn_timed_out_ventures()`
+  stamps `demotion_warned_at` at 70 days idle, and
+  `demote_timed_out_ventures()` flips `space_mode` back to `lab` at 84 days —
+  but only for a venture that was warned first, and only for `service_role`.
+  Any activity clears the warning (`touch_lab_last_activity()` now nulls
+  `demotion_warned_at` alongside `dormant_since`).
 - `flag_skill_gaps()` (service_role): stamps `alerted_at` on skill needs open +
   un-alerted for 7 days and returns `(lab_id, skill)` for the cron fan-out.
 
@@ -89,5 +94,11 @@ guarantee while unlocking the surface for members.
   `labs`, `lab_updates`, `lab_events` by the lead/member.
 - No client-initiated demotion invariant → `space_mode/stage/visibility`
   unchanged after `mark_dormant_labs()` (the function marks dormancy only;
-  stage changes are reserved for the system-role timeout path, which ships in
-  Maal F2).
+  stage changes are reserved for the system-role timeout path). The negative
+  test is scoped to user-initiated writes, and is now paired with three
+  positive specs: the service role CAN demote a timed-out venture, the
+  demotion writes a member-readable Governance Log entry, and it leaves the
+  ledger, work history, `lab_events` and prior decisions byte-identical.
+- Append-only ledger → `/append-only/` on `update`/`delete` of `work_events`,
+  for **every** role including the superuser: the immutability trigger, not the
+  revoke, is what makes "wax lama beddelo" true.

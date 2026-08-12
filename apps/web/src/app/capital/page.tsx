@@ -2,66 +2,77 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import type { Enums } from '@xidig/db';
-import type { MessageKey } from '@xidig/i18n';
-
-import { CandidateCard } from '@/components/capital/candidate-card';
-import { EmptyState } from '@/components/empty-state';
+import {
+  DEFAULT_VENTURE_SORT,
+  MaalIndexFilters,
+  VENTURE_INDEX_FILTERS,
+  VENTURE_INDEX_SORTS,
+  type VentureIndexFilter,
+  type VentureIndexSort,
+} from '@/components/maal/index-filters';
+import { MaalIndexEmpty } from '@/components/maal/index-empty';
+import { MaalIndexList } from '@/components/maal/index-list';
 import { getAuthContext } from '@/lib/auth/guards';
-import { listCandidates } from '@/lib/capital/views';
-import { getT } from '@/lib/locale';
+import { getLitePrefs } from '@/lib/lite/server';
+import { getLocale, getT } from '@/lib/locale';
+import { listVentureIndex } from '@/lib/maal/views';
 import { frontMetadata } from '@/lib/seo';
-import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
-  // Dual-mode route: the teaser title/description are mode-neutral — honest
-  // pipeline framing that fits the member candidates list too (standard §2
-  // F36); never invest language.
+  // Describes the Maal index, which is what this route is since F2 §5. The old
+  // marketing.capitalTeaser* pair ("venture candidates rise from Labs, get
+  // reviewed, face a member vote") stayed with the board it describes, at
+  // /capital/candidates. Never invest language, on either.
   const t = await getT();
   return frontMetadata({
-    title: t('marketing.capitalTeaserTitle'),
-    description: t('marketing.capitalTeaserBody'),
+    title: t('maal.teaserTitle'),
+    description: t('maal.teaserBody'),
     path: '/capital',
   });
 }
 
 /**
- * Capital / Maal index (§17). Lists the candidates the viewer can read (RLS
- * scopes the fetch — draft/reviewers-only rows they lack access to simply don't
- * appear). Status filter tabs are shareable ?status= links (no JS). Capital has
- * NO bottom tab (§12) — this page is reached from the Labs area and candidate
- * permalinks. Teaching empty state explains what a Candidate is.
+ * The Maal index — frame 7a, plus states m1 (loading.tsx) and m2 (empty).
+ *
+ * `/capital` IS this screen (plan D1). `nav.capital` is the locked SO label
+ * "Maal" and `/capital` is a locked rail destination, so the Maal index goes
+ * where the rail already points and no nav lock is touched. The Phase-5
+ * candidate board moved to `/capital/candidates` with its filters, its cards
+ * and its loading shell intact — nothing was deleted, and the quiet link below
+ * the list is what keeps it reachable.
+ *
+ * What this screen is, in one line: ONE list of staged work organisations,
+ * with the stage as a badge rather than a separate tab. A Warshad and a Maal
+ * sit in the same list on purpose — the footer law says why — so nobody's real
+ * stage is hidden behind a filter nobody clicked.
+ *
+ * **A Koox is never here** (ruling 4). `listVentureIndex` filters `space_mode`
+ * in the query, so a club is neither fetched nor counted; `MaalIndexList`
+ * holds the same rule at its own boundary. Absence, not concealment.
+ *
+ * Lite: the only bytes on this surface are the facepile thumbs, which ride
+ * `Avatar`'s `prefs` ladder (thumb → initials disc). There is no cover and no
+ * icon image in frame 7a, so there is nothing else to defer — and nothing is
+ * gated: every row, every count and the join verb are identical in Lite.
  */
-
-const STATUSES = ['submitted', 'in_review', 'approved', 'parked', 'declined'] as const;
-type StatusFilter = (typeof STATUSES)[number];
-
-const STATUS_TAB_KEYS: Record<StatusFilter, MessageKey> = {
-  submitted: 'capital.statusSubmitted',
-  in_review: 'capital.statusInReview',
-  approved: 'capital.statusApproved',
-  parked: 'capital.statusParked',
-  declined: 'capital.statusDeclined',
-};
-
-export default async function CapitalIndexPage({
+export default async function MaalIndexPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const ctx = await getAuthContext();
   if (!ctx) {
-    // Front-door teaser (Phase A): honest pipeline explanation, never invest
-    // language (matches the /c/[id] public projection rule) — replaced by the
-    // real public candidates list in Phase B (docs/front-door-plan.md §3/§4).
+    // Front-door teaser (Phase A): honest explanation of what a Maal IS, never
+    // invest language (matches the /c/[id] public projection rule) — replaced by
+    // the real public list in Phase B (docs/front-door-plan.md §3/§4).
     const t = await getT();
     return (
       <main className="xidig-front">
         <section className="xidig-front__hero">
-          <h1>{t('marketing.capitalTeaserTitle')}</h1>
-          <p>{t('marketing.capitalTeaserBody')}</p>
+          <h1>{t('maal.teaserTitle')}</h1>
+          <p>{t('maal.teaserBody')}</p>
           <p className="xidig-banner xidig-banner--notice">{t('capital.securitiesDisclaimer')}</p>
           <div className="xidig-front__cta-row">
             <Link href="/waitlist?from=capital" className="xidig-button xidig-button--primary">
@@ -75,63 +86,60 @@ export default async function CapitalIndexPage({
   if (ctx.appUser.status === 'suspended') redirect('/auth/error?reason=account_suspended');
 
   const params = await searchParams;
-  const requested = params.status;
-  const status = STATUSES.find((s) => s === requested) as StatusFilter | undefined;
+  const filter: VentureIndexFilter =
+    VENTURE_INDEX_FILTERS.find((value) => value === params.filter) ?? 'all';
+  const sort: VentureIndexSort =
+    VENTURE_INDEX_SORTS.find((value) => value === params.sort) ?? DEFAULT_VENTURE_SORT;
 
-  const t = await getT();
-  const admin = getSupabaseAdmin();
-  const { items } = await listCandidates(
-    ctx.supabase,
-    admin,
-    status ? { status: status as Enums<'candidate_status'> } : {},
-  );
+  const [t, locale, prefs, { rows, counts }] = await Promise.all([
+    getT(),
+    getLocale(),
+    getLitePrefs(),
+    listVentureIndex(ctx, { filter }),
+  ]);
 
   return (
-    <main className="xidig-section">
-      <div className="xidig-card__header">
-        <h1 className="xidig-auth__title">{t('capital.indexTitle')}</h1>
-      </div>
-      <p className="xidig-card__body">{t('capital.indexSubtitle')}</p>
-
-      <div className="xidig-tabs">
-        <Link
-          className="xidig-tabs__tab"
-          href="/capital"
-          aria-current={!status ? 'page' : undefined}
-        >
-          {t('capital.filterAll')}
-        </Link>
-        {STATUSES.map((s) => (
-          <Link
-            key={s}
-            className="xidig-tabs__tab"
-            href={`/capital?status=${s}`}
-            aria-current={status === s ? 'page' : undefined}
+    <main className="xidig-maal-index">
+      <header className="xidig-maal-head">
+        <span className="xidig-maal-head__lines">
+          <h1 className="xidig-auth__title">{t('capital.indexTitle')}</h1>
+          <p className="xidig-maal-head__sub">{t('maal.indexSubtitle')}</p>
+        </span>
+        <Link href="/labs/new" className="xidig-button xidig-button--primary xidig-maal-head__cta">
+          <svg
+            viewBox="0 0 24 24"
+            width="17"
+            height="17"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.2}
+            strokeLinecap="round"
+            aria-hidden="true"
           >
-            {t(STATUS_TAB_KEYS[s])}
-          </Link>
-        ))}
-      </div>
+            <path d="M12 5.5v13M5.5 12h13" />
+          </svg>
+          {t('maal.newLab')}
+        </Link>
+      </header>
 
-      {items.length === 0 ? (
-        <EmptyState
-          titleKey="capital.emptyTitle"
-          messageKey="capital.emptyBody"
-          action={
-            <p className="xidig-card__meta">
-              <Link href="/labs">{t('capital.emptyLabsLink')} →</Link>
-            </p>
-          }
-        />
+      <MaalIndexFilters filter={filter} sort={sort} counts={counts} />
+
+      {rows.length === 0 ? (
+        <MaalIndexEmpty workingLabs={counts.labs} />
       ) : (
-        <ul className="xidig-card-grid">
-          {items.map((item) => (
-            <li key={item.candidate.id}>
-              <CandidateCard item={item} />
-            </li>
-          ))}
-        </ul>
+        <MaalIndexList rows={rows} prefs={prefs} locale={locale} />
       )}
+
+      {/* Outside the branch on purpose: the candidate board must not become
+          unreachable on the one screen that is empty. */}
+      <p className="xidig-card__meta xidig-maal-index__candidates">
+        <Link href="/capital/candidates">{t('maal.candidatesLink')} →</Link>
+      </p>
+
+      {/* The honest core of the screen, not decoration: what the stage is, how
+          it is earned, and how it is lost. m2 states its own footer instead —
+          an empty index has no stages to explain yet. */}
+      {rows.length > 0 ? <p className="xidig-maal-index__law">{t('maal.indexLaw')}</p> : null}
     </main>
   );
 }

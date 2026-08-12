@@ -129,6 +129,19 @@ export function bundleSummary(b: NotificationBundle, t: Translator): string {
       const when = typeof b.payload?.when === 'string' ? b.payload.when : '';
       return t('notif.mentorSlotBooked', { name, when });
     }
+    case 'venture_demotion_warning':
+    case 'venture_demoted': {
+      // The venture's name is baked in at write time (the sweep has no request
+      // locale to re-render against later, and a Space name is not translated
+      // anyway). A row with no name predates the payload and degrades to the
+      // generic line rather than rendering a bare "{name}".
+      const ventureName = typeof b.payload?.name === 'string' ? b.payload.name : null;
+      if (!ventureName) return t('notif.generic');
+      return t(
+        b.type === 'venture_demoted' ? 'notif.ventureDemoted' : 'notif.ventureDemotionWarning',
+        { name: ventureName },
+      );
+    }
     case 'event_reminder': {
       // Task 4 payload carries the send-time title; LEGACY rows (pre-Task-4)
       // only have { eventSlug } — no title means no safe interpolation, so

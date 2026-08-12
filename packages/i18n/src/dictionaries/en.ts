@@ -592,6 +592,8 @@ export const en = {
   'settings.notifTypeLabCollabResponse': 'Collaboration responses',
   'settings.notifTypeWeeklyDigest': 'Weekly digest',
   'settings.notifTypeMentorSlotBooked': 'Mentor bookings',
+  'settings.notifTypeVentureDemotionWarning': 'Venture stage warnings',
+  'settings.notifTypeVentureDemoted': 'Venture stage changes',
   'settings.quietHoursTitle': 'Quiet hours',
   'settings.quietHoursEnable': 'Turn on quiet hours',
   'settings.quietHoursHint':
@@ -1552,7 +1554,12 @@ export const en = {
   'lab.badgeDormant': 'Dormant',
   'lab.signInToJoin': 'Sign in to join or follow this Space.',
   'lab.eventCreated': 'Space created',
-  'lab.eventPromoted': 'Promoted to Lab',
+  // `promoted` covers two rungs (Club → Lab and Lab → Venture), so the bare key
+  // is stage-neutral and the two specific ones are chosen from the event's own
+  // metadata. A history line that says "Promoted to Lab" about a Venture
+  // promotion is wrong in the one place a member goes to check what happened.
+  'lab.eventPromoted': 'Promoted',
+  'lab.eventPromotedLab': 'Promoted to Lab',
   'lab.eventSettingsChanged': 'Settings changed',
   'lab.eventUpdatePublished': 'Update posted',
   'lab.eventUpdateCrossposted': 'Update cross-posted',
@@ -1672,6 +1679,10 @@ export const en = {
   'capital.indexTitle': 'Capital',
   'capital.indexSubtitle': 'Ventures the community is building and backing.',
   'capital.labsEntryLink': 'Explore Capital',
+  // The Phase-5 candidate board's own name. /capital is the Maal index (D1),
+  // so the board moved to /capital/candidates and needs a title that is not
+  // the section's — `capital.indexTitle` now heads the Maal index.
+  'capital.candidatesTitle': 'Venture Candidates',
   'capital.filterAll': 'All',
   'capital.fromLab': 'From',
   'capital.emptyTitle': 'No Candidates yet',
@@ -2504,6 +2515,425 @@ export const en = {
   // never orange (A9).
   'profile.badgeFounder': 'Founder',
   'profile.badgeAuthor': 'Author',
+
+  // --- Maal (venture workspace) ---------------------------------------------
+  // Frames 7a–7g + states m1–m5 (docs/superpowers/plans/2026-08-12-maal-venture.md).
+  // A Maal is a Space at `space_mode = 'venture'`; the Somali here is the
+  // design's own copy and is the register of record, so English is the
+  // translation for once — plain, never promotional, and never softer than the
+  // Somali about what money cannot do yet.
+  //
+  // Deliberately NOT redefined here (reuse them): `capital.indexTitle`
+  // (EN Capital · SO Maal) for the index heading, `term.lab` for the Warshad
+  // stage badge, `lab.badgeDormant` ('Hurdo'), `lab.tabDecisions` ("Go'aanno",
+  // identical in both locales), `lab.tabMembers`, `lab.actionJoin` ('Ku biir'),
+  // `lab.actionView` ('Fiiri'), `lab.actionRequestJoin` ('Codso inaad ku
+  // biirto'), `lab.roleLead|roleMember|roleObserver`, `profile.badgeFounder`
+  // ('Aasaase'), `action.accept|decline|retry|delete|back`, and the `lite.*`
+  // deferred-media keys the frames show over the cover image.
+  //
+  // Money never renders through a key: `$0` and every share/ratio is a number,
+  // formatted by formatNumber, so the dictionary cannot drift from the ledger.
+
+  // 7a — the Maal index. Koox is never listed here (ruling 4).
+  'maal.indexSubtitle':
+    'Labs and ventures. Join one, or grow your Lab into a Venture once it has a purpose and a structure.',
+  // Signed-out teaser + page metadata for /capital. Since F2 §5 this route is the
+  // Maal index, not the candidate board — marketing.capitalTeaser* stayed with the
+  // board at /capital/candidates, where it is still true. No invest language here
+  // either: this describes work organisations, and Xidig moves no money.
+  'maal.teaserTitle': 'Maal — work organisations you can join',
+  'maal.teaserBody':
+    'Labs and ventures in one place: a stated purpose, workstreams with named owners, a decision log, and an open contribution ledger. Stage is earned by work, never awarded — and no money moves through Xidig.',
+  'maal.newLab': 'New Lab',
+  'maal.chipAll': 'All · {count}',
+  'maal.chipVentures': 'Ventures · {count}',
+  'maal.chipLabs': 'Labs · {count}',
+  'maal.chipMine': 'Ones I’m in · {count}',
+  'maal.sortLabel': 'Sort by:',
+  'maal.sortActivity': 'Activity',
+  'maal.colName': 'Name & purpose',
+  'maal.colStage': 'Stage',
+  'maal.colMembers': 'Members',
+  'maal.colOpenWork': 'Open work',
+  // The accent stage tag. Its Warshad counterpart is `term.lab` — one canonical
+  // word per stage, so a rename can never disagree with itself.
+  'maal.stageVenture': 'Venture',
+  'maal.stageDemoted': 'Returned from Venture',
+  // Rendered after the Space's own one-liner, as its own sentence — never
+  // glued onto it.
+  'maal.demotedPremise':
+    'It returned to being a Lab after a timeout — it is written in the public log.',
+  'maal.rowFounder': 'Founder {name}',
+  'maal.rowOpenedBy': 'Opened by {name}',
+  'maal.rowRound': {
+    one: 'Round {round} — {count} day left',
+    other: 'Round {round} — {count} days left',
+  },
+  'maal.rowLastActivity': 'Last active {time}',
+  'maal.openSeats': { one: '{count} open seat', other: '{count} open seats' },
+  'maal.openToAnyone': 'Open to anyone',
+  // The open-work cell renders "—" when a space has neither open seats nor an
+  // open door. The dash is the frame's mark; this is the sentence a screen
+  // reader gets, because "nothing announced" reads as "column failed to load".
+  'maal.noOpenWork': 'No open work',
+  'maal.actionOpen': 'Open',
+  'maal.actionRequest': 'Request',
+  // The quiet link off the index to the Phase-5 candidate board (D1: it moved
+  // to /capital/candidates when /capital became the Maal index — nothing was
+  // deleted, so nothing may become unreachable either).
+  'maal.candidatesLink': 'The Venture Candidates board',
+  // The footer law. One key: it is a single statement of what the stage is and
+  // how it is lost, and a split would let one half ship without the other.
+  'maal.indexLaw':
+    'Venture is a stage, not a reward. A Lab becomes a Venture when it writes a purpose, names a lead, and takes on the structure of work — and it returns to being a Lab if inactivity passes the timeout limit — automatically, with notice in advance and a public log. Nothing is lost in the return: the charter, the ledger and the decisions all stay, and it becomes a Venture again once the conditions are met. Both live in the same place so nobody’s real stage is hidden.',
+
+  // 7b — the venture overview. The tab row is the frames' own register: it says
+  // Guud / Wada-hadal / Lifaaqyo where the Warshad row says Guudmar /
+  // Warbixino / Wax-soo-saar. Kept as separate keys so the venture reads the
+  // way it was designed without renaming a tab on every Koox and Warshad.
+  'maal.backToIndex': 'All Ventures',
+  'maal.actionAdd': 'Add',
+  'maal.tabOverview': 'Overview',
+  'maal.tabWork': 'Work',
+  'maal.tabUpdates': 'Discussion',
+  'maal.tabArtifacts': 'Attachments',
+  'maal.tabLedger': 'Contributions',
+  'maal.tabCapital': 'Investment',
+  'maal.charterTitle': 'Charter',
+  'maal.charterUpdated': 'Updated {time} · {name}',
+  // The meter's accessible name. The visible tail is a number, a slash and the
+  // venture's own goal unit — data, not copy.
+  'maal.goalAria': '{done} of {target} {unit}',
+  'maal.workstreamsTitle': 'Workstreams',
+  'maal.workstreamsNote': 'Everyone owns one',
+  'maal.colWorkstream': 'Workstream',
+  'maal.colOwner': 'Owner',
+  'maal.colTasks': 'Tasks',
+  'maal.colStatus': 'Status',
+  'maal.openSeat': 'Open seat',
+  'maal.workstreamActive': 'Active',
+  'maal.workstreamWaiting': 'Waiting',
+  'maal.decisionsTitle': 'Latest decisions',
+  'maal.decisionsAll': 'The full log',
+  // Post-close tallies only (Phase 5 pattern) — a decision in flight shows no
+  // numbers at all, so there is no "so far" phrasing to translate.
+  'maal.decisionTally': {
+    one: '{count} member agreed, {rejected} against',
+    other: '{count} members agreed, {rejected} against',
+  },
+  'maal.decisionTallyUnanimous': {
+    one: '{count} member agreed',
+    other: '{count} members agreed',
+  },
+  'maal.membersWithCount': 'Members · {count}',
+  'maal.activeNow': '{count} active now',
+  'maal.activeDot': 'Active',
+  'maal.applicationsTitle': 'Membership applications · {count}',
+  // Reads after the applicant's skill and a middot, so it starts lower-case in
+  // both locales — one clause, not a fragment waiting for a verb.
+  'maal.applicationRequested': 'wants to work in {workstream}',
+  'maal.visibilityTitle': 'Visibility',
+  'maal.visPublicPage': 'Public page',
+  'maal.visPublicPageHint': 'The purpose and the members are visible',
+  'maal.visLedgerMembers': 'Contributions open to members',
+  'maal.visLedgerMembersHint': 'Everyone sees what everyone added',
+  'maal.visHoursLeads': 'Hours for leads only',
+  'maal.visHoursLeadsHint': 'Other members see a total',
+  'maal.visibilityFooter':
+    'The members chose this. Xidig does not choose — and nothing is recorded secretly.',
+  'maal.capitalDormantTitle': 'Investment — dormant',
+  'maal.capitalDormantBody':
+    'The structure is ready: shares, a ledger, and pledges. Money cannot move until Xidig’s escrow is built.',
+  'maal.capitalDormantLink': 'See the structure',
+
+  // 7c — the work board. Hours are one contribution type, entered by the
+  // member; nothing here is observed or measured for them.
+  'maal.logContribution': 'Log a contribution',
+  'maal.newTask': 'Task',
+  'maal.filterAllWorkstreams': 'Every workstream',
+  'maal.weekLogged': {
+    one: 'You logged {count} hour this week',
+    other: 'You logged {count} hours this week',
+  },
+  'maal.boardPlanned': 'Planned',
+  'maal.boardInProgress': 'In progress',
+  'maal.boardAttestation': 'Witness & approval',
+  'maal.boardDone': 'Complete',
+  'maal.hoursShort': { one: '{count} hr', other: '{count} hrs' },
+  'maal.unassignedAria': 'No owner named',
+  // The guul star on an attested row — the one earned mark allowed to be
+  // orange on a Maal surface (badge canon 10a).
+  'maal.attestedAria': 'Verified contribution',
+  'maal.logTaskLabel': 'Task',
+  'maal.logTypeLabel': 'Type',
+  'maal.logAmountLabel': 'How much',
+  // Money is the one contribution whose unit is ambiguous — the ledger stores
+  // and renders cents, a member thinks in dollars — so the money field says its
+  // unit in its own label, and the hint echoes the exact figure that will be
+  // appended. This guard has to sit BEFORE the write: the ledger is
+  // append-only, so "$500 logged as $5.00" can only ever be corrected by a
+  // public reversal event that stays in the chain forever.
+  'maal.logAmountMoneyLabel': 'Amount ({currency})',
+  'maal.logAmountMoneyHint':
+    'Enter the amount in {currency}, not in cents. It is recorded in the ledger — money never moves.',
+  'maal.logAmountMoneyPreview': 'Recorded as {amount}',
+  'maal.logSubmit': 'Log it',
+  // work_event_type. 'Introduction' rather than 'Intro' so it can never be read
+  // as the Plaza post type (plaza.typeIntro / Salaan).
+  'maal.typeHours': 'Hours',
+  'maal.typeCode': 'Code',
+  'maal.typeDesign': 'Design',
+  'maal.typeIntro': 'Introduction',
+  'maal.typeMoney': 'Money',
+  // The board moves. Each verb names what actually happens to the card, and
+  // the two witnessing verbs are separate words on purpose: a witness says
+  // "I saw this", an approval says "this counts" — collapsing them into one
+  // "Done" button would erase the recusal rule the ledger rests on. (The
+  // approval verb itself reuses `action.approve`, the app-wide word.)
+  'maal.taskClaim': 'Take it',
+  'maal.taskRelease': 'Put it back',
+  'maal.taskSubmit': 'Submit',
+  'maal.taskAttest': 'Witness it',
+  // The "no task" / "no workstream" option in the log and create forms. One
+  // key: it is the same absence in both, and two words for it would drift.
+  'maal.optionNone': 'None',
+
+  // 7d — the ledger. The notice is one key: it is one utterance about what the
+  // ledger is, what it is not, and what a correction does. Split it and a
+  // translator can ship "this is real" without "it has no legal force".
+  'maal.ledgerNotice':
+    'This ledger works and it is real: it records what each person added. The share shown has no legal force until a company is registered, and it never weights a vote — every verified member has one vote. It is an agreement between the members; Xidig does not mediate it. The ledger is append-only and hash-chained: nothing is edited and nothing is deleted — a correction is a new reversal event.',
+  'maal.statTotalHours': 'Total hours',
+  'maal.statEventsLogged': 'Contributions logged',
+  'maal.statContributors': 'Members who contributed',
+  'maal.statMoneyClosed': 'Money — not open yet',
+  'maal.colMember': 'Member',
+  'maal.colUnits': 'Units',
+  'maal.colShare': 'Share',
+  'maal.unitsValue': { one: '{count} unit', other: '{count} units' },
+  'maal.prCount': { one: '{count} PR', other: '{count} PRs' },
+  'maal.weightsTitle': 'How units are counted',
+  // The four weights are params, not literals: they are the seeded scheme and
+  // the members can vote a different one (venture_weight_schemes), so a
+  // hard-coded 8/12/10/25 would start lying the day they do. Every word around
+  // them is the design's own.
+  'maal.weightsBody':
+    'The members chose the weights: an hour = {hours} units, an approved PR = {code}, an approved design = {design}, an introduction that brought a customer = {intro}. Changing the weights is a decision the members vote on — one member, one vote, and a share never weights a vote — and it goes into the decision log. The share is read out of the events: the scheme can change without touching the history. A verified unit needs a witness — a co-sign from members or a lead — and a lead cannot approve their own work.',
+  'maal.weightsLink': 'See the weights',
+  'maal.moneyCardTitle': 'Money as a contribution',
+  'maal.moneyCardBody':
+    'The money contribution type exists in the ledger, but it is not open. When Xidig’s escrow is built, it will run on these same weights — nothing else changes.',
+  'maal.exportCsv': 'Download CSV',
+  // The CSV's own header row. Localised like any other label: a member's copy of
+  // the ledger is their record of an agreement between members, and it is read
+  // in the language they read everything else in. The remaining columns reuse
+  // the table's keys (colMember / logTypeLabel / logAmountLabel / colUnits /
+  // logTaskLabel) — one word cannot mean two things across two surfaces.
+  'maal.csvSeq': 'Seq',
+  'maal.csvWhen': 'When',
+  'maal.csvWitnesses': 'Witnesses',
+  'maal.csvNote': 'Note',
+
+  // 7g — the same ledger on mobile. Ruling 1: full capability, responsive
+  // presentation. These are the compact labels the 402px layout needs, not a
+  // reduced feature set.
+  'maal.ledgerSubtitle': '{name} · the whole ledger',
+  'maal.filterSheet': 'Filter',
+  'maal.filterMember': 'Member: {value}',
+  'maal.filterType': 'Type: {value}',
+  'maal.filterAll': 'All',
+  'maal.filterDays': { one: '{count} day', other: '{count} days' },
+  'maal.statHoursShort': 'Hours',
+  'maal.statEventsShort': 'Events',
+  'maal.statMembersShort': 'Members',
+  'maal.statMoneyShort': 'Money',
+  'maal.statPrShort': 'PRs',
+  'maal.statIntrosShort': 'Intros',
+  'maal.statUnitsShort': 'Units',
+  'maal.ledgerNoticeCompact':
+    'Append-only, hash-chained. The share has no legal force until a company is registered, and it never weights a vote — every member has one vote.',
+  'maal.memberEventsLink': {
+    one: '{count} event · open the ledger',
+    other: '{count} events · open the ledger',
+  },
+  'maal.eventTrailTitle': 'Latest events',
+  'maal.eventTrailAll': 'All · {count}',
+  // One whole row per contribution type — never a name glued to a fragment.
+  'maal.eventHours': {
+    one: '{name} · {count} hour {task}',
+    other: '{name} · {count} hours {task}',
+  },
+  'maal.eventCode': '{name} · PR #{ref} approved',
+  // The same event with no reference given. The quantity is a COUNT of approved
+  // PRs, never a PR number, so it must never slide into the "#{ref}" sentence —
+  // "3 PRs" rendered as "PR #3" invents a pull request that may not exist.
+  'maal.eventCodeCount': {
+    one: '{name} · {count} approved PR',
+    other: '{name} · {count} approved PRs',
+  },
+  'maal.eventDesign': {
+    one: '{name} · {count} design approved',
+    other: '{name} · {count} designs approved',
+  },
+  'maal.eventIntro': {
+    one: '{name} · {count} introduction that brought a customer',
+    other: '{name} · {count} introductions that brought customers',
+  },
+  'maal.eventMoney': '{name} · {amount} recorded — not moved',
+  // A reversal names the TYPE it corrects — one key per work_event_type, the
+  // mirror of the five sentences above. One shared "…{count} hours…" sentence
+  // would describe a reversed introduction, PR or recorded sum as hours, which
+  // on an append-only ledger is a permanent misstatement of what was undone.
+  'maal.eventReversalHours': {
+    one: 'Reversal: {name} · {count} hour ({reason})',
+    other: 'Reversal: {name} · {count} hours ({reason})',
+  },
+  'maal.eventReversalCode': {
+    one: 'Reversal: {name} · {count} approved PR ({reason})',
+    other: 'Reversal: {name} · {count} approved PRs ({reason})',
+  },
+  'maal.eventReversalDesign': {
+    one: 'Reversal: {name} · {count} approved design ({reason})',
+    other: 'Reversal: {name} · {count} approved designs ({reason})',
+  },
+  'maal.eventReversalIntro': {
+    one: 'Reversal: {name} · {count} introduction that brought a customer ({reason})',
+    other: 'Reversal: {name} · {count} introductions that brought customers ({reason})',
+  },
+  'maal.eventReversalMoney': 'Reversal: {name} · {amount} ({reason})',
+  'maal.reversalTag': 'Reversal',
+  'maal.attestationCount': { one: '{count} witness', other: '{count} witnesses' },
+
+  // 7e — the non-member view. Charter and structure before joining, so an
+  // application is an informed one.
+  'maal.shareAria': 'Share',
+  'maal.moreAria': 'More',
+  'maal.joinNote': 'The leads review the request. You choose the workstream you want to work in.',
+  'maal.openSeatsTitle': 'Open seats · {count}',
+  'maal.seatWaitingUnowned': {
+    one: '{count} task waiting · no owner named',
+    other: '{count} tasks waiting · no owner named',
+  },
+  'maal.seatLedNeedsHelp': '{name} is leading · help wanted',
+  'maal.allMembers': 'All members',
+  'maal.publicSeesTitle': 'What the public sees',
+  'maal.publicSeesBody':
+    'The purpose, the members, and the open seats. The work, the files, and the contribution ledger are open to members only — the members chose that.',
+
+  // 7f — capital. Every control is built and disabled, and the reason is the
+  // real one. No date is promised anywhere on this surface.
+  'maal.escrowNotice':
+    'This whole section is built, but money cannot move. Xidig has no escrow yet — we refused to hold people’s money before that is built.',
+  'maal.needTitle': 'The declared need',
+  'maal.needAmount': 'Amount',
+  'maal.needPurpose': 'Purpose',
+  'maal.needDecision': 'The decision',
+  'maal.pledgeTitle': 'Pledge',
+  'maal.pledgeCta': 'Pledge',
+  'maal.pledgeAmountAria': 'Pledge amount',
+  'maal.pledgeLockNote':
+    'Locked until the escrow is built. When it opens, the money goes into escrow — it does not go straight to a founder’s account.',
+  'maal.worksNowTitle': 'What works today',
+  'maal.worksLedger': 'The contribution and share ledger',
+  'maal.worksNeed': 'The declared need and its decision',
+  'maal.worksMoneyWeight': 'Money weighted as a contribution',
+  'maal.worksPledgeLocked': 'Money pledges — locked',
+  'maal.worksEscrow': 'Escrow — not built yet',
+  'maal.capitalFooter':
+    'We are not promising a date. When the escrow is ready, we will tell you — until then, the work is what matters.',
+
+  // States m1–m5. The dormancy notice and the ledger-read error are one key
+  // each: both say "nothing was lost" in the same breath as "something is
+  // wrong", and only one half of that is worth reading.
+  'maal.loadingAria': 'Loading',
+  'maal.emptyTitle': 'No ventures yet',
+  'maal.emptyBody':
+    'Big things start as a Lab — an idea, a group, a purpose. When they are ready, they show up here.',
+  'maal.emptyCta': 'Open Labs',
+  'maal.emptyFooter': {
+    one: '{count} Lab is working right now. None of them is required to become a Venture.',
+    other: '{count} Labs are working right now. None of them is required to become a Venture.',
+  },
+  'maal.dormantNotice': {
+    one: '{name} has had no activity for {count} week. Its stage, its members and its history have not changed — one update brings it back. If it continues, the timeout limit returns it to a Lab automatically — with notice in advance and a public log.',
+    other:
+      '{name} has had no activity for {count} weeks. Its stage, its members and its history have not changed — one update brings it back. If it continues, the timeout limit returns it to a Lab automatically — with notice in advance and a public log.',
+  },
+  'maal.resumeTitle': 'Where to pick it up',
+  'maal.resumePostUpdate': 'Write an update',
+  'maal.resumeCallMembers': 'Call the members in',
+  'maal.dormantFooter':
+    'Dormancy is a marker and an early warning. Further time out returns the stage to a Lab automatically — a clear rule, notice in advance, and a public log. The work stays where it is: when the conditions are met again, it returns to being a Venture.',
+  'maal.ledgerErrorNotice':
+    'The detailed ledger could not be loaded. The totals above are the last verified ones — nothing is missing from the ledger itself. Try again.',
+  'maal.ledgerErrorFooter':
+    'The ledger is append-only — a loading error never changes what was written.',
+  'maal.offlineBar': 'No internet — the log is waiting.',
+  'maal.queuedCount': { one: '{count} log is waiting', other: '{count} logs are waiting' },
+  'maal.queuedNote':
+    '“{label}” · it goes out when the internet comes back. The real time you entered is what is saved, not the time it sends.',
+  // A parked log that never made it in. Silence here would be the queue losing
+  // work on a LEDGER, so both endings say what happened and what to do: the
+  // server answered no (nothing was appended), or it aged out unsent and the
+  // member has to enter it again. Neither is a retry — replaying a refused log
+  // would re-offer something the server already declined.
+  'maal.queueRefused': {
+    one: '{count} waiting log did not go in — the server declined it. Nothing was added to the ledger.',
+    other:
+      '{count} waiting logs did not go in — the server declined them. Nothing was added to the ledger.',
+  },
+  'maal.queueExpired': {
+    one: '{count} waiting log sat too long and was never sent. Enter it again — nothing reached the ledger.',
+    other:
+      '{count} waiting logs sat too long and were never sent. Enter them again — nothing reached the ledger.',
+  },
+
+  // Maal — Space History labels for the venture events. Without these the
+  // history falls back to the anonymous "Activity" line, and the single most
+  // consequential thing that can happen to a venture — the timeout demotion —
+  // would be the least legible row in its own history.
+  'maal.eventPromotedVenture': 'Promoted to Venture',
+  'maal.eventDemotedTimeout': 'Returned to Lab — timeout',
+  'maal.eventGoalUpdated': 'Goal updated',
+  'maal.eventVisibilityChanged': 'Ledger visibility changed',
+  'maal.eventWorkstreamAdded': 'Workstream added',
+  'maal.eventWorkstreamChanged': 'Workstream changed',
+  'maal.eventWorkstreamRemoved': 'Workstream removed',
+  'maal.eventTaskAdded': 'Task added',
+  'maal.eventTaskChanged': 'Task changed',
+  'maal.eventTaskMoved': 'Task moved',
+  'maal.eventContributionReversed': 'Contribution corrected',
+  'maal.eventWeightsChanged': 'Weights changed by vote',
+  'maal.eventCapitalNeedDeclared': 'Capital need declared',
+
+  // Maal — §27 plain-language errors. Each one says what happened, why, and
+  // what to do next; none of them blames the member for a rule they could not
+  // have read (the recusal pair in particular states the rule as it refuses).
+  'error.ventureNotReady':
+    'A Lab becomes a Venture once it has a written goal and at least one workstream with a named owner. Add those and try again.',
+  'error.taskRecusal':
+    'You cannot witness or approve your own task. Another member has to — that is what makes an approval mean something.',
+  'error.attestationRecusal':
+    'You cannot witness your own contribution. Ask a member or a lead to co-sign it.',
+  'error.ledgerLocked':
+    'This space is a Lab right now, so its ledger takes no new entries. Nothing was lost — everything recorded is still there, and it reopens if the space becomes a Venture again.',
+  'error.contributionAlreadyReversed':
+    'That entry has already been corrected. The ledger keeps both the original and the correction — a correction is not corrected again.',
+
+  // Maal — notification copy for the demotion clock (ruling 2). Both are the
+  // "ogeysiis hore" the index law promises: the warning arrives before the
+  // change, and the change is announced when it happens.
+  //
+  // Neither line offers an appeal. `appeals` is scoped to mod_actions (§19) and
+  // a system timeout is not a moderation action, so there is no form to send
+  // anyone to — the remedy that actually exists is re-promotion, and PRD §16
+  // now says so. Each line therefore names the thing the member can really do:
+  // act before the deadline, or earn the stage back after it.
+  'notif.ventureDemotionWarning':
+    '{name} returns to Lab stage unless something happens — one contribution or update is enough. The change is logged publicly and nothing is lost',
+  'notif.ventureDemoted':
+    '{name} returned to Lab stage after the timeout. Its work, ledger, decisions and history are untouched — promote it again when the work restarts',
 } as const satisfies Record<string, Message>;
 
 /** Every valid message key, derived from the English dictionary. */

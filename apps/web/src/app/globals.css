@@ -8647,3 +8647,1637 @@ a.xidig-event-host:active {
   padding: 0.3rem 0.8rem;
   font-size: var(--x-text-xs);
 }
+
+/* ── Maal — the venture index (frame 7a, states m1/m2) ─────────────────────
+   One list of staged work organisations: a Warshad and a Maal sit side by
+   side and the stage is a badge, not a tab. ONE row component under two grid
+   templates — mobile card below 62rem, the frame's 5-column table above it —
+   because a second mobile component is how a mobile surface quietly loses a
+   column.
+
+   ZERO orange on this family (DESIGN.md §2 + ruling 8): the stage tag is
+   accent-soft, the glyph tiles inherit, and the earned guul-star exemption
+   (badge canon 10a) belongs to the ledger, not here.
+
+   Two frame deviations, both deliberate:
+     * the frame paints the Warshad glyph tile and the column head with
+       --x-surface-2. In LIGHT --x-surface-2 IS --x-surface, so both would
+       vanish against the table card — they use --x-bg + a border instead,
+       which is the same read in dark and a real one in light;
+     * every pill and button carries white-space: nowrap. Somali runs ~130%
+       longer than English and "Kuwa aan ku jiro · 24" must not wrap mid-chip.
+
+   New interactive selector: a.xidig-maal-row__name (registered in
+   globals-tokens.test.ts). Everything else reuses .xidig-button / a.xidig-tag,
+   which already ship their four states. */
+
+.xidig-maal-index {
+  display: grid;
+  gap: var(--x-space-s);
+}
+
+/* Tabular numerals wherever this family shows counts (the frame's .num). */
+.xidig-maal-index .num,
+.xidig-maal-row .num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* ── Header: title + subtitle, with "Warshad cusub" pinned to the end. ── */
+
+.xidig-maal-head {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--x-space-s);
+  flex-wrap: wrap;
+}
+
+.xidig-maal-head__lines {
+  display: grid;
+  gap: 3px;
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.xidig-maal-head .xidig-auth__title {
+  margin: 0;
+}
+
+.xidig-maal-head__sub {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+  max-width: 68ch;
+  text-wrap: pretty;
+}
+
+.xidig-maal-head__cta {
+  flex: none;
+  padding: 0.5rem 1.1rem;
+  white-space: nowrap;
+}
+
+/* ── Control row: filter chips + the published sort rule. ── */
+
+.xidig-maal-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  flex-wrap: wrap;
+}
+
+.xidig-maal-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.xidig-maal-filters .xidig-tag,
+.xidig-maal-sort .xidig-tag {
+  padding: 0.25rem 0.85rem;
+  white-space: nowrap;
+}
+
+.xidig-maal-filters .xidig-tag[aria-current='page'] {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+  border-color: var(--x-accent);
+  font-weight: 600;
+}
+
+.xidig-maal-sort {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  margin-left: auto;
+}
+
+.xidig-maal-sort__label {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+/* Selection here is an ink/border shift, not a fill: the sort states the rule
+   the list already follows — it is not a second primary action. */
+.xidig-maal-sort .xidig-tag[aria-current='true'] {
+  color: var(--x-fg);
+  border-color: var(--x-border-strong);
+  font-weight: 600;
+}
+
+/* ── The list ── */
+
+.xidig-maal-table {
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  overflow: hidden;
+}
+
+.xidig-maal-table__head {
+  display: none;
+}
+
+.xidig-maal-table__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.xidig-maal-row {
+  display: grid;
+  gap: 10px 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'main    main'
+    'stage   members'
+    'seats   action';
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.xidig-maal-row + .xidig-maal-row {
+  border-top: 1px solid var(--x-border);
+}
+
+.xidig-maal-row__main {
+  grid-area: main;
+  display: flex;
+  gap: 11px;
+  min-width: 0;
+}
+
+.xidig-maal-row__glyph {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--x-radius-s);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.xidig-maal-row__glyph--venture {
+  background: var(--x-accent-soft);
+  color: var(--x-accent-text);
+}
+
+.xidig-maal-row__glyph--lab {
+  background: var(--x-bg);
+  border: 1px solid var(--x-border);
+  color: var(--x-muted);
+}
+
+.xidig-maal-row__lines {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.xidig-maal-row__name {
+  justify-self: start;
+  max-width: 100%;
+  font-weight: 600;
+  font-size: var(--x-text-ui);
+  line-height: 1.3;
+  text-decoration: none;
+  border-radius: var(--x-radius-s);
+  transition: color 120ms ease;
+}
+
+.xidig-maal-row__name:hover {
+  color: var(--x-accent-text);
+  text-decoration: underline;
+}
+
+.xidig-maal-row__name:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+.xidig-maal-row__name:active {
+  transform: translateY(1px);
+}
+
+.xidig-maal-row__premise,
+.xidig-maal-row__meta {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.xidig-maal-row__stage {
+  grid-area: stage;
+  display: grid;
+  gap: 5px;
+  justify-items: start;
+  align-content: start;
+  min-width: 0;
+}
+
+/* The Maal stage tag: accent tint, accent-as-text — the asserted
+   --x-accent-text on --x-accent-soft pair. Never trust orange. */
+.xidig-maal-row__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--x-accent-text);
+  background: var(--x-accent-soft);
+  border-color: transparent;
+  white-space: nowrap;
+}
+
+.xidig-maal-row__substage {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-maal-row__members {
+  grid-area: members;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.xidig-maal-row__overflow {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  margin-left: var(--x-space-xs);
+}
+
+.xidig-maal-row__seats {
+  grid-area: seats;
+  display: grid;
+  gap: 1px;
+  align-content: start;
+  font-size: var(--x-text-s);
+  min-width: 0;
+}
+
+.xidig-maal-row__seats-quiet {
+  color: var(--x-muted);
+}
+
+.xidig-maal-row__seat-names {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-maal-row__action {
+  grid-area: action;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.xidig-maal-row__action .xidig-button {
+  padding: 0.36rem 0.9rem;
+  font-size: var(--x-text-s);
+  white-space: nowrap;
+}
+
+/* ── Footers: the candidate-board link and the stage law. ── */
+
+.xidig-maal-index__candidates {
+  margin: 0;
+  padding: 0 2px;
+}
+
+.xidig-maal-index__law {
+  margin: 0;
+  padding: 0 2px;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  max-width: 80ch;
+  text-wrap: pretty;
+}
+
+/* ── m1 skeleton: the row's own classes, so the silhouette cannot drift. ── */
+
+.xidig-maal-skeleton__glyph {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.xidig-maal-skeleton__name {
+  width: 42%;
+  min-width: 7rem;
+}
+
+.xidig-maal-skeleton__premise {
+  width: 88%;
+}
+
+.xidig-maal-skeleton__meta {
+  width: 60%;
+}
+
+.xidig-maal-skeleton__disc {
+  width: 27px;
+  height: 27px;
+}
+
+.xidig-maal-skeleton__disc + .xidig-maal-skeleton__disc {
+  margin-left: -0.45rem;
+}
+
+.xidig-maal-skeleton__seats {
+  width: 4rem;
+}
+
+.xidig-maal-skeleton__action {
+  width: 100%;
+  height: 1.9rem;
+}
+
+/* ── Desktop: the frame's 5-column table. ── */
+
+@media (min-width: 62rem) {
+  .xidig-maal-table__head,
+  .xidig-maal-row {
+    grid-template-columns: minmax(0, 2.6fr) 132px minmax(0, 1fr) 128px 132px;
+    gap: 16px;
+  }
+
+  .xidig-maal-table__head {
+    display: grid;
+    padding: 10px 18px;
+    background: var(--x-bg);
+    border-bottom: 1px solid var(--x-border);
+    color: var(--x-muted);
+    font-size: var(--x-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .xidig-maal-row {
+    grid-template-areas: 'main stage members seats action';
+    padding: 14px 18px;
+  }
+
+  .xidig-maal-row__members {
+    justify-content: flex-start;
+  }
+
+  .xidig-maal-row__action {
+    justify-content: stretch;
+  }
+
+  .xidig-maal-row__action .xidig-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Form controls can be inert. The pledge field on the Maal capital tab
+   (frame 7f) is the first field in the app that ships DISABLED on purpose —
+   present so a member can see the shape of the thing, inert because the
+   escrow behind it does not exist — and DESIGN.md §4 wants flat-and-muted
+   rather than an opacity dim, so the label stays readable. */
+.xidig-field__input:disabled {
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+  color: var(--x-muted);
+  border-color: var(--x-border);
+  cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * Maal — the venture workspace (frames 7b–7g, states m3/m4/m5)
+ *
+ * Plan decision D2: this is the /labs/[slug] Space detail wearing three extra
+ * tabs, never a new route tree — promotion must not change a URL. So nothing
+ * below re-styles the page chrome; it styles what the venture tabs put inside
+ * it.
+ *
+ * TWO RULES SHAPE EVERY GRID HERE.
+ *
+ * 1. **Ruling 1 — one ledger.** The member table (7d) and the member card (7g)
+ *    are the SAME nodes under two grid templates. Every metric is a
+ *    `.xidig-ledger-cell` carrying its own value AND its own label; the card
+ *    layout shows the label, the table layout CLIPS it (never `display: none`)
+ *    because the column head shows it there instead — so a screen reader hears
+ *    "128, Saac" at 402px and at 1240px alike. No rule in this file hides a
+ *    metric at any width, and venture-ledger.test.tsx asserts that.
+ *
+ * 2. **Somali runs ~130% longer.** Every button, tag and switch is
+ *    `white-space: nowrap`; every text column is `minmax(0, …)`; nothing
+ *    truncates except an owner name in a fixed-width table cell, which
+ *    ellipsizes in BOTH languages or not at all.
+ *
+ * COLOUR: zero orange. The stage tint is `--x-accent-soft`, meters fill with
+ * `--x-accent`, dormant/locked things are dashed `--x-border-strong`. The ONE
+ * exemption is the guul star on an attested board card and on a witnessed
+ * ledger event — an earned milestone mark, legal under badge canon 10a — which
+ * arrives through <XidigIcon name="guul"> and carries its own trust tone.
+ *
+ * NEW INTERACTIVE SELECTORS (all registered in globals-tokens.test.ts):
+ *   .xidig-vis-switch · a.xidig-venture__card-link · a.xidig-ledger-row__events
+ *   .xidig-field__input (disabled, above)
+ * Everything else reuses .xidig-button / .xidig-tag / .xidig-icon-button,
+ * which already ship their four states.
+ * ══════════════════════════════════════════════════════════════════════════ */
+
+.xidig-venture,
+.xidig-board,
+.xidig-ledger,
+.xidig-capital-section,
+.xidig-dormant {
+  display: grid;
+  gap: var(--x-space-s);
+}
+
+/* Tabular numerals everywhere this family shows a quantity: a share column
+   whose digits jitter between rows is a column nobody can scan. */
+.xidig-venture .num,
+.xidig-board .num,
+.xidig-ledger .num,
+.xidig-capital-section .num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* ── Shared card shell ─────────────────────────────────────────────────── */
+
+.xidig-venture__card {
+  display: grid;
+  gap: var(--x-space-xs);
+  align-content: start;
+  min-width: 0;
+}
+
+/* Dashed = built but inert (dormant capital, the money card, the pledge box).
+   Deliberately the same visual grammar in all three places: a dashed edge on
+   a Maal surface always means "this exists and does not run yet". */
+.xidig-venture__card--dashed {
+  border-style: dashed;
+  border-color: var(--x-border-strong);
+}
+
+.xidig-venture__card-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--x-space-xs);
+  flex-wrap: wrap;
+}
+
+.xidig-venture__card-title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: var(--x-text-s);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--x-muted);
+}
+
+.xidig-venture__card-note {
+  margin-left: auto;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-venture__card-body {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+  line-height: 1.6;
+  max-width: 68ch;
+  text-wrap: pretty;
+}
+
+a.xidig-venture__card-link {
+  justify-self: start;
+  margin-left: auto;
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--x-radius-s);
+}
+
+a.xidig-venture__card-link:hover {
+  text-decoration: underline;
+}
+
+a.xidig-venture__card-link:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+a.xidig-venture__card-link:active {
+  transform: translateY(1px);
+}
+
+/* ── 7b layout: main column + sticky rail, one column on phones ────────── */
+
+.xidig-venture__grid {
+  display: grid;
+  gap: var(--x-space);
+  align-items: start;
+}
+
+.xidig-venture__main,
+.xidig-venture__rail {
+  display: grid;
+  gap: var(--x-space-s);
+  align-content: start;
+  min-width: 0;
+}
+
+@media (min-width: 62rem) {
+  .xidig-venture__grid {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+
+  .xidig-venture__rail {
+    position: sticky;
+    top: var(--x-space-s);
+  }
+}
+
+/* ── Goal meter (7b/7e) ────────────────────────────────────────────────── */
+
+.xidig-goal {
+  display: grid;
+  gap: var(--x-space-2xs);
+  border-top: 1px solid var(--x-border);
+  padding-top: var(--x-space-s);
+}
+
+.xidig-goal__line {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--x-space-xs);
+  flex-wrap: wrap;
+}
+
+.xidig-goal__done {
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: var(--x-text-l);
+}
+
+.xidig-goal__target {
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+}
+
+.xidig-goal__track,
+.xidig-ledger-row__bar {
+  display: block;
+  height: 6px;
+  border-radius: var(--x-radius-pill);
+  background: color-mix(in srgb, var(--x-border) 70%, transparent);
+  overflow: hidden;
+}
+
+.xidig-goal__fill,
+.xidig-ledger-row__bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--x-accent);
+  border-radius: var(--x-radius-pill);
+}
+
+/* ── Workstreams table (7b) ────────────────────────────────────────────── */
+
+.xidig-ws-table {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius-s);
+  overflow: hidden;
+}
+
+.xidig-ws-table__head {
+  display: none;
+}
+
+.xidig-ws-table__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.xidig-ws-row {
+  display: grid;
+  gap: var(--x-space-2xs) var(--x-space-s);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: var(--x-space-xs) var(--x-space-s);
+  font-size: var(--x-text-s);
+}
+
+.xidig-ws-row + .xidig-ws-row {
+  border-top: 1px solid var(--x-border);
+}
+
+.xidig-ws-row__name {
+  font-weight: 600;
+  min-width: 0;
+}
+
+.xidig-ws-row__owner {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  min-width: 0;
+  color: var(--x-muted);
+}
+
+.xidig-ws-row__owner-name {
+  min-width: 0;
+  /* The one ellipsis in this family, and it clips identically in both
+     languages — a fixed owner column cannot grow 130% (DESIGN.md §4). */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* An open seat is a STATE, not a missing owner: the chair is drawn, empty. */
+.xidig-ws-row__seat-disc,
+.xidig-task__unassigned {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--x-radius-pill);
+  border: 1.5px dashed var(--x-border-strong);
+  box-sizing: border-box;
+}
+
+.xidig-ws-row__seat-disc {
+  width: 24px;
+  height: 24px;
+}
+
+.xidig-ws-row__tasks {
+  color: var(--x-muted);
+}
+
+.xidig-ws-row__status .xidig-tag {
+  white-space: nowrap;
+}
+
+@media (min-width: 48rem) {
+  .xidig-ws-table__head,
+  .xidig-ws-row {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 6rem 6rem;
+    gap: var(--x-space-s);
+  }
+
+  .xidig-ws-table__head {
+    display: grid;
+    padding: var(--x-space-xs) var(--x-space-s);
+    background: var(--x-bg);
+    border-bottom: 1px solid var(--x-border);
+    color: var(--x-muted);
+    font-size: var(--x-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+}
+
+/* ── Decisions, members, applications rails (7b) ───────────────────────── */
+
+.xidig-venture__decisions,
+.xidig-venture__members,
+.xidig-venture__applications,
+.xidig-venture__seats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--x-space-xs);
+}
+
+.xidig-venture__decision,
+.xidig-venture__member,
+.xidig-venture__application,
+.xidig-venture__seat {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--x-space-xs);
+  min-width: 0;
+}
+
+.xidig-venture__member,
+.xidig-venture__seat {
+  align-items: center;
+}
+
+.xidig-venture__decision + .xidig-venture__decision,
+.xidig-venture__application + .xidig-venture__application,
+.xidig-venture__seat + .xidig-venture__seat {
+  border-top: 1px solid var(--x-border);
+  padding-top: var(--x-space-xs);
+}
+
+.xidig-venture__decision-lines,
+.xidig-venture__member-lines,
+.xidig-venture__application-lines,
+.xidig-venture__seat-lines {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-venture__decision-body {
+  font-size: var(--x-text-s);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.xidig-venture__decision-meta,
+.xidig-venture__member-role,
+.xidig-venture__seat-sub {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-venture__member-name,
+.xidig-venture__seat-name {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+.xidig-venture__application-actions {
+  display: inline-flex;
+  gap: var(--x-space-2xs);
+  padding-top: 2px;
+  flex-wrap: wrap;
+}
+
+.xidig-venture__application-actions .xidig-button,
+.xidig-venture__seat .xidig-button {
+  padding: 0.22rem 0.7rem;
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+.xidig-venture__join-note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-align: center;
+  text-wrap: pretty;
+}
+
+/* ── Member-set visibility rail (7b) ───────────────────────────────────── */
+
+.xidig-vis-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--x-space-xs);
+}
+
+.xidig-vis-row + .xidig-vis-row {
+  border-top: 1px solid var(--x-border);
+  padding-top: var(--x-space-xs);
+}
+
+.xidig-vis-row__lines {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-vis-row__label {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+.xidig-vis-row__hint {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-vis-footer {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* A real track switch (role="switch" + aria-checked), named by its row's own
+   label. The track is a 3:1 non-text boundary in both states: --x-accent when
+   on (4.66:1 light / 4.14:1 dark against the card) and --x-border-strong when
+   off. */
+.xidig-vis-switch {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  margin-top: 2px;
+  padding: 0;
+  border: none;
+  border-radius: var(--x-radius-pill);
+  background: var(--x-border-strong);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    transform 80ms ease;
+}
+
+.xidig-vis-switch[aria-checked='true'] {
+  background: var(--x-accent);
+}
+
+.xidig-vis-switch__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--x-radius-pill);
+  background: var(--x-muted);
+  transition: transform 120ms ease;
+}
+
+.xidig-vis-switch[aria-checked='true'] .xidig-vis-switch__thumb {
+  /* The knob rides ON the accent fill, so it is that fill's foreground token
+     rather than a literal white (asserted 4.66:1 by globals-tokens.test.ts). */
+  background: var(--x-accent-fg);
+  transform: translateX(16px);
+}
+
+.xidig-vis-switch:not(:disabled):hover {
+  background: color-mix(in srgb, var(--x-border-strong) 70%, var(--x-fg));
+}
+
+/* An ON switch stays visibly on — hover deepens WITHIN the accent family
+   rather than washing it out. Same literal, same reason, as the existing
+   .xidig-switch[aria-pressed='true']:hover stop above: #0068b3 is the accent's
+   hover rung in both palettes (white on it is 5.78:1) and only exists as a
+   token in light (--x-accent-text), so there is nothing to var() here. */
+.xidig-vis-switch[aria-checked='true']:not(:disabled):hover {
+  background: #0068b3;
+}
+
+.xidig-vis-switch:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+.xidig-vis-switch:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.xidig-vis-switch:disabled {
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+  cursor: not-allowed;
+}
+
+.xidig-vis-switch:disabled .xidig-vis-switch__thumb {
+  background: var(--x-muted);
+}
+
+/* ══ 7c — the work board ═══════════════════════════════════════════════ */
+
+.xidig-board__actions {
+  display: flex;
+  gap: var(--x-space-xs);
+  flex-wrap: wrap;
+}
+
+.xidig-board__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.xidig-board__filters {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  flex-wrap: wrap;
+}
+
+.xidig-board__chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.xidig-board__chips .xidig-tag {
+  white-space: nowrap;
+}
+
+.xidig-board__chips .xidig-tag[aria-current='page'] {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+  border-color: var(--x-accent);
+  font-weight: 600;
+}
+
+/* "You logged", not "you worked" — and only ever the viewer's own hours. */
+.xidig-board__week {
+  margin: 0 0 0 auto;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-board__offline {
+  margin: 0;
+  padding: var(--x-space-xs) var(--x-space-s);
+  border-radius: var(--x-radius-s);
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-board__columns {
+  display: grid;
+  gap: var(--x-space-s);
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.xidig-board__column {
+  display: grid;
+  gap: var(--x-space-xs);
+  align-content: start;
+  min-width: 0;
+}
+
+.xidig-board__column-head {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  padding: 0 2px;
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+.xidig-board__count {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  font-weight: 400;
+}
+
+.xidig-board__cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--x-space-xs);
+}
+
+@media (min-width: 62rem) {
+  .xidig-board__columns {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.xidig-task {
+  display: grid;
+  gap: var(--x-space-xs);
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius-s);
+  padding: 0.7rem 0.75rem;
+  min-width: 0;
+}
+
+/* In progress: an accent edge, the one "this is live" mark on the board. */
+.xidig-task--live {
+  border-left: 3px solid var(--x-accent);
+}
+
+.xidig-task--done {
+  /* Settled, not faded out of readability — muted ink, full contrast text. */
+  background: color-mix(in srgb, var(--x-border) 18%, var(--x-surface));
+}
+
+.xidig-task__title {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: var(--x-text-s);
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+/* The one sanctioned orange on a Maal surface: an EARNED milestone star. */
+.xidig-task__star {
+  flex: none;
+  margin-top: 1px;
+}
+
+.xidig-task__meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.xidig-task__meta .xidig-tag {
+  padding: 0.05rem 0.45rem;
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+.xidig-task__hours {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+.xidig-task__spacer {
+  flex: 1;
+}
+
+.xidig-task__actions {
+  display: flex;
+  gap: var(--x-space-2xs);
+  flex-wrap: wrap;
+}
+
+.xidig-task__actions .xidig-button {
+  padding: 0.22rem 0.7rem;
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+/* ── m5: the offline queue chip ────────────────────────────────────────── */
+
+.xidig-maal-queue {
+  display: grid;
+  gap: var(--x-space-xs);
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: var(--x-space-s);
+}
+
+.xidig-maal-queue__count {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+.xidig-maal-queue__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--x-space-xs);
+}
+
+.xidig-maal-queue__item {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  min-width: 0;
+}
+
+.xidig-maal-queue__lines {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-maal-queue__chip {
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  color: var(--x-accent-text);
+}
+
+.xidig-maal-queue__note {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-maal-queue__item .xidig-button {
+  flex: none;
+  padding: 0.22rem 0.7rem;
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+/* A queued log that never made it into the ledger. Same card, error voice —
+   the accent rule marks it as system chrome without reaching for orange, which
+   this surface does not own (only the earned guul star does). */
+.xidig-maal-queue--lost {
+  border-left: 3px solid var(--x-accent);
+}
+
+.xidig-maal-queue__actions {
+  display: flex;
+  gap: var(--x-space-xs);
+  flex-wrap: wrap;
+}
+
+.xidig-maal-queue__actions .xidig-button {
+  padding: 0.22rem 0.7rem;
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+/* Sheet forms (log a contribution, new task, ledger filters). */
+
+.xidig-maal-form {
+  display: grid;
+  gap: var(--x-space-s);
+}
+
+.xidig-maal-form__actions {
+  display: flex;
+  gap: var(--x-space-xs);
+  flex-wrap: wrap;
+}
+
+.xidig-maal-form__actions .xidig-button {
+  white-space: nowrap;
+}
+
+/* ══ 7d / 7g — the ledger ══════════════════════════════════════════════ */
+
+.xidig-ledger__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--x-space-xs);
+  flex-wrap: wrap;
+}
+
+.xidig-ledger__head-lines {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 14rem;
+}
+
+.xidig-ledger__title {
+  margin: 0;
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: var(--x-text-l);
+  letter-spacing: -0.01em;
+}
+
+.xidig-ledger__subtitle {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+/* Export is a capability, so it is present at every width (ruling 1). */
+.xidig-ledger__export {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.36rem 0.9rem;
+  font-size: var(--x-text-s);
+  white-space: nowrap;
+}
+
+.xidig-ledger__filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.xidig-ledger__filters .xidig-tag {
+  white-space: nowrap;
+}
+
+.xidig-ledger__filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Stat cards. auto-fit rather than a hard 4-up: the Somali labels ("Wax-ku-
+   darsi la diiwaangeliyay") need room, so the strip folds to 2×2 on a phone
+   and keeps ONE label per card — no short/long duplicate to fall out of sync. */
+.xidig-ledger__stats {
+  display: grid;
+  gap: var(--x-space-xs);
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.xidig-ledger-stat {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 0.75rem 0.85rem;
+  min-width: 0;
+}
+
+/* $0 and dashed: recorded, never moved. */
+.xidig-ledger-stat--dashed {
+  border-style: dashed;
+  border-color: var(--x-border-strong);
+}
+
+.xidig-ledger-stat__value {
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: var(--x-text-xl);
+  line-height: 1.15;
+}
+
+.xidig-ledger-stat--dashed .xidig-ledger-stat__value {
+  color: var(--x-muted);
+}
+
+.xidig-ledger-stat__label {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-ledger__cards {
+  display: grid;
+  gap: var(--x-space-s);
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  align-items: start;
+}
+
+/* ── The member line. ONE component, two templates (ruling 1). ─────────── */
+
+.xidig-ledger-table {
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  overflow: hidden;
+}
+
+.xidig-ledger-head {
+  display: none;
+}
+
+.xidig-ledger-table__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.xidig-ledger-row {
+  display: grid;
+  gap: var(--x-space-xs) var(--x-space-s);
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'member share'
+    'cells  cells'
+    'units  units'
+    'events events';
+  align-items: center;
+  padding: var(--x-space-s);
+  min-width: 0;
+}
+
+.xidig-ledger-row + .xidig-ledger-row {
+  border-top: 1px solid var(--x-border);
+}
+
+.xidig-ledger-row__member {
+  grid-area: member;
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  min-width: 0;
+}
+
+.xidig-ledger-row__member-lines {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.xidig-ledger-row__name {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+.xidig-ledger-row__role {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-ledger-row__share {
+  grid-area: share;
+  justify-self: end;
+  font-size: var(--x-text-ui);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* The four per-type metrics. On the card layout they are their own strip; on
+   the table layout the wrapper dissolves (display: contents) and each cell
+   takes its own column. */
+.xidig-ledger-row__cells {
+  grid-area: cells;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(3.6rem, 1fr));
+  gap: var(--x-space-xs);
+  min-width: 0;
+}
+
+.xidig-ledger-cell {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.xidig-ledger-cell__value {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+.xidig-ledger-cell__label {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-ledger-row__units {
+  grid-area: units;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.xidig-ledger-row__units-value {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+a.xidig-ledger-row__events {
+  grid-area: events;
+  justify-self: start;
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--x-radius-s);
+}
+
+a.xidig-ledger-row__events:hover {
+  text-decoration: underline;
+}
+
+a.xidig-ledger-row__events:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+a.xidig-ledger-row__events:active {
+  transform: translateY(1px);
+}
+
+@media (min-width: 62rem) {
+  .xidig-ledger-head,
+  .xidig-ledger-row {
+    grid-template-columns:
+      minmax(0, 1.5fr) 5.5rem 5.5rem 5.5rem 5.5rem
+      minmax(0, 1.15fr) 5.5rem;
+    gap: var(--x-space-s);
+  }
+
+  .xidig-ledger-head {
+    display: grid;
+    padding: var(--x-space-xs) var(--x-space-s);
+    background: var(--x-bg);
+    border-bottom: 1px solid var(--x-border);
+    color: var(--x-muted);
+    font-size: var(--x-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  /* Two rows, so the per-member events link has a track of its own under the
+     name instead of sharing the `member` cell with it — stacked in one cell,
+     the link printed straight over the role line. The metric columns span both
+     rows and stay vertically centred, so the table still reads as one line. */
+  .xidig-ledger-row {
+    grid-template-areas:
+      'member hours code design intro units share'
+      'events hours code design intro units share';
+    row-gap: 2px;
+  }
+
+  /* The wrapper dissolves so its four cells join the row's own grid. */
+  .xidig-ledger-row__cells {
+    display: contents;
+  }
+
+  .xidig-ledger-cell--hours {
+    grid-area: hours;
+  }
+
+  .xidig-ledger-cell--code {
+    grid-area: code;
+  }
+
+  .xidig-ledger-cell--design {
+    grid-area: design;
+  }
+
+  .xidig-ledger-cell--intro {
+    grid-area: intro;
+  }
+
+  .xidig-ledger-row__share {
+    grid-area: share;
+    justify-self: start;
+  }
+
+  /* CLIPPED, never display:none — the column head shows the word visually and
+     this keeps it in the accessibility tree, so the row still reads
+     "128, Saac" to a screen reader on the table layout (ruling 1). */
+  .xidig-ledger-cell__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* The per-member events link folds under the name on the table layout —
+     indented to sit under the name rather than under the avatar. */
+  a.xidig-ledger-row__events {
+    grid-area: events;
+    align-self: start;
+    justify-self: start;
+    padding-left: 2.4rem;
+  }
+}
+
+/* ── The event trail. A reversal is a row, never a hole. ───────────────── */
+
+.xidig-trail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--x-space-xs);
+}
+
+.xidig-trail__row {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  font-size: var(--x-text-s);
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+}
+
+.xidig-trail__row + .xidig-trail__row {
+  border-top: 1px solid var(--x-border);
+  padding-top: var(--x-space-xs);
+}
+
+/* Muted, and still fully present: a correction is visible history. */
+.xidig-trail__row--reversal,
+.xidig-trail__row--reversal .xidig-trail__mark {
+  color: var(--x-muted);
+}
+
+.xidig-trail__mark {
+  flex: none;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+.xidig-trail__mark-empty {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+.xidig-trail__text {
+  flex: 1;
+  min-width: 0;
+  text-wrap: pretty;
+}
+
+.xidig-trail__when {
+  flex: none;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+/* ══ 7f — capital ══════════════════════════════════════════════════════ */
+
+.xidig-need {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--x-space-2xs) var(--x-space-s);
+  margin: 0;
+  padding-top: var(--x-space-xs);
+  border-top: 1px solid var(--x-border);
+  font-size: var(--x-text-s);
+}
+
+.xidig-need dt {
+  color: var(--x-muted);
+}
+
+.xidig-need dd {
+  margin: 0;
+  font-weight: 600;
+  min-width: 0;
+  text-wrap: pretty;
+}
+
+/* Built and inert. The control is in the DOM, disabled, with the reason
+   beside it — never a tooltip, never a "coming soon", never a date. */
+.xidig-pledge {
+  display: grid;
+  gap: var(--x-space-xs);
+}
+
+.xidig-pledge .xidig-button {
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.xidig-works {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--x-space-xs);
+}
+
+.xidig-works__row {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+  font-size: var(--x-text-s);
+  text-wrap: pretty;
+}
+
+.xidig-works__mark {
+  flex: none;
+  display: inline-flex;
+  color: var(--x-ok);
+}
+
+/* Not-yet, not failed — a muted bar in a circle, never a red cross. */
+.xidig-works__row--pending,
+.xidig-works__row--pending .xidig-works__mark {
+  color: var(--x-muted);
+}
+
+.xidig-capital-section__footer,
+.xidig-dormant__footer {
+  margin: 0;
+  padding: 0 2px;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  max-width: 80ch;
+  text-wrap: pretty;
+}
+
+/* ══ m3 — dormancy (the early warning, never a threat) ═════════════════ */
+
+.xidig-dormant__actions {
+  display: flex;
+  gap: var(--x-space-xs);
+  flex-wrap: wrap;
+}
+
+.xidig-dormant__actions .xidig-button {
+  white-space: nowrap;
+}

@@ -24,6 +24,25 @@ const FORBIDDEN = [
   'capital/venture-fund-modal.tsx',
   'capital/review-form.tsx',
   'capital/decision-controls.tsx',
+  // Maal venture workspace (F2 §5, frames 7c–7g + m3/m5). The ledger is an
+  // agreement between members about who owns what, the capital tab is a
+  // refusal to hold anyone's money yet, the board feeds the ledger, and the
+  // offline queue holds unsent claims about someone's work. All cold: the
+  // system voice speaks on these, with no character attached. m3 dormancy is
+  // on the list too — it is one step from a stage change on a money-critical
+  // space, and a mascot would make a warning read as a nudge.
+  'maal/venture-ledger.tsx',
+  'maal/ledger-controls.tsx',
+  'maal/venture-capital.tsx',
+  'maal/venture-board.tsx',
+  'maal/task-actions.tsx',
+  'maal/task-create.tsx',
+  'maal/contribution-logger.tsx',
+  'maal/venture-overview.tsx',
+  'maal/visibility-toggles.tsx',
+  'maal/application-actions.tsx',
+  'maal/seat-request.tsx',
+  'maal/dormant-notice.tsx',
   // Report / Block / mute (boundary + safety).
   'report-control.tsx',
   'settings/blocked-list.tsx',

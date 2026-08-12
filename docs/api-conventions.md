@@ -241,6 +241,49 @@ Phase 5 conventions worth knowing:
   `venture_timeline_viewed`) are **Phase 7**; these routes leave a
   `// Phase 7: analytics` marker where an event would fire and emit nothing.
 
+## Maal route table (F2 §5 — the venture workspace)
+
+Maal is `labs.space_mode = 'venture'`, so the whole workspace nests under
+`/api/labs/{id}/*`: a venture **is** a Space and promotion never moves its id,
+slug or URL (PRD §16, plan D2). Every table here is SELECT-only under RLS with
+`insert, update, delete` revoked from `anon`/`authenticated` — reads run under
+the caller's client, writes are service-role **after** the route's own authz, and
+a missing check is a hole rather than a style question.
+
+| Method       | Route                                          | Auth      | Notes                                                                                                            |
+| ------------ | ---------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------- |
+| POST         | `/api/labs/{id}/promote`                       | lead      | extended with `target: 'venture'` (Warshad → Maal). Preconditions in `promoteToVenture`: complete charter, declared goal, ≥1 workstream with a named owner. Seeds the weight scheme only if the venture never had one |
+| GET/PATCH    | `/api/labs/{id}/venture`                       | user/lead | GET = the 7b/7e overview model. PATCH = goal meter + the two visibility toggles in one flat body (lead/admin); no `space_mode` — ever |
+| GET/POST     | `/api/labs/{id}/workstreams`                   | user/lead | GET is `can_read_lab` (7e shows structure before you join). POST is leadership (lead/core/admin); a named owner must be an active member |
+| PATCH/DELETE | `/api/labs/{id}/workstreams/{wsId}`            | lead      | rename / re-order / hand over / open the seat (`ownerUserId: null`) / remove. Removal keeps the tasks (`ON DELETE SET NULL`) |
+| GET/POST     | `/api/labs/{id}/tasks`                         | user      | GET = the whole 7c board (`?workstreamId`). POST = create; active non-observer members. Assignee + workstream are lab-scoped in the route (both FKs span every venture) |
+| PATCH        | `/api/labs/{id}/tasks/{taskId}`                | user      | a body with `status` is a board MOVE, anything else edits the card. Recusal answers `task_recusal` 403 **before** the CHECK fires; `verified` additionally needs a lead |
+| GET/POST     | `/api/labs/{id}/contributions`                 | user      | GET = the 7d/7g ledger (`?memberId` `?type` `?days`), 403 when `canReadLedger` is false. POST appends one event; weight + units are server-resolved, `occurredAt` is the member's own time. 60/day |
+| POST         | `/api/labs/{id}/contributions/{eventId}/reverse` | user    | the correction: a NEW event with the negation + `reverses_event_id`. `reason` required. Owner or lead. `contribution_already_reversed` 409 on a second try |
+| POST         | `/api/labs/{id}/contributions/{eventId}/attest`  | user    | "Marag" — the co-sign. Never your own (`attestation_recusal` 403); re-attesting is a no-op 200. No body |
+| GET          | `/api/labs/{id}/contributions/export`          | user     | `text/csv` + `Content-Disposition: attachment`. Calls the same `getVentureLedger` as the screen, so the readability gate cannot drift; RFC-4180 quoting + a formula-injection guard on the member-written `note` |
+| GET/POST     | `/api/labs/{id}/capital`                       | user/lead | the declared need + the decision behind it (7f). **No pledge endpoint** |
+
+Maal conventions worth knowing:
+
+- **There is no ledger PATCH or DELETE, and no pledge route.** `work_events`
+  refuses UPDATE and DELETE for every role including `service_role`, so a
+  correction is `/reverse` (an append). Pledging ships as a control that is
+  present and disabled with the escrow reason — an endpoint behind a disabled
+  button would be a claim that money can move.
+- **There is no demotion endpoint.** Maal → Warshad happens only in the cron
+  sweep (`demote_timed_out_ventures()`), logged to the Governance Log and
+  history-preserving. `/promote` is one-way by construction.
+- **Recusal is stated twice on purpose.** The DB has the CHECK constraints; the
+  service states the same rule first so a member reads a sentence
+  (`task_recusal` / `attestation_recusal`) instead of a 500.
+- **The client never sends a weight.** It sends "3 hours"; the server reads the
+  venture's current voted scheme, derives `units`, and the DB CHECK re-derives
+  the same number. A client-sent weight would be a client-sent share.
+- **Analytics fire from the service layer**, not the routes: `venture_promoted`,
+  `contribution_logged {type}`, `contribution_attested`, `contribution_reversed`,
+  `venture_capital_need_declared`. `venture_timeline_viewed` stays client-side.
+
 ## PRD-alignment sprint route notes
 
 | Method | Route          | Auth | Notes                                                                          |

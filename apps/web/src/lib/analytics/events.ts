@@ -70,6 +70,22 @@ export interface AnalyticsEventMap {
   lab_marked_dormant: Record<string, never>;
   lab_revived: Record<string, never>;
 
+  // --- Maal / venture workspace (F2 §5) -----------------------------------
+  // Stage + ledger lifecycle. All PII-free: the only property anywhere is the
+  // closed work_event_type slug — WHO contributed, how much, and what share it
+  // bought are the ledger's business and never the funnel's (§23, ruling 5:
+  // ledger units are economic, and an economic number does not belong here).
+  venture_promoted: Record<string, never>;
+  // The two halves of the timeout path (ruling 2). Both fire from the cron
+  // sweep, attributed to the venture's lead — the same attribution
+  // lab_marked_dormant uses, for the same reason: a sweep has no actor.
+  venture_demotion_warned: Record<string, never>;
+  venture_demoted: Record<string, never>;
+  contribution_logged: { type: Enums<'work_event_type'> };
+  contribution_attested: Record<string, never>;
+  contribution_reversed: Record<string, never>;
+  venture_capital_need_declared: Record<string, never>;
+
   // --- Capital (§23) ------------------------------------------------------
   candidate_submitted: Record<string, never>;
   candidate_reviewed: Record<string, never>;

@@ -11,6 +11,7 @@ import { RubricDisplay } from '@/components/capital/rubric-display';
 import { StatusBadge } from '@/components/capital/status-badge';
 import { Timeline } from '@/components/capital/timeline';
 import { VotePanel } from '@/components/capital/vote-panel';
+import { BackLink } from '@/components/back-link';
 import { Banner } from '@/components/banner';
 import { ReportControl } from '@/components/report-control';
 import { ShareActions } from '@/components/share-actions';
@@ -121,6 +122,10 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
     <main className="xidig-section">
       <LiteMediaProvider>
         <LiteShowAll />
+        {/* The board moved to /capital/candidates when /capital became the Maal
+            index (plan D1) — a candidate permalink must still lead back to the
+            list it came from. */}
+        <BackLink href="/capital/candidates" labelKey="capital.candidatesTitle" />
         <CandidateHeader view={view} prefs={prefs} />
 
         <ShareActions
