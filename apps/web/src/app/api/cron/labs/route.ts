@@ -5,7 +5,8 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
  * Daily Labs sweep (vercel.json cron → this route): §16 dormancy nudges after
- * 28 days idle (encouragement only — never demotes) + the 7-day skills-gap
+ * 28 days idle (this sweep marks dormancy only; it is not the stage-demotion
+ * path) + the 7-day skills-gap
  * alert. Machine endpoint — auth is the shared CRON_SECRET as
  * `Authorization: Bearer <CRON_SECRET>`; unset = disabled (503), mirroring
  * /api/cron/plaza.

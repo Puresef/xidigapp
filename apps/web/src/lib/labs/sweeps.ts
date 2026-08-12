@@ -11,9 +11,13 @@ import { insertNotification } from '@/lib/notifications/notify';
  * changes live in SQL (mark_dormant_labs / flag_skill_gaps — SECURITY DEFINER,
  * service-role only); these helpers do the in-app notification fan-out.
  *
- * Both are ENCOURAGEMENT / assistive, never punitive: dormancy marks + nudges
- * but NEVER demotes (the SQL function touches only dormant_since + a history
- * event), and the skills-gap alert is informational and non-blocking.
+ * Both are ENCOURAGEMENT / assistive, never punitive: dormancy marks + nudges,
+ * and mark_dormant_labs() itself touches only dormant_since + a history event
+ * — it is not the demotion path. Maal DOES auto-demote back to Warshad through
+ * a system-role timeout (decided doctrine: logged to the Governance Log,
+ * history/ledger/contribution record preserved, never member-initiated), but
+ * that mechanism is not yet built and is not this sweep — it ships in Maal F2.
+ * The skills-gap alert is informational and non-blocking.
  *
  * mark_dormant_labs() / flag_skill_gaps() ship in migration 20260706200000 and
  * are now present in the generated Database types (regenerated offline via
@@ -27,7 +31,7 @@ const SKILL_MATCH_CAP = 25;
 
 /**
  * Mark Spaces dormant after 28 days idle and nudge their members to revive.
- * Returns the count newly marked. Never demotes (see module doc).
+ * Returns the count newly marked. Not the demotion path (see module doc).
  */
 export async function markDormantAndNudge(admin: Admin): Promise<number> {
   const { data, error } = await admin.rpc('mark_dormant_labs');

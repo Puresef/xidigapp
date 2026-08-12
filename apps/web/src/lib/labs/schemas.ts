@@ -28,8 +28,11 @@ import {
  * Labs / Spaces input validation (§16). Everything a Space's lifecycle needs is
  * server-driven — clients never send status columns, promoted_at, dormant_since
  * or last_activity_at. Mode is set at creation and thereafter changes ONLY
- * through the promote endpoint (promote-only ladder, no demotion), never a
- * plain settings PATCH.
+ * through the promote endpoint — promote-only from the client/member side,
+ * never a plain settings PATCH, and never a member-initiated demotion. (Maal's
+ * system-role timeout demotion back to Warshad is a separate, decided
+ * mechanism — logged to the Governance Log, history preserved — that is not
+ * yet built and is not reachable through this schema; it ships in Maal F2.)
  */
 
 const httpUrl = z

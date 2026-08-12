@@ -41,7 +41,8 @@ export interface SettingsInitial {
 /**
  * Space settings (§16): mode-adjacent settings, privacy, member view + the
  * charter. Mode itself changes ONLY via the promote-only ladder (Promote to
- * Lab / Put forward as a Venture) — there is no demotion control. Every save
+ * Lab / Put forward as a Venture). Stage demotion is system-driven only
+ * (timeout path, Maal F2), so it is deliberately absent here. Every save
  * PATCHes the API (role-checked, history-logged); the RSC refreshes after.
  *
  * Phase 4.5 visual identity: icon + cover. Two-step attach like the profile
@@ -401,7 +402,7 @@ export function SpaceSettingsForm({
         </div>
       </section>
 
-      {/* Promotion ladder (§16) — promote-only, no demotion control exists. */}
+      {/* Promotion ladder (§16) — members promote only; demotion is system-driven. */}
       <section className="xidig-section">
         <h2 className="xidig-section__title">{t('lab.tabSettings')}</h2>
         <p className="xidig-field__hint">{t('lab.settingsPromoteHint')}</p>

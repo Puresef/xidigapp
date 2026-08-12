@@ -349,9 +349,9 @@ describe('lab writes are API-only (client insert/update/delete revoked)', () => 
   });
 });
 
-// --- dormancy sweep: encouragement only, NEVER demotes ----------------------
+// --- dormancy sweep: marks dormancy; it is not the demotion path ------------
 
-describe('mark_dormant_labs(): 28-day sweep never demotes', () => {
+describe('mark_dormant_labs(): 28-day sweep marks dormancy only (not the demotion path)', () => {
   it('marks a stale Space dormant + logs an event, leaving mode/stage/visibility untouched', async () => {
     const lead = await seedMember('dormant_lead');
     const lab = await seedLab(lead, {
@@ -381,7 +381,9 @@ describe('mark_dormant_labs(): 28-day sweep never demotes', () => {
       visibility: string;
       dormant_since: unknown;
     };
-    // No demotion: identity is preserved exactly.
+    // This function is not the demotion path: it flags dormancy and leaves
+    // mode/stage/visibility exactly as they were. Stage demotion happens only
+    // via the system timeout path (Maal F2 — see the pending specs below).
     expect(row.space_mode).toBe('lab');
     expect(row.stage).toBe('building');
     expect(row.visibility).toBe('members');
@@ -404,6 +406,66 @@ describe('mark_dormant_labs(): 28-day sweep never demotes', () => {
     const after = await db.admin.query(`select dormant_since from labs where id = $1`, [lab]);
     expect((after.rows[0] as { dormant_since: unknown }).dormant_since).toBeNull();
   });
+});
+
+// --- stage demotion: system-owned, forbidden for users -----------------------
+//
+// Doctrine (Warya, 12 Aug): Warshad graduates into Maal when the required
+// conditions are met, and Maal auto-demotes back to Warshad through the system
+// timeout path. Demotion is system-driven only — never user-initiated — is
+// publicly logged in the Governance Log, and never rewrites the venture's
+// work history, ledger, or prior decisions (it changes current stage only).
+//
+// What is testable TODAY: the forbidden direction. All client writes to labs
+// are revoked (API-only write model), so no user/member path can flip
+// space_mode or stage. The system timeout function itself does NOT exist yet
+// (mark_dormant_labs() above only flags dormancy); its positive invariants are
+// recorded below as pending specs owned by Maal F2.
+
+describe('stage demotion is system-owned: user-initiated demotion is forbidden', () => {
+  it('neither the lead nor a mod can demote a launched Venture by writing space_mode or stage', async () => {
+    const lead = await seedMember('demote_lead');
+    const mod = await seedMod('demote_mod');
+    const lab = await seedLab(lead, {
+      slug: 'demote-venture',
+      spaceMode: 'lab',
+      stage: 'launched',
+    });
+
+    // The lead cannot flip the Venture back to a Club/earlier stage.
+    await expect(
+      db.asUser(lead, (tx) =>
+        tx.query(`update labs set space_mode = 'club', stage = 'idea' where id = $1`, [lab]),
+      ),
+    ).rejects.toThrow(/permission denied/);
+
+    // Nor can a mod: demotion is not a moderation action either.
+    await expect(
+      db.asUser(mod, (tx) =>
+        tx.query(`update labs set space_mode = 'club' where id = $1`, [lab]),
+      ),
+    ).rejects.toThrow(/permission denied/);
+
+    // Identity untouched after both attempts.
+    const after = await db.admin.query(`select space_mode, stage from labs where id = $1`, [lab]);
+    const row = after.rows[0] as { space_mode: string; stage: string };
+    expect(row.space_mode).toBe('lab');
+    expect(row.stage).toBe('launched');
+  });
+
+  // Pending specifications — owned by Maal F2, which builds the system timeout
+  // demotion path. These CANNOT be written today (no such function exists in
+  // any applied migration); they are recorded as required future coverage so
+  // the invariants are visible without passing vacuously or breaking the gate.
+  it.todo(
+    'Maal F2: the system/service-role timeout path CAN demote a timed-out Maal Venture back to Warshad',
+  );
+  it.todo(
+    'Maal F2: an auto-demotion writes a publicly visible Governance Log entry',
+  );
+  it.todo(
+    'Maal F2: an auto-demotion preserves the ledger, work history, lab_events, and prior decisions — it changes current stage/status only',
+  );
 });
 
 // --- skills-gap sweep -------------------------------------------------------

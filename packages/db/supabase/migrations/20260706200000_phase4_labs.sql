@@ -440,15 +440,23 @@ create policy reactions_insert_own on reactions
   );
 
 -- ============================================================================
--- 5. DORMANCY SWEEP (28 days) — ENCOURAGEMENT ONLY, NEVER DEMOTES
+-- 5. DORMANCY SWEEP (28 days) — MARKS DORMANCY ONLY, NOT THE DEMOTION PATH
 -- ============================================================================
 -- Marks Spaces with no meaningful activity in 28 days as Dormant: sets
 -- dormant_since and writes a 'marked_dormant' history event. It touches NOTHING
 -- else — space_mode, stage, visibility, membership are all left exactly as they
--- were. There is no demotion path anywhere in the schema or this function.
+-- were. Member/user-initiated demotion is forbidden and this function grants no
+-- such path (service_role only, per the revoke/grant below). Maal DOES
+-- auto-demote back to Warshad through a system-role timeout mechanism — that is
+-- decided doctrine, not undecided, and it must log to the Governance Log and
+-- preserve the venture's work history, ledger, contribution record, and prior
+-- decisions (it changes current stage/status only, never rewrites history).
+-- That mechanism is NOT implemented yet; it is scoped for Maal F2, and
+-- mark_dormant_labs() is not it.
 -- Returns the ids newly marked so the /api/cron/labs route can fan out the
--- revival nudge (in-app, §26) to each Space's members. Instantly reversible:
--- the next update/artifact/decision clears dormant_since via the trigger above.
+-- revival nudge (in-app, §26) to each Space's members. Dormancy itself is
+-- instantly reversible: the next update/artifact/decision clears dormant_since
+-- via the trigger above.
 
 create function public.mark_dormant_labs()
 returns setof uuid

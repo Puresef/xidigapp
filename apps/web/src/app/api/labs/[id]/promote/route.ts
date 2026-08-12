@@ -9,7 +9,10 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
 /**
  * The promote-only ladder (§16): Club → Lab → Venture Candidate. Promotion is
  * additive — it never deletes history, members, updates, artifacts, decisions,
- * or the URL/slug. There is NO demotion endpoint.
+ * or the URL/slug. There is deliberately no member-facing demotion endpoint:
+ * demotion is system-driven only (the Maal→Warshad timeout path, logged to the
+ * Governance Log and history-preserving — built in Maal F2), never something a
+ * member or lead can trigger here.
  *
  *   - target 'lab':       Club → Lab. Requires a complete charter (fills gaps
  *                         from the body) AND the create_lab capability.

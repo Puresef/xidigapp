@@ -11,12 +11,12 @@ any lab table.
 
 ## Visibility predicates (SECURITY DEFINER, empty `search_path`)
 
-| Function | Answers | Notes |
-|---|---|---|
-| `is_supporter()` | caller is on a paid tier (`membership_tier_id <> 'free'`) | gates `is_supporter_only` Spaces |
-| `is_lab_member(lab)` | caller is an `active` member of `lab` | Private read + engagement gates |
-| `can_read_lab(lab)` | caller may read the Space | implements §16 Private/Members/Public |
-| `can_read_lab_roster(lab)` | caller may read the member list | applies `member_list_visibility` |
+| Function                   | Answers                                                   | Notes                                 |
+| -------------------------- | --------------------------------------------------------- | ------------------------------------- |
+| `is_supporter()`           | caller is on a paid tier (`membership_tier_id <> 'free'`) | gates `is_supporter_only` Spaces      |
+| `is_lab_member(lab)`       | caller is an `active` member of `lab`                     | Private read + engagement gates       |
+| `can_read_lab(lab)`        | caller may read the Space                                 | implements §16 Private/Members/Public |
+| `can_read_lab_roster(lab)` | caller may read the member list                           | applies `member_list_visibility`      |
 
 `can_read_lab(lab)` is true when **any** of: caller is the `lead_user_id`; `is_mod()`;
 `is_lab_member`; `visibility='public'`; or `visibility='members'` **and** caller is an
@@ -25,24 +25,24 @@ active user **and** (`is_supporter_only=false` or `is_supporter()`).
 All four run as the table owner (bypass RLS internally), so `can_read_lab`
 reading `public.labs` does **not** recurse through the `labs` SELECT policy —
 same proven pattern as `is_admin()` / `dm_unread_count()`. `auth.uid()` still
-resolves to the *caller* inside a definer function (it reads
+resolves to the _caller_ inside a definer function (it reads
 `request.jwt.claims`, which `SECURITY DEFINER` does not change).
 
 ## Per-table SELECT policies (all `to authenticated`)
 
-| Table | SELECT `using(...)` | Writes |
-|---|---|---|
-| `labs` | `can_read_lab(id)` | revoked |
-| `lab_members` | `can_read_lab_roster(lab_id)` | revoked |
-| `lab_tags` | `can_read_lab(lab_id)` | revoked |
-| `lab_updates` | `can_read_lab(lab_id) AND (published OR author OR is_mod())` | revoked |
-| `lab_artifacts` | `can_read_lab(lab_id) AND (published OR added_by OR is_mod())` | revoked |
-| `lab_decisions` | `can_read_lab(lab_id) AND (published OR created_by OR is_mod())` | revoked |
-| `lab_events` | `can_read_lab(lab_id)` | revoked |
-| `lab_skill_needs` | `can_read_lab(lab_id)` | revoked |
-| `lab_collaborations` | `can_read_lab(lab_a_id) OR can_read_lab(lab_b_id)` | revoked |
-| `profile_pinned_labs` | `user_id = auth.uid() OR can_read_lab(lab_id)` | revoked |
-| `lab_playbooks` | `is_active` | revoked |
+| Table                 | SELECT `using(...)`                                              | Writes  |
+| --------------------- | ---------------------------------------------------------------- | ------- |
+| `labs`                | `can_read_lab(id)`                                               | revoked |
+| `lab_members`         | `can_read_lab_roster(lab_id)`                                    | revoked |
+| `lab_tags`            | `can_read_lab(lab_id)`                                           | revoked |
+| `lab_updates`         | `can_read_lab(lab_id) AND (published OR author OR is_mod())`     | revoked |
+| `lab_artifacts`       | `can_read_lab(lab_id) AND (published OR added_by OR is_mod())`   | revoked |
+| `lab_decisions`       | `can_read_lab(lab_id) AND (published OR created_by OR is_mod())` | revoked |
+| `lab_events`          | `can_read_lab(lab_id)`                                           | revoked |
+| `lab_skill_needs`     | `can_read_lab(lab_id)`                                           | revoked |
+| `lab_collaborations`  | `can_read_lab(lab_a_id) OR can_read_lab(lab_b_id)`               | revoked |
+| `profile_pinned_labs` | `user_id = auth.uid() OR can_read_lab(lab_id)`                   | revoked |
+| `lab_playbooks`       | `is_active`                                                      | revoked |
 
 `anon` keeps only its default `SELECT` grant, matches no policy (all are
 `to authenticated`), and therefore reads **nothing** through RLS. Public Spaces
@@ -67,9 +67,16 @@ guarantee while unlocking the surface for members.
   and lab-scoped `posts`: bumps `labs.last_activity_at` and **clears
   `dormant_since`** (instant revive, §16).
 - `mark_dormant_labs()` (service_role): sets `dormant_since` + writes a
-  `marked_dormant` event for Spaces idle 28 days. **Never** changes
-  `space_mode`, `stage`, `visibility`, or membership — there is no demotion
-  path (proved by a test).
+  `marked_dormant` event for Spaces idle 28 days. This function **only marks
+  dormancy** — it does not change `space_mode`, `stage`, `visibility`, or
+  membership (proved by a test). Stage demotion is a separate mechanism with a
+  strict split: user/member/client-initiated demotion is **forbidden** (that is
+  the invariant the negative test protects), while **system-role timeout
+  demotion is allowed** and is the decided mechanism (12 Aug 2026) — Maal
+  auto-demotes back to Warshad on timeout, writing a public Governance Log
+  entry and preserving history (work, ledger, contribution record, prior
+  decisions; only current stage changes). The system timeout path is **not yet
+  implemented**; it lands in Maal F2.
 - `flag_skill_gaps()` (service_role): stamps `alerted_at` on skill needs open +
   un-alerted for 7 days and returns `(lab_id, skill)` for the cron fan-out.
 
@@ -80,5 +87,7 @@ guarantee while unlocking the surface for members.
   to a non-member; anon reading any lab.
 - Revoked write grant → `permission denied` — direct `insert`/`update` on
   `labs`, `lab_updates`, `lab_events` by the lead/member.
-- No-demotion invariant → `space_mode/stage/visibility` unchanged after
-  `mark_dormant_labs()`.
+- No client-initiated demotion invariant → `space_mode/stage/visibility`
+  unchanged after `mark_dormant_labs()` (the function marks dormancy only;
+  stage changes are reserved for the system-role timeout path, which ships in
+  Maal F2).
