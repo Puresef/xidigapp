@@ -54,7 +54,10 @@ export const so = {
   'content.seededTooltip': 'Nuxur bilow ah oo madasha ka yimid, maaha qoraal xubin.',
   'content.aiTooltip':
     'Waxaa sameeyay Xidig AI. Waa la calaamadeeyay si aad uga kala saarto nuxurka xubnaha.',
-  'content.aiAccountTooltip': 'Akoon kaaliye AI ah oo si cad loo calaamadeeyay, maaha xubin bini-aadam ah.',
+  'content.aiAccountTooltip':
+    'Akoon kaaliye AI ah oo si cad loo calaamadeeyay, maaha xubin bini-aadam ah.',
+  'content.systemLabel': 'Nidaamka Xidig',
+  'content.systemTooltip': 'Waxaa si toos ah u daabacay nidaamka — kama iman xubin.',
 
   // Maamul — dib u eegista nuxurka la beeray (§21) — SO drafts, native review
   'admin.seedTitle': 'Nuxurka la beeray',
@@ -62,7 +65,8 @@ export const so = {
     'Nuxur AI-caawiyay iyo mid la beeray — la calaamadeeyay, la hubin karo, marnaba looma tuso sida nuxur xubin.',
   'admin.seedRunsHeading': 'Wareegyada beerista',
   'admin.seedContentHeading': 'Tirooyinka nuxurka la beeray',
-  'admin.seedNoRuns': 'Wali ma jiraan wareegyo beeris ah. Orod shaqada beerista si aad u buuxiso cufnaanta bilowga.',
+  'admin.seedNoRuns':
+    'Wali ma jiraan wareegyo beeris ah. Orod shaqada beerista si aad u buuxiso cufnaanta bilowga.',
   'admin.seedColLabel': 'Summad',
   'admin.seedColSource': 'Isha',
   'admin.seedColCreated': 'La abuuray',
@@ -120,6 +124,7 @@ export const so = {
   'action.copyLink': 'Koobiyee linkiga',
   'action.linkCopied': 'Linkiga waa la koobiyeeyay.',
   'action.viewOnMap': 'Ka eeg khariidadda',
+  'action.view': 'Fiiri',
 
   // Language switching
   'language.label': 'Luqadda',
@@ -233,9 +238,9 @@ export const so = {
     'Codbixintan waa la xiray — cod lama darin karo, lamana beddeli karo. Natiijadu waa kama-dambays.',
   'error.pollOptionsInvalid':
     'Codbixintu waxay u baahan tahay {min} ilaa {max} doorasho. Hagaaji doorashooyinkaaga oo mar kale isku day.',
-  'error.mediaNotReady': 'Mid ka mid ah sawirradaadu si buuxda uma gelin. Ka saar oo mar kale geli.',
-  'error.playbookInvalid':
-    'Qorshahaas lama heli karo. Dooro mid kale, ama banaan ka bilow.',
+  'error.mediaNotReady':
+    'Mid ka mid ah sawirradaadu si buuxda uma gelin. Ka saar oo mar kale geli.',
+  'error.playbookInvalid': 'Qorshahaas lama heli karo. Dooro mid kale, ama banaan ka bilow.',
   'error.tagInvalid':
     'Tags waxay isticmaalaan 2–50 xaraf yaryar, tiro, ama jiitin (-) — sida halal-finance.',
   'error.tagLimit':
@@ -275,6 +280,10 @@ export const so = {
   'matching.suggestEmptyBody':
     'Dadkaagu weli Xidig ma joogaan — casuum, oo buuxi waddooyinkaaga, xirfadahaaga iyo magaaladaada si laguu helo.',
   'matching.suggestEmptyCta': 'Casuum dadkaaga',
+  'matching.suggestModuleTitle': 'Kula talin',
+  'matching.reasonsPrefix': 'Sababta:',
+  'matching.privacyNote':
+    'Kaliya xogtaada bogga ayaa la isticmaalay — sabab kasta waa la muujiyaa.',
 
   // Community Awards (PRD §20)
   'awards.title': 'Abaalmarinta Bulshada',
@@ -294,7 +303,19 @@ export const so = {
   'awards.pickTargetPlaceholder': 'Xulo…',
   'awards.castVote': 'Cod dir',
   'awards.yourVote': 'Codkaaga',
-  'awards.noTargets': 'Wali waxba lagu codeeyo ma jiraan — raac xubno ama baadh Labs iyo Guulo marka hore.',
+  'awards.noTargets':
+    'Wali waxba lagu codeeyo ma jiraan — raac xubno ama baadh Labs iyo Guulo marka hore.',
+  'awards.resultTitle': '{category} — {period}: {name}',
+  'awards.evidenceMostHelpful': {
+    one: '{count} Codsi oo la xaliyay · qoraaga codsiga ayaa xaqiijiyay',
+    other: '{count} Codsi oo la xaliyay · qoraaga codsiga ayaa mid kasta xaqiijiyay',
+  },
+  'awards.evidenceVotes': {
+    one: '{count} cod xubneed',
+    other: '{count} cod xubneed',
+  },
+  'awards.systemProvenance':
+    'Waxaa daabacay nidaamka Xidig — codbixin xubneed, xubin kasta hal cod',
 
   // Mentor-in-Residence (PRD §20)
   'mentor.featuredTitle': 'La-taliyaha Wakhtiga',
@@ -304,15 +325,28 @@ export const so = {
     other: "Wuxuu jawaabay {count} Su'aal usbuucan",
   },
   'mentor.periodTaken': 'La-taliye ayaa horeba loo magacaabay xilligaas. Dooro xilli kale.',
+  'mentor.residenceTitle': 'La-taliye joogto ah — {period}',
+  'mentor.hoursLabel': 'Saacadaha',
+  'mentor.hostLabel': 'Martigeliye',
+  'mentor.bookCta': 'Ballan qabso',
+  'mentor.freeNote': 'Bilaash — Warshadda ayaa martigelisa. {minutes} daqiiqo qofkii.',
+  'mentor.slotsTitle': 'Dooro waqti',
+  'mentor.noSlots': 'Waqtiyo banaan ma jiraan hadda.',
+  'mentor.yourBooking': 'Ballankaaga: {when}',
+  'mentor.unbook': 'Ka noqo ballanta',
+  // Xukun 7 (12 Aug): mentor_slots weli ma haysato tiir 'timezone', marka
+  // wakhtiga la muujinayo wuxuu si cad u qeexayaa inuu yahay UTC.
+  'mentor.slotTimeUtc': '{time} UTC',
 
   // Reputation scores + Top Helper leaderboard (PRD §14)
   'reputation.scoresSection': 'Sumcad',
   'reputation.contributionChip': 'Wax-ku-darsi {count}',
   'reputation.helperChip': 'Caawiye {count}',
   'reputation.leaderboardTitle': 'Caawiyayaasha Ugu Sarreeya',
-  'reputation.leaderboardSubtitle': 'Xubnaha jawaabahoodu shaqeeyeen oo kasbaday Helper score-ka ugu badan.',
+  'reputation.leaderboardSubtitle':
+    'Xubnaha jawaabahoodu shaqeeyeen oo kasbaday Helper score-ka ugu badan.',
   'reputation.topHelpersHeading': 'Caawiyayaasha Ugu Sarreeya',
-  'reputation.leaderboardEmpty': "Weli Helper score ma jiro. Ka jawaab Ask furan si aad u kasbato.",
+  'reputation.leaderboardEmpty': 'Weli Helper score ma jiro. Ka jawaab Ask furan si aad u kasbato.',
 
   // Home screen
   'home.welcome': 'Ku soo dhawoow Xidig.',
@@ -426,7 +460,8 @@ export const so = {
   'settings.hubPrivacy': 'Sirta & badbaadada',
   'settings.hubPrivacyBody': 'Cidda kula soo xiriiri karta iyo meesha aad ka muuqato.',
   'settings.hubNotifications': 'Digniino',
-  'settings.hubNotificationsBody': 'Kanaalada, saacadaha aamusnaanta, iyo warbixinta toddobaadlaha.',
+  'settings.hubNotificationsBody':
+    'Kanaalada, saacadaha aamusnaanta, iyo warbixinta toddobaadlaha.',
   'settings.hubAppearance': 'Muuqaalka',
   'settings.hubAppearanceBody': 'Midabka, cabbirka qoraalka, iyo dhaqdhaqaaqa.',
   'settings.hubLanguage': 'Luqadda',
@@ -438,7 +473,8 @@ export const so = {
   'settings.privacyTitle': 'Sirta & badbaadada',
   'settings.privacyControls': 'Xakamaynta sirta',
   'settings.dmPrivacyLabel': 'Cidda fariin kuu soo diri karta',
-  'settings.dmPrivacyHint': 'Sheeko cusub waxay had iyo jeer ku bilaabataa codsi aad aqbasho ama diido.',
+  'settings.dmPrivacyHint':
+    'Sheeko cusub waxay had iyo jeer ku bilaabataa codsi aad aqbasho ama diido.',
   'settings.dmPrivacyEveryone': 'Qof kasta',
   'settings.dmPrivacyVerified': 'Xubnaha la xaqiijiyay oo keliya',
   'settings.dmPrivacyNone': 'Cidna',
@@ -456,7 +492,8 @@ export const so = {
   'settings.blockedUnknownMember': 'Xubin',
   'settings.unblock': 'Fur xannibaadda',
   'settings.mutedTitle': 'La aamusiyay',
-  'settings.mutedIntro': 'Dadka iyo summadaha la aamusiyay kama muuqdaan bogaggaaga — lamana ogeysiiyo.',
+  'settings.mutedIntro':
+    'Dadka iyo summadaha la aamusiyay kama muuqdaan bogaggaaga — lamana ogeysiiyo.',
   'settings.reportInfoTitle': 'Warbixin-gudbinta',
   'settings.reportInfoBody':
     'Waxaad ka warbixin kartaa qoraal, fariin, ama xubin kasta. Kuwani waa sababaha ay kormeeruhu ku shaqeeyaan:',
@@ -489,6 +526,7 @@ export const so = {
   'settings.notifTypeLabCollabInvite': 'Martiqaadyada wada-shaqaynta',
   'settings.notifTypeLabCollabResponse': 'Jawaabaha wada-shaqaynta',
   'settings.notifTypeWeeklyDigest': 'Warbixinta toddobaadlaha',
+  'settings.notifTypeMentorSlotBooked': 'Ballamada la-taliyaha',
   'settings.quietHoursTitle': 'Saacadaha aamusnaanta',
   'settings.quietHoursEnable': 'Daar saacadaha aamusnaanta',
   'settings.quietHoursHint':
@@ -573,8 +611,7 @@ export const so = {
   'settings.appealTitle': 'Racfaan ka qaado go’aan kormeerid',
   'settings.appealIntro':
     'Haddii aad u malaynayso in go’aanku qalad ahaa, noo sheeg wixii dhacay. Kormeere ka duwan kii go’aanka gaaray ayaa racfaankaaga dib u eegi doona 72 saacadood gudahood.',
-  'settings.appealEmpty':
-    'Ma jiraan go’aanno kormeerid oo aad hadda racfaan ka qaadi karto.',
+  'settings.appealEmpty': 'Ma jiraan go’aanno kormeerid oo aad hadda racfaan ka qaadi karto.',
   'settings.appealActionLabel': 'Go’aanka',
   'settings.appealReasonLabel': 'Maxaan u dib u eegnaa?',
   'settings.appealReasonPlaceholder': 'Sharax wixii dhacay…',
@@ -592,7 +629,8 @@ export const so = {
   'settings.guidelinesLink': 'Wax dheeraad ah ka akhri xidig.net',
   // Account / sessions
   'settings.sessionsTitle': 'Fadhiyada',
-  'settings.sessionsIntro': 'Halkan ka bax, ama meel walba ka bax haddii qalab lumo ama la wadaago.',
+  'settings.sessionsIntro':
+    'Halkan ka bax, ama meel walba ka bax haddii qalab lumo ama la wadaago.',
   'settings.signOutEverywhere': 'Meel walba ka bax',
   'settings.resendVerification': 'Dib u dir iimaylka xaqiijinta',
 
@@ -611,7 +649,8 @@ export const so = {
   'admin.modStatusRemoved': 'La saaray',
   'admin.modStatusDismissed': 'La iska dhaafay',
   'admin.modReasonFlagged': 'AI wuu calaamadeeyay — waa la qariyay ilaa aad go’aan gaarto',
-  'admin.modReasonUncertain': 'AI ma hubo — weli wuu muuqdaa, go’aan bini’aadmi ayuu u baahan yahay',
+  'admin.modReasonUncertain':
+    'AI ma hubo — weli wuu muuqdaa, go’aan bini’aadmi ayuu u baahan yahay',
   'admin.modAuthor': 'Qoraa',
   'admin.modVerdict': 'Go’aanka AI-ga',
   'admin.modViewContent': 'Fur nuxurka',
@@ -802,7 +841,8 @@ export const so = {
   'suuq.emptyPeopleFilters': 'Xubno kuma habboona shaandhooyinkan. Isku day inaad mid ka saarto.',
   'suuq.emptyBusinesses': 'Weli ganacsi lama diiwaangelin — ku dar kaaga.',
   'suuq.emptyBusinessesQuery': 'Ganacsi kuma habboona raadintaas. Isku day erayo yar.',
-  'suuq.emptyBusinessesFilters': 'Ganacsi kuma habboona shaandhooyinkan. Isku day inaad mid ka saarto.',
+  'suuq.emptyBusinessesFilters':
+    'Ganacsi kuma habboona shaandhooyinkan. Isku day inaad mid ka saarto.',
   'suuq.addListing': 'Ku dar ganacsigaaga',
   'suuq.newListingTitle': 'Ku dar liis ganacsi',
   'suuq.businessNameLabel': 'Magaca ganacsiga',
@@ -897,7 +937,8 @@ export const so = {
   'plaza.typeUpdate': 'War',
   'plaza.typePoll': 'Codbixin',
   'plaza.typeIntroHint': 'Bulshada isu soo bandhig.',
-  'plaza.typeAskHint': 'Caawimaad codso — kuwa ku caawin karaa si gaar ah ayay kuula soo xiriirayaan.',
+  'plaza.typeAskHint':
+    'Caawimaad codso — kuwa ku caawin karaa si gaar ah ayay kuula soo xiriirayaan.',
   'plaza.typeWinHint': 'Wadaag guul — weyn iyo yarba.',
   'plaza.typeUpdateHint': 'Horumarka waxa aad dhisayso.',
   'plaza.typePollHint': 'Su’aal u dhig codka bulshada.',
@@ -920,7 +961,8 @@ export const so = {
   'plaza.bodyLabelAsk': 'Maxaad caawimaad ugu baahan tahay?',
   'plaza.bodyLabelPoll': 'Su’aashaada',
   'plaza.linkLabel': 'Link (ikhtiyaari)',
-  'plaza.linkHint': 'Linkiyada YouTube, TikTok, Vimeo, X iyo Instagram gudaha app-ka ayay ka ciyaaraan.',
+  'plaza.linkHint':
+    'Linkiyada YouTube, TikTok, Vimeo, X iyo Instagram gudaha app-ka ayay ka ciyaaraan.',
   'plaza.linkNotEmbeddable':
     'Linkaas horudhac uma samayn karno. Wuxuu u baxayaa URL caadi ah — ama dhig link YouTube/TikTok/Vimeo si uu gudaha uga ciyaaro.',
   'plaza.imagesLabel': 'Sawirro',
@@ -1011,8 +1053,7 @@ export const so = {
   'plaza.hiddenOwn':
     'Adiga keliya ayaa hadda arki kara qoraalkan — waxaa la sugayaa hubin kormeerid oo degdeg ah.',
   // {link} → <a href="/support/appeal"> weeraha plaza.removedOwnLinkText ah.
-  'plaza.removedOwn':
-    'Qoraalkan waa la saaray. Haddii aad u malaynayso inay khalad tahay, {link}.',
+  'plaza.removedOwn': 'Qoraalkan waa la saaray. Haddii aad u malaynayso inay khalad tahay, {link}.',
   'plaza.removedOwnLinkText': 'racfaan ka codso',
   'plaza.lowBandwidthMedia': 'Sawirrada iyo muuqaalladu waa damsan yihiin habka isticmaalka-yar.',
   'plaza.commentsHeading': 'Faallooyinka',
@@ -1098,7 +1139,8 @@ export const so = {
     'Horay ayaad u soo sheegtay tan — kooxdeennu way eegaysaa. Waad ku mahadsan tahay ilaalinta bulshada.',
   'error.appealAlreadySubmitted':
     'Horay ayaad uga racfaan qaadatay go’aankan. Hal racfaan ayaa loo oggol yahay ficil kasta, waxaanad jawaab ka heli doontaa habmaamule sare 72 saacadood gudahood.',
-  'error.appealNotEligible': 'Wax laga racfaan qaato halkan ma jiraan, ama ficilkan adiga kuuma gaar aha.',
+  'error.appealNotEligible':
+    'Wax laga racfaan qaato halkan ma jiraan, ama ficilkan adiga kuuma gaar aha.',
   'error.appealSelfReview':
     'Adigaa qaaday ficilkan, sidaas darteed racfaankiisa ma eegi kartid — wuxuu tagaa habmaamule kale.',
   'error.verificationPending':
@@ -1112,6 +1154,7 @@ export const so = {
     'Codayntu ma furna hadda. Abaalmarinta Bulshada waxay socotaa rubuc kasta — dib u soo eeg.',
   'error.awardAlreadyVoted':
     'Horeba ayaad ugu codaysay qeybtan. Xubin kasta waxay codaysaa hal cod qeyb kasta.',
+  'error.awardCycleNotClosed': 'Codayntu weli way furan tahay xilligaas.',
 
   'notice.capitalRegionGated':
     'Astaamaha maalgelintu waxay diyaar u yihiin xubnaha gobolka Soomaaliya. Waxaad arkaysaa muuqaalka macluumaadka.',
@@ -1265,6 +1308,7 @@ export const so = {
   'notif.labSkillGap': 'Warshad ayaa raadinaysa xirfadahaaga',
   'notif.labCollabInvite': '{name} wuxuu rabaa inuu kula kaashado',
   'notif.labCollabResponse': 'Codsigaaga iskaashi ayaa jawaab helay',
+  'notif.mentorSlotBooked': '{name} ayaa ballan qabsaday — {when}',
   'notif.generic': 'Dhaqdhaqaaq cusub oo Xidig ah',
 
   // Push opt-in
@@ -1301,7 +1345,8 @@ export const so = {
   'lab.createSupporterNote': 'Abuurista Warshad waxay u baahan tahay xubinnimo Taageere.',
   'lab.fieldName': 'Magac',
   'lab.fieldSlug': 'Ciwaan',
-  'lab.fieldSlugHint': 'Meeshaadu waxay ku taal /labs/ciwaankaaga. Xarfo yaryar, lambaro iyo jajab.',
+  'lab.fieldSlugHint':
+    'Meeshaadu waxay ku taal /labs/ciwaankaaga. Xarfo yaryar, lambaro iyo jajab.',
   'lab.fieldSummary': 'Hal-sadar',
   'lab.fieldSummaryHint': 'Sharaxaad kooban oo ka muuqata kaararka iyo tusmada.',
   'lab.fieldVisibility': 'Yaa arki kara?',
@@ -1341,7 +1386,8 @@ export const so = {
   'lab.visMembers': 'Xubno',
   'lab.visMembersHint': 'Xubin kasta oo Xidig ah ayaa arki kara.',
   'lab.visPublic': 'Dadweyne',
-  'lab.visPublicHint': 'Qof kasta oo internetka ku jira ayaa arki kara — waa u fiican dhisidda dadweyne.',
+  'lab.visPublicHint':
+    'Qof kasta oo internetka ku jira ayaa arki kara — waa u fiican dhisidda dadweyne.',
   'lab.memberView': 'Muuqaalka liiska xubnaha',
   'lab.joinOpen': 'Furan — qof kasta wuu biiri karaa',
   'lab.joinRequest': 'Codsi — hoggaamiyuhu wuu ansixiyaa',
@@ -1470,13 +1516,15 @@ export const so = {
   'lite.embedLabel': 'Muuqaal',
   'lite.mapLabel': 'Khariidad',
   'lite.promptTitle': 'Xidhiidh gaabis ah?',
-  'lite.promptBody': 'U beddel Xawli yar si aad xog u badbaadiso — sawirrada iyo khariidadaha waxay soo baxaan markaad taabato Muuji.',
+  'lite.promptBody':
+    'U beddel Xawli yar si aad xog u badbaadiso — sawirrada iyo khariidadaha waxay soo baxaan markaad taabato Muuji.',
   'lite.promptAccept': 'Isticmaal Xawli yar',
   'lite.promptDismiss': 'Hadda maya',
 
   // Saved — bookmarks
   'saved.title': 'Kaydka',
-  'saved.empty': 'Weli waxba lama kaydin. Riix Kaydi si aad halkan ugu hayso qoraal, ganacsi ama Warshad.',
+  'saved.empty':
+    'Weli waxba lama kaydin. Riix Kaydi si aad halkan ugu hayso qoraal, ganacsi ama Warshad.',
   'saved.save': 'Kaydi',
   'saved.saved': 'La kaydiyay',
   'saved.tabPosts': 'Qoraallo',
@@ -1512,7 +1560,8 @@ export const so = {
   'search.signInForMore': 'Gal si aad u raadiso qoraallada iyo meelaha xubnaha.',
   'search.teachBody':
     'Hal sanduuq oo dhan: ku hel dadka higgaad kasta (Maxamed ama Mohamed), ganacsiyada, meelaha aad ku biiri karto, iyo qoraallada Madasha.',
-  'search.teachExample': 'Isku day magac, xirfad ama mawduuc — “Maxamed”, “dawaarle”, “dhoofinta xalaasha”.',
+  'search.teachExample':
+    'Isku day magac, xirfad ama mawduuc — “Maxamed”, “dawaarle”, “dhoofinta xalaasha”.',
   // Search polish (extras item 3): tab-yada, calaamadaha kala-soocidda,
   // iyo bogagga faaruqa ah ee wax bara.
   'search.tabAll': 'Dhammaan',
@@ -1531,7 +1580,8 @@ export const so = {
   'search.emptyPosts':
     'Qoraal lama helin. Qoraalladu waa wadahadallada Madasha — is-barasho, weydiimo, guulo iyo war-bixinno.',
   'search.emptyPostsCta': 'Tag Madasha',
-  'search.postsMembersOnly': 'Qoraallada Madashu waxay u muuqdaan xubnaha keliya. Gal si aad u raadiso.',
+  'search.postsMembersOnly':
+    'Qoraallada Madashu waxay u muuqdaan xubnaha keliya. Gal si aad u raadiso.',
 
   // Capital / Maal (§6/§17/§27). Launch-floor — trust surface, full SO.
   // Maalgeli (Invest) / Garab (Co-sign) reuse term.maalgeli / term.garab /
@@ -1754,11 +1804,13 @@ export const so = {
   'marketing.aboutRolesTitle': 'Doorar, ma aha shaqooyin',
   'marketing.aboutRolesBody':
     'Xidig ma laha bog shaqo. Doorarka bulshada — maamulayaal, xaqiijiyayaal, la-taliyayaal — waxaa laga soo doortaa xubnaha gudahooda.',
-  'marketing.aboutContactBody': 'Su’aalo, saxaafad, ama iskaashi: nagala soo xiriir bogga xiriirka.',
+  'marketing.aboutContactBody':
+    'Su’aalo, saxaafad, ama iskaashi: nagala soo xiriir bogga xiriirka.',
 
   // /membership
   'marketing.memberTitle': 'Xubinnimo',
-  'marketing.memberIntro': 'Hal bulsho, laba heer. Qiimaha waxaa lala xaqiijiyaa xubnaha — laguma soo rogo.',
+  'marketing.memberIntro':
+    'Hal bulsho, laba heer. Qiimaha waxaa lala xaqiijiyaa xubnaha — laguma soo rogo.',
   'marketing.memberFreeTitle': 'Xubin — lacag la’aan',
   'marketing.memberFreeBody':
     'Bog shakhsi iyo diiwaan ganacsi, Madasha, buugga, fariimaha, iyo ku biirista Kooxaha. Lacag la’aantu waa joogto.',
@@ -1869,7 +1921,8 @@ export const so = {
   'marketing.reportsFaqTitle': 'Su’aalaha inta badan la isweydiiyo',
 
   // Success-path notice (§27)
-  'notice.contactSent': 'Fariinta waa la diray — mahadsanid. Dhawaan ayaanu kula soo xiriiri doonnaa.',
+  'notice.contactSent':
+    'Fariinta waa la diray — mahadsanid. Dhawaan ayaanu kula soo xiriiri doonnaa.',
 
   // Consent capture (§12 — qabyo, dib-u-eegis af Soomaali ah ayaa la sugayaa)
   'consent.regionAria': 'Doorashooyinka sirta',
@@ -1911,7 +1964,7 @@ export const so = {
   'events.modeOnline': 'Onlayn',
   'events.modeInPerson': 'Fool-ka-fool',
   'events.modeHybrid': 'Isku-dhaf',
-  'events.statusCancelled': 'Munaasabaddan waa la joojiyay.',
+  'events.statusCancelled': 'La baajiyay',
   'events.statusDraft': 'Qabyo — adiga kaliya ayaa arki kara.',
   'events.awaitingReview': 'Munaasabaddan dib-u-eegis ayay sugaysaa.',
   'events.venueLabel': 'Goobta',
@@ -1928,11 +1981,11 @@ export const so = {
   'events.rsvpInterested': 'Waan xiiseynayaa',
   'events.rsvpRemove': 'Ka noqo',
   'events.showPubliclyLabel': 'Xubnaha kale ha arkeen inaan imanayo',
-  'events.attendeesTitle': 'Ka-qaybgalayaasha',
+  'events.attendeesTitle': 'Cidda imanaysa',
   'events.attendeesHostNote':
     'Adiga kaliya ayaa arka liiska oo dhan. Xubnaha kale waxay arkaan kuwa ogolaaday oo keliya.',
   'events.attendeesMemberNote': 'Xubnaha doortay inay si fagaare ah u muuqdaan.',
-  'events.addToCalendar': 'Ku dar kalandarka (.ics)',
+  'events.addToCalendar': 'Ku dar jadwalka',
   'events.googleCalendar': 'Google Calendar',
   'events.shareText': 'Kaalay "{title}" gudaha Xidig',
   'events.requestAccessCta': 'Codso gelitaan si aad uga qaybgasho',
@@ -1965,7 +2018,78 @@ export const so = {
   'events.notEligible':
     'Martigelinta munaasabadaha waxaa hadda u furan hoggaamiyeyaasha Labs-ka, ganacsiyada la xaqiijiyay iyo maamulayaasha.',
   'events.cancelEvent': 'Jooji munaasabadda',
-  'events.cancelConfirm': 'Ma joojinaysaa munaasabaddan? Qof kasta oo ka qaybgalay waa loo sheegi doonaa.',
+  'events.cancelConfirm':
+    'Ma joojinaysaa munaasabaddan? Qof kasta oo ka qaybgalay waa loo sheegi doonaa.',
+
+  // Munaasabado dispatch (Task 2 Copy Table) — tabs, RSVP, past events,
+  // attendees, agenda, capacity/cancel, check-in, host card, empty/offline/
+  // error, form additions.
+  'events.tabUpcoming': 'Soo socda',
+  'events.tabPast': 'La qabtay',
+  'events.tabMine': 'Kuwayga',
+  'events.createAria': 'Munaasabad cusub',
+  'events.hostLineLab': 'Martigeliye: {name} · Warshad',
+  'events.hostLineMember': 'Martigeliye: {name}',
+  // Meta-line goob for online events with no venue name (frame 9a copy).
+  'events.venueOnline': 'Khadka (online)',
+  'events.capacityConfirmed': '{going} / {capacity} boos la xaqiijiyay',
+  'events.confirmedNoLimit': '{count} la xaqiijiyay · boos aan xadidnayn',
+  'events.rsvpConfirmed': 'Waad xaqiijisay',
+  'events.pastAttended': {
+    one: 'La qabtay · {count} qof ayaa yimid',
+    other: 'La qabtay · {count} qof ayaa yimid',
+  },
+  'events.pastPhotosReport': 'Sawirrada iyo warbixinta',
+  'events.honestyNote':
+    'Tirooyinku waa RSVP la xaqiijiyay — kama badna, kama yara. Munaasabad dhammaatay waxay sheegtaa waxa dhabtii dhacay.',
+  'events.backToAll': 'Dhammaan munaasabadaha',
+  'events.statusOpen': 'Furan',
+  'events.capacitySeats': '{going} / {capacity} boos',
+  'events.moreAttendees': '+{count} kale',
+  'events.namesVisibleNote':
+    'Magacyadu way muuqdaan — RSVP waa ballan bulsheed, ma aha tiro qarsoon.',
+  'events.agendaTitle': 'Barnaamijka',
+  'events.factWhen': 'Goorta',
+  'events.factWhere': 'Goobta',
+  'events.factSeats': 'Boosas',
+  'events.capacityConfirmedShort': '{going} / {capacity} la xaqiijiyay',
+  'events.cancelReleaseNote': 'Ka noqoshadu waa hal taabasho — booskaaga qof kale ayaa heli kara.',
+  'events.hostCardTitle': 'Martigeliyaha',
+  'events.hostPastEventsLab': {
+    one: 'Warshad · {count} munaasabad horay',
+    other: 'Warshad · {count} munaasabadood horay',
+  },
+  'events.hostPastEventsMember': {
+    one: '{count} munaasabad horay',
+    other: '{count} munaasabadood horay',
+  },
+  'events.reportEvent': 'Ka warbixi munaasabaddan',
+  'events.emptyTitle': 'Munaasabad soo socota ma jirto',
+  'events.emptyBody':
+    'Munaasabaduhu waxay ka dhashaan Warshadaha, Suuqa, iyo qoraallada bulshada — halkaas ayay kaaga soo muuqdaan.',
+  'events.emptyCtaLabs': 'Fiiri Warshadaha',
+  'events.emptyCtaCreate': 'Abuur munaasabad',
+  'events.offlineStale': 'Internet ma jiro. Liiskani waa kii {age}.',
+  'events.queuedRsvp': 'RSVP — sugaya',
+  'events.queuedNote': 'Wuxuu baxayaa marka internetku soo noqdo',
+  'events.errorTitle': 'Munaasabaduhu ma soo bixin',
+  'events.errorBody': 'Wax baa qaldamay. Isku day mar kale.',
+  'events.retry': 'Isku day',
+  'events.capacityFullLine': '{capacity} / {capacity} — boos ma banna',
+  'events.fullReleaseNote':
+    'Haddii qof ka noqdo, booska isla markiiba wuu furmayaa. Liis sugitaan ma jiro — mudnaan lama iibsado.',
+  'events.cancelledNotice':
+    'Martigeliyaha ayaa baajiyay munaasabaddan {date}. Dhammaan {count}-kii RSVP waa la ogeysiiyay.',
+  'events.checkinTitle': 'Diiwaangeli imaatinka',
+  'events.checkinHint': 'Calaamadee cidda timid — tiradu waxay noqotaa diiwaanka rasmiga ah.',
+  'events.checkedInLabel': 'Yimid',
+  'events.formAgenda': 'Barnaamijka',
+  'events.formAgendaTime': 'Waqtiga',
+  'events.formAgendaItem': 'Qodobka',
+  'events.formAgendaAdd': 'Ku dar qodob',
+  'events.formCover': 'Sawirka munaasabadda',
+  'events.coverAlt': 'Sawirka munaasabadda: {title}',
+  'events.reminderCancelRsvp': 'Ka noqo RSVP',
 
   // Munaasabado — khaladaadka §27
   'error.eventFull': 'Munaasabaddan waa buuxdaa. Weli waxaad calaamadin kartaa inaad xiiseynayso.',
@@ -1973,12 +2097,22 @@ export const so = {
   'error.eventCategoryInvalid': 'Dooro qayb munaasabadeed oo sax ah.',
   'error.eventCreationNotAllowed':
     'Martigelinta munaasabadaha waxaa hadda u furan hoggaamiyeyaasha Labs-ka, ganacsiyada la xaqiijiyay iyo maamulayaasha.',
+  'error.eventEnded': 'Munaasabaddan waa dhammaatay — diiwaankeedu waa mid taagan.',
+  'error.eventCheckinNotOpen':
+    'Imaatinka waxaa la diiwaangelin karaa marka munaasabaddu bilaabato.',
+  'error.mentorSlotTaken': 'Waqtigaas waa la qabsaday — dooro mid kale.',
+  'error.mentorAlreadyBooked': 'Hal ballan ayaad qabsan kartaa xilligan.',
 
   // Munaasabado — ogeysiisyada
   'notif.eventRsvp': '{name} ayaa ka jawaabay munaasabaddaada',
   'notif.eventRsvpBundle': '{count} qof ayaa ka jawaabay munaasabaddaada',
   'notif.eventCancelled': 'Munaasabad aad ka qaybgashay waa la joojiyay',
-  'notif.eventReminder': 'Munaasabad aad ka qaybgalayso waxay bilaabanaysaa 24 saacadood gudahood',
+  'notif.eventReminder': '3 maalmood ka hor: {title}',
+  'notif.eventReminderMetaGoing': '{when} · waad xaqiijisay · {going}/{capacity}',
+  'notif.eventReminderMetaGoingNoCap': '{when} · waad xaqiijisay · {going} la xaqiijiyay',
+  'notif.eventReminderMetaInterested': '{when} · xiise ayaad calaamadisay · {going}/{capacity}',
+  'notif.eventReminderMetaInterestedNoCap':
+    '{when} · xiise ayaad calaamadisay · {going} la xaqiijiyay',
 
   // Albaabka hore — kaadhka "kan xiga"
   'marketing.nextEventTitle': 'Kan xiga',
@@ -2006,6 +2140,42 @@ export const so = {
   'time.inWeeks': { one: '{count} toddobaad ka dib', other: '{count} toddobaad ka dib' },
   'time.inMonths': { one: '{count} bil ka dib', other: '{count} bilood ka dib' },
   'time.inYears': { one: '{count} sannad ka dib', other: '{count} sannadood ka dib' },
+
+  // Magacyada bilaha / maalmaha usbuuca (Munaasabado dispatch, Task 2) — frame
+  // verbatim. See time.month*/time.weekday* comment in en.ts for why these
+  // are dictionary-owned.
+  'time.month1': 'Janaayo',
+  'time.month2': 'Febraayo',
+  'time.month3': 'Maarso',
+  'time.month4': 'Abriil',
+  'time.month5': 'Maajo',
+  'time.month6': 'Juun',
+  'time.month7': 'Luuliyo',
+  'time.month8': 'Agoosto',
+  'time.month9': 'Sebtembar',
+  'time.month10': 'Oktoobar',
+  'time.month11': 'Nofembar',
+  'time.month12': 'Desembar',
+  'time.monthShort1': 'Jan',
+  'time.monthShort2': 'Feb',
+  'time.monthShort3': 'Mar',
+  'time.monthShort4': 'Abr',
+  'time.monthShort5': 'Maj',
+  'time.monthShort6': 'Jun',
+  'time.monthShort7': 'Lul',
+  'time.monthShort8': 'Ago',
+  'time.monthShort9': 'Seb',
+  'time.monthShort10': 'Okt',
+  'time.monthShort11': 'Nof',
+  'time.monthShort12': 'Des',
+  // ISO weekday index: Isniinta = 1 … Axadda = 7.
+  'time.weekday1': 'Isniin',
+  'time.weekday2': 'Talaado',
+  'time.weekday3': 'Arbaco',
+  'time.weekday4': 'Khamiis',
+  'time.weekday5': 'Jimce',
+  'time.weekday6': 'Sabti',
+  'time.weekday7': 'Axad',
 
   // ── Aniga v3 — bogga qaybaha leh (frames 5a–5d / 8a–8b / 10a–10e, xaaladaha
   // a1–a5 / v1–v7, Badge Canon b1–b4). Erayada waxay ka yimaadeen naqshadda
@@ -2054,11 +2224,9 @@ export const so = {
   'profile.showcaseAddAria': 'Ku dar bandhigga',
   'profile.showcaseOwnerNote':
     'Adigaa dooranaya waxa halkan yaal — Guul, farshaxan Warshad, ama sawir War. Waxba si otomaatig ah kuma soo baxaan.',
-  'profile.showcaseVisitorNote':
-    '{name} ayaa doortay bandhiggan — ma aha kuwa ugu firfircoon.',
+  'profile.showcaseVisitorNote': '{name} ayaa doortay bandhiggan — ma aha kuwa ugu firfircoon.',
   'profile.showcaseEmptyTitle': 'Bandhiggaagu waa madhan',
-  'profile.showcaseEmptyBody':
-    'Ku dhaji Guul, farshaxan Warshad, ama sawir War — adigaa doorta.',
+  'profile.showcaseEmptyBody': 'Ku dhaji Guul, farshaxan Warshad, ama sawir War — adigaa doorta.',
   'profile.showcaseErrorTitle': 'Bandhiggu ma soo bixin',
   'profile.showcaseErrorBody': 'Wax baa qaldamay markii la soo rarayay. Isku day mar kale.',
   'profile.showcaseLiteNote': 'Xawli yar: sawirradu waa la sugaa. Qaab-dhismeedku waa isku mid.',
@@ -2117,8 +2285,7 @@ export const so = {
   // Chip-ka madaxa waa `profile.moduleVisitorsOff` oo kor ku yaal.
   'profile.metricsNote':
     'Qaybtu waa dhisan tahay. Muujinta booqdayaasha waxaa damisa calaamad guud — waa go’aan madal.',
-  'profile.metricsManagerSub':
-    'Damsan calaamad guud — go’aan madal, ma aha dejin adiga kuu taal',
+  'profile.metricsManagerSub': 'Damsan calaamad guud — go’aan madal, ma aha dejin adiga kuu taal',
   'profile.metricsRailSub': 'Calaamad guud — damsan',
   'profile.flagOff': 'Damsan',
   'profile.statPosts': 'Qoraal',
@@ -2186,8 +2353,7 @@ export const so = {
   'profile.managerSave': 'Kaydi habaynta',
   'profile.managerNote':
     'Booqdayaashu waxay arkaan kaliya qaybaha aad shidday, sida aad u kala horraysiisay.',
-  'profile.managerInstantNote':
-    'Isbeddelku wuu degdegaa — booqdayaashu waxay arkaan habayntan.',
+  'profile.managerInstantNote': 'Isbeddelku wuu degdegaa — booqdayaashu waxay arkaan habayntan.',
   'profile.managerQueuedTitle': 'Habayntu waa kaydsan tahay',
   'profile.managerQueuedNote':
     'Bogga ayaa isla markiiba muujinaya habaynta cusub — booqdayaashu waxay arkaan marka ay baxdo.',

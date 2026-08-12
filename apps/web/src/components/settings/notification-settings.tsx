@@ -41,6 +41,7 @@ const TYPE_LABELS: Record<string, MessageKey> = {
   lab_skill_gap: 'settings.notifTypeLabSkillGap',
   lab_collab_invite: 'settings.notifTypeLabCollabInvite',
   lab_collab_response: 'settings.notifTypeLabCollabResponse',
+  mentor_slot_booked: 'settings.notifTypeMentorSlotBooked',
   weekly_digest: 'settings.notifTypeWeeklyDigest',
 };
 

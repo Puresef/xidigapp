@@ -286,6 +286,7 @@ const FOCUS_VISIBLE_CLASSES = [
   '.xidig-switch',
   '.xidig-dm-menu__item',
   '.xidig-notif__link',
+  '.xidig-notif__action',
   '.xidig-mention__item',
   '.xidig-reaction-picker__opt',
   '.xidig-user-menu__item',
@@ -306,6 +307,14 @@ const FOCUS_VISIBLE_CLASSES = [
   '.xidig-aspaces__row',
   '.xidig-asuuq__customer',
   '.xidig-amanager__queue-cancel',
+  // Munaasabado 9a: link pills (tabs/filters) + the card's anchor shapes.
+  'a.xidig-tag',
+  'a.xidig-event-card__title',
+  '.xidig-event-card__calendar',
+  '.xidig-event-card__report',
+  // Munaasabado 9b detail: the named-wall person links + the host card link.
+  'a.xidig-event-wall__person',
+  'a.xidig-event-host',
 ];
 
 const ACTIVE_CLASSES = [
@@ -324,6 +333,16 @@ const ACTIVE_CLASSES = [
   '.xidig-aspaces__row',
   '.xidig-asuuq__customer',
   '.xidig-amanager__queue-cancel',
+  // Munaasabado 9a anchor shapes.
+  'a.xidig-tag',
+  'a.xidig-event-card__title',
+  '.xidig-event-card__calendar',
+  '.xidig-event-card__report',
+  // Munaasabado 9b detail anchor shapes.
+  'a.xidig-event-wall__person',
+  'a.xidig-event-host',
+  // Task 7 e7 Digniino reminder row: Fiiri / Ka noqo RSVP inline actions.
+  '.xidig-notif__action',
 ];
 
 const DISABLED_CLASSES = [
@@ -338,6 +357,8 @@ const DISABLED_CLASSES = [
   // own override rather than inheriting the shared disabled rule.
   '.xidig-amodule__eye',
   '.xidig-amanager__queue-cancel',
+  // Task 7: the unrsvp button disables itself while its DELETE is in flight.
+  '.xidig-notif__action',
 ];
 
 describe('interaction-state coverage', () => {

@@ -20,6 +20,20 @@ export function ContentSourceBadge({
   const t = useT();
   if (source === 'member' || !source) return null;
 
+  // 'system' = the platform's own voice (award results, Task 8) — a NEUTRAL
+  // chip, deliberately not the seeded-violet: system records are not seeded/AI
+  // content and must not read as such.
+  if (source === 'system') {
+    return (
+      <span
+        className={`xidig-tag${className ? ` ${className}` : ''}`}
+        title={t('content.systemTooltip')}
+      >
+        {t('content.systemLabel')}
+      </span>
+    );
+  }
+
   const isAi = source === 'ai';
   return (
     <span

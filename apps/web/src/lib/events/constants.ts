@@ -3,7 +3,11 @@
  * The privacy numbers here are load-bearing locked design, not tuning knobs.
  */
 
-/** Public/member aggregate RSVP counts render only at or above this floor. */
+/**
+ * SIGNED-OUT aggregate RSVP counts render only at or above this floor.
+ * Task 4 retired the floor for member surfaces (members see exact counts;
+ * flagged for Warya) — only the public/anon projection folds through it.
+ */
 export const RSVP_COUNT_FLOOR = 5;
 
 /** Slug shape (mirrors the DB CHECK events_slug_format). */
@@ -25,3 +29,9 @@ export const EMBEDDED_EVENTS_LIMIT = 3;
 
 /** Index pages cap (chronological, no pagination needed at alpha volume). */
 export const EVENTS_INDEX_LIMIT = 50;
+
+/** Card wall sample (frame 9a): first N public 'going' names per card. */
+export const EVENT_CARD_SAMPLE_LIMIT = 3;
+
+/** Upcoming tab appends the N most recent past events (9a divider section). */
+export const EVENT_PAST_STRIP_LIMIT = 3;

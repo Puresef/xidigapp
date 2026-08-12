@@ -298,6 +298,54 @@ export type Database = {
           },
         ]
       }
+      award_results: {
+        Row: {
+          category: Database["public"]["Enums"]["award_category"]
+          created_at: string
+          evidence: Json
+          post_id: string | null
+          quarter: string
+          target_id: string
+          target_type: Database["public"]["Enums"]["entity_type"]
+          votes: number
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["award_category"]
+          created_at?: string
+          evidence?: Json
+          post_id?: string | null
+          quarter: string
+          target_id: string
+          target_type: Database["public"]["Enums"]["entity_type"]
+          votes: number
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["award_category"]
+          created_at?: string
+          evidence?: Json
+          post_id?: string | null
+          quarter?: string
+          target_id?: string
+          target_type?: Database["public"]["Enums"]["entity_type"]
+          votes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_results_quarter_fkey"
+            columns: ["quarter"]
+            isOneToOne: false
+            referencedRelation: "award_cycles"
+            referencedColumns: ["quarter"]
+          },
+          {
+            foreignKeyName: "award_results_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       award_votes: {
         Row: {
           category: Database["public"]["Enums"]["award_category"]
@@ -1008,6 +1056,7 @@ export type Database = {
       }
       event_rsvps: {
         Row: {
+          checked_in_at: string | null
           created_at: string
           event_id: string
           show_publicly: boolean
@@ -1016,6 +1065,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          checked_in_at?: string | null
           created_at?: string
           event_id: string
           show_publicly?: boolean
@@ -1024,6 +1074,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          checked_in_at?: string | null
           created_at?: string
           event_id?: string
           show_publicly?: boolean
@@ -1051,9 +1102,12 @@ export type Database = {
       events: {
         Row: {
           address_visibility: Database["public"]["Enums"]["event_address_visibility"]
+          agenda: Json
           candidate_id: string | null
           capacity: number | null
           category_id: string
+          cover_blurhash: string | null
+          cover_path: string | null
           created_at: string
           description: string
           ends_at: string | null
@@ -1079,9 +1133,12 @@ export type Database = {
         }
         Insert: {
           address_visibility?: Database["public"]["Enums"]["event_address_visibility"]
+          agenda?: Json
           candidate_id?: string | null
           capacity?: number | null
           category_id: string
+          cover_blurhash?: string | null
+          cover_path?: string | null
           created_at?: string
           description?: string
           ends_at?: string | null
@@ -1107,9 +1164,12 @@ export type Database = {
         }
         Update: {
           address_visibility?: Database["public"]["Enums"]["event_address_visibility"]
+          agenda?: Json
           candidate_id?: string | null
           capacity?: number | null
           category_id?: string
+          cover_blurhash?: string | null
+          cover_path?: string | null
           created_at?: string
           description?: string
           ends_at?: string | null
@@ -2350,8 +2410,11 @@ export type Database = {
           created_by_user_id: string | null
           ends_on: string
           focus: string | null
+          hours_note: string | null
           id: string
+          lab_id: string | null
           period: string
+          slot_minutes: number
           starts_on: string
         }
         Insert: {
@@ -2360,8 +2423,11 @@ export type Database = {
           created_by_user_id?: string | null
           ends_on: string
           focus?: string | null
+          hours_note?: string | null
           id?: string
+          lab_id?: string | null
           period: string
+          slot_minutes?: number
           starts_on: string
         }
         Update: {
@@ -2370,8 +2436,11 @@ export type Database = {
           created_by_user_id?: string | null
           ends_on?: string
           focus?: string | null
+          hours_note?: string | null
           id?: string
+          lab_id?: string | null
           period?: string
+          slot_minutes?: number
           starts_on?: string
         }
         Relationships: [
@@ -2387,6 +2456,58 @@ export type Database = {
             columns: ["created_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_residencies_lab_id_fkey"
+            columns: ["lab_id"]
+            isOneToOne: false
+            referencedRelation: "labs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentor_slots: {
+        Row: {
+          booked_at: string | null
+          booked_by_user_id: string | null
+          created_at: string
+          ends_at: string
+          id: string
+          residency_id: string
+          starts_at: string
+        }
+        Insert: {
+          booked_at?: string | null
+          booked_by_user_id?: string | null
+          created_at?: string
+          ends_at: string
+          id?: string
+          residency_id: string
+          starts_at: string
+        }
+        Update: {
+          booked_at?: string | null
+          booked_by_user_id?: string | null
+          created_at?: string
+          ends_at?: string
+          id?: string
+          residency_id?: string
+          starts_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentor_slots_booked_by_user_id_fkey"
+            columns: ["booked_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mentor_slots_residency_id_fkey"
+            columns: ["residency_id"]
+            isOneToOne: false
+            referencedRelation: "mentor_residencies"
             referencedColumns: ["id"]
           },
         ]
@@ -4961,7 +5082,7 @@ export type Database = {
         | "cookies"
         | "analytics"
         | "error_monitoring"
-      content_source: "member" | "seed" | "ai"
+      content_source: "member" | "seed" | "ai" | "system"
       content_status: "published" | "hidden" | "removed"
       conversation_status: "pending" | "accepted" | "declined" | "blocked"
       entity_type:
@@ -5234,7 +5355,7 @@ export const Constants = {
         "analytics",
         "error_monitoring",
       ],
-      content_source: ["member", "seed", "ai"],
+      content_source: ["member", "seed", "ai", "system"],
       content_status: ["published", "hidden", "removed"],
       conversation_status: ["pending", "accepted", "declined", "blocked"],
       entity_type: [

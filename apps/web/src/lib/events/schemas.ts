@@ -44,6 +44,24 @@ const venueNameSchema = z.string().trim().min(1).max(EVENT_VENUE_NAME_MAX);
 const venueAddressSchema = z.string().trim().min(1).max(EVENT_VENUE_ADDRESS_MAX);
 const onlineUrlSchema = z.string().trim().url().max(EVENT_URL_MAX);
 const capacitySchema = z.number().int().positive().max(EVENT_CAPACITY_MAX);
+/** Attach-only reference to a media_uploads row of kind `event_cover`. */
+const coverMediaIdSchema = z.string().uuid().nullable().optional();
+/**
+ * Freeform programme rows (Task 3). `time` is display text, not a strict
+ * HH:MM — hosts may write "14:00" or "Doors open" — so it stays a bounded
+ * string rather than a `type=time` shape.
+ */
+const agendaSchema = z
+  .array(
+    z
+      .object({
+        time: z.string().trim().min(1).max(16),
+        label: z.string().trim().min(1).max(160),
+      })
+      .strict(),
+  )
+  .max(12)
+  .optional();
 
 export const eventCreateSchema = z
   .object({
@@ -64,6 +82,8 @@ export const eventCreateSchema = z
     visibility: visibilitySchema.default('members'),
     capacity: capacitySchema.nullish(),
     status: z.enum(['draft', 'published']).default('published'),
+    coverMediaId: coverMediaIdSchema,
+    agenda: agendaSchema,
   })
   .refine(
     (v) => [v.labId, v.listingId, v.candidateId].filter((x) => x != null).length <= 1,
@@ -98,12 +118,15 @@ export const eventUpdateSchema = z
     visibility: visibilitySchema.optional(),
     capacity: capacitySchema.nullish(),
     status: z.enum(['published']).optional(),
+    coverMediaId: coverMediaIdSchema,
+    agenda: agendaSchema,
   })
   .refine((v) => Object.values(v).some((x) => x !== undefined), 'empty update');
 export type EventUpdateInput = z.infer<typeof eventUpdateSchema>;
 
 export const rsvpSchema = z.object({
   status: z.enum(['going', 'interested']),
-  showPublicly: z.boolean().default(false),
+  // Task 4 flip: the named wall is the default; opting OUT stays one tap away.
+  showPublicly: z.boolean().default(true),
 });
 export type RsvpInput = z.infer<typeof rsvpSchema>;

@@ -123,7 +123,10 @@ export async function transcodeToWebp(input: Buffer): Promise<TranscodeResult> {
 // + blurhash. docs/lite-mode.md carries the size table.
 // ============================================================================
 
-/** Mirrors the media_kinds lookup seeds (migration 20260706300000). */
+/**
+ * Mirrors the media_kinds lookup seeds (migration 20260706300000; event_cover
+ * added in migration 20260812000000, Munaasabado Task 1).
+ */
 export const MEDIA_KINDS = [
   'post',
   'avatar',
@@ -133,6 +136,7 @@ export const MEDIA_KINDS = [
   'space_cover',
   'candidate_logo',
   'candidate_cover',
+  'event_cover',
   'block',
 ] as const;
 
@@ -166,6 +170,7 @@ const KIND_SPECS: Record<MediaKind, { main: ResizeSpec; thumb: ResizeSpec }> = {
   space_cover: WIDE_COVER,
   candidate_logo: SQUARE_ICON,
   candidate_cover: WIDE_COVER,
+  event_cover: WIDE_COVER,
   block: CONTENT_IMAGE,
 };
 

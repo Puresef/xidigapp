@@ -40,7 +40,8 @@ export type ReportTargetType =
   | 'post'
   | 'lab_update'
   | 'profile'
-  | 'conversation';
+  | 'conversation'
+  | 'event';
 
 export function ReportControl({
   targetType,

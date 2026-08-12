@@ -152,6 +152,17 @@ export interface AnalyticsEventMap {
   };
   event_rsvp: { status: Enums<'event_rsvp_status'> };
   event_cancelled: Record<string, never>;
+  // Host toggled a member's door check-in (Task 4). Payload-free by design:
+  // WHO was checked in is the RSVP row's business, never analytics' (§23
+  // no-PII — attendance identity must not enter the funnel).
+  event_checked_in: Record<string, never>;
+  // Community-Award results published to Plaza (Munaasabado Task 8). `quarter`
+  // is the closed-format cycle id (YYYY-Qn) — a taxonomy string, never PII;
+  // winners/vote counts stay in award_results, not the funnel.
+  award_results_published: { quarter: string };
+  // Mentor-in-residence slot booked (Munaasabado Task 9). Payload-free — WHO
+  // booked WHOM's slot stays in mentor_slots/notifications, never the funnel.
+  mentor_slot_booked: Record<string, never>;
 
   // --- Aniga v3 modular profile (F2 §3) -------------------------------------
   // Counts and closed slugs only. `visible_count` is how many modules the owner

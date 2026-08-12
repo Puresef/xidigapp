@@ -31,6 +31,7 @@ describe('isMediaKind', () => {
       'space_cover',
       'candidate_logo',
       'candidate_cover',
+      'event_cover',
       'block',
     ]) {
       expect(isMediaKind(kind)).toBe(true);

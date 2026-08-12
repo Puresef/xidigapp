@@ -248,6 +248,9 @@ export const ERROR_DEFS = {
   // The member already cast a vote in this category this quarter (one vote per
   // category — the award_votes unique constraint surfaces as this, not raw 23505).
   already_voted: { messageKey: 'error.awardAlreadyVoted' as MessageKey },
+  // Admin tried to publish results while the cycle is still open. Results post
+  // to Plaza only after closes_at — no mid-cycle tallies (§20 anti-bandwagoning).
+  award_cycle_not_closed: { messageKey: 'error.awardCycleNotClosed' },
 
   // --- Events + RSVP (extras item 8) ---------------------------------------------------
   // Soft capacity reached: 'going' is blocked, 'interested' keeps working.
@@ -259,6 +262,21 @@ export const ERROR_DEFS = {
   // Caller isn't a Lab organizer / verified listing owner / mod-admin — the
   // locked alpha creation rights (never Supporter-paywalled).
   event_creation_not_allowed: { messageKey: 'error.eventCreationNotAllowed' },
+  // Edit/cancel against an event that already finished — the record is fixed
+  // (post-end immutability, Task 4).
+  event_ended: { messageKey: 'error.eventEnded' },
+  // Host check-in before starts_at — the door opens when the event does.
+  event_checkin_not_open: { messageKey: 'error.eventCheckinNotOpen' },
+
+  // --- Mentor-in-residence bookable slots (Munaasabado Task 9) ------------------------
+  // The atomic claim UPDATE matched zero rows: someone else already booked it,
+  // or it's no longer in the future. Also covers a past/nonexistent slot id —
+  // all three read the same to the caller.
+  mentor_slot_taken: { messageKey: 'error.mentorSlotTaken' },
+  // The member already holds a different slot in this residency (partial
+  // unique index on (residency_id, booked_by_user_id), surfaced as this
+  // instead of a raw 23505).
+  mentor_already_booked: { messageKey: 'error.mentorAlreadyBooked' },
 
   // --- Request hygiene ---------------------------------------------------------------
   rate_limited: { messageKey: 'error.rateLimited' },

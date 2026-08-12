@@ -112,11 +112,27 @@ body:not(:has(main.xidig-front))::before {
   background-image:
     radial-gradient(56rem 30rem at 82% -6rem, rgba(0, 119, 204, 0.12), transparent 65%),
     radial-gradient(40rem 24rem at 6% -2rem, rgba(0, 119, 204, 0.06), transparent 60%),
-    radial-gradient(1.2px 1.2px at 18% 12%, rgba(232, 240, 255, 0.7) 50%, rgba(232, 240, 255, 0) 51%),
+    radial-gradient(
+      1.2px 1.2px at 18% 12%,
+      rgba(232, 240, 255, 0.7) 50%,
+      rgba(232, 240, 255, 0) 51%
+    ),
     radial-gradient(1px 1px at 62% 34%, rgba(232, 240, 255, 0.5) 50%, rgba(232, 240, 255, 0) 51%),
-    radial-gradient(1.4px 1.4px at 83% 8%, rgba(143, 195, 240, 0.6) 50%, rgba(143, 195, 240, 0) 51%),
-    radial-gradient(0.9px 0.9px at 38% 68%, rgba(232, 240, 255, 0.4) 50%, rgba(232, 240, 255, 0) 51%),
-    radial-gradient(1.1px 1.1px at 92% 56%, rgba(232, 240, 255, 0.45) 50%, rgba(232, 240, 255, 0) 51%);
+    radial-gradient(
+      1.4px 1.4px at 83% 8%,
+      rgba(143, 195, 240, 0.6) 50%,
+      rgba(143, 195, 240, 0) 51%
+    ),
+    radial-gradient(
+      0.9px 0.9px at 38% 68%,
+      rgba(232, 240, 255, 0.4) 50%,
+      rgba(232, 240, 255, 0) 51%
+    ),
+    radial-gradient(
+      1.1px 1.1px at 92% 56%,
+      rgba(232, 240, 255, 0.45) 50%,
+      rgba(232, 240, 255, 0) 51%
+    );
   background-size:
     100% 100%,
     100% 100%,
@@ -127,8 +143,18 @@ body:not(:has(main.xidig-front))::before {
     719px 719px;
   background-repeat: no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat;
   /* Dust fades with depth — densest under the header, near-gone by the fold. */
-  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3) 30rem, rgba(0, 0, 0, 0.1));
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.3) 30rem, rgba(0, 0, 0, 0.1));
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.9),
+    rgba(0, 0, 0, 0.3) 30rem,
+    rgba(0, 0, 0, 0.1)
+  );
+  mask-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.9),
+    rgba(0, 0, 0, 0.3) 30rem,
+    rgba(0, 0, 0, 0.1)
+  );
 }
 
 a {
@@ -2294,6 +2320,84 @@ button.xidig-poll__option {
   flex: 1;
 }
 
+/* e7 Digniino reminder row (Task 7): the row carries real controls (Fiiri /
+   Ka noqo RSVP) so it can't be one big <Link> like every other bundle type —
+   it's a static frame instead, calm and inert. */
+.xidig-notif__link--static {
+  align-items: flex-start;
+  cursor: default;
+}
+
+.xidig-notif__link--static:hover {
+  background: none;
+}
+
+/* Accent-soft calendar disc — never a pulse, never red (calm reminder). */
+.xidig-notif__icon {
+  flex: none;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 999px;
+  background: var(--x-accent-soft);
+  color: var(--x-accent-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.xidig-notif__body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.xidig-notif__meta {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-notif__actions {
+  display: inline-flex;
+  gap: var(--x-space-xs);
+  padding-top: 2px;
+}
+
+.xidig-notif__action {
+  font: inherit;
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  color: var(--x-accent-text);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.xidig-notif__action:hover,
+.xidig-notif__action:active {
+  text-decoration: underline;
+}
+
+.xidig-notif__action:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+  border-radius: var(--x-radius-s);
+}
+
+/* Muted "Ka noqo RSVP" — same control, quieter voice; never red/urgent. */
+.xidig-notif__action--muted {
+  color: var(--x-muted);
+}
+
+.xidig-notif__action:disabled {
+  opacity: 0.6;
+  cursor: default;
+  text-decoration: none;
+}
+
 .xidig-push {
   margin: var(--x-space) 0;
 }
@@ -2397,16 +2501,7 @@ button.xidig-poll__option {
   height: 0.7rem;
   flex: none;
   background: currentColor;
-  clip-path: polygon(
-    50% 0,
-    62% 38%,
-    100% 50%,
-    62% 62%,
-    50% 100%,
-    38% 62%,
-    0 50%,
-    38% 38%
-  );
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
 }
 
 /* Shared empty state (rich-by-default): the mark, the message, and — where
@@ -3648,7 +3743,9 @@ a.xidig-settings-card:hover {
   background: transparent;
   font-size: var(--x-text-l);
   cursor: pointer;
-  transition: transform 0.1s ease, background-color 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    background-color 0.1s ease;
 }
 .xidig-reaction-picker__opt:hover {
   transform: scale(1.15);
@@ -4208,16 +4305,52 @@ a.xidig-capital-entry:active {
 }
 
 /* --- Capital layout hooks (thin; most spacing inherited from xidig-section) --- */
-.xidig-capital-cover { border-radius: var(--x-radius); overflow: hidden; }
-.xidig-capital-rubric__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); gap: var(--x-space-s); margin: 0.5rem 0; }
-.xidig-capital-vote__actions, .xidig-capital-interest__actions, .xidig-capital-decision__actions, .xidig-capital-editor__actions, .xidig-capital-review__scores { display: flex; flex-wrap: wrap; gap: var(--x-space-xs); }
-.xidig-capital-review__scores { align-items: flex-end; }
-.xidig-capital-timeline__list { list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.35rem; }
-.xidig-capital-timeline__item { border-left: 2px solid var(--x-border); padding-left: var(--x-space-s); }
-.xidig-capital-maalgeli { margin-top: var(--x-space-s); }
-.xidig-capital-maalgeli__cta { width: 100%; } /* prominent, full-width on mobile-first */
-.xidig-capital-fund__secondary { margin-top: var(--x-space-s); }
-.xidig-capital-fund__disclaimer { margin-top: 1rem; font-style: italic; }
+.xidig-capital-cover {
+  border-radius: var(--x-radius);
+  overflow: hidden;
+}
+.xidig-capital-rubric__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--x-space-s);
+  margin: 0.5rem 0;
+}
+.xidig-capital-vote__actions,
+.xidig-capital-interest__actions,
+.xidig-capital-decision__actions,
+.xidig-capital-editor__actions,
+.xidig-capital-review__scores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--x-space-xs);
+}
+.xidig-capital-review__scores {
+  align-items: flex-end;
+}
+.xidig-capital-timeline__list {
+  list-style: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.xidig-capital-timeline__item {
+  border-left: 2px solid var(--x-border);
+  padding-left: var(--x-space-s);
+}
+.xidig-capital-maalgeli {
+  margin-top: var(--x-space-s);
+}
+.xidig-capital-maalgeli__cta {
+  width: 100%;
+} /* prominent, full-width on mobile-first */
+.xidig-capital-fund__secondary {
+  margin-top: var(--x-space-s);
+}
+.xidig-capital-fund__disclaimer {
+  margin-top: 1rem;
+  font-style: italic;
+}
 
 /* ============================================================================
    Header nav restructure (7 Jul): search box · bell · account menu
@@ -7193,4 +7326,1061 @@ a.xidig-alinks__chip:focus-visible,
    card differently from the manager and the private block beside it. */
 .xidig-aniga__rail .xidig-section {
   margin-bottom: 0;
+}
+
+/* ── Munaasabado — events list + EventCard (frames 9a, e1–e6) ─────────────
+   Family block for /events: header row, link-pill tabs, quiet category
+   filters, the card anatomy and its past/cancelled/full/queued states, the
+   e1 skeleton geometry and the e3 flush-error card. Interactive treatments
+   reuse .xidig-button / .xidig-icon-button; the two bespoke anchor shapes
+   (a.xidig-tag pills, the card title link) carry their own four states and
+   are registered in globals-tokens.test.ts. */
+
+.xidig-event-head {
+  display: flex;
+  align-items: center;
+  gap: var(--x-space-xs);
+}
+
+.xidig-event-head .xidig-auth__title {
+  flex: 1;
+  margin: 0;
+}
+
+/* Tabular numerals wherever the card family shows counts (frame's .num). */
+.xidig-event-page .num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Link pills (tabs + category filters). .xidig-tag styles the resting shape;
+   these rules add the anchor-flavored states the button pills already have. */
+a.xidig-tag {
+  text-decoration: none;
+}
+
+a.xidig-tag:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+a.xidig-tag:not([aria-current]):hover {
+  background: color-mix(in srgb, var(--x-border) 45%, transparent);
+}
+
+a.xidig-tag:active {
+  transform: translateY(1px);
+}
+
+a.xidig-tag:not([aria-current]):active {
+  background: color-mix(in srgb, var(--x-border) 60%, transparent);
+}
+
+.xidig-event-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 var(--x-space-xs);
+}
+
+.xidig-event-tabs .xidig-tag {
+  padding: 0.25rem 0.85rem;
+  white-space: nowrap;
+}
+
+.xidig-event-tabs .xidig-tag[aria-current='page'] {
+  background: var(--x-accent);
+  color: var(--x-accent-fg);
+  border-color: var(--x-accent);
+  font-weight: 600;
+}
+
+/* The quiet second row: same pills, selection is a border/ink shift only. */
+.xidig-event-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--x-space);
+}
+
+.xidig-event-filters .xidig-tag {
+  white-space: nowrap;
+}
+
+.xidig-event-filters .xidig-tag[aria-current='true'] {
+  color: var(--x-fg);
+  border-color: var(--x-border-strong);
+  font-weight: 600;
+}
+
+.xidig-event-list {
+  display: grid;
+  gap: 12px;
+}
+
+.xidig-event-list__divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding-top: 4px;
+}
+
+.xidig-event-list__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--x-border);
+}
+
+.xidig-event-list__note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+  padding: 0 2px;
+}
+
+/* e3 — the flush-error card: a human sentence with a next step. */
+.xidig-event-list__error {
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 13px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.xidig-event-list__error .xidig-button {
+  white-space: nowrap;
+}
+
+.xidig-event-list__error-lines {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-event-list__error-title {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+.xidig-event-list__error-body {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* ── The card ── */
+
+.xidig-event-card {
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  overflow: hidden;
+}
+
+/* Cover band: fixed 110px strip (frame 9a); the explicit height overrides
+   MediaSlot's aspect-ratio sizing in both deferred and revealed states. */
+.xidig-event-card__cover {
+  height: 110px;
+  border-radius: 0;
+}
+
+.xidig-event-card__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.xidig-event-card__body {
+  padding: 13px 15px;
+  display: grid;
+  gap: 11px;
+}
+
+.xidig-event-card__head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.xidig-event-card__date {
+  display: grid;
+  justify-items: center;
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius-s);
+  padding: 7px 11px;
+  flex: none;
+  min-width: 3.2rem;
+}
+
+.xidig-event-card__date-visual {
+  display: contents;
+}
+
+.xidig-event-card__day {
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+/* Dictionary stores "Ago"/"Lul"; the shout is typography, not copy. */
+.xidig-event-card__month {
+  color: var(--x-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.xidig-event-card__main {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-event-card__title {
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  text-wrap: pretty;
+  justify-self: start;
+}
+
+a.xidig-event-card__title {
+  text-decoration: none;
+  color: inherit;
+}
+
+a.xidig-event-card__title:hover {
+  text-decoration: underline;
+}
+
+a.xidig-event-card__title:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+  border-radius: var(--x-radius-s);
+}
+
+a.xidig-event-card__title:active {
+  color: var(--x-muted);
+}
+
+.xidig-event-card__meta {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-event-card__host {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-event-card__host svg {
+  flex: none;
+}
+
+.xidig-event-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.xidig-event-card__stack {
+  display: inline-flex;
+  flex: none;
+}
+
+/* Overlap with a surface ring so the discs read as a stack, not a blur. */
+.xidig-event-card__stack .xidig-avatar {
+  box-shadow: 0 0 0 2px var(--x-surface);
+}
+
+.xidig-event-card__stack .xidig-avatar + .xidig-avatar {
+  margin-inline-start: -6px;
+}
+
+.xidig-event-card__count {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  flex: 1;
+  min-width: 0;
+}
+
+.xidig-event-card__rsvp {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  flex: none;
+}
+
+.xidig-event-card__rsvp .xidig-button {
+  padding: 0.38rem 1rem;
+  font-size: var(--x-text-s);
+  white-space: nowrap;
+}
+
+/* Confirmed: accent-soft secondary with the check (frame 9a card 2). */
+.xidig-event-card__confirmed[aria-pressed='true'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--x-accent-text);
+  border-color: color-mix(in srgb, var(--x-accent) 45%, transparent);
+  background: var(--x-accent-soft);
+}
+
+.xidig-event-card__calendar {
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  color: var(--x-accent-text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.xidig-event-card__calendar:hover,
+.xidig-event-card__report:hover {
+  text-decoration: underline;
+}
+
+.xidig-event-card__calendar:focus-visible,
+.xidig-event-card__report:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+  border-radius: var(--x-radius-s);
+}
+
+.xidig-event-card__calendar:active,
+.xidig-event-card__report:active {
+  color: var(--x-muted);
+}
+
+/* e5 — the release rule under the full card; never urgency. */
+.xidig-event-card__note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* Island-level failure line (no-answer sends while online). */
+.xidig-event-card__err {
+  margin: 0;
+  color: var(--x-danger);
+  font-size: var(--x-text-xs);
+}
+
+/* e3 — the queued-intent chip: surface-2 row, true timestamp, Tirtir. */
+.xidig-event-card__queued {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius-s);
+  padding: 9px 11px;
+  flex: 1 1 100%;
+}
+
+.xidig-event-card__queued svg {
+  flex: none;
+  color: var(--x-muted);
+}
+
+.xidig-event-card__queued-lines {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-event-card__queued-title {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+.xidig-event-card__queued-note {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-event-card__queued .xidig-button {
+  padding: 0.24rem 0.7rem;
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+/* Past dims to 0.8, cancelled to 0.62 with the struck title (e6) — records,
+   not invitations; the DOM carries no RSVP control in either state. */
+.xidig-event-card--past {
+  opacity: 0.8;
+}
+
+.xidig-event-card--cancelled {
+  opacity: 0.62;
+}
+
+.xidig-event-card--cancelled .xidig-event-card__title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.xidig-event-card__tag {
+  justify-self: start;
+  padding: 0.05rem 0.55rem;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.xidig-event-card__report {
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  color: var(--x-accent-text);
+  text-decoration: none;
+  justify-self: start;
+}
+
+/* e2 — teaching empty state: stacked CTAs, centered under the mark. */
+.xidig-event-empty__actions {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  max-width: 15rem;
+  margin-inline: auto;
+}
+
+.xidig-event-empty__actions .xidig-button {
+  justify-content: center;
+  white-space: nowrap;
+}
+
+/* e1 — skeleton geometry mirroring the loaded card 1:1. */
+.xidig-event-skeleton__tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.xidig-event-skeleton__card {
+  gap: 10px;
+}
+
+.xidig-event-skeleton__head {
+  display: flex;
+  gap: 12px;
+}
+
+.xidig-event-skeleton__date {
+  width: 52px;
+  height: 52px;
+  min-height: 0;
+  border-radius: var(--x-radius-s);
+  flex: none;
+}
+
+.xidig-event-skeleton__lines {
+  display: grid;
+  gap: 7px;
+  flex: 1;
+  align-content: start;
+}
+
+.xidig-event-skeleton__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.xidig-event-skeleton__pill {
+  width: 112px;
+  height: 30px;
+}
+
+.xidig-event-skeleton__l75 {
+  width: 75%;
+}
+
+.xidig-event-skeleton__l68 {
+  width: 68%;
+}
+
+.xidig-event-skeleton__l55 {
+  width: 55%;
+}
+
+.xidig-event-skeleton__l50 {
+  width: 50%;
+}
+
+.xidig-event-skeleton__l45 {
+  width: 45%;
+}
+
+.xidig-event-skeleton__l40 {
+  width: 40%;
+}
+
+/* ── 9b detail (Munaasabado Task 6): cover hero, two-column grid with the
+   sticky facts aside at ≥64rem, single column stacked below (ruling 1
+   both-surfaces). The e6 cancelled treatment dims the RECORD only — the
+   SystemNotice stays in chrome above it at full opacity. ── */
+
+.xidig-event-detail {
+  display: grid;
+  gap: 22px;
+  align-items: start;
+}
+
+.xidig-event-detail__main {
+  display: grid;
+  gap: 15px;
+  min-width: 0;
+}
+
+.xidig-event-detail__aside {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+@media (min-width: 64rem) {
+  .xidig-event-detail {
+    grid-template-columns: minmax(0, 1fr) 306px;
+  }
+
+  .xidig-event-detail__aside {
+    position: sticky;
+    top: var(--x-space);
+  }
+}
+
+/* e6 — the dimmed record. Past truth is never deleted; it just steps back. */
+.xidig-event-detail--cancelled {
+  opacity: 0.62;
+}
+
+.xidig-event-detail--cancelled .xidig-event-detail__title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* Cover hero: 140px strip on phones, 190px on desktop (frame 9b). The
+   explicit height overrides MediaSlot's aspect-ratio sizing in both the
+   deferred and revealed states, exactly like the 9a card cover. */
+.xidig-event-detail__cover {
+  height: 140px;
+  border-radius: var(--x-radius);
+}
+
+@media (min-width: 64rem) {
+  .xidig-event-detail__cover {
+    height: 190px;
+  }
+}
+
+.xidig-event-detail__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.xidig-event-detail__cover--cancelled {
+  opacity: 0.62;
+}
+
+.xidig-event-detail__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.xidig-event-detail__titlerow .xidig-tag {
+  white-space: nowrap;
+}
+
+.xidig-event-detail__title {
+  margin: 0;
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.xidig-event-detail__meta {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-ui);
+}
+
+.xidig-event-detail__desc {
+  margin: 0;
+  font-size: var(--x-text-body);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+/* Shared card shell for the wall / agenda / facts / host / door-list. */
+.xidig-event-detail__card {
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 15px 17px;
+  display: grid;
+  gap: 10px;
+}
+
+/* The RSVP island keeps its own .xidig-section shell elsewhere; inside the
+   facts card it renders flat — one card, not a card-in-card. */
+.xidig-event-detail__card .xidig-section {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.xidig-event-detail__card .xidig-profile__actions {
+  margin: 0;
+}
+
+.xidig-event-detail__label {
+  margin: 0;
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+  color: var(--x-muted);
+  text-transform: uppercase;
+}
+
+.xidig-event-detail__note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-event-detail__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.xidig-event-detail__actions .xidig-button {
+  white-space: nowrap;
+}
+
+.xidig-event-detail__cancel {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+/* ── The named attendee wall (frame 9b): discs + names, exact remainder. ── */
+
+.xidig-event-wall__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.xidig-event-wall__seats {
+  margin-left: auto;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  white-space: nowrap;
+}
+
+.xidig-event-wall {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+a.xidig-event-wall__person {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--x-text-s);
+  color: var(--x-fg);
+  text-decoration: none;
+}
+
+a.xidig-event-wall__person:hover {
+  text-decoration: underline;
+}
+
+a.xidig-event-wall__person:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+  border-radius: var(--x-radius-s);
+}
+
+a.xidig-event-wall__person:active {
+  color: var(--x-muted);
+}
+
+.xidig-event-wall__more {
+  display: inline-flex;
+  align-items: center;
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+}
+
+.xidig-event-wall__note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-event-wall__optin {
+  display: grid;
+  gap: 6px;
+  padding: 0 2px;
+}
+
+/* ── Agenda (frame 9b "Barnaamijka"): num time column + label. ── */
+
+.xidig-event-agenda {
+  display: grid;
+  gap: 7px;
+}
+
+.xidig-event-agenda__row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 16px;
+  font-size: var(--x-text-s);
+}
+
+.xidig-event-agenda__time {
+  color: var(--x-muted);
+}
+
+/* ── Facts grid (Goorta / Goobta / Boosas). ── */
+
+.xidig-event-facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 7px 13px;
+  font-size: var(--x-text-s);
+}
+
+.xidig-event-facts dt {
+  color: var(--x-muted);
+}
+
+.xidig-event-facts dd {
+  margin: 0;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.xidig-event-facts__sub {
+  display: block;
+  font-weight: 400;
+}
+
+.xidig-event-facts__note {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* ── Host card (frame 9b "Martigeliyaha"). ── */
+
+a.xidig-event-host {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--x-fg);
+  text-decoration: none;
+}
+
+a.xidig-event-host:hover .xidig-event-host__name {
+  text-decoration: underline;
+}
+
+a.xidig-event-host:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+  border-radius: var(--x-radius-s);
+}
+
+a.xidig-event-host:active {
+  color: var(--x-muted);
+}
+
+.xidig-event-host__glyph {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--x-radius-s);
+  background: var(--x-accent-soft);
+  color: var(--x-accent-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.xidig-event-host__lines {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-event-host__name {
+  font-weight: 600;
+  font-size: var(--x-text-s);
+}
+
+.xidig-event-host__stat {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+/* ── Door list (host, started events). ── */
+
+.xidig-event-checkin__hint {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-event-checkin__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.xidig-event-checkin__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.xidig-event-checkin__name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--x-text-s);
+  font-weight: 600;
+}
+
+.xidig-event-checkin__mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+  white-space: nowrap;
+}
+
+/* ── Community-Award result card (Munaasabado Task 8, frame 9c). ──────────────
+   The one sanctioned vote-earned use of --x-trust as a RING (celebration is
+   earned by member vote, never self-assigned); text stays --x-trust-fg via
+   .xidig-tag--trust. The award anatomy replaces the byline — see PostCard. */
+
+.xidig-award-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.xidig-award-head__date {
+  margin-left: auto;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-award-identity {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+/* 3px surface gap + 5px trust ring around the 52px awardee avatar. */
+.xidig-award-ring {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 3px var(--x-surface),
+    0 0 0 5px var(--x-trust);
+}
+
+.xidig-award-identity__lines {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-award-identity__title {
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.xidig-award-identity__evidence {
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+}
+
+/* System-provenance footer — sits above the ReactionBar. */
+.xidig-award-footer {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--x-border);
+  padding-top: 11px;
+}
+
+/* ── Mentor-in-residence booking card (Munaasabado Task 9, frame 9c
+   "La-taliye joogto ah"). Card shell / title / facts grid / identity row all
+   reuse the event-detail aside classes above (identical silhouette in the
+   frame); only the booking CTA and the slot-picker sheet are new. ── */
+
+.xidig-mentor-book-cta {
+  justify-content: center;
+  width: 100%;
+}
+
+.xidig-mentor-slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--x-space-xs);
+}
+
+.xidig-mentor-slots .xidig-button {
+  width: 100%;
+}
+
+/* ── Madal 9c layout (Munaasabado Task 10): feed column + 306px sticky rail
+   on desktop; on mobile the rail hides and the SAME community modules run
+   inline in the feed as li.xidig-plaza-inline. Both placements are always in
+   the tree, media-query gated (nav-shells precedent) — full capability,
+   responsive presentation (codsi-layout precedent above). ── */
+
+.xidig-plaza-layout {
+  display: grid;
+  gap: var(--x-space);
+  align-items: start;
+}
+
+.xidig-plaza-layout__main {
+  display: grid;
+  gap: var(--x-space);
+  min-width: 0;
+}
+
+/* Mobile-first: the desktop rail doesn't exist below 64rem. */
+.xidig-plaza-rail {
+  display: none;
+}
+
+/* The module stack inside either placement (CommunityRail wrapper). */
+.xidig-plaza-modules {
+  display: grid;
+  gap: var(--x-space);
+  min-width: 0;
+}
+
+/* Quiet-when-empty (final-review fix 5): both 9c modules render null for
+   signed-out/quiet states, leaving the wrapper truly :empty — no whitespace
+   text nodes, locked by community-rail.test.tsx. The :empty check therefore
+   targets the WRAPPER (the old `.xidig-plaza-inline:empty` never matched:
+   the li always contains the wrapper div). Hide the wrapper AND its inline
+   seat, so the feed's list gap doesn't leave a phantom row. */
+.xidig-plaza-modules:empty {
+  display: none;
+}
+
+.xidig-plaza-inline:has(> .xidig-plaza-modules:empty) {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .xidig-plaza-layout {
+    grid-template-columns: minmax(0, 1fr) 306px;
+    gap: 22px;
+  }
+
+  /* A quiet rail collapses the layout back to a single feed column — never
+     a blank 306px strip beside the feed (fix 5, desktop side). */
+  .xidig-plaza-layout:has(> .xidig-plaza-rail > .xidig-plaza-modules:empty) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .xidig-plaza-rail {
+    display: grid;
+    gap: var(--x-space);
+    min-width: 0;
+    position: sticky;
+    top: var(--x-space);
+  }
+
+  .xidig-plaza-rail:has(> .xidig-plaza-modules:empty) {
+    display: none;
+  }
+
+  /* Desktop: the rail carries the modules — the inline feed row hides. */
+  .xidig-plaza-inline {
+    display: none;
+  }
+}
+
+/* ── Kula-talin follow module (frame 9c): card shell / uppercase label /
+   identity lines reuse the event-detail rail classes (mentor-card precedent —
+   identical silhouette in the frame); only the flex identity row, the
+   "Sababta:" prefix and the compact follow button are new. ── */
+
+.xidig-suggest-module__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.xidig-suggest-module__prefix {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+/* Compact Raac (frame: 0.3rem 0.8rem, xs) — size only; the primary/secondary
+   state colors stay FollowButton's app-wide follow semantics. */
+.xidig-suggest-module .xidig-follow {
+  flex: none;
+}
+
+.xidig-suggest-module .xidig-follow .xidig-button {
+  padding: 0.3rem 0.8rem;
+  font-size: var(--x-text-xs);
 }

@@ -134,6 +134,27 @@ export interface LatestCommentView {
   created_at: string;
 }
 
+/**
+ * Community-Award result hydration (Task 8, frame 9c): a system post that is
+ * a quarter's published winner card. `winner` is resolved live (user → profile,
+ * lab → labs, post → title + author) and null when the target no longer
+ * resolves; the card then falls back to the stored post body.
+ */
+export interface AwardPostView {
+  category: Enums<'award_category'>;
+  quarter: string;
+  votes: number;
+  winner: {
+    displayName: string;
+    handle: string | null;
+    href: string;
+    avatarThumbUrl: string | null;
+    avatarBlurhash: string | null;
+  } | null;
+  /** most_helpful only: asker-confirmed fulfilled Asks inside the window. */
+  evidence: { asksResolved?: number };
+}
+
 export interface PostView {
   post: PostRow;
   author: AuthorRef | null;
@@ -158,6 +179,8 @@ export interface PostView {
   bookmarked: boolean;
   /** The named helper on an in-progress/fulfilled Codsi ("Waxaa caawinaya…"). */
   askHelper: AuthorRef | null;
+  /** Community-Award result card (Task 8; optional so older fixtures compile). */
+  award?: AwardPostView | null;
 }
 
 export interface CommentView {
@@ -350,6 +373,121 @@ async function fetchPostImageMeta(
   return byPost;
 }
 
+/**
+ * Award-result hydration, keyed post id → AwardPostView. Gated on system-source
+ * rows before querying: award posts are ALWAYS system-authored, so the typical
+ * all-member feed skips the award_results round trip entirely. Winner display
+ * batches only over hit rows (most feeds: zero).
+ */
+async function fetchAwardViews(
+  admin: SupabaseClient<Database>,
+  rows: PostRow[],
+): Promise<Map<string, AwardPostView>> {
+  const byPost = new Map<string, AwardPostView>();
+  const systemPostIds = rows.filter((row) => row.source === 'system').map((row) => row.id);
+  if (systemPostIds.length === 0) return byPost;
+
+  const { data, error } = await admin
+    .from('award_results')
+    .select('post_id, quarter, category, target_type, target_id, votes, evidence')
+    .in('post_id', systemPostIds);
+  if (error) throw new Error(`award hydration failed: ${error.message}`);
+  const hits = (data ?? []).filter((row) => row.post_id !== null);
+  if (hits.length === 0) return byPost;
+
+  // Winner targets, bucketed by type. Post targets add their author to the
+  // profile batch (a Best-Win card celebrates the win's author).
+  const profileIds = new Set<string>();
+  const labIds: string[] = [];
+  const postTargetIds: string[] = [];
+  for (const hit of hits) {
+    if (hit.target_type === 'user') profileIds.add(hit.target_id);
+    else if (hit.target_type === 'lab') labIds.push(hit.target_id);
+    else if (hit.target_type === 'post') postTargetIds.push(hit.target_id);
+  }
+
+  const winnerPosts = new Map<string, { id: string; title: string | null; author_user_id: string }>();
+  if (postTargetIds.length > 0) {
+    const res = await admin
+      .from('posts')
+      .select('id, title, author_user_id')
+      .in('id', postTargetIds);
+    if (res.error) throw new Error(`award winner post hydration failed: ${res.error.message}`);
+    for (const row of res.data ?? []) {
+      winnerPosts.set(row.id, row);
+      profileIds.add(row.author_user_id);
+    }
+  }
+
+  const winnerLabs = new Map<
+    string,
+    { name: string; slug: string; icon_path: string | null; icon_blurhash: string | null }
+  >();
+  if (labIds.length > 0) {
+    const res = await admin
+      .from('labs')
+      .select('id, name, slug, icon_path, icon_blurhash')
+      .in('id', labIds);
+    if (res.error) throw new Error(`award winner lab hydration failed: ${res.error.message}`);
+    for (const row of res.data ?? []) winnerLabs.set(row.id, row);
+  }
+
+  const profiles =
+    profileIds.size > 0 ? await fetchAuthors(admin, [...profileIds]) : new Map<string, AuthorRef>();
+
+  const winnerFor = (hit: (typeof hits)[number]): AwardPostView['winner'] => {
+    if (hit.target_type === 'user') {
+      const profile = profiles.get(hit.target_id);
+      if (!profile) return null;
+      return {
+        displayName: profile.display_name,
+        handle: profile.handle,
+        href: `/u/${profile.handle}`,
+        avatarThumbUrl: profile.avatar_thumb_url,
+        avatarBlurhash: profile.avatar_blurhash,
+      };
+    }
+    if (hit.target_type === 'lab') {
+      const lab = winnerLabs.get(hit.target_id);
+      if (!lab) return null;
+      return {
+        displayName: lab.name,
+        handle: null,
+        href: `/labs/${lab.slug}`,
+        avatarThumbUrl: lab.icon_path ? publicMediaUrl(derivedThumbPath(lab.icon_path)) : null,
+        avatarBlurhash: lab.icon_blurhash,
+      };
+    }
+    if (hit.target_type === 'post') {
+      const target = winnerPosts.get(hit.target_id);
+      if (!target) return null;
+      const author = profiles.get(target.author_user_id) ?? null;
+      return {
+        displayName: target.title ?? author?.display_name ?? '—',
+        handle: author?.handle ?? null,
+        href: `/p/${target.id}`,
+        avatarThumbUrl: author?.avatar_thumb_url ?? null,
+        avatarBlurhash: author?.avatar_blurhash ?? null,
+      };
+    }
+    return null;
+  };
+
+  for (const hit of hits) {
+    const evidence = (hit.evidence ?? {}) as Record<string, unknown>;
+    const asksResolved =
+      typeof evidence.asksResolved === 'number' ? evidence.asksResolved : undefined;
+    byPost.set(hit.post_id as string, {
+      category: hit.category,
+      quarter: hit.quarter,
+      votes: hit.votes,
+      winner: winnerFor(hit),
+      evidence: asksResolved === undefined ? {} : { asksResolved },
+    });
+  }
+  return byPost;
+}
+
 /** The viewer's bookmarked ids among `postIds` (bookmarks are own-rows under RLS → service role). */
 async function fetchViewerBookmarks(
   admin: SupabaseClient<Database>,
@@ -510,7 +648,7 @@ export async function hydratePosts(
     ),
   ];
 
-  const [authors, reactions, polls, comments, tags, imageMeta, bookmarkedIds, mutes] =
+  const [authors, reactions, polls, comments, tags, imageMeta, bookmarkedIds, mutes, awards] =
     await Promise.all([
       fetchAuthors(admin, authorIds),
       fetchReactionAggregates(admin, 'post_id', postIds, viewerId),
@@ -520,6 +658,7 @@ export async function hydratePosts(
       fetchPostImageMeta(admin, postIds),
       fetchViewerBookmarks(admin, viewerId, postIds),
       applyMuteFilter ? fetchViewerMutes(admin, viewerId) : Promise.resolve(null),
+      fetchAwardViews(admin, rows),
     ]);
 
   // Latest-comment authors not already hydrated (commenters are often the
@@ -568,6 +707,7 @@ export async function hydratePosts(
     poll: polls.get(post.id) ?? null,
     bookmarked: bookmarkedIds.has(post.id),
     askHelper: post.ask_helper_user_id ? (authors.get(post.ask_helper_user_id) ?? null) : null,
+    award: awards.get(post.id) ?? null,
   }));
 
   if (!mutes) return views;

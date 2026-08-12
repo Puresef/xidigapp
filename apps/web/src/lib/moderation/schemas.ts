@@ -20,6 +20,9 @@ export const REPORT_TARGET_TYPES = [
   'listing',
   'lab_update',
   'candidate',
+  // Munaasabado Task 6: the event detail page mounts ReportControl; the DB
+  // entity_type enum already carries 'event' (20260710063000_events.sql).
+  'event',
 ] as const;
 
 export const REPORT_REASONS = [

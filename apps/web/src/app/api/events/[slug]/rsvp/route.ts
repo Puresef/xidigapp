@@ -63,7 +63,14 @@ export async function PUT(request: Request, { params }: Ctx): Promise<Response> 
       },
       { onConflict: 'event_id,user_id' },
     );
-    if (error) throw new Error(`rsvp upsert failed: ${error.message}`);
+    if (error) {
+      // Capacity race: two members pass the pre-check together and the DB
+      // trigger (Task 1) raises exclusion_violation 23P01 'event_full'. Map
+      // it to the SAME envelope as the pre-check 409 — callers can't tell
+      // which gate fired, and shouldn't.
+      if (error.code === '23P01') throw new ApiError('event_full', 409);
+      throw new Error(`rsvp upsert failed: ${error.message}`);
+    }
 
     // Tell the host (bundled per event; skip self-RSVPs).
     if (!view.viewer.isHost && view.viewer.rsvp?.status !== input.status) {

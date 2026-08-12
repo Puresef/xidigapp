@@ -9,6 +9,15 @@ import { ApiRequestError, apiPost } from '@/lib/api-client';
 import type { PlainError } from '@/lib/errors';
 
 import { PlainErrorBanner } from '../auth/plain-error';
+import { EventCoverPicker, type UploadedEventCover } from './event-cover-picker';
+
+/** One agenda/programme row (Task 3): `time` is display text, not `type=time`. */
+interface AgendaRow {
+  time: string;
+  label: string;
+}
+
+const AGENDA_MAX_ROWS = 12;
 
 /**
  * Minimal event creation form (extras item 8) — same conventions as
@@ -63,6 +72,26 @@ export function EventForm({ options }: { options: EventFormOptions }) {
   const [onlineUrl, setOnlineUrl] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'members' | 'space_only'>('members');
   const [capacity, setCapacity] = useState('');
+  const [coverMediaId, setCoverMediaId] = useState<string | null>(null);
+  const [agenda, setAgenda] = useState<AgendaRow[]>([]);
+
+  function onCoverUploaded(media: UploadedEventCover | null) {
+    setCoverMediaId(media?.id ?? null);
+  }
+
+  function updateAgendaRow(index: number, patch: Partial<AgendaRow>) {
+    setAgenda((current) => current.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+  }
+
+  function removeAgendaRow(index: number) {
+    setAgenda((current) => current.filter((_, i) => i !== index));
+  }
+
+  function addAgendaRow() {
+    setAgenda((current) =>
+      current.length >= AGENDA_MAX_ROWS ? current : [...current, { time: '', label: '' }],
+    );
+  }
 
   const isLabContainer = container.startsWith('lab:');
   const showVenue = mode !== 'online';
@@ -92,6 +121,11 @@ export function EventForm({ options }: { options: EventFormOptions }) {
       };
       if (container.startsWith('lab:')) body.labId = container.slice(4);
       if (container.startsWith('listing:')) body.listingId = container.slice(8);
+      if (coverMediaId) body.coverMediaId = coverMediaId;
+      const validAgenda = agenda
+        .map((row) => ({ time: row.time.trim(), label: row.label.trim() }))
+        .filter((row) => row.time !== '' && row.label !== '');
+      if (validAgenda.length > 0) body.agenda = validAgenda;
 
       const created = await apiPost<CreatedEvent>('/api/events', body);
       const slug = created.event?.event.slug;
@@ -133,6 +167,8 @@ export function EventForm({ options }: { options: EventFormOptions }) {
           maxLength={4000}
         />
       </div>
+
+      <EventCoverPicker title={title} onUploaded={onCoverUploaded} />
 
       <div className="xidig-field">
         <label className="xidig-field__label" htmlFor="event-category">
@@ -314,6 +350,49 @@ export function EventForm({ options }: { options: EventFormOptions }) {
           onChange={(e) => setCapacity(e.target.value)}
         />
       </div>
+
+      <fieldset className="xidig-field">
+        <legend className="xidig-field__label">{t('events.formAgenda')}</legend>
+        <div className="xidig-row-editor">
+          {agenda.map((row, index) => (
+            <div key={index} className="xidig-row-editor__row">
+              <input
+                className="xidig-field__input"
+                aria-label={t('events.formAgendaTime')}
+                placeholder={t('events.formAgendaTime')}
+                maxLength={16}
+                value={row.time}
+                onChange={(e) => updateAgendaRow(index, { time: e.target.value })}
+              />
+              <input
+                className="xidig-field__input"
+                aria-label={t('events.formAgendaItem')}
+                placeholder={t('events.formAgendaItem')}
+                maxLength={160}
+                value={row.label}
+                onChange={(e) => updateAgendaRow(index, { label: e.target.value })}
+              />
+              <button
+                type="button"
+                className="xidig-button xidig-button--secondary"
+                aria-label={t('a11y.removeRow')}
+                onClick={() => removeAgendaRow(index)}
+              >
+                {t('action.remove')}
+              </button>
+            </div>
+          ))}
+          {agenda.length < AGENDA_MAX_ROWS ? (
+            <button
+              type="button"
+              className="xidig-button xidig-button--secondary"
+              onClick={addAgendaRow}
+            >
+              {t('events.formAgendaAdd')}
+            </button>
+          ) : null}
+        </div>
+      </fieldset>
 
       <button type="submit" className="xidig-button xidig-button--primary" disabled={pending}>
         {t('events.formSubmit')}

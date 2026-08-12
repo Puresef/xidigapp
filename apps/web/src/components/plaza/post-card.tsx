@@ -17,6 +17,9 @@ import { SystemNotice } from '@/components/system-notice';
 import { PostEditForm } from '@/components/social/post-edit-form';
 import { PostHistory } from '@/components/social/post-history';
 import { PostOverflowMenu } from '@/components/social/post-overflow-menu';
+import { ReportControl } from '@/components/report-control';
+import { AWARD_CATEGORY_KEYS } from '@/lib/awards/categories';
+import { eventDateParts } from '@/lib/events/datetime';
 import { estimateEmbedBytes } from '@/lib/lite/estimates';
 import { LITE_BUNDLES, type LitePrefs } from '@/lib/lite/prefs';
 import type { PostView } from '@/lib/plaza/views';
@@ -101,6 +104,29 @@ export function PostCard({
   const { locale } = useLocale();
   const [editing, setEditing] = useState(false);
   const { post, author, link } = view;
+  // Community-Award result card (Task 8, frame 9c): the award anatomy REPLACES
+  // the author byline — the system never presents as a member.
+  const award = view.award ?? null;
+  // Award-card date, dictionary-owned (final-review fix 9): the runtime's ICU
+  // month names diverge from the project vocabulary under 'so' ('Agosto' vs
+  // the locked 'Agoosto'), so the month comes from time.month{n} via
+  // eventDateParts — never Intl name resolution. Pinned to UTC so server and
+  // client render the identical string (frame shape: "1 Agoosto").
+  const awardDateParts = award ? eventDateParts(t, post.created_at, null, 'UTC') : null;
+  // Composed once, reused by the identity title AND (Ruling 6) as the report
+  // control's target name on the detail surface — the frame-9c card never
+  // gets its own overflow menu, so /p/[id] is where an award post's report
+  // path lives. Null off-award; the two call sites below only read it under
+  // an `award` guard.
+  const awardTitle = award
+    ? award.winner
+      ? t('awards.resultTitle', {
+          category: t(AWARD_CATEGORY_KEYS[award.category]),
+          period: award.quarter,
+          name: award.winner.displayName,
+        })
+      : post.body.split('\n')[0]
+    : null;
   const isOwn = post.author_user_id === viewerId;
   const permalink = `/p/${post.id}`;
   const litePrefs: LitePrefs =
@@ -145,78 +171,106 @@ export function PostCard({
     </span>
   );
   const statusChip = post.ask_status ? (
-    <span className={ASK_STATUS_CLASS[post.ask_status]}>
-      {t(ASK_STATUS_KEYS[post.ask_status])}
-    </span>
+    <span className={ASK_STATUS_CLASS[post.ask_status]}>{t(ASK_STATUS_KEYS[post.ask_status])}</span>
   ) : null;
 
   return (
     <article className="xidig-card">
       {codsiBanner}
-      <div className="xidig-card__top">
-        <div className="xidig-byline">
-          {author ? (
-            <Link
-              href={`/u/${author.handle}`}
-              className={`xidig-byline__avatar${verified ? ' xidig-byline__avatar--verified' : ''}`}
-              aria-label={author.display_name}
-            >
-              <Avatar
-                name={author.display_name}
-                handle={author.handle}
-                src={author.avatar_thumb_url}
-                blurhash={author.avatar_blurhash}
-                size={40}
-                prefs={litePrefs}
-              />
-              {verified ? (
-                <span
-                  className="xidig-byline__check"
-                  title={
-                    author.verification_status === 'identity_verified'
-                      ? t('profile.badgeIdentityVerified')
-                      : t('profile.verifStatusCommunity')
-                  }
-                >
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M5 13l4 4L19 7" />
-                  </svg>
-                </span>
-              ) : null}
-            </Link>
-          ) : null}
-          <p className="xidig-card__meta xidig-byline__text">
+      {award ? (
+        /* 9c chip row: trust chip (sanctioned vote-earned orange) + date. No
+           byline, no overflow — the provenance footer names the author voice. */
+        <div className="xidig-award-head">
+          <span className="xidig-tag xidig-tag--trust">
+            <XidigIcon
+              name="guul"
+              variant="filled"
+              size={13}
+              tone="inherit"
+              className="x-ic--lead"
+            />
+            {t('awards.title')}
+          </span>
+          <span className="xidig-award-head__date">
+            {awardDateParts ? `${awardDateParts.day} ${awardDateParts.month}` : null}
+          </span>
+        </div>
+      ) : (
+        <div className="xidig-card__top">
+          <div className="xidig-byline">
             {author ? (
-              <Link className="xidig-byline__name" href={`/u/${author.handle}`}>
-                {author.display_name}
+              <Link
+                href={`/u/${author.handle}`}
+                className={`xidig-byline__avatar${verified ? ' xidig-byline__avatar--verified' : ''}`}
+                aria-label={author.display_name}
+              >
+                <Avatar
+                  name={author.display_name}
+                  handle={author.handle}
+                  src={author.avatar_thumb_url}
+                  blurhash={author.avatar_blurhash}
+                  size={40}
+                  prefs={litePrefs}
+                />
+                {verified ? (
+                  <span
+                    className="xidig-byline__check"
+                    title={
+                      author.verification_status === 'identity_verified'
+                        ? t('profile.badgeIdentityVerified')
+                        : t('profile.verifStatusCommunity')
+                    }
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                ) : null}
               </Link>
             ) : null}
-            {/* Diaspora geography in every byline (brand-rethink adoption):
+            <p className="xidig-card__meta xidig-byline__text">
+              {author ? (
+                <Link className="xidig-byline__name" href={`/u/${author.handle}`}>
+                  {author.display_name}
+                </Link>
+              ) : null}
+              {/* Diaspora geography in every byline (brand-rethink adoption):
                 profile city when set — "Ayaan · Toronto · 2h". */}
-            {author?.location_city ? ` · ${author.location_city}` : null}
-            {author ? ' · ' : null}
-            {formatRelativeTime(new Date(post.created_at), locale)}
-          </p>
-        </div>
-        {/* Detail surfaces seat the type + status chips in the byline row
+              {author?.location_city ? ` · ${author.location_city}` : null}
+              {author ? ' · ' : null}
+              {formatRelativeTime(new Date(post.created_at), locale)}
+            </p>
+          </div>
+          {/* Detail surfaces seat the type + status chips in the byline row
             itself (dark frames 1a–3b); feed cards keep the row below. */}
-        {detail ? (
-          <span className="xidig-chip-row xidig-chip-row--byline">
-            {typeChip}
-            {statusChip}
-          </span>
-        ) : null}
-        <PostOverflowMenu
-          authorUserId={post.author_user_id}
-          authorName={author?.display_name ?? ''}
-          isOwn={isOwn}
-          tags={view.tags}
-          canEdit={detail && isOwn && post.status !== 'removed'}
-          onEdit={() => setEditing(true)}
-        />
-      </div>
+          {detail ? (
+            <span className="xidig-chip-row xidig-chip-row--byline">
+              {typeChip}
+              {statusChip}
+            </span>
+          ) : null}
+          <PostOverflowMenu
+            authorUserId={post.author_user_id}
+            authorName={author?.display_name ?? ''}
+            isOwn={isOwn}
+            tags={view.tags}
+            canEdit={detail && isOwn && post.status !== 'removed'}
+            onEdit={() => setEditing(true)}
+          />
+        </div>
+      )}
 
-      {!detail || post.source !== 'member' || post.pinned_at || post.edited_at ? (
+      {!award && (!detail || post.source !== 'member' || post.pinned_at || post.edited_at) ? (
         <p className="xidig-chip-row">
           {!detail ? typeChip : null}
           <ContentSourceBadge source={post.source} />
@@ -237,7 +291,48 @@ export function PostCard({
         />
       ) : null}
 
-      {editing ? (
+      {award ? (
+        <>
+          {/* 9c identity row: awardee avatar in the trust ring + composed
+              title + evidence line. The stored body is only the fallback for
+              a winner that no longer resolves (deleted target). */}
+          <div className="xidig-award-identity">
+            {award.winner ? (
+              <Link
+                href={award.winner.href}
+                className="xidig-award-ring"
+                aria-label={award.winner.displayName}
+              >
+                <Avatar
+                  name={award.winner.displayName}
+                  handle={award.winner.handle ?? award.winner.displayName}
+                  src={award.winner.avatarThumbUrl}
+                  blurhash={award.winner.avatarBlurhash}
+                  size={52}
+                  prefs={litePrefs}
+                />
+              </Link>
+            ) : null}
+            <span className="xidig-award-identity__lines">
+              <span className="xidig-award-identity__title">{awardTitle}</span>
+              <span className="xidig-award-identity__evidence">
+                {award.evidence.asksResolved !== undefined
+                  ? t('awards.evidenceMostHelpful', { count: award.evidence.asksResolved })
+                  : t('awards.evidenceVotes', { count: award.votes })}
+              </span>
+            </span>
+          </div>
+          {/* Ruling 6: the 9c frame stays overflow-free on the feed, so this
+              is the card's only navigation affordance to /p/[id] — where the
+              report path (below) actually lives. Detail is already the post
+              itself, so it skips this. */}
+          {!detail ? (
+            <p className="xidig-card__meta xidig-award-view">
+              <Link href={permalink}>{t('action.view')}</Link>
+            </p>
+          ) : null}
+        </>
+      ) : editing ? (
         <PostEditForm
           postId={post.id}
           initialTitle={post.title}
@@ -325,6 +420,31 @@ export function PostCard({
 
       {codsiHelper}
 
+      {/* MANDATORY on award cards (structural test target): the system-
+          provenance line — one member, one vote, published by the platform. */}
+      {award ? (
+        <div className="xidig-award-footer">
+          <span data-award-provenance className="xidig-card__meta">
+            {t('awards.systemProvenance')}
+          </span>
+        </div>
+      ) : null}
+
+      {/* Ruling 6 (12 Aug): the 9c frame drops PostOverflowMenu entirely, so
+          award cards otherwise ship with no report path anywhere. The detail
+          surface (/p/[id]) is not a frame — it seats the same 'post' report
+          control every other post's detail page uses, restored here only for
+          `detail`; the feed card stays frame-faithful (see the `!detail`
+          "view" link above, which is the feed's route into this control). */}
+      {award && detail && !isOwn ? (
+        <ReportControl
+          targetType="post"
+          targetId={post.id}
+          targetName={awardTitle ?? t('awards.title')}
+          variant="quiet"
+        />
+      ) : null}
+
       <ReactionBar
         targetKind="post"
         targetId={post.id}
@@ -338,7 +458,17 @@ export function PostCard({
           aria-label={t('plaza.commentsCount', { count: view.commentCount })}
           title={t('plaza.commentsCount', { count: view.commentCount })}
         >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5a8.5 8.5 0 0 1-.9-4 8.38 8.38 0 0 1 8.5-8.5A8.5 8.5 0 0 1 21 11.5z" />
           </svg>
           <span className="xidig-post-comments__n">{view.commentCount}</span>
@@ -372,9 +502,7 @@ export function PostCard({
                 size={20}
                 prefs={litePrefs}
               />
-              <span className="xidig-post-latest__name">
-                {latestComment.author.display_name}
-              </span>
+              <span className="xidig-post-latest__name">{latestComment.author.display_name}</span>
             </>
           ) : null}
           <span className="xidig-post-latest__snippet">{latestComment.snippet}</span>

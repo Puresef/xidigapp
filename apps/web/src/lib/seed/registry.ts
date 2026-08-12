@@ -22,6 +22,14 @@ import type { Database, Enums } from '@xidig/db';
 
 export type SeedSource = Extract<Enums<'content_source'>, 'seed' | 'ai'>;
 
+/**
+ * Sources the idempotency registry accepts — any non-member content_source
+ * (the seed_entities_source_not_member CHECK is the DB mirror). 'system'
+ * rides the same registry for award auto-posts (Task 8); seed RUNS stay
+ * SeedSource-only ('seed' | 'ai').
+ */
+export type RegistrySource = Extract<Enums<'content_source'>, 'seed' | 'ai' | 'system'>;
+
 export interface EnsureSeedRunArgs {
   label: string;
   description?: string | null;
@@ -63,7 +71,7 @@ export async function ensureSeedRun(
 export interface CreateSeededEntityArgs {
   dedupKey: string;
   entityType: Enums<'entity_type'>;
-  source: SeedSource;
+  source: RegistrySource;
   seedRunId?: string | null;
   apiKeyId?: string | null;
   /** Creates the underlying content row and returns its id. */

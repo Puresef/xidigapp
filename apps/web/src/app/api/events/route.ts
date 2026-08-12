@@ -1,7 +1,7 @@
 import { after } from 'next/server';
 import { z } from 'zod';
 
-import type { TablesInsert } from '@xidig/db';
+import type { Json, TablesInsert } from '@xidig/db';
 
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
@@ -14,6 +14,7 @@ import { eventCreateSchema } from '@/lib/events/schemas';
 import { allocateEventSlug } from '@/lib/events/slug';
 import { getMemberEventView, listMemberEvents } from '@/lib/events/views';
 import { getT } from '@/lib/locale';
+import { loadAttachableMedia } from '@/lib/media/attach';
 import { scanTextContent } from '@/lib/moderation/scan';
 import { RATE_WINDOW_DAY_SECONDS } from '@/lib/plaza/constants';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -71,6 +72,21 @@ export async function POST(request: Request): Promise<Response> {
     if (!category) throw new ApiError('event_category_invalid', 400);
 
     const slug = await allocateEventSlug(admin, input.title);
+
+    // Cover is attach-only (Task 3): the upload must already exist, belong to
+    // the caller, and carry kind `event_cover` (media attach contract,
+    // lib/media/attach.ts). Resolved BEFORE the insert so a bad media id 409s
+    // instead of leaving a half-created event.
+    let coverPath: string | null = null;
+    let coverBlurhash: string | null = null;
+    if (input.coverMediaId) {
+      const media = await loadAttachableMedia(admin, ctx.appUser.id, input.coverMediaId, [
+        'event_cover',
+      ]);
+      coverPath = media.storage_path;
+      coverBlurhash = media.blurhash;
+    }
+
     const insert: TablesInsert<'events'> = {
       slug,
       title: input.title,
@@ -91,7 +107,10 @@ export async function POST(request: Request): Promise<Response> {
       visibility: input.visibility,
       capacity: input.capacity ?? null,
       status: input.status,
+      cover_path: coverPath,
+      cover_blurhash: coverBlurhash,
     };
+    if (input.agenda !== undefined) insert.agenda = input.agenda as unknown as Json;
 
     const { data: row, error } = await admin.from('events').insert(insert).select('id, slug').single();
     if (error || !row) throw new Error(`event insert failed: ${error?.message ?? 'no row'}`);

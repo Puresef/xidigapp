@@ -155,6 +155,10 @@ describe('experience-expansion schema', () => {
         'candidate_logo',
         'candidate_cover',
         'block',
+        // Fariimo voice notes (20260810000000) — DM audio, signed-URL only.
+        'voice',
+        // Munaasabado event covers (20260812000000).
+        'event_cover',
       ].sort(),
     );
 

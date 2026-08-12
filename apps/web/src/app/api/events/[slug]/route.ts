@@ -1,6 +1,6 @@
 import { after } from 'next/server';
 
-import type { TablesUpdate } from '@xidig/db';
+import type { Json, TablesUpdate } from '@xidig/db';
 
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
@@ -11,17 +11,23 @@ import { EVENT_SLUG_REGEX } from '@/lib/events/constants';
 import { eventUpdateSchema } from '@/lib/events/schemas';
 import { getMemberEventView, type EventView } from '@/lib/events/views';
 import { getT } from '@/lib/locale';
+import { loadAttachableMedia } from '@/lib/media/attach';
 import { scanTextContent } from '@/lib/moderation/scan';
 import { insertNotification } from '@/lib/notifications/notify';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
- * One event (extras item 8). GET = the member detail view (privacy-folded
- * address/link, floor-gated counts, host-only attendee list — all in
- * lib/events/views.ts). PATCH = host/mod edits + the one-way draft→published
- * transition (fires the Plaza auto-post + moderation pre-scan exactly once —
- * the status machine has no published→draft edge). DELETE = cancel (soft; the
- * page stays up with a cancelled banner) and notifies RSVPed members.
+ * One event (extras item 8, semantics per the Munaasabado mechanics upgrade).
+ * GET = the member detail view (privacy-folded address/link, EXACT member-
+ * surface RSVP counts — the N>=5 floor survives only on the signed-out
+ * projection — and the named public wall: opted-in 'going' names for members,
+ * every RSVP for the host; all in lib/events/views.ts). PATCH = host/mod
+ * edits + the one-way draft→published transition (fires the Plaza auto-post +
+ * moderation pre-scan exactly once — the status machine has no
+ * published→draft edge); a finished event's record is IMMUTABLE (409
+ * event_ended). DELETE = cancel (soft; the page stays up with a cancelled
+ * banner) and notifies every RSVPed member (going AND interested) — also
+ * blocked once the event has ended.
  */
 
 interface Ctx {
@@ -34,6 +40,13 @@ async function requireManageableEvent(ctx: AuthContext, slug: string): Promise<E
   const isMod = ctx.appUser.role === 'admin' || ctx.appUser.role === 'mod';
   if (!view.viewer.isHost && !isMod) throw new ApiError('forbidden', 403);
   return view;
+}
+
+/** Post-end immutability (Task 4): a finished event's record is fixed. */
+function rejectEndedEvent(event: EventView['event']): void {
+  if (Date.parse(event.ends_at ?? event.starts_at) < Date.now()) {
+    throw new ApiError('event_ended', 409);
+  }
 }
 
 export async function GET(_request: Request, { params }: Ctx): Promise<Response> {
@@ -58,6 +71,7 @@ export async function PATCH(request: Request, { params }: Ctx): Promise<Response
     const view = await requireManageableEvent(ctx, slug);
     const current = view.event;
 
+    rejectEndedEvent(current);
     if (current.status === 'cancelled') throw new ApiError('event_not_open', 409);
 
     const admin = getSupabaseAdmin();
@@ -99,6 +113,24 @@ export async function PATCH(request: Request, { params }: Ctx): Promise<Response
     if (input.onlineUrl !== undefined) patch.online_url = input.onlineUrl;
     if (input.visibility !== undefined) patch.visibility = input.visibility;
     if (input.capacity !== undefined) patch.capacity = input.capacity;
+
+    // Cover attach (Task 3, mirrors attachLabMedia in
+    // app/api/labs/[id]/route.ts:40-88): `null` clears both denormalized
+    // columns, a media id re-validates ownership/kind/scan before attaching.
+    if (input.coverMediaId !== undefined) {
+      if (input.coverMediaId === null) {
+        patch.cover_path = null;
+        patch.cover_blurhash = null;
+      } else {
+        const media = await loadAttachableMedia(admin, ctx.appUser.id, input.coverMediaId, [
+          'event_cover',
+        ]);
+        patch.cover_path = media.storage_path;
+        patch.cover_blurhash = media.blurhash;
+      }
+    }
+    if (input.agenda !== undefined) patch.agenda = input.agenda as unknown as Json;
+
     if (publishing) patch.status = 'published';
 
     const { error } = await admin.from('events').update(patch).eq('id', current.id);
@@ -146,6 +178,7 @@ export async function DELETE(_request: Request, { params }: Ctx): Promise<Respon
     if (!EVENT_SLUG_REGEX.test(slug)) throw new ApiError('not_found', 404);
     const ctx = await requireUser();
     const view = await requireManageableEvent(ctx, slug);
+    rejectEndedEvent(view.event);
     if (view.event.status === 'cancelled') return apiOk({ cancelled: true });
 
     const admin = getSupabaseAdmin();

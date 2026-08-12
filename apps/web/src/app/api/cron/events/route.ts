@@ -4,8 +4,8 @@ import { sendEventReminders } from '@/lib/events/reminders';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
- * Hourly events cron (vercel.json → this route): the T-24h RSVP reminder
- * sweep (extras item 8, locked design). Idempotent — the sweep claims each
+ * Hourly events cron (vercel.json → this route): the T-3d RSVP reminder
+ * sweep (extras item 8; window widened by Task 4). Idempotent — the sweep claims each
  * event once via events.reminded_at (lib/events/reminders.ts), so re-runs and
  * overlaps never double-remind.
  *

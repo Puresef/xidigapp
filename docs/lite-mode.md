@@ -99,6 +99,7 @@ name). Every upload is re-encoded to WebP (EXIF/GPS dropped), pre-scanned
 | listing_photo                         | 2048 inside        | 480 inside | alt REQUIRED              |
 | avatar / space_icon / candidate_logo  | 512 cover (square) | 96 cover   | thumb <8KB (Lite avatars) |
 | cover / space_cover / candidate_cover | 1600×600 inside    | 480 inside | profile/space/candidate   |
+| event_cover                           | 1600×600 inside    | 480 inside | still; alt defaults to the event title |
 
 Storage: `{userId}/{uuid}.webp` + `{userId}/{uuid}_thumb.webp`;
 `media_uploads` row carries `kind, alt_text, blurhash, thumb_path`. Response:

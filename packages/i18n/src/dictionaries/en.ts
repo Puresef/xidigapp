@@ -47,12 +47,19 @@ export const en = {
   'content.aiLabel': 'AI-assisted',
   'content.aiAccount': 'AI assistant',
   'content.seededTooltip': 'Platform-provided starter content, not a member post.',
-  'content.aiTooltip': 'Created with Xidig AI. Labelled so you can tell it apart from member content.',
+  'content.aiTooltip':
+    'Created with Xidig AI. Labelled so you can tell it apart from member content.',
   'content.aiAccountTooltip': 'A clearly-labelled AI assistant account, not a human member.',
+  // Munaasabado dispatch (Task 2) — the Community Awards result card's
+  // "published by the system" label, reusing the §21 seeded/AI provenance
+  // pattern for a system-authored (not member-authored) post.
+  'content.systemLabel': 'Xidig system',
+  'content.systemTooltip': 'Posted automatically by the system — not by a member.',
 
   // Admin — seed content review (§21)
   'admin.seedTitle': 'Seeded content',
-  'admin.seedSubtitle': 'AI-assisted and seeded content — labelled, auditable, and never shown as member content.',
+  'admin.seedSubtitle':
+    'AI-assisted and seeded content — labelled, auditable, and never shown as member content.',
   'admin.seedRunsHeading': 'Seed runs',
   'admin.seedContentHeading': 'Seeded content counts',
   'admin.seedNoRuns': 'No seed runs yet. Run the seed job to populate launch density.',
@@ -114,6 +121,7 @@ export const en = {
   'action.copyLink': 'Copy link',
   'action.linkCopied': 'Link copied.',
   'action.viewOnMap': 'View on map',
+  'action.view': 'View',
   // Phase 3 (Fariimo) reusable actions
   'action.message': 'Message',
   'action.send': 'Send',
@@ -233,9 +241,11 @@ export const en = {
     'This Ask can’t move to that state right now — its status may have just changed. Refresh the page and check again.',
   'error.pollClosed':
     'This poll has closed, so votes can’t be added or changed. The results are final.',
-  'error.pollOptionsInvalid': 'Polls need {min} to {max} options. Adjust your options and try again.',
+  'error.pollOptionsInvalid':
+    'Polls need {min} to {max} options. Adjust your options and try again.',
   'error.mediaNotReady': 'One of your images didn’t upload cleanly. Remove it and upload it again.',
-  'error.playbookInvalid': 'That playbook is no longer available. Pick another, or start from a blank charter.',
+  'error.playbookInvalid':
+    'That playbook is no longer available. Pick another, or start from a blank charter.',
   'error.tagInvalid': 'Tags use 2–50 lowercase letters, numbers, or dashes — like halal-finance.',
   'error.tagLimit':
     'You’ve added a lot of new tags today. Reuse an existing tag, or try again tomorrow.',
@@ -255,8 +265,7 @@ export const en = {
   'error.labJoinClosed': 'This Lab is invite-only. Ask the lead for an invite to join.',
   'error.labAlreadyMember': 'You’re already a member of this Lab.',
   'error.labCollabInvalid': 'That collaboration link isn’t available anymore.',
-  'error.pinnedFull':
-    'You can feature up to 3 Labs on your profile. Unpin one to add another.',
+  'error.pinnedFull': 'You can feature up to 3 Labs on your profile. Unpin one to add another.',
 
   // --- Phase 4.5 experience expansion (§27) ---
   'error.imageAltRequired': 'Add a short description for this photo first.',
@@ -282,7 +291,8 @@ export const en = {
     "You've already reported this — our team is on it. Thanks for looking out for the community.",
   'error.appealAlreadySubmitted':
     "You've already appealed this decision. There's one appeal per action, and a senior moderator will respond within 72 hours.",
-  'error.appealNotEligible': "There's nothing to appeal here, or this action isn't yours to appeal.",
+  'error.appealNotEligible':
+    "There's nothing to appeal here, or this action isn't yours to appeal.",
   'error.appealSelfReview':
     "You took this action, so its appeal can't be yours to review — it goes to another moderator.",
   'error.verificationPending':
@@ -296,6 +306,8 @@ export const en = {
     "Voting isn't open right now. Community Awards run each quarter — check back soon.",
   'error.awardAlreadyVoted':
     "You've already voted in this category. Each member gets one vote per category.",
+  // Munaasabado dispatch (Task 2) — Community Awards results, Mentor booking.
+  'error.awardCycleNotClosed': 'Voting is still open for that cycle.',
 
   // Informational notice (non-error): non-Somalia invest attempt falls back to
   // the informational view. Returned via apiNotice, never thrown.
@@ -335,6 +347,10 @@ export const en = {
   'matching.suggestEmptyBody':
     'Your people aren’t on Xidig yet — invite them, and fill in your lanes, skills and city so matches can find you.',
   'matching.suggestEmptyCta': 'Invite your people',
+  // Munaasabado dispatch (Task 2) — the "Suggested for you" matching module.
+  'matching.suggestModuleTitle': 'Suggested for you',
+  'matching.reasonsPrefix': 'Why:',
+  'matching.privacyNote': 'Only your profile data was used — every reason is shown.',
 
   // Community Awards (PRD §20)
   'awards.title': 'Community Awards',
@@ -356,6 +372,18 @@ export const en = {
   'awards.yourVote': 'Your vote',
   'awards.noTargets':
     'Nothing to vote for here yet — follow members or explore Labs and Wins first.',
+  // Munaasabado dispatch (Task 2) — the published-result card (Mentor in
+  // Residence "past winners" style module).
+  'awards.resultTitle': '{category} — {period}: {name}',
+  'awards.evidenceMostHelpful': {
+    one: '{count} Ask resolved · confirmed by the asker',
+    other: '{count} Asks resolved · each confirmed by the asker',
+  },
+  'awards.evidenceVotes': {
+    one: '{count} member vote',
+    other: '{count} member votes',
+  },
+  'awards.systemProvenance': 'Published by the Xidig system — member vote, one member one vote',
 
   // Mentor-in-Residence (PRD §20)
   'mentor.featuredTitle': 'Mentor in Residence',
@@ -365,6 +393,21 @@ export const en = {
     other: 'Answered {count} Asks this week',
   },
   'mentor.periodTaken': 'A mentor is already appointed for that period. Pick a different period.',
+  // Munaasabado dispatch (Task 2) — the Mentor-in-Residence module card +
+  // slot booking flow.
+  'mentor.residenceTitle': 'Mentor in residence — {period}',
+  'mentor.hoursLabel': 'Hours',
+  'mentor.hostLabel': 'Host',
+  'mentor.bookCta': 'Book a slot',
+  'mentor.freeNote': 'Free — the Warshad hosts. {minutes} minutes each.',
+  'mentor.slotsTitle': 'Pick a time',
+  'mentor.noSlots': 'No open slots right now.',
+  'mentor.yourBooking': 'Your booking: {when}',
+  'mentor.unbook': 'Cancel booking',
+  // Ruling 7 (12 Aug): mentor_slots has no timezone column yet, so every
+  // slot time shown to a member must carry an explicit UTC marker rather
+  // than reading as an ambiguous bare time.
+  'mentor.slotTimeUtc': '{time} UTC',
 
   // Reputation scores + Top Helper leaderboard (PRD §14)
   'reputation.scoresSection': 'Reputation',
@@ -471,7 +514,8 @@ export const en = {
   'settings.inviteUsed': 'Used',
   'settings.inviteOpen': 'Not used yet',
   'settings.bandwidthTitle': 'Low-bandwidth mode',
-  'settings.bandwidthBody': 'Turns off images and map tiles so pages load faster and cost less data.',
+  'settings.bandwidthBody':
+    'Turns off images and map tiles so pages load faster and cost less data.',
   'settings.toggleOn': 'On',
   'settings.toggleOff': 'Off',
 
@@ -547,6 +591,7 @@ export const en = {
   'settings.notifTypeLabCollabInvite': 'Collaboration invites',
   'settings.notifTypeLabCollabResponse': 'Collaboration responses',
   'settings.notifTypeWeeklyDigest': 'Weekly digest',
+  'settings.notifTypeMentorSlotBooked': 'Mentor bookings',
   'settings.quietHoursTitle': 'Quiet hours',
   'settings.quietHoursEnable': 'Turn on quiet hours',
   'settings.quietHoursHint':
@@ -616,8 +661,7 @@ export const en = {
   'settings.requestDeletionConfirm':
     'Request account deletion? You have 30 days to cancel before everything is permanently removed.',
   'settings.cancelDeletionButton': 'Cancel deletion',
-  'settings.deletionPending':
-    'Your account is scheduled for deletion. {days} days left to cancel.',
+  'settings.deletionPending': 'Your account is scheduled for deletion. {days} days left to cancel.',
   // Phase 6 (§14) member verification request.
   'settings.verifyTitle': 'Get verified',
   'settings.verifyBody':
@@ -629,8 +673,7 @@ export const en = {
   'settings.appealTitle': 'Appeal a moderation decision',
   'settings.appealIntro':
     'If you think a decision was wrong, tell us what happened. A different moderator than the one who made the decision will review your appeal within 72 hours.',
-  'settings.appealEmpty':
-    'You have no moderation decisions to appeal right now.',
+  'settings.appealEmpty': 'You have no moderation decisions to appeal right now.',
   'settings.appealActionLabel': 'Decision',
   'settings.appealReasonLabel': 'Why should we reconsider?',
   'settings.appealReasonPlaceholder': 'Explain what happened…',
@@ -663,7 +706,8 @@ export const en = {
   'admin.waitlistInvitedTag': 'Invited',
   'admin.saved': 'Saved.',
   'admin.claimsTitle': 'Listing claims',
-  'admin.claimsIntro': 'Members claiming ownership of unclaimed listings. Approving transfers the listing.',
+  'admin.claimsIntro':
+    'Members claiming ownership of unclaimed listings. Approving transfers the listing.',
   'admin.claimsEmpty': 'No pending claims.',
   'admin.claimClaimant': 'Claimant',
   'admin.claimListing': 'Listing',
@@ -799,8 +843,7 @@ export const en = {
   'feed.sortTransparency': 'Newest first — no hidden ranking.',
   'feed.empty':
     'Nothing here yet — follow people and Spaces, and their posts, updates, and new listings will show up here.',
-  'feed.emptyHint':
-    'Follow people and Spaces to see their posts, updates, and new listings here.',
+  'feed.emptyHint': 'Follow people and Spaces to see their posts, updates, and new listings here.',
   'feed.emptyLatestCta': 'See the latest posts',
   'feed.newListingFrom': 'New listing from {name}',
   // End-of-feed terminus + per-card transparency (brand-rethink adoption):
@@ -974,7 +1017,8 @@ export const en = {
   'suuq.contactTypeLabel': 'Type',
   'suuq.contactValueLabel': 'Number or link',
   'suuq.duplicatesTitle': 'A listing like this already exists',
-  'suuq.duplicatesBody': 'A listing for {name} already exists. Is this your business? Claim it here.',
+  'suuq.duplicatesBody':
+    'A listing for {name} already exists. Is this your business? Claim it here.',
   'suuq.claimListing': 'Claim this listing',
   'suuq.createAnyway': 'Mine is different — create it anyway',
   'suuq.claimEvidenceLabel': 'How do we know it’s yours? (optional)',
@@ -1111,7 +1155,8 @@ export const en = {
   'plaza.fulfillConfirmBody': 'The ask becomes "Solved" — this can’t be undone.',
   'plaza.fulfillConfirmCta': 'Yes, mark it solved',
   'plaza.reopenAsk': 'Reopen it',
-  'plaza.ownerOnlyNote': 'Only you can change this ask’s status. Xidig never changes it on its own.',
+  'plaza.ownerOnlyNote':
+    'Only you can change this ask’s status. Xidig never changes it on its own.',
   'plaza.fulfilledTitle': 'This ask is solved',
   'plaza.fulfilledByAfter': '{helper} helped — solved after {duration}.',
   'plaza.fulfilledAfter': 'Solved after {duration}.',
@@ -1181,8 +1226,7 @@ export const en = {
   'plaza.interstitialContinue': 'Continue to {host}',
   // Phase 4.5 — per-image alt text, drafts, post edit history
   'plaza.imageAltLabel': 'Image description',
-  'plaza.imageAltHint':
-    'A short description helps screen readers and members on slow connections.',
+  'plaza.imageAltHint': 'A short description helps screen readers and members on slow connections.',
   'plaza.imageAttach': 'Attach',
   'plaza.draftsHeading': 'Continue a draft',
   'plaza.draftContinue': 'Continue',
@@ -1281,7 +1325,8 @@ export const en = {
   'messages.voiceRecording': 'Recording… {duration}',
   'messages.voiceUnavailable': 'Voice isn’t available',
   // §27 DMs block (success notices)
-  'messages.requestSent': 'Your message request has been sent. They’ll see it when they next open Xidig.',
+  'messages.requestSent':
+    'Your message request has been sent. They’ll see it when they next open Xidig.',
   'messages.reportSubmitted':
     'Thanks for the report. We review all reports within 48 hours and will update you on the outcome.',
   // Phase 6 (§27 Moderation + §19 account lifecycle) success notices
@@ -1315,8 +1360,7 @@ export const en = {
 
   // Fariimo — Notifications inbox (§9, §22 bundling, §26 matrix)
   'notif.subtitle': 'Replies, mentions, and messages — grouped, not noisy.',
-  'notif.empty':
-    'You’re all caught up. Replies, mentions, and new messages will show up here.',
+  'notif.empty': 'You’re all caught up. Replies, mentions, and new messages will show up here.',
   'notif.markAllRead': 'Mark all read',
   'notif.viewAll': 'See all notifications',
   'notif.loadedCount': 'Notifications loaded: {count}',
@@ -1343,6 +1387,8 @@ export const en = {
   'notif.labSkillGap': 'A Lab is looking for your skills',
   'notif.labCollabInvite': '{name} wants to collaborate',
   'notif.labCollabResponse': 'Your collaboration request got a response',
+  // Munaasabado dispatch (Task 2) — Mentor-in-Residence booking notification.
+  'notif.mentorSlotBooked': '{name} booked a mentor slot — {when}',
   'notif.generic': 'New activity on Xidig',
 
   // Push opt-in (§22 PWA push)
@@ -1352,8 +1398,10 @@ export const en = {
   'push.enable': 'Turn on push',
   'push.disable': 'Turn off push',
   'push.unsupported': 'This browser doesn’t support push notifications.',
-  'push.denied': 'Push is blocked in your browser settings. Allow notifications for Xidig to turn it on.',
-  'push.unavailable': 'Push is coming soon — replies and mentions keep showing up right here in the app.',
+  'push.denied':
+    'Push is blocked in your browser settings. Allow notifications for Xidig to turn it on.',
+  'push.unavailable':
+    'Push is coming soon — replies and mentions keep showing up right here in the app.',
 
   // Labs / Spaces (§16, §20). Chrome (Warshad/Koox) reuses term.lab / term.club.
   'lab.listTitle': 'Labs',
@@ -1471,10 +1519,12 @@ export const en = {
   'lab.actionSaveSettings': 'Save changes',
   'lab.emptyUpdates':
     'No updates yet. Post a weekly update to show progress — spectators love a build-in-public log.',
-  'lab.emptyArtifacts': 'No artifacts yet. Share a link to a doc, prototype, or demo. (Links only for now.)',
+  'lab.emptyArtifacts':
+    'No artifacts yet. Share a link to a doc, prototype, or demo. (Links only for now.)',
   'lab.emptyDecisions':
     'No decisions logged yet. Recording key calls keeps everyone aligned and builds your track record.',
-  'lab.emptyMembers': 'Just the lead so far. Invite collaborators or open the Space so people can join.',
+  'lab.emptyMembers':
+    'Just the lead so far. Invite collaborators or open the Space so people can join.',
   'lab.emptyHistory': 'The Space timeline starts here.',
   'lab.emptySkills': 'Not looking for anyone right now.',
   'lab.noticeJoinRequested':
@@ -1488,7 +1538,10 @@ export const en = {
   'lab.crossPostedFrom': 'Cross-posted from {name}',
   'lab.candidateHandoffNote':
     'This puts the Lab forward as a Venture Candidate — a hand-off marker. Investment tools come later.',
-  'lab.sprintCountdown': { one: '{count} day left in this sprint', other: '{count} days left in this sprint' },
+  'lab.sprintCountdown': {
+    one: '{count} day left in this sprint',
+    other: '{count} days left in this sprint',
+  },
   'lab.sprintEnded': 'Sprint ended',
   'lab.sprintNone': 'No sprint deadline set',
   'lab.settingsTitle': 'Space settings',
@@ -1646,8 +1699,7 @@ export const en = {
   'capital.reviewersOnlyHint':
     "Hide this Candidate from members until it's decided; only reviewers and your Lab can see it.",
   'capital.submitCta': 'Submit for review',
-  'capital.submitHint':
-    'Submitting opens a 7-day Supporter vote and sends it to reviewers.',
+  'capital.submitHint': 'Submitting opens a 7-day Supporter vote and sends it to reviewers.',
   // Rubric / reviews
   'capital.rubricHeading': 'Review scores',
   'capital.rubricTeam': 'Team',
@@ -1671,8 +1723,7 @@ export const en = {
   'capital.decisionReasonHint': 'A short, fair note the Lab will see.',
   // Supporter governance vote
   'capital.voteHeading': 'Supporter vote',
-  'capital.voteSignalNote':
-    "A non-binding community signal — it guides, it doesn't decide.",
+  'capital.voteSignalNote': "A non-binding community signal — it guides, it doesn't decide.",
   'capital.voteApprove': 'Approve',
   'capital.voteReject': 'Reject',
   // Ballot option-card descriptions (brand-rethink adoption): signal
@@ -1704,13 +1755,11 @@ export const en = {
     'Register your interest in the fund. This is the primary way to back ventures on Xidig.',
   'capital.fundMessageLabel': "Anything you'd like the fund to know (optional)",
   'capital.fundExpressCta': 'Register fund interest',
-  'capital.fundInterestRecorded':
-    'Your fund interest is recorded. The team will be in touch.',
+  'capital.fundInterestRecorded': 'Your fund interest is recorded. The team will be in touch.',
   'capital.fundSecondaryToggle': 'Also flag interest in this specific Candidate',
   'capital.candidateInterestLabel': 'Note for this Candidate (optional)',
   'capital.candidateInterestCta': 'Flag interest in this Candidate',
-  'capital.candidateInterestRecorded':
-    'Noted — your interest in this Candidate is recorded.',
+  'capital.candidateInterestRecorded': 'Noted — your interest in this Candidate is recorded.',
   'capital.securitiesDisclaimer':
     'Nothing here is an offer of securities; v1.0 is intent capture only.',
   // Venture timeline
@@ -1806,7 +1855,8 @@ export const en = {
   'marketing.productTrustTitle': 'Trust & verification',
   'marketing.productTrustBody':
     'Identity, community, and business verification badges; human moderation with appeals; and a low-bandwidth Lite mode that respects every connection.',
-  'marketing.productBetaNote': 'Xidig is in private beta. Request access and we’ll save your founding spot.',
+  'marketing.productBetaNote':
+    'Xidig is in private beta. Request access and we’ll save your founding spot.',
 
   // /labs and /capital signed-out teasers (replaced by live public
   // directories in Phase B — until then these explain, never fake)
@@ -1833,11 +1883,13 @@ export const en = {
   'marketing.aboutRolesTitle': 'Roles, not careers',
   'marketing.aboutRolesBody':
     'Xidig has no hiring page. Community roles — moderators, verifiers, mentors — are earned and appointed from within the membership.',
-  'marketing.aboutContactBody': 'Questions, press, or partnerships: reach us through the contact page.',
+  'marketing.aboutContactBody':
+    'Questions, press, or partnerships: reach us through the contact page.',
 
   // /membership
   'marketing.memberTitle': 'Membership',
-  'marketing.memberIntro': 'One community, two levels. Pricing is confirmed with members — not imposed on them.',
+  'marketing.memberIntro':
+    'One community, two levels. Pricing is confirmed with members — not imposed on them.',
   'marketing.memberFreeTitle': 'Member — free',
   'marketing.memberFreeBody':
     'A profile and business listing, the Plaza, the directory, messages, and joining Clubs. Free stays free.',
@@ -1990,7 +2042,13 @@ export const en = {
   'events.modeOnline': 'Online',
   'events.modeInPerson': 'In person',
   'events.modeHybrid': 'Hybrid',
-  'events.statusCancelled': 'This event was cancelled.',
+  // Munaasabado dispatch (Task 2 Copy Table): the new EventCard/detail-page
+  // design (docs/superpowers/plans/2026-08-12-munaasabado-events.md, frame
+  // 9a/9c) renders this as a compact status TAG, not a banner sentence — the
+  // fuller banner is the new `events.cancelledNotice` key. Task 3+ wires the
+  // new usage; the current banner at app/events/[slug]/page.tsx will read
+  // this shorter string until that lands.
+  'events.statusCancelled': 'Cancelled',
   'events.statusDraft': 'Draft — only you can see this event.',
   'events.awaitingReview': 'This event is awaiting review.',
   'events.venueLabel': 'Venue',
@@ -2001,11 +2059,15 @@ export const en = {
   'events.interestedCount': '{count} interested',
   'events.fullLabel': 'Full — you can still mark yourself interested.',
   'events.capacityGoing': '{count} of {capacity} going',
-  'events.rsvpGoing': 'Going',
+  // Munaasabado dispatch (Task 2 Copy Table): card RSVP island's single-verb
+  // button (frame 9a) — was 'Going'.
+  'events.rsvpGoing': "I'm coming",
   'events.rsvpInterested': 'Interested',
   'events.rsvpRemove': 'Remove RSVP',
   'events.showPubliclyLabel': 'Show me as attending to other members',
-  'events.attendeesTitle': 'Attendees',
+  // Munaasabado dispatch (Task 2 Copy Table): attendee wall card label
+  // (frame 9c) — was 'Attendees'.
+  'events.attendeesTitle': "Who's coming",
   'events.attendeesHostNote':
     'Only you see the full list. Other members only see people who opted in.',
   'events.attendeesMemberNote': 'Members who chose to appear publicly.',
@@ -2044,18 +2106,98 @@ export const en = {
   'events.cancelEvent': 'Cancel event',
   'events.cancelConfirm': 'Cancel this event? Everyone who RSVPed will be told.',
 
+  // Munaasabado dispatch (Task 2 copy table) — event list tabs, RSVP grammar,
+  // past-event honesty copy, attendees, agenda, capacity/cancel states,
+  // check-in, host card, empty/offline/error states, form additions.
+  'events.tabUpcoming': 'Upcoming',
+  'events.tabPast': 'Past',
+  'events.tabMine': 'Mine',
+  'events.createAria': 'New event',
+  'events.hostLineLab': 'Host: {name} · Warshad',
+  'events.hostLineMember': 'Host: {name}',
+  // Card meta line stand-in when an online event has no venue name (9a).
+  'events.venueOnline': 'Online',
+  'events.capacityConfirmed': '{going} / {capacity} seats confirmed',
+  'events.confirmedNoLimit': '{count} confirmed · no seat limit',
+  'events.rsvpConfirmed': "You're confirmed",
+  'events.pastAttended': {
+    one: 'Held · {count} person came',
+    other: 'Held · {count} people came',
+  },
+  'events.pastPhotosReport': 'Photos and report',
+  'events.honestyNote':
+    'Numbers are confirmed RSVPs — no more, no less. A finished event says what actually happened.',
+  'events.backToAll': 'All events',
+  'events.statusOpen': 'Open',
+  'events.capacitySeats': '{going} / {capacity} seats',
+  'events.moreAttendees': '+{count} more',
+  'events.namesVisibleNote':
+    'Names are visible — an RSVP is a social commitment, not a hidden number.',
+  'events.agendaTitle': 'Programme',
+  'events.factWhen': 'When',
+  'events.factWhere': 'Where',
+  'events.factSeats': 'Seats',
+  'events.capacityConfirmedShort': '{going} / {capacity} confirmed',
+  'events.cancelReleaseNote': 'Backing out is one tap — your seat frees up for someone else.',
+  'events.hostCardTitle': 'Host',
+  'events.hostPastEventsLab': {
+    one: 'Warshad · {count} past event',
+    other: 'Warshad · {count} past events',
+  },
+  'events.hostPastEventsMember': {
+    one: '{count} past event',
+    other: '{count} past events',
+  },
+  'events.reportEvent': 'Report this event',
+  'events.emptyTitle': 'No upcoming events',
+  'events.emptyBody':
+    "Events are born in Warshads, the Suuq, and community posts — that's where they'll appear for you.",
+  'events.emptyCtaLabs': 'Browse Warshads',
+  'events.emptyCtaCreate': 'Create an event',
+  'events.offlineStale': 'No internet. This list is from {age}.',
+  'events.queuedRsvp': 'RSVP — waiting',
+  'events.queuedNote': 'It will go out when the internet returns',
+  'events.errorTitle': "Events didn't load",
+  'events.errorBody': 'Something went wrong. Try again.',
+  'events.retry': 'Try again',
+  'events.capacityFullLine': '{capacity} / {capacity} — no seats free',
+  'events.fullReleaseNote':
+    "If someone backs out, the seat opens immediately. There is no waitlist — priority can't be bought.",
+  'events.cancelledNotice':
+    'The host cancelled this event on {date}. All {count} RSVPs were notified.',
+  'events.checkinTitle': 'Record attendance',
+  'events.checkinHint': 'Mark who came — the count becomes the official record.',
+  'events.checkedInLabel': 'Came',
+  'events.formAgenda': 'Programme',
+  'events.formAgendaTime': 'Time',
+  'events.formAgendaItem': 'Item',
+  'events.formAgendaAdd': 'Add item',
+  'events.formCover': 'Event cover',
+  'events.coverAlt': 'Event cover: {title}',
+  'events.reminderCancelRsvp': 'Cancel RSVP',
+
   // Events — §27 plain-language errors
   'error.eventFull': 'This event is full. You can still mark yourself as interested.',
   'error.eventNotOpen': 'RSVPs are closed for this event.',
   'error.eventCategoryInvalid': 'Pick a valid event category.',
   'error.eventCreationNotAllowed':
     'Event hosting is open to Lab organizers, verified businesses and moderators for now.',
+  // Munaasabado dispatch (Task 2) — check-in / mentor-slot errors reuse the
+  // events/mentor §27 plain-language pattern.
+  'error.eventEnded': 'This event has ended — its record is fixed.',
+  'error.eventCheckinNotOpen': 'Attendance can be recorded once the event starts.',
+  'error.mentorSlotTaken': 'That slot was just taken — pick another.',
+  'error.mentorAlreadyBooked': 'You can book one slot per residency.',
 
   // Events — notification copy
   'notif.eventRsvp': '{name} RSVPed to your event',
   'notif.eventRsvpBundle': '{count} people RSVPed to your event',
   'notif.eventCancelled': 'An event you RSVPed to was cancelled',
-  'notif.eventReminder': 'An event you RSVPed to starts within 24 hours',
+  'notif.eventReminder': '3 days away: {title}',
+  'notif.eventReminderMetaGoing': "{when} · you're confirmed · {going}/{capacity}",
+  'notif.eventReminderMetaGoingNoCap': "{when} · you're confirmed · {going} confirmed",
+  'notif.eventReminderMetaInterested': '{when} · you marked interested · {going}/{capacity}',
+  'notif.eventReminderMetaInterestedNoCap': '{when} · you marked interested · {going} confirmed',
 
   // Front door — homepage "next up" featured event card (renders only when a
   // real upcoming public event exists; zero events = block absent)
@@ -2084,6 +2226,45 @@ export const en = {
   'time.inWeeks': { one: 'in {count} week', other: 'in {count} weeks' },
   'time.inMonths': { one: 'in {count} month', other: 'in {count} months' },
   'time.inYears': { one: 'in {count} year', other: 'in {count} years' },
+
+  // Month / weekday NAMES (Munaasabado dispatch, Task 2) — dictionary-owned
+  // for the same reason as the relative-time strings above: event date
+  // formatting derives only the numeric index from Intl (locale 'en-US',
+  // always ICU-present) and resolves the display name here, so SSR and
+  // hydration output are byte-identical regardless of the runtime's Somali
+  // CLDR support. See apps/web/src/lib/events/datetime.ts.
+  'time.month1': 'January',
+  'time.month2': 'February',
+  'time.month3': 'March',
+  'time.month4': 'April',
+  'time.month5': 'May',
+  'time.month6': 'June',
+  'time.month7': 'July',
+  'time.month8': 'August',
+  'time.month9': 'September',
+  'time.month10': 'October',
+  'time.month11': 'November',
+  'time.month12': 'December',
+  'time.monthShort1': 'Jan',
+  'time.monthShort2': 'Feb',
+  'time.monthShort3': 'Mar',
+  'time.monthShort4': 'Apr',
+  'time.monthShort5': 'May',
+  'time.monthShort6': 'Jun',
+  'time.monthShort7': 'Jul',
+  'time.monthShort8': 'Aug',
+  'time.monthShort9': 'Sep',
+  'time.monthShort10': 'Oct',
+  'time.monthShort11': 'Nov',
+  'time.monthShort12': 'Dec',
+  // ISO weekday index: Monday = 1 … Sunday = 7.
+  'time.weekday1': 'Monday',
+  'time.weekday2': 'Tuesday',
+  'time.weekday3': 'Wednesday',
+  'time.weekday4': 'Thursday',
+  'time.weekday5': 'Friday',
+  'time.weekday6': 'Saturday',
+  'time.weekday7': 'Sunday',
 
   // ── Aniga v3 — the modular profile (design frames 5a–5d / 8a–8b / 10a–10e,
   // states a1–a5 / v1–v7, Badge Canon b1–b4). Everything below the bio is an
@@ -2270,8 +2451,7 @@ export const en = {
   'profile.managerDragHint': 'Drag to reorder',
   'profile.managerDragAria': 'Drag to reorder {section}',
   'profile.managerSave': 'Save arrangement',
-  'profile.managerNote':
-    'Visitors see only the sections you switched on, in the order you set.',
+  'profile.managerNote': 'Visitors see only the sections you switched on, in the order you set.',
   'profile.managerInstantNote': 'Changes apply instantly — visitors see this arrangement.',
   'profile.managerQueuedTitle': 'Your arrangement is saved',
   'profile.managerQueuedNote':
@@ -2300,8 +2480,7 @@ export const en = {
   'profile.emptyOwnWriteIntro': 'Write an Intro',
   'profile.emptyOwnFillBio': 'Fill in your bio',
   'profile.verificationTitle': 'Verification',
-  'profile.verificationBody':
-    '3 verified members can vouch for you, or a short video call.',
+  'profile.verificationBody': '3 verified members can vouch for you, or a short video call.',
   'profile.verificationStart': 'Start verification',
   'profile.memberYear': 'Member {year}',
   'profile.notVerified': 'Not verified',
@@ -2313,8 +2492,7 @@ export const en = {
   'profile.queuedEditBody': 'Your edit is saved — it will send when the internet comes back.',
   'profile.queuedEditView': 'See the change',
   'profile.litePhotoSize': 'photo ~{size}',
-  'profile.liteFooterNote':
-    'Lite: photos are paused. Your avatar is initials — nothing downloads.',
+  'profile.liteFooterNote': 'Lite: photos are paused. Your avatar is initials — nothing downloads.',
 
   // Badge canon (b1–b4 + ruling 10). The identity / earned / tenure labels and
   // the three long tooltips already live in the `profile.badge*` block above —

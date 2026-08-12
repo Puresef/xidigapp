@@ -6,12 +6,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { formatRelativeTime } from '@xidig/i18n';
 import { useLocale, useT } from '@xidig/i18n/react';
 
-import { ApiRequestError, apiGet, apiPost } from '@/lib/api-client';
+import { ApiRequestError, apiDelete, apiGet, apiPost } from '@/lib/api-client';
 import type { NotificationBundle } from '@/lib/notifications/bundle';
 import type { PlainError } from '@/lib/errors';
 import { createClient } from '@/lib/supabase-browser';
 
-import { bundleHref, bundleSummary } from '@/lib/notifications/present';
+import { bundleExtras, bundleHref, bundleSummary } from '@/lib/notifications/present';
 import { toast } from '@/lib/toast';
 
 import { Avatar } from '../media/avatar';
@@ -31,6 +31,27 @@ interface NotifResponse {
   nextCursor: string | null;
 }
 
+/** e7 Digniino reminder row: accent-soft calendar disc (never an avatar —
+ * these are system rows, no actor). Matches the design frame's glyph. */
+function ReminderIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="17"
+      height="17"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="4" y="5.5" width="16" height="15" rx="2" />
+      <path d="M4 10.5h16M8.5 3.5v4M15.5 3.5v4" />
+    </svg>
+  );
+}
+
 export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
   const t = useT();
   const { locale } = useLocale();
@@ -38,6 +59,9 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
   const [nextCursor, setNextCursor] = useState<string | null>(initial.nextCursor);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<PlainError | null>(null);
+  // Event slug currently mid-cancel (Digniino reminder row unrsvp action) —
+  // disables its own button only, never the whole list.
+  const [unrsvping, setUnrsvping] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
     try {
@@ -53,6 +77,23 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
       else setError({ code: 'server_error', message: '' });
     }
   }, []);
+
+  // Digniino reminder row "Ka noqo RSVP" (Task 7): cancel the RSVP behind
+  // the reminder, then reuse the same refetch the realtime subscription
+  // already drives — no bespoke local-state patch to keep in sync.
+  async function handleUnrsvp(eventSlug: string) {
+    setUnrsvping(eventSlug);
+    setError(null);
+    try {
+      await apiDelete(`/api/events/${eventSlug}/rsvp`);
+      await refetch();
+    } catch (cause) {
+      if (cause instanceof ApiRequestError) setError(cause.plain);
+      else setError({ code: 'server_error', message: '' });
+    } finally {
+      setUnrsvping(null);
+    }
+  }
 
   useEffect(() => {
     const supabase = createClient();
@@ -131,6 +172,60 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
         <ul className="xidig-notif-list">
           {bundles.map((b) => {
             const href = bundleHref(b);
+            const extras = bundleExtras(b, t);
+            const timeEl = (
+              <time className="xidig-card__meta" dateTime={b.latestAt}>
+                {formatRelativeTime(new Date(b.latestAt), locale)}
+              </time>
+            );
+
+            // e7 Digniino reminder row: bespoke meta line + inline actions
+            // (Task 7). Two real controls (view / unrsvp) can't nest inside
+            // one outer <Link>, so this row isn't itself a single click
+            // target the way every other bundle type is — each action owns
+            // its own click.
+            if (extras.actions.length > 0) {
+              return (
+                <li key={b.id} className={`xidig-notif ${b.unread ? 'xidig-notif--unread' : ''}`}>
+                  <div className="xidig-notif__link xidig-notif__link--static">
+                    {b.unread ? <span className="xidig-notif__dot" aria-hidden="true" /> : null}
+                    <span className="xidig-notif__icon">
+                      <ReminderIcon />
+                    </span>
+                    <span className="xidig-notif__body">
+                      <span className="xidig-notif__text">{bundleSummary(b, t)}</span>
+                      {extras.meta ? <span className="xidig-notif__meta">{extras.meta}</span> : null}
+                      <span className="xidig-notif__actions">
+                        {extras.actions.map((action) =>
+                          action.kind === 'unrsvp' ? (
+                            <button
+                              key={action.labelKey}
+                              type="button"
+                              className="xidig-notif__action xidig-notif__action--muted"
+                              disabled={unrsvping === action.eventSlug}
+                              onClick={() => void handleUnrsvp(action.eventSlug!)}
+                            >
+                              {t(action.labelKey)}
+                            </button>
+                          ) : (
+                            <Link
+                              key={action.labelKey}
+                              href={action.href!}
+                              className="xidig-notif__action"
+                              onClick={() => markRead(b.notificationIds)}
+                            >
+                              {t(action.labelKey)}
+                            </Link>
+                          ),
+                        )}
+                      </span>
+                    </span>
+                    {timeEl}
+                  </div>
+                </li>
+              );
+            }
+
             // Most-recent actor → zero-byte initials disc (bundle actors carry
             // handle+name only — no avatar fields; thumb hydration would be an
             // API change, deliberately out of scope). Actor-less system rows
@@ -147,9 +242,7 @@ export function NotificationsInbox({ initial }: { initial: NotifResponse }) {
                   />
                 ) : null}
                 <span className="xidig-notif__text">{bundleSummary(b, t)}</span>
-                <time className="xidig-card__meta" dateTime={b.latestAt}>
-                  {formatRelativeTime(new Date(b.latestAt), locale)}
-                </time>
+                {timeEl}
               </>
             );
             return (

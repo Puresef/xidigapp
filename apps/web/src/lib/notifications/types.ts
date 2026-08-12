@@ -58,6 +58,9 @@ export const NOTIFICATION_TYPES = [
   'event_rsvp', // to the host: someone RSVPed (bundled per event)
   'event_cancelled', // to RSVPed members: the event was cancelled
   'event_reminder', // to RSVPed members: the event starts within 24h (cron)
+  // Mentor-in-residence bookable slots (Munaasabado Task 9) — to the advisor:
+  // a member booked a slot in their residency.
+  'mentor_slot_booked',
 ] as const;
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
@@ -113,4 +116,5 @@ export const NOTIFICATION_CHANNELS: Record<NotificationType, NotificationChannel
   event_rsvp: { inApp: true, email: false, push: false },
   event_cancelled: { inApp: true, email: false, push: false },
   event_reminder: { inApp: true, email: false, push: false },
+  mentor_slot_booked: { inApp: true, email: false, push: false },
 };

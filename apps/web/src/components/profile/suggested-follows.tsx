@@ -26,6 +26,15 @@ import { FollowButton } from './follow-button';
  *   collapse to nothing so a broken module never blocks its host surface.
  * - onboarding (`showEmptyState`): teaching — sparse declared data renders
  *   the invite-your-people card instead of fake suggestions.
+ *
+ * `variant="module"` (Munaasabado Task 10, frame 9c "Kula talin"): the
+ * compact ONE-person card for the Madal rail / mobile-inline slot. Quiet in
+ * EVERY non-content state — including loading: the grid keeps its
+ * LoadingFlap (it IS the page there), but a rail module that flaps beside a
+ * quiet-when-empty mentor card would announce its own absence, so it renders
+ * nothing until content exists. Reasons stay mandatory: a suggestion with
+ * zero reasons never renders (the API already drops them — this is the
+ * client-side belt to the same acceptance criterion).
  */
 
 interface ReasonPayload {
@@ -91,11 +100,14 @@ function reasonCopy(t: Translator, reason: ReasonPayload): string {
 export function SuggestedFollows({
   showLabs = false,
   showEmptyState = false,
+  variant = 'grid',
 }: {
   /** Include Lab suggestions (off where LabsSeekingYou already renders). */
   showLabs?: boolean;
   /** Sparse data renders invite-your-people copy instead of collapsing. */
   showEmptyState?: boolean;
+  /** 'module' = the frame-9c one-person rail card; 'grid' = existing card grid. */
+  variant?: 'grid' | 'module';
 }) {
   const t = useT();
   const [payload, setPayload] = useState<SuggestionsPayload | null>(null);
@@ -120,10 +132,73 @@ export function SuggestedFollows({
 
   if (failed) return null;
   if (payload === null) {
-    return <LoadingFlap />;
+    // Module: nothing until content exists (see header comment); grid keeps
+    // the flap because there it stands in for the surface itself.
+    return variant === 'module' ? null : <LoadingFlap />;
   }
 
   const people = payload.people.filter((person) => !skippedPeople.has(person.user_id));
+
+  if (variant === 'module') {
+    // First suggestion that can NAME its reason — reasons are mandatory, so a
+    // zero-reason person is skipped entirely rather than shown unexplained.
+    const person = people.find((candidate) => candidate.reasons.length > 0);
+    if (!person) return null;
+    const meta = [
+      `@${person.handle}`,
+      [person.location_city, person.location_country].filter(Boolean).join(', '),
+    ]
+      .filter(Boolean)
+      .join(' · ');
+    return (
+      // A plain card, not a landmark — the surrounding rail <aside> / feed
+      // <li> owns the structure (mentor-residence-card precedent). Card
+      // shell + uppercase label reuse the event-detail rail classes: same
+      // silhouette in the frame.
+      <div className="xidig-event-detail__card xidig-suggest-module">
+        <h2 className="xidig-event-detail__label">{t('matching.suggestModuleTitle')}</h2>
+        <div className="xidig-suggest-module__row">
+          <Avatar
+            name={person.display_name}
+            handle={person.handle}
+            src={person.avatar_thumb_url}
+            blurhash={person.avatar_blurhash}
+            size={34}
+          />
+          <span className="xidig-event-host__lines">
+            <Link href={`/u/${person.handle}`} className="xidig-event-host">
+              <span className="xidig-event-host__name">
+                {person.display_name}
+              </span>
+            </Link>
+            <span className="xidig-event-host__stat">{meta}</span>
+          </span>
+          <FollowButton targetUserId={person.user_id} initialFollowing={false} />
+        </div>
+        {/* The visible "why": Sababta + the same reasonCopy() chips the grid
+            wears — the reason IS the ranking, nothing hidden. */}
+        <p className="xidig-chip-row">
+          <span className="xidig-suggest-module__prefix">{t('matching.reasonsPrefix')}</span>
+          {person.reasons.slice(0, REASONS_SHOWN).map((reason) => (
+            <span key={`${reason.kind}:${reason.value ?? ''}`} className="xidig-tag">
+              {reasonCopy(t, reason)}
+            </span>
+          ))}
+        </p>
+        <p className="xidig-event-detail__note">{t('matching.privacyNote')}</p>
+        <div className="xidig-suggest-card__actions">
+          <button
+            type="button"
+            className="xidig-button xidig-button--secondary"
+            onClick={() => setSkippedPeople((current) => new Set([...current, person.user_id]))}
+          >
+            {t('matching.skip')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const labs = showLabs ? payload.labs.filter((lab) => !skippedLabs.has(lab.lab_id)) : [];
 
   if (people.length === 0 && labs.length === 0) {

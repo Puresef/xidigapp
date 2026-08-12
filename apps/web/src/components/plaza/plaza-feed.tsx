@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
@@ -50,6 +50,7 @@ export function PlazaFeed({
   lowBandwidth,
   prefs,
   composeHref,
+  inlineModule,
 }: {
   type?: PlazaType | undefined;
   viewerId: string;
@@ -63,6 +64,14 @@ export function PlazaFeed({
    * dispatching COMPOSE_EVENT into a page nothing is listening on.
    */
   composeHref?: string | undefined;
+  /**
+   * 9c community modules for the mobile-inline placement (Task 10): rendered
+   * ONCE as `li.xidig-plaza-inline` after the 2nd item (after the last when
+   * the page has fewer), inside the items list ONLY — never the pinned strip,
+   * never the empty state. CSS hides it ≥64rem where the desktop rail takes
+   * over (both always in the tree — nav-shells precedent).
+   */
+  inlineModule?: ReactNode;
 }) {
   const t = useT();
   const [items, setItems] = useState<PostView[]>([]);
@@ -119,6 +128,21 @@ export function PlazaFeed({
 
   if (!loaded && pending) {
     return <FeedSkeleton />;
+  }
+
+  const feedItems = items.map((view) => (
+    <li key={view.post.id}>
+      <PostCard view={view} viewerId={viewerId} lowBandwidth={lowBandwidth} prefs={prefs} />
+    </li>
+  ));
+  if (inlineModule && feedItems.length > 0) {
+    feedItems.splice(
+      Math.min(2, feedItems.length),
+      0,
+      <li key="community-modules" className="xidig-plaza-inline">
+        {inlineModule}
+      </li>,
+    );
   }
 
   return (
@@ -190,20 +214,7 @@ export function PlazaFeed({
           />
         ) : null}
 
-        {items.length > 0 ? (
-          <ul className="xidig-post-list">
-            {items.map((view) => (
-              <li key={view.post.id}>
-                <PostCard
-                  view={view}
-                  viewerId={viewerId}
-                  lowBandwidth={lowBandwidth}
-                  prefs={prefs}
-                />
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        {feedItems.length > 0 ? <ul className="xidig-post-list">{feedItems}</ul> : null}
 
         {nextCursor ? (
           pending ? (
