@@ -159,6 +159,28 @@ const PAIRS: Pair[] = [
     min: 3,
     note: 'form-control boundary (WCAG 1.4.11 non-text)',
   },
+  /* Aniga v3 (spec §3.4 / v7). The looking-for callout is the first surface to
+     put BODY copy on the accent tint — the existing accent-soft pair covers
+     accent-as-text only — and the manager's queued-save row is the first to put
+     accent text and the ok state on the canvas / raised-panel steps. */
+  {
+    fg: '--x-fg',
+    bg: '--x-accent-soft',
+    base: '--x-surface',
+    note: 'looking-for match title on the accent-soft callout',
+  },
+  {
+    fg: '--x-muted',
+    bg: '--x-accent-soft',
+    base: '--x-surface',
+    note: 'looking-for match reason line on the accent-soft callout',
+  },
+  {
+    fg: '--x-accent-text',
+    bg: '--x-bg',
+    note: 'module-manager "Tirtir" text button on the queued-save row tint',
+  },
+  { fg: '--x-ok', bg: '--x-surface-2', note: 'module-manager saved line in the sheet panel' },
 ];
 
 /** Tokens each palette block must define explicitly (no light fallback). */
@@ -275,6 +297,15 @@ const FOCUS_VISIBLE_CLASSES = [
   // Task 13 labs: stretched card link + Capital entry card.
   '.xidig-lab-card__link',
   'a.xidig-capital-entry',
+  // Aniga v3: the profile's own interactive surfaces. The showcase tile link
+  // is an inset ring (an outward one would be clipped by the tile).
+  '.xidig-ashowcase__link',
+  '.xidig-ashowcase__add',
+  'a.xidig-alinks__chip',
+  '.xidig-ahelper__row',
+  '.xidig-aspaces__row',
+  '.xidig-asuuq__customer',
+  '.xidig-amanager__queue-cancel',
 ];
 
 const ACTIVE_CLASSES = [
@@ -287,6 +318,12 @@ const ACTIVE_CLASSES = [
   '.xidig-vote-card',
   '.xidig-reaction-picker__opt',
   'a.xidig-capital-entry',
+  '.xidig-ashowcase__add',
+  'a.xidig-alinks__chip',
+  '.xidig-ahelper__row',
+  '.xidig-aspaces__row',
+  '.xidig-asuuq__customer',
+  '.xidig-amanager__queue-cancel',
 ];
 
 const DISABLED_CLASSES = [
@@ -296,6 +333,11 @@ const DISABLED_CLASSES = [
   '.xidig-language-toggle__option',
   '.xidig-composer-prompt',
   '.xidig-switch',
+  // The flag-held eye: present, honest, and visibly inert (ruling 7). The
+  // house .xidig-icon-button:hover tints unconditionally, so this needs its
+  // own override rather than inheriting the shared disabled rule.
+  '.xidig-amodule__eye',
+  '.xidig-amanager__queue-cancel',
 ];
 
 describe('interaction-state coverage', () => {

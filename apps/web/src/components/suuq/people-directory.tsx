@@ -257,14 +257,18 @@ export function PeopleDirectory() {
               </p>
             ) : null}
             {profile.bio ? <p className="xidig-card__body">{profile.bio}</p> : null}
-            {profile.skills.length > 0 || profile.lanes.length > 0 ? (
+            {profile.skills.length > 0 ? (
               <p className="xidig-chip-row">
-                {/* Lanes + skills share ONE undifferentiated chip row, and a
-                    member can legitimately hold the same word in both (lane +
-                    skill "construction") — dedupe exact repeats BEFORE the
-                    6-chip cap: one chip per word, unique React keys, and a
-                    duplicate never burns a slot. */}
-                {[...new Set([...profile.lanes, ...profile.skills])].slice(0, 6).map((chip) => (
+                {/* Skills only, capped at 6. Lanes are deliberately absent:
+                    they stay owner-only (they remain discovery metadata — the
+                    lane filter above still works — but they are never a
+                    visitor display surface). A `.xidig-tag` pill is this
+                    product's attested-evidence typography, so a self-declared
+                    sector checkbox wearing it tells a stranger someone vouched
+                    for it. Dedupe survives the lane removal: skills are
+                    normalized distinct on write only since
+                    20260718200000, which was never backfilled. */}
+                {[...new Set(profile.skills)].slice(0, 6).map((chip) => (
                   <span key={chip} className="xidig-tag">
                     {chip}
                   </span>

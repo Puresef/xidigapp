@@ -152,6 +152,17 @@ export interface AnalyticsEventMap {
   };
   event_rsvp: { status: Enums<'event_rsvp_status'> };
   event_cancelled: Record<string, never>;
+
+  // --- Aniga v3 modular profile (F2 §3) -------------------------------------
+  // Counts and closed slugs only. `visible_count` is how many modules the owner
+  // publishes, never WHICH — a per-module roster would let the funnel infer
+  // what a member hides, which is exactly the privacy the module system sells.
+  profile_modules_saved: { visible_count: number; hidden_count: number };
+  profile_showcase_updated: { count: number };
+  // Tier 3 of the Xaqiiq ladder completed. Payload-free: the destination is
+  // the member's own link and has no business in a funnel.
+  profile_link_verified: Record<string, never>;
+  skill_endorsed: Record<string, never>;
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventMap;

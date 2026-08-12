@@ -338,6 +338,7 @@ export type Database = {
       }
       badge_definitions: {
         Row: {
+          badge_class: string
           created_at: string
           description: string | null
           id: string
@@ -346,6 +347,7 @@ export type Database = {
           slug: string
         }
         Insert: {
+          badge_class?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -354,6 +356,7 @@ export type Database = {
           slug: string
         }
         Update: {
+          badge_class?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -1174,6 +1177,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      feature_flags: {
+        Row: {
+          description: string | null
+          enabled: boolean
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          description?: string | null
+          enabled?: boolean
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          description?: string | null
+          enabled?: boolean
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       follows: {
         Row: {
@@ -3105,6 +3129,128 @@ export type Database = {
           },
         ]
       }
+      profile_link_meta: {
+        Row: {
+          created_at: string
+          og_fetched_at: string | null
+          og_image_path: string | null
+          og_site_name: string | null
+          og_status: string
+          og_title: string | null
+          updated_at: string
+          url_key: string
+          user_id: string
+          verification_checked_at: string | null
+          verification_status: string
+          verification_token: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          og_fetched_at?: string | null
+          og_image_path?: string | null
+          og_site_name?: string | null
+          og_status?: string
+          og_title?: string | null
+          updated_at?: string
+          url_key: string
+          user_id: string
+          verification_checked_at?: string | null
+          verification_status?: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          og_fetched_at?: string | null
+          og_image_path?: string | null
+          og_site_name?: string | null
+          og_status?: string
+          og_title?: string | null
+          updated_at?: string
+          url_key?: string
+          user_id?: string
+          verification_checked_at?: string | null
+          verification_status?: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_link_meta_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_module_kinds: {
+        Row: {
+          created_at: string
+          default_position: number
+          default_visible: boolean
+          description: string | null
+          id: string
+          requires_flag: string | null
+        }
+        Insert: {
+          created_at?: string
+          default_position: number
+          default_visible?: boolean
+          description?: string | null
+          id: string
+          requires_flag?: string | null
+        }
+        Update: {
+          created_at?: string
+          default_position?: number
+          default_visible?: boolean
+          description?: string | null
+          id?: string
+          requires_flag?: string | null
+        }
+        Relationships: []
+      }
+      profile_modules: {
+        Row: {
+          module_id: string
+          position: number
+          updated_at: string
+          user_id: string
+          visible: boolean
+        }
+        Insert: {
+          module_id: string
+          position: number
+          updated_at?: string
+          user_id: string
+          visible?: boolean
+        }
+        Update: {
+          module_id?: string
+          position?: number
+          updated_at?: string
+          user_id?: string
+          visible?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_modules_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "profile_module_kinds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_modules_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_open_to: {
         Row: {
           created_at: string
@@ -3206,6 +3352,48 @@ export type Database = {
           },
         ]
       }
+      profile_showcase: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          media_id: string | null
+          position: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          media_id?: string | null
+          position: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          media_id?: string | null
+          position?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_showcase_media_id_fkey"
+            columns: ["media_id"]
+            isOneToOne: false
+            referencedRelation: "media_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_showcase_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_blurhash: string | null
@@ -3217,6 +3405,7 @@ export type Database = {
           created_at: string
           display_name: string
           handle: string
+          headline: string | null
           lanes: string[]
           latitude: number | null
           links: Json
@@ -3244,6 +3433,7 @@ export type Database = {
           created_at?: string
           display_name: string
           handle: string
+          headline?: string | null
           lanes?: string[]
           latitude?: number | null
           links?: Json
@@ -3271,6 +3461,7 @@ export type Database = {
           created_at?: string
           display_name?: string
           handle?: string
+          headline?: string | null
           lanes?: string[]
           latitude?: number | null
           links?: Json
@@ -3909,7 +4100,10 @@ export type Database = {
           context: string | null
           id: string
           metadata: Json
+          reputation_event_id: string | null
           revoked_at: string | null
+          source_entity_id: string | null
+          source_entity_type: Database["public"]["Enums"]["entity_type"] | null
           tier: string | null
           user_id: string
         }
@@ -3920,7 +4114,10 @@ export type Database = {
           context?: string | null
           id?: string
           metadata?: Json
+          reputation_event_id?: string | null
           revoked_at?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: Database["public"]["Enums"]["entity_type"] | null
           tier?: string | null
           user_id: string
         }
@@ -3931,11 +4128,21 @@ export type Database = {
           context?: string | null
           id?: string
           metadata?: Json
+          reputation_event_id?: string | null
           revoked_at?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: Database["public"]["Enums"]["entity_type"] | null
           tier?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_badges_reputation_event_id_fkey"
+            columns: ["reputation_event_id"]
+            isOneToOne: false
+            referencedRelation: "reputation_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_badges_awarded_by_user_id_fkey"
             columns: ["awarded_by_user_id"]
@@ -4584,7 +4791,13 @@ export type Database = {
     Functions: {
       author_is_active: { Args: { author_id: string }; Returns: boolean }
       award_badge: {
-        Args: { p_context?: string; p_slug: string; p_user_id: string }
+        Args: {
+          p_context?: string
+          p_event_id?: string
+          p_slug: string
+          p_tier?: string
+          p_user_id: string
+        }
         Returns: boolean
       }
       award_cycle_is_open: { Args: { p_quarter: string }; Returns: boolean }
@@ -4669,6 +4882,7 @@ export type Database = {
       is_active_account: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_advisor: { Args: never; Returns: boolean }
+      is_feature_enabled: { Args: { p_key: string }; Returns: boolean }
       is_candidate_lab_member: { Args: { cand: string }; Returns: boolean }
       is_lab_member: { Args: { p_lab_id: string }; Returns: boolean }
       is_mod: { Args: never; Returns: boolean }
@@ -4704,6 +4918,14 @@ export type Database = {
       }
       recompute_reputation_scores: {
         Args: { p_user_id?: string }
+        Returns: undefined
+      }
+      set_profile_modules: {
+        Args: { p_modules: Json; p_user_id: string }
+        Returns: undefined
+      }
+      set_profile_showcase: {
+        Args: { p_items: Json; p_user_id: string }
         Returns: undefined
       }
       show_limit: { Args: never; Returns: number }

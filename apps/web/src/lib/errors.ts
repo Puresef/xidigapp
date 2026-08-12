@@ -131,6 +131,15 @@ export const ERROR_DEFS = {
   duplicate_listing: { messageKey: 'error.duplicateListing' },
   listing_limit: { messageKey: 'error.listingLimit' },
 
+  // --- Aniga v3 modular profile (ruling 7 / §14) --------------------------------------
+  // The owner asked to publish a module the platform has switched off. Worded
+  // as system state, never as "coming soon" (ruling 7 / acceptance A4) — the
+  // toggle is REJECTED, so the copy has to say so plainly.
+  module_flag_disabled: { messageKey: 'profile.errorModuleFlagDisabled' },
+  // Endorsing yourself. The DB CHECK already refuses it; this turns the
+  // constraint violation into the §27 sentence instead of a 500.
+  endorse_self: { messageKey: 'profile.errorSelfEndorse' },
+
   // --- Plaza (§27 Plaza block + §15/§26 mechanics) -----------------------------------
   post_limit: {
     messageKey: 'error.postLimit',

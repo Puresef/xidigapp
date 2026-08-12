@@ -869,6 +869,15 @@ export const en = {
   'profile.badgeIdentityVerified': 'Identity Verified',
   'profile.badgeCommunityVerified': 'Community Verified',
   'profile.badgeVerifiedBusiness': 'Verified Business',
+  // Aniga v3 Badge Canon (ruling 10). Garab rides one definition with the
+  // threshold as a param — ×5/×25/×100 are the same badge, never a ladder.
+  // Tooltips carry the full earning criterion the short chip label cannot.
+  'profile.badgeGarabMilestone': 'Garab ×{count}',
+  'profile.badgeGarabTooltip':
+    '{count} verified thanks, given by the askers whose Codsiyo this member resolved. It cannot be bought and cannot be removed.',
+  'profile.badgeTopHelperTooltip':
+    'Last month’s most-verified helper. Chosen by member vote — one vote per member.',
+  'profile.badgeFoundingMemberTooltip': 'One of the first 500 members who built this community.',
   'profile.verifStatusUnverified': 'Unverified',
   'profile.verifStatusPending': 'Verification pending',
   'profile.verifStatusCommunity': 'Community Verified',
@@ -907,6 +916,10 @@ export const en = {
   'profile.pinsPickerPosts': 'Your recent posts',
   'profile.pinsPickerLabs': 'Your Spaces',
   'profile.pinsPickerListings': 'Your listings',
+  // Aniga v3 module shell. The flag chip states what is true right now — a
+  // platform decision, not a countdown (ruling 7).
+  'profile.moduleVisitorsOff': 'Visitors: off',
+  'profile.moduleHiddenA11y': 'This section is hidden',
   'profile.completionTitle': 'Profile strength',
   'profile.completionPercent': '{percent}% complete',
   'profile.completionDone': 'Your profile is complete.',
@@ -2071,6 +2084,244 @@ export const en = {
   'time.inWeeks': { one: 'in {count} week', other: 'in {count} weeks' },
   'time.inMonths': { one: 'in {count} month', other: 'in {count} months' },
   'time.inYears': { one: 'in {count} year', other: 'in {count} years' },
+
+  // ── Aniga v3 — the modular profile (design frames 5a–5d / 8a–8b / 10a–10e,
+  // states a1–a5 / v1–v7, Badge Canon b1–b4). Everything below the bio is an
+  // owner-ordered module, so each module owns its title, its footnote and its
+  // own loading / empty / error / offline / Lite strings — a module fails
+  // alone and says so in place.
+  //
+  // Somali is frame-verbatim wherever the design carries the string; English
+  // is written here for the first time. Reuse before adding: the "+ Ku dar"
+  // chips are `action.add`, the source chips are `plaza.typeWin` /
+  // `term.lab` / `plaza.typeUpdate`, the resolved-Codsi chip is
+  // `plaza.askFulfilled`, match member counts are `lab.memberCount`.
+
+  // Module titles — one per profile_module_kinds row (ANIGA_MODULE_TITLE_KEYS).
+  // Spaces carries two: the owner says "I chose", the visitor "were chosen".
+  'profile.moduleShowcase': 'Showcase',
+  'profile.moduleSkills': 'Skills',
+  'profile.moduleLinks': 'External pages',
+  'profile.moduleLookingFor': 'Looking for',
+  'profile.moduleSpaces': 'Chosen Spaces',
+  'profile.moduleSpacesOwn': 'Spaces I chose',
+  'profile.moduleHelper': 'Help given',
+  'profile.moduleSuuq': 'Suuq listing',
+  'profile.moduleMetrics': 'Metrics',
+
+  // Header chrome — fixed above the modules (cover, avatar, name, headline).
+  'profile.headlineLabel': 'Headline',
+  'profile.headlineHint': 'One line — what you do and where. It sits under your name.',
+  // The line under the name. One key, two placeholders: the separator and the
+  // order of the two halves belong to the locale, never to string concatenation.
+  'profile.headlineCity': '{headline} · {city}',
+  'profile.editFull': 'Edit profile',
+  'profile.sendMessage': 'Send message',
+  'profile.shareProfile': 'Share profile',
+  'profile.moreActions': 'More',
+  'profile.changeCover': 'Change cover',
+  'profile.changeAvatar': 'Change photo',
+  'profile.coverSlotLabel': 'Cover',
+  'profile.verifiedRingAria': 'Verified member',
+  'profile.contactInline': 'Contact:',
+  'profile.contactWhatsapp': 'WhatsApp',
+  'profile.contactEmail': 'Email',
+  'profile.editContactOptions': 'Edit contact options',
+
+  // The two closing notes that carry the fairness rule out loud (A1).
+  'profile.visitorOrderNote':
+    'You’re seeing what {name} published, in the order they chose. There are no follower counts.',
+  'profile.evidenceNote':
+    'This profile shows no follower or post counts — it shows evidence: endorsements, verified help, and customer testimony.',
+
+  // Showcase (Bandhig) — member-pinned refs only, never engagement-sourced (A5).
+  'profile.showcaseAddAria': 'Add to showcase',
+  'profile.showcaseOwnerNote':
+    'You choose what sits here — a Win, Lab artwork, or an Update photo. Nothing appears automatically.',
+  'profile.showcaseVisitorNote':
+    '{name} chose this showcase — these are not the most active items.',
+  'profile.showcaseEmptyTitle': 'Your showcase is empty',
+  'profile.showcaseEmptyBody': 'Pin a Win, Lab artwork, or an Update photo — you choose.',
+  'profile.showcaseErrorTitle': 'The showcase didn’t load',
+  'profile.showcaseErrorBody': 'Something went wrong while loading it. Try again.',
+  'profile.showcaseLiteNote': 'Lite: images wait. The layout is the same.',
+  'profile.retryShort': 'Retry',
+  'profile.pinQueuedTitle': 'New Win — waiting',
+
+  // Skills (Xirfadaha) — §14 endorsements. Counts are distinct endorsers (A8)
+  // and are attested evidence, so they stay on the visitor view.
+  'profile.skillsMetaOwner': 'Peer endorsements',
+  'profile.skillsMetaVisitor': 'Peer endorsements · you can endorse too',
+  'profile.endorse': 'Endorse',
+  'profile.endorseSkill': 'Endorse a skill',
+  'profile.endorseSkillAria': 'Endorse {skill}',
+  'profile.endorsed': 'Endorsed',
+  'profile.endorsementCount': '×{count}',
+  'profile.endorserCount': {
+    one: '{count} member endorsed this',
+    other: '{count} members endorsed this',
+  },
+  'profile.skillsOwnerNote':
+    'The number is how many people endorsed each skill — evidence, not popularity. Size shows depth.',
+  'profile.skillsAll': 'All',
+  'profile.endorseSaved': 'Endorsement recorded.',
+  'profile.errorSelfEndorse': 'You can’t endorse your own skills.',
+
+  // External links (Bogagga dibadda) — the 3-tier ladder: chip → OG preview →
+  // verified link-back. A failed preview degrades to the chip (A6); the check
+  // badge is granted only by a completed link-back (A7).
+  'profile.linksOwnerNote':
+    'The verification check comes from a link-back: the page itself points at this profile.',
+  'profile.linksVisitorNote':
+    '{site} is verified: the page links back to this profile. The other links are not verified.',
+  'profile.linksVisitorNoteLong':
+    'The {site} check came from a verified link-back — tier three of the Xaqiiq ladder.',
+  'profile.linkVerifiedTitle': 'Verified',
+  'profile.linkPending': 'Waiting',
+  'profile.linkAddVerification': 'Add a link-back check so the chip earns its badge.',
+  'profile.linksLadderTitle': 'Verification ladder',
+  'profile.linksLadderNote':
+    'Chip → preview → verified link-back. Only the check grants the badge.',
+  'profile.linkPreviewLoading': 'Preview loading',
+  'profile.linkPreviewFailed': 'No preview — the chip stands alone',
+  'profile.linkVerifyStart': 'Verify with a link-back',
+  'profile.linkVerifyToken': 'Put this code on your page, then check.',
+  'profile.linkVerifyCheck': 'Check now',
+  'profile.linkVerifyFailed': 'We couldn’t find a link back to this profile yet.',
+  'profile.editLink': 'Edit link',
+
+  // Looking for (Waxaan raadinayaa) — every match carries a reason, always shown.
+  'profile.lookingForNote':
+    'Matching uses only what you wrote — skills, place, and what you’re looking for. Every reason is shown.',
+  'profile.matchLookingFor': '{lab} is looking for “{need}”',
+  'profile.matchReasonSkill': 'Matches your skills',
+  'profile.matchReasonCity': 'Matches your city',
+  'profile.matchReasonLookingFor': 'Matches what you’re looking for',
+  'profile.viewAction': 'View',
+
+  // Metrics (Tirakoobka) — flag-gated OFF platform-wide (A3/A4). Plain system
+  // state: never promotional, never "coming soon", never a countdown. The
+  // header chip is `profile.moduleVisitorsOff` from the module-shell block.
+  'profile.metricsNote':
+    'The section is built. Showing it to visitors is switched off by a platform-wide flag — a platform decision.',
+  'profile.metricsManagerSub':
+    'Off by a platform-wide flag — a platform decision, not a setting of yours',
+  'profile.metricsRailSub': 'Platform flag — off',
+  'profile.flagOff': 'Off',
+  'profile.statPosts': 'Posts',
+  'profile.statAsksHelped': 'Asks helped',
+  'profile.statConnections': 'Connections',
+  'profile.statPostsPublished': 'Posts published',
+  'profile.statAsksYouHelped': 'Asks you helped',
+  'profile.errorModuleFlagDisabled':
+    'That section is switched off platform-wide — it can’t be turned on here.',
+
+  // Owner-private stats — the one place real numbers live, clearly labelled.
+  'profile.privateStatsTitle': 'Only you can see this',
+  'profile.privateStatsNote':
+    'No one else sees these numbers. Your profile shows what you made — not how often.',
+  'profile.cachedAge': 'Cached: {age}',
+
+  // Helper history (Caawimo) — asker-credited resolutions only.
+  'profile.helperNote':
+    'Asks {name} helped that were resolved. The person who asked confirmed it — this is not self-reported.',
+  'profile.helperVerifiedTitle': 'Verified help',
+  'profile.helperCreditedBy': '{name} confirmed it',
+  'profile.helperCreditedByCity': '{name} confirmed it · {city}',
+
+  // Pinned Spaces + Suuq listing.
+  'profile.editSpaces': 'Change chosen Spaces',
+  'profile.spacesEmptyOwn': 'You haven’t chosen any Spaces yet. You can pin up to 3.',
+  'profile.testimonialTitle': 'Member testimonial',
+  'profile.testimonialBy': '{name} · verified customer',
+  'profile.openSuuqListing': 'Open the Suuq listing',
+  'profile.addSuuqListing': 'Add a Suuq listing',
+  'profile.suuqEmptyOwn':
+    'You don’t have a Suuq listing yet. If you run a business, add it so people can find you.',
+
+  // Mutuals — computed from shared Spaces only, never a contacts upload.
+  'profile.mutuals': 'You both know: {names}',
+  'profile.mutualsWithSpace': 'You both know: {names} — {space}',
+  'profile.mutualsJoinLast': '{names} and {last}',
+  'profile.mutualsOthers': { one: '{count} other', other: '{count} others' },
+
+  // Owner rail — the facts card. Ruled owner-only (11 Aug): every fact a visitor
+  // card would carry already renders elsewhere, and the fold state below is itself
+  // something the member chose not to publish. The report link stays outside the
+  // card — it is a safety affordance, not a row in a facts table.
+  'profile.factsTitle': 'Details',
+  // The owner read path skips the privacy fold, so a member who chose `hidden` sees
+  // their real city on their own page forever and never learns nobody local can find
+  // them. Rendered only when the fold actually bites — a notice that never changes
+  // teaches nothing.
+  'profile.factsFoldRegion': 'Visitors see {place} only.',
+  'profile.factsFoldHidden': 'Your location is hidden from visitors.',
+  // Lanes decide who finds you; they are not an achievement. Without this the row
+  // reads as a claim, which is also why lanes render as a dl and never as a tag pill.
+  'profile.factsLanesNote':
+    'Lanes are how members find you in the directory — they are not shown on your profile.',
+  'profile.reportProfile': 'Report this profile',
+  'profile.reportAction': 'Report',
+
+  // Module manager — mobile sheet (10e) and desktop rail card (10b).
+  'profile.managerTitle': 'Page sections',
+  'profile.managerOpen': 'Arrange sections',
+  'profile.managerSubtitle': 'Drag · switch off',
+  'profile.managerDragHint': 'Drag to reorder',
+  'profile.managerDragAria': 'Drag to reorder {section}',
+  'profile.managerSave': 'Save arrangement',
+  'profile.managerNote':
+    'Visitors see only the sections you switched on, in the order you set.',
+  'profile.managerInstantNote': 'Changes apply instantly — visitors see this arrangement.',
+  'profile.managerQueuedTitle': 'Your arrangement is saved',
+  'profile.managerQueuedNote':
+    'This page already shows the new arrangement — visitors see it once it syncs.',
+  'profile.managerRowSkills': 'Skills and endorsements',
+  'profile.managerSaved': 'Arrangement saved.',
+  'profile.managerSaveFailed': 'The arrangement didn’t save. Try again.',
+  'profile.moduleShown': 'Visible',
+  'profile.moduleHidden': 'Hidden',
+  // Pairs with `profile.moduleHiddenA11y` in the module-shell block above.
+  'profile.moduleShownA11y': 'This section is visible',
+  // Manager rows repeat the same controls eight times, so each control names
+  // the row it belongs to — "Visible, pressed" eight times over identifies
+  // nothing. Same {section} shape as `profile.managerDragAria`.
+  'profile.moduleShownAria': 'The {section} section is visible',
+  'profile.moduleHiddenAria': 'The {section} section is hidden',
+  'profile.managerMoveUp': 'Move {section} up',
+  'profile.managerMoveDown': 'Move {section} down',
+
+  // Page-scale states a1–a5. The new-member state carries no zeroed counters:
+  // an empty profile is normal, not a scoreboard at zero.
+  'profile.loadingAria': 'Loading',
+  'profile.emptyOwnTitle': 'Your profile is empty — that’s normal',
+  'profile.emptyOwnBody':
+    'What people will see is what you do: write an Intro, answer an Ask, or join a Lab. There are no numbers to fill in.',
+  'profile.emptyOwnWriteIntro': 'Write an Intro',
+  'profile.emptyOwnFillBio': 'Fill in your bio',
+  'profile.verificationTitle': 'Verification',
+  'profile.verificationBody':
+    '3 verified members can vouch for you, or a short video call.',
+  'profile.verificationStart': 'Start verification',
+  'profile.memberYear': 'Member {year}',
+  'profile.notVerified': 'Not verified',
+  'profile.loadErrorTitle': 'This profile couldn’t be loaded',
+  'profile.loadErrorBody':
+    'Your connection may be weak. Try again — if it keeps happening, tell us.',
+  'profile.offlineBar': 'No internet — you’re reading a saved copy.',
+  'profile.queuedEditTitle': 'Your new bio is waiting',
+  'profile.queuedEditBody': 'Your edit is saved — it will send when the internet comes back.',
+  'profile.queuedEditView': 'See the change',
+  'profile.litePhotoSize': 'photo ~{size}',
+  'profile.liteFooterNote':
+    'Lite: photos are paused. Your avatar is initials — nothing downloads.',
+
+  // Badge canon (b1–b4 + ruling 10). The identity / earned / tenure labels and
+  // the three long tooltips already live in the `profile.badge*` block above —
+  // these are the role labels the canon adds, and roles are neutral by class,
+  // never orange (A9).
+  'profile.badgeFounder': 'Founder',
+  'profile.badgeAuthor': 'Author',
 } as const satisfies Record<string, Message>;
 
 /** Every valid message key, derived from the English dictionary. */

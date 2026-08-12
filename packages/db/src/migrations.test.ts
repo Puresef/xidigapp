@@ -60,7 +60,10 @@ describe('migration chain', () => {
     );
     expect(Number(counts.rows[0].categories)).toBe(15);
     expect(Number(counts.rows[0].tags)).toBe(15);
-    expect(Number(counts.rows[0].badges)).toBe(8);
+    // 8 baseline + garab-milestone (Aniga v3: one definition carries every
+    // Garab tier, because three rows would invite three treatments and
+    // ruling 10c requires x5/x25/x100 to render identically).
+    expect(Number(counts.rows[0].badges)).toBe(9);
     expect(counts.rows[0].mode).toBe('invite_only');
   });
 });

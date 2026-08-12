@@ -6,8 +6,8 @@ import {
   type ProfileMediaSnapshot,
 } from '@/components/profile/profile-media-editor';
 import { PinsPicker } from '@/components/profile/pins-picker';
+import { loadLaneCatalog } from '@/lib/aniga/lanes';
 import { getAuthContext } from '@/lib/auth/guards';
-import { LANES } from '@/lib/lanes';
 import { getLocale, getT } from '@/lib/locale';
 import { loadOpenTo, PROFILE_MEMBER_COLUMNS, profileMediaView } from '@/lib/profile-view';
 
@@ -33,21 +33,7 @@ export default async function ProfileSettingsPage() {
   const t = await getT();
   const locale = await getLocale();
 
-  // Lanes catalog: the DB lookup table is the runtime source (ops can extend it
-  // without a deploy); fall back to the shipped const if the fetch comes back
-  // empty so the picker is never blank.
-  const { data: laneRows } = await ctx.supabase
-    .from('lanes')
-    .select('slug, name_en, name_so')
-    .eq('is_active', true)
-    .order('position');
-  const laneCatalog =
-    laneRows && laneRows.length > 0
-      ? laneRows.map((row) => ({
-          slug: row.slug,
-          label: locale === 'so' ? row.name_so : row.name_en,
-        }))
-      : LANES.map((slug) => ({ slug, label: slug }));
+  const laneCatalog = await loadLaneCatalog(ctx.supabase, locale);
 
   const { data: profile } = await ctx.supabase
     .from('profiles')

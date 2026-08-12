@@ -49,7 +49,19 @@ export interface ProfileBadge {
   badge_id: string;
   awarded_at: string;
   context: string | null;
-  badge_definitions: { slug: string; name: string; description: string | null } | null;
+  /** Garab threshold (×5/×25/×100). Every tier renders identically — ruling 10c. */
+  tier: string | null;
+  /**
+   * The orange decision lives in the data, not the view. A chip asks the badge
+   * what class it is and never pattern-matches a slug, so a role badge added
+   * later is neutral by default instead of neutral by someone remembering.
+   */
+  badge_definitions: {
+    slug: string;
+    name: string;
+    description: string | null;
+    badge_class: string;
+  } | null;
 }
 
 export interface ProfileCounts {
@@ -376,7 +388,7 @@ export async function isProfileIndexable(userId: string): Promise<boolean> {
 async function loadBadges(client: AnyClient, userId: string): Promise<ProfileBadge[]> {
   const { data: badges } = await client
     .from('user_badges')
-    .select('badge_id, awarded_at, context, badge_definitions(slug, name, description)')
+    .select('badge_id, awarded_at, context, tier, badge_definitions(slug, name, description, badge_class)')
     .eq('user_id', userId)
     .is('revoked_at', null)
     .order('awarded_at', { ascending: false });

@@ -710,14 +710,24 @@ export const so = {
   'profile.contactSection': 'Xiriirka',
   'profile.signInToContact': 'Soo gal si aad u aragto xiriirka',
   'profile.badgesSection': 'Sumadaha',
+  // Badge Canon forms (Aniga v3, frame-verbatim). The chip label is the short
+  // brandable term — the long descriptive phrasing these keys used to carry
+  // moved to the tooltips below, where the earning criterion belongs.
   'profile.badgeFoundingMember': 'Xubin Aasaasi',
-  'profile.badgeLabLead': 'Hoggaamiyaha Warshadda',
-  'profile.badgeTopHelper': 'Caawiyaha Ugu Sarreeya',
+  'profile.badgeLabLead': 'Hoggaamiye Warshad',
+  'profile.badgeTopHelper': 'Caawiye Sare',
   'profile.badgeEarlyBacker': 'Taageere Hore',
-  'profile.badgeMentorInResidence': 'La-taliye Deggan',
-  'profile.badgeIdentityVerified': 'Aqoonsi La Xaqiijiyay',
+  'profile.badgeMentorInResidence': 'La-taliye joogto ah',
+  'profile.badgeIdentityVerified': 'Xaqiiqeysan',
   'profile.badgeCommunityVerified': 'Bulsho La Xaqiijiyay',
-  'profile.badgeVerifiedBusiness': 'Ganacsi La Xaqiijiyay',
+  'profile.badgeVerifiedBusiness': 'Ganacsi Xaqiiqeysan',
+  'profile.badgeGarabMilestone': 'Garab ×{count}',
+  'profile.badgeGarabTooltip':
+    '{count} mahadnaq oo la xaqiijiyay, oo ay bixiyeen qorayaasha codsiyada uu caawiyay. Lama iibsan karo, lama tirtiri karo.',
+  'profile.badgeTopHelperTooltip':
+    'Bishii hore xubintii ugu caawinta badnayd ee la xaqiijiyay. Codbixin xubneed, xubin kasta hal cod.',
+  'profile.badgeFoundingMemberTooltip':
+    'Waxay ka mid ahayd 500-tii xubnood ee ugu horreeyay ee bulshada dhisay.',
   'profile.verifStatusUnverified': 'Aan la xaqiijin',
   'profile.verifStatusPending': 'Xaqiijin socota',
   'profile.verifStatusCommunity': 'Bulsho la xaqiijiyay',
@@ -756,6 +766,9 @@ export const so = {
   'profile.pinsPickerPosts': 'Qoraaladaada dhow',
   'profile.pinsPickerLabs': 'Warshadahaaga',
   'profile.pinsPickerListings': 'Ganacsiyadaada',
+  // Aniga v3 module shell — frame-verbatim (10a).
+  'profile.moduleVisitorsOff': 'Booqdayaasha: damsan',
+  'profile.moduleHiddenA11y': 'Qaybtan waa qarsoon tahay',
   'profile.completionTitle': 'Heerka profile-ka',
   'profile.completionPercent': '{percent}% dhamaystiran',
   'profile.completionDone': 'Profile-kaagu waa dhan yahay.',
@@ -1993,4 +2006,232 @@ export const so = {
   'time.inWeeks': { one: '{count} toddobaad ka dib', other: '{count} toddobaad ka dib' },
   'time.inMonths': { one: '{count} bil ka dib', other: '{count} bilood ka dib' },
   'time.inYears': { one: '{count} sannad ka dib', other: '{count} sannadood ka dib' },
+
+  // ── Aniga v3 — bogga qaybaha leh (frames 5a–5d / 8a–8b / 10a–10e, xaaladaha
+  // a1–a5 / v1–v7, Badge Canon b1–b4). Erayada waxay ka yimaadeen naqshadda
+  // toos ah; wixii laga soo saaray ayaa ku jira dib-u-eegista Soomaaliga.
+  // Kuwa hore ee la isticmaalayo: `action.add` (+ Ku dar), `plaza.typeWin` /
+  // `term.lab` / `plaza.typeUpdate` (chip-yada isha), `plaza.askFulfilled`
+  // (La xaliyay), `lab.memberCount` (tirada xubnaha).
+
+  // Cinwaannada qaybaha — mid kasta wuxuu u dhigmaa saf profile_module_kinds.
+  'profile.moduleShowcase': 'Bandhig',
+  'profile.moduleSkills': 'Xirfadaha',
+  'profile.moduleLinks': 'Bogagga dibadda',
+  'profile.moduleLookingFor': 'Waxaan raadinayaa',
+  'profile.moduleSpaces': 'Warshadaha la doortay',
+  'profile.moduleSpacesOwn': 'Warshadaha aan doortay',
+  'profile.moduleHelper': 'Caawimo',
+  'profile.moduleSuuq': 'Suuq',
+  'profile.moduleMetrics': 'Tirakoobka',
+
+  // Madaxa bogga — dabool, sawir, magac, cinwaan gaaban.
+  'profile.headlineLabel': 'Cinwaan gaaban',
+  'profile.headlineHint':
+    'Hal sadar — waxa aad qabato iyo halka aad joogto. Wuxuu ka muuqdaa magacaaga hoostiisa.',
+  // Sadarka magaca hoostiisa — hal fure, laba meelo-buuxin.
+  'profile.headlineCity': '{headline} · {city}',
+  'profile.editFull': 'Wax ka beddel profile-ka',
+  'profile.sendMessage': 'Fariin dir',
+  'profile.shareProfile': 'La wadaag',
+  'profile.moreActions': 'Wax badan',
+  'profile.changeCover': 'Beddel daboolka',
+  'profile.changeAvatar': 'Beddel sawirka',
+  'profile.coverSlotLabel': 'Daboolka',
+  'profile.verifiedRingAria': 'Xubin la xaqiijiyay',
+  'profile.contactInline': 'La xiriir:',
+  'profile.contactWhatsapp': 'WhatsApp',
+  'profile.contactEmail': 'Email',
+  'profile.editContactOptions': 'Wax ka beddel xulashooyinka xiriirka',
+
+  // Labada qoraal ee xeerka caddaaladda kor u qaadaya.
+  'profile.visitorOrderNote':
+    'Waxaad arkaysaa waxa {name} daabacday, sida ay u kala horraysiisay. Tiro raacayaal ma jirto.',
+  'profile.evidenceNote':
+    'Profile-kani ma muujiyo tiro raacayaal ama qoraallo — waxa uu muujiyaa caddayn: marag-fur, caawimo la xaqiijiyay, iyo markhaati macmiil.',
+
+  // Bandhig — kaliya waxa xubintu dhajisay, waxba si otomaatig ah kuma soo baxaan.
+  'profile.showcaseAddAria': 'Ku dar bandhigga',
+  'profile.showcaseOwnerNote':
+    'Adigaa dooranaya waxa halkan yaal — Guul, farshaxan Warshad, ama sawir War. Waxba si otomaatig ah kuma soo baxaan.',
+  'profile.showcaseVisitorNote':
+    '{name} ayaa doortay bandhiggan — ma aha kuwa ugu firfircoon.',
+  'profile.showcaseEmptyTitle': 'Bandhiggaagu waa madhan',
+  'profile.showcaseEmptyBody':
+    'Ku dhaji Guul, farshaxan Warshad, ama sawir War — adigaa doorta.',
+  'profile.showcaseErrorTitle': 'Bandhiggu ma soo bixin',
+  'profile.showcaseErrorBody': 'Wax baa qaldamay markii la soo rarayay. Isku day mar kale.',
+  'profile.showcaseLiteNote': 'Xawli yar: sawirradu waa la sugaa. Qaab-dhismeedku waa isku mid.',
+  'profile.retryShort': 'Isku day',
+  'profile.pinQueuedTitle': 'Guul cusub — sugaya',
+
+  // Xirfadaha — marag-furka §14. Tiradu waa dad kala duwan, waana caddayn.
+  'profile.skillsMetaOwner': 'Marag-furka asxaabta',
+  'profile.skillsMetaVisitor': 'Marag-furka asxaabta · adiguna waad marag-furi kartaa',
+  'profile.endorse': 'Marag-fur',
+  'profile.endorseSkill': 'Marag-fur xirfad',
+  'profile.endorseSkillAria': 'Marag-fur {skill}',
+  'profile.endorsed': 'Waad marag-furtay',
+  'profile.endorsementCount': '×{count}',
+  'profile.endorserCount': {
+    one: '{count} qof ayaa marag-furay',
+    other: '{count} qof ayaa marag-furay',
+  },
+  'profile.skillsOwnerNote':
+    'Tirada waa dadka kuu marag-furay xirfad kasta — waa caddayn, ma aha caan-nimo. Xajmiga ayaa qoto-dheeraanta muujiya.',
+  'profile.skillsAll': 'Dhammaan',
+  'profile.endorseSaved': 'Marag-furkaagu waa la diiwaangeliyay.',
+  'profile.errorSelfEndorse': 'Xirfadahaaga naftaada uma marag-furi kartid.',
+
+  // Bogagga dibadda — jaranjarada saddexda heer: chip → horudhac → dib-u-xirid.
+  'profile.linksOwnerNote':
+    'Calaamadda xaqiijintu waxay ka timaadaa dib-u-xirid: boggu isagaa profile-kan tilmaamaya.',
+  'profile.linksVisitorNote':
+    '{site} waa la xaqiijiyay: boggu dib ayuu ugu xiraa profile-kan. Xiriirrada kale lama xaqiijin.',
+  'profile.linksVisitorNoteLong':
+    'Calaamadda {site} waxay ka timid dib-u-xirid la hubiyay — heerka saddexaad ee jaranjarada Xaqiiq.',
+  'profile.linkVerifiedTitle': 'La xaqiijiyay',
+  'profile.linkPending': 'Sugaya',
+  'profile.linkAddVerification': 'Ku dar xaqiijin dib-u-xirid si chip-ku u qaato calaamadda.',
+  'profile.linksLadderTitle': 'Jaranjarada xaqiijinta',
+  'profile.linksLadderNote':
+    'Chip → horudhac → dib-u-xirid la hubiyay. Calaamadda waxaa bixisa hubinta kaliya.',
+  'profile.linkPreviewLoading': 'Horudhac soo dhacaya',
+  'profile.linkPreviewFailed': 'Horudhaca lama helin — chip ayaa hadhay',
+  'profile.linkVerifyStart': 'Ku xaqiiji dib-u-xirid',
+  'profile.linkVerifyToken': 'Ku qor lambarkan boggaaga, kadibna hubi.',
+  'profile.linkVerifyCheck': 'Hubi hadda',
+  'profile.linkVerifyFailed': 'Weli lama helin xiriir dib ugu soo xiraya profile-kan.',
+  'profile.editLink': 'Wax ka beddel xiriirka',
+
+  // Waxaan raadinayaa — sabab kasta waa la muujiyaa.
+  'profile.lookingForNote':
+    'Isku-xirku wuxuu isticmaalaa kaliya waxa aad qortay — xirfado, goob, iyo waxa aad raadinayso. Sabab kasta waa la muujiyaa.',
+  'profile.matchLookingFor': '{lab} waxay raadinaysaa “{need}”',
+  'profile.matchReasonSkill': 'Ku habboon xirfaddaada',
+  'profile.matchReasonCity': 'Ku habboon magaaladaada',
+  'profile.matchReasonLookingFor': 'Ku habboon waxa aad raadinayso',
+  'profile.viewAction': 'Fiiri',
+
+  // Tirakoobka — calaamad guud ayaa damisay. Xaalad nidaam, ma aha ballanqaad.
+  // Chip-ka madaxa waa `profile.moduleVisitorsOff` oo kor ku yaal.
+  'profile.metricsNote':
+    'Qaybtu waa dhisan tahay. Muujinta booqdayaasha waxaa damisa calaamad guud — waa go’aan madal.',
+  'profile.metricsManagerSub':
+    'Damsan calaamad guud — go’aan madal, ma aha dejin adiga kuu taal',
+  'profile.metricsRailSub': 'Calaamad guud — damsan',
+  'profile.flagOff': 'Damsan',
+  'profile.statPosts': 'Qoraal',
+  'profile.statAsksHelped': 'Codsi la caawiyay',
+  'profile.statConnections': 'Xiriir',
+  'profile.statPostsPublished': 'Qoraal la daabacay',
+  'profile.statAsksYouHelped': 'Codsi aad caawisay',
+  'profile.errorModuleFlagDisabled':
+    'Qaybtaas waxaa damiyay calaamad guud — halkan lagama shidi karo.',
+
+  // Tirakoobka gaarka ah — halka kaliya ee tirooyinka dhabta ah ku jiraan.
+  'profile.privateStatsTitle': 'Adiga kaliya ayaa arka',
+  'profile.privateStatsNote':
+    'Tirooyinkan cidna ma arkaan. Profile-kaagu wuxuu tusaa waxa aad samaysay — ma aha inta jeer.',
+  'profile.cachedAge': 'Kayd: {age}',
+
+  // Caawimo — kaliya codsiyo qofka lahaa xaqiijiyay.
+  'profile.helperNote':
+    'Codsiyada {name} caawisay oo la xaliyay. Qofka codsiga leh ayaa xaqiijiyay — ma aha wax la iska sheegtay.',
+  'profile.helperVerifiedTitle': 'Caawimo la xaqiijiyay',
+  'profile.helperCreditedBy': '{name} ayaa xaqiijiyay',
+  'profile.helperCreditedByCity': '{name} ayaa xaqiijiyay · {city}',
+
+  // Warshadaha la doortay + liiska Suuq.
+  'profile.editSpaces': 'Beddel kuwa la doortay',
+  'profile.spacesEmptyOwn': 'Weli Warshado ma aadan dooran. Ilaa 3 ayaad dhejin kartaa.',
+  'profile.testimonialTitle': 'Markhaati xubneed',
+  'profile.testimonialBy': '{name} · macmiil la xaqiijiyay',
+  'profile.openSuuqListing': 'Fur liiska Suuq',
+  'profile.addSuuqListing': 'Ku dar liis Suuq',
+  'profile.suuqEmptyOwn':
+    'Weli ma lihid liis Suuq ah. Haddii aad ganacsi leedahay, ku dar si dadku kuu helaan.',
+
+  // Waxa aad wadaagtaan — kaliya waxaa laga xisaabiyaa Warshadaha la wadaago.
+  'profile.mutuals': 'Waxaad wadaagtaan: {names}',
+  'profile.mutualsWithSpace': 'Waxaad wadaagtaan: {names} — {space}',
+  'profile.mutualsJoinLast': '{names} iyo {last}',
+  'profile.mutualsOthers': { one: '{count} kale', other: '{count} kale' },
+
+  // Kaadhka xogta — kaliya qofka bogga leh ayaa arka (go'aan 11 Ogosto). Xogta
+  // booqduhu u baahan yahay meel kale ayay horey uga muuqataa, xaaladda qarinta
+  // goobtuna waa xog aan la daabicin. Xiriirka warbixintu wuu ka baxsan yahay
+  // kaadhka — waa badbaado, ma aha saf xog.
+  'profile.factsTitle': 'Xogta',
+  // Qofka leh bogga looma laablaabo goobta, sidaas darteed qof doortay 'Qarsoon'
+  // wuxuu weligiis arkaa magaaladiisa dhabta ah, mana ogaado in dadka agtiisa ahi
+  // aanay heli karin. Kaliya marka laablaabku wax beddelo ayay muuqdaan —
+  // ogeysiis aan waligiis beddelmin waxba ma baro.
+  'profile.factsFoldRegion': 'Booqdayaashu waxay arkaan {place} oo keliya.',
+  'profile.factsFoldHidden': 'Goobtaada booqdayaasha lagama muujiyo.',
+  // Waddooyinku waxay go'aamiyaan cidda ku heli karta — ma aha guul. La'aanteed
+  // safku wuxuu u ekaan lahaa sheegasho; taasu sidoo kale waa sababta uu dl u
+  // yahay ee uusan tag u ahayn.
+  'profile.factsLanesNote':
+    'Waddooyinku waa sida xubnuhu kuugu helaan tusmada — profile-kaaga lagama muujiyo.',
+  'profile.reportProfile': 'Ka warbixi profile-kan',
+  'profile.reportAction': 'Ka warbixi',
+
+  // Habaynta qaybaha — sheet-ka mobilada (10e) iyo kaadhka desktop-ka (10b).
+  'profile.managerTitle': 'Qaybaha bogga',
+  'profile.managerOpen': 'Habee qaybaha',
+  'profile.managerSubtitle': 'Jiid · dami',
+  'profile.managerDragHint': 'Jiid si aad u kala horraysiiso',
+  'profile.managerDragAria': 'Jiid si aad u kala horraysiiso {section}',
+  'profile.managerSave': 'Kaydi habaynta',
+  'profile.managerNote':
+    'Booqdayaashu waxay arkaan kaliya qaybaha aad shidday, sida aad u kala horraysiisay.',
+  'profile.managerInstantNote':
+    'Isbeddelku wuu degdegaa — booqdayaashu waxay arkaan habayntan.',
+  'profile.managerQueuedTitle': 'Habayntu waa kaydsan tahay',
+  'profile.managerQueuedNote':
+    'Bogga ayaa isla markiiba muujinaya habaynta cusub — booqdayaashu waxay arkaan marka ay baxdo.',
+  'profile.managerRowSkills': 'Xirfadaha iyo marag-furka',
+  'profile.managerSaved': 'Habayntii waa la kaydiyay.',
+  'profile.managerSaveFailed': 'Habayntu ma kaydsan. Isku day mar kale.',
+  'profile.moduleShown': 'Muuqda',
+  'profile.moduleHidden': 'Qarsoon',
+  'profile.moduleShownA11y': 'Qaybtan waa muuqataa',
+  // Safaha habaynta isku mid ayay u eg yihiin siddeed jeer, sidaas darteed
+  // badhan kastaa wuxuu magacaabayaa safka uu leeyahay. "Qaybta" ayaa madax
+  // ah si magacyada qaybuhu aanay u beddelin isku-raaca (sida managerDragAria).
+  'profile.moduleShownAria': 'Qaybta {section} waa muuqataa',
+  'profile.moduleHiddenAria': 'Qaybta {section} waa qarsoon tahay',
+  'profile.managerMoveUp': 'Kor u qaad {section}',
+  'profile.managerMoveDown': 'Hoos u dhig {section}',
+
+  // Xaaladaha bogga oo dhan a1–a5. Xubinta cusub tiro eber ah lama tuso.
+  'profile.loadingAria': 'Waa la soo rarayaa',
+  'profile.emptyOwnTitle': 'Profile-kaagu waa madhan yahay — taasi waa caadi',
+  'profile.emptyOwnBody':
+    'Waxa dadku arki doonaan waa waxa aad samayso: Salaan qor, Codsi ka jawaab, ama Warshad ku biir. Tiro ma jirto oo lagu buuxiyo.',
+  'profile.emptyOwnWriteIntro': 'Qor Salaan',
+  'profile.emptyOwnFillBio': 'Buuxi bio-gaaga',
+  'profile.verificationTitle': 'Xaqiijinta',
+  'profile.verificationBody':
+    '3 xubin oo la xaqiijiyay ayaa kuu marag furi kara, ama wicitaan muuqaal ah oo kooban.',
+  'profile.verificationStart': 'Bilow xaqiijinta',
+  'profile.memberYear': 'Xubin {year}',
+  'profile.notVerified': 'Aan la xaqiijin',
+  'profile.loadErrorTitle': 'Profile-kan lama soo rari karin',
+  'profile.loadErrorBody':
+    'Waxaa laga yaabaa in xiriirku daciif yahay. Isku day mar kale — haddii ay sii socoto, nagu soo wargeli.',
+  'profile.offlineBar': 'Internet ma jiro — waxaad akhrinaysaa kayd.',
+  'profile.queuedEditTitle': 'Bio-gaaga cusub wuu sugayaa',
+  'profile.queuedEditBody':
+    'Wax-ka-beddelkaagu wuu kaydsan yahay — wuxuu baxayaa marka internetku soo noqdo.',
+  'profile.queuedEditView': 'Fiiri isbeddelka',
+  'profile.litePhotoSize': 'sawir ~{size}',
+  'profile.liteFooterNote':
+    'Xawli yar: sawirrada waa la hakiyay. Avatar-adu waa xarfo — wax soo-dejin ah ma jirto.',
+
+  // Calaamadaha sharafta — doorarka Badge Canon ku daray. Doorarku weligood ma
+  // casaan-oobaan; labelka aqoonsiga iyo tooltip-yada dhaadheer kor bay yaalliin.
+  'profile.badgeFounder': 'Aasaase',
+  'profile.badgeAuthor': 'Qoraaga',
 } satisfies SomaliDictionary;

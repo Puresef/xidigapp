@@ -8,12 +8,11 @@ import { LocaleProvider } from '@xidig/i18n/react';
 import { PeopleDirectory } from './people-directory';
 
 /**
- * Chip-row dedupe contract: lanes + skills render as ONE undifferentiated
- * chip row, and a member can legitimately hold the same word in both (the
- * seeded persona with lane AND skill "construction" surfaced this as a
- * React duplicate-key error on /suuq). The row must dedupe exact repeats
- * BEFORE the 6-chip cap — one chip per word, no duplicate-key warning, and
- * a repeated word never costs a unique one its slot.
+ * Visitor chip-row contract (11 Aug ruling): the card renders SKILLS only.
+ * Lanes are owner-only — they stay discovery metadata (the lane filter above
+ * the results is untouched) but never a visitor display surface, because a
+ * `.xidig-tag` pill is this product's attested-evidence typography and a
+ * ticked sector checkbox wearing it reads as a stranger's vouch.
  */
 
 const profile = {
@@ -23,15 +22,42 @@ const profile = {
   bio: 'Site engineer.',
   location_city: 'Hargeisa',
   location_country: 'Somaliland',
-  // "construction" appears as BOTH a lane and a skill; raw merge is 7 long,
-  // so pre-dedupe slicing would also push "surveying" off the cap.
-  lanes: ['construction'],
+  // 'halal-finance' is held ONLY as a lane, so its absence proves lanes are
+  // dropped as lanes; 'construction' is held as both, so its single chip
+  // proves the rule is not a word blacklist.
+  lanes: ['halal-finance', 'construction'],
   skills: ['construction', 'civil engineering', 'costing', 'tendering', 'safety', 'surveying'],
   verification_status: 'verified',
   created_at: '2026-07-01T00:00:00Z',
   avatar_thumb_url: null,
   avatar_blurhash: null,
 };
+
+function stubPage(row: typeof profile) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      async () =>
+        new Response(JSON.stringify({ data: { profiles: [row], nextCursor: null } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+    ),
+  );
+}
+
+async function render() {
+  const host = document.createElement('div');
+  document.body.append(host);
+  await act(async () => {
+    createRoot(host).render(
+      <LocaleProvider initialLocale="en">
+        <PeopleDirectory />
+      </LocaleProvider>,
+    );
+  });
+  return host;
+}
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -40,38 +66,48 @@ afterEach(() => {
 });
 
 describe('PeopleDirectory chip row', () => {
-  it('dedupes a word held as both lane and skill — one chip, no duplicate keys, cap not wasted', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(
-        async () =>
-          new Response(JSON.stringify({ data: { profiles: [profile], nextCursor: null } }), {
-            status: 200,
-            headers: { 'content-type': 'application/json' },
-          }),
-      ),
-    );
-    // The regression tripwire: React reports key collisions via console.error.
-    const consoleError = vi.spyOn(console, 'error');
+  it('renders skills and never a lane', async () => {
+    stubPage(profile);
+    const host = await render();
 
-    const host = document.createElement('div');
-    document.body.append(host);
-    const root = createRoot(host);
-    await act(async () => {
-      root.render(
-        <LocaleProvider initialLocale="en">
-          <PeopleDirectory />
-        </LocaleProvider>,
-      );
+    const card = host.querySelector('.xidig-card-grid li');
+    expect(card).not.toBeNull();
+    const chips = [...card!.querySelectorAll('.xidig-tag')].map((el) => el.textContent);
+    expect(chips).toEqual(profile.skills);
+    // Nowhere in the card, not merely absent from the chip row.
+    expect(card!.textContent).not.toContain('halal-finance');
+    // A word that is both stays — once, on its skill footing.
+    expect(chips.filter((c) => c === 'construction')).toHaveLength(1);
+    // Lanes remain a filter: the same slug is still an option in the toolbar.
+    const laneOptions = [...host.querySelectorAll('#people-lane option')].map(
+      (el) => el.textContent,
+    );
+    expect(laneOptions).toContain('halal-finance');
+  });
+
+  it('dedupes repeated skills before the 6-chip cap', async () => {
+    // profiles.skills is normalized distinct on write only since migration
+    // 20260718200000, which never backfilled — a legacy row can still repeat.
+    stubPage({
+      ...profile,
+      skills: [
+        'construction',
+        'construction',
+        'civil engineering',
+        'costing',
+        'tendering',
+        'safety',
+        'surveying',
+      ],
     });
+    const consoleError = vi.spyOn(console, 'error');
+    const host = await render();
 
     const chips = [...host.querySelectorAll('.xidig-tag')].map((el) => el.textContent);
-    // One chip per word — "construction" exactly once.
-    expect(chips.filter((c) => c === 'construction')).toHaveLength(1);
-    // Dedupe happens BEFORE the 6-chip cap: the duplicate must not have cost
-    // "surveying" (raw-merge position 7) its slot.
-    expect(chips).toContain('surveying');
     expect(chips).toHaveLength(6);
+    // Dedupe runs BEFORE the cap: the repeat must not cost 'surveying' (raw
+    // position 7) its slot.
+    expect(chips).toContain('surveying');
     // And React never saw colliding keys.
     const keyComplaints = consoleError.mock.calls.filter((call) =>
       String(call[0]).includes('same key'),

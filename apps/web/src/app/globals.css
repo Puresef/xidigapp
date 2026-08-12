@@ -686,6 +686,34 @@ button.xidig-tag:disabled {
   border-color: color-mix(in srgb, var(--x-danger) 30%, white);
 }
 
+/* ── Badge canon (Aniga v3, ruling 10) ─────────────────────────────────────
+   The prefix glyph encodes the class, so this is only the layout that lets one
+   sit beside the label. There is deliberately no role modifier: a plain
+   .xidig-tag IS the role treatment, and adding a modifier would be the first
+   step toward an orange one. Colour comes from .xidig-tag--trust, which the
+   AA gate already asserts. */
+.xidig-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+}
+
+/* Inline law: ≤20px surfaces (feed bylines, Suuq rows) carry the Xaqiiqeysan
+   check and nothing else. Ink on the solid trust fill is 7.30:1 in both
+   palettes — white here would be 2.33:1. Same treatment as the byline check,
+   standing alone rather than pinned to an avatar. */
+.xidig-badge-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--x-radius-pill);
+  background: var(--x-trust);
+  color: #131c2e;
+}
+
 /* Designed badge chip (lab kind chrome, and any classified label that is a
    statement, not a filter). Default wears the accent tint — text variant
    5.06:1 (light) / 6.72:1 (dark) on accent-soft-over-surface. */
@@ -5516,4 +5544,1653 @@ button.xidig-poll__option:disabled,
   width: 100%;
   aspect-ratio: 800 / 450;
   border-radius: var(--x-radius-s);
+}
+
+/* ============================================================================
+ * ANIGA v3 — the modular member profile (spec §2/§3; frames 5a–5d, 8a–8b,
+ * 10a–10e). Prefix `xidig-a*` throughout: this is a rebuild that stands BESIDE
+ * the Phase-1 `.xidig-profile*` block, not a re-skin of it, so the two never
+ * fight over a selector.
+ *
+ * Three rules govern everything below, each from real breakage:
+ *
+ *  1. `min-width: 0` on every grid/flex child that can hold a nowrap run.
+ *     Grid children default to `min-width: auto` and refuse to shrink below
+ *     min-content, so one long handle, OG title or skill name pushes the whole
+ *     page into a sideways scroll (spec §6 trap 2). The desktop split uses
+ *     `minmax(0, 1fr)` for the same reason.
+ *  2. No panel leans on `--x-surface-2` alone. It IS `--x-surface` (#ffffff)
+ *     in light, so a fill-only "lift" is invisible there — every raised block
+ *     below pairs it with a border (spec §6 trap 1). Row tints use `--x-bg`.
+ *  3. Somali runs ~130% longer than English. Nothing here is fixed-width, the
+ *     module header wraps, and no translated string is truncated; the only
+ *     ellipses are on member-supplied values (handles, OG titles, Space names).
+ *
+ * Motion: the transitions are declared inside the double gate rather than
+ * relying on the appearance block's global kills, so the gate is legible at
+ * the rule itself. No new keyframes — loading rides `.xidig-skeleton`, whose
+ * shimmer is already gated.
+ * ========================================================================== */
+
+/* ── Page shell ──────────────────────────────────────────────────────────────
+   The cover is full-bleed, so the root cancels <main>'s gutter and the body
+   re-applies its own. Dock clearance is already global
+   (`body:has(.xidig-nav--app)`), so nothing here reserves bottom space. */
+.xidig-aniga {
+  margin: calc(var(--x-space) * -1);
+  min-width: 0;
+}
+
+/* MediaSlot's own radius is an inner-corner 6px; a banner runs edge to edge. */
+.xidig-aniga__cover {
+  height: 110px;
+  border-radius: 0;
+}
+
+.xidig-aniga__cover.xidig-media-slot--revealed {
+  clip-path: none;
+}
+
+.xidig-aniga__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+  border-radius: 0;
+}
+
+.xidig-aniga__body {
+  max-width: 1008px;
+  margin-inline: auto;
+  padding: 0 16px 24px;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.xidig-aniga__main,
+.xidig-aniga__modules {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Below the desktop step the rail is not a rail — it stacks under the column,
+   which is why it carries no sticky/width of its own until the media query. */
+.xidig-aniga__rail {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* The identity block rides UP over the cover. z-index 2 clears the cover's own
+   stacking context; the avatar's --x-bg ring is what separates the two. */
+.xidig-aniga__identity {
+  position: relative;
+  z-index: 2;
+  margin-top: -26px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.xidig-aniga__ident {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+
+.xidig-aniga__avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  border-radius: var(--x-radius-pill);
+}
+
+/* Size comes from Avatar's `size` prop (it writes width/height inline); this
+   rule owns only the ring. box-sizing:border-box means the 3px eats inward,
+   which is what the frames draw. */
+.xidig-aniga__avatar {
+  border: 3px solid var(--x-bg);
+}
+
+/* Verified ring (§4): CSS-only, so Lite pays zero bytes for it (a5). */
+.xidig-aniga__avatar--verified {
+  box-shadow: 0 0 0 3px var(--x-trust);
+}
+
+.xidig-aniga__check {
+  position: absolute;
+  inset-inline-end: 2px;
+  bottom: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--x-radius-pill);
+  /* Ink on the solid trust fill is 7.30:1 in both palettes; white would be
+     2.33:1. Same literal the byline check and .xidig-badge-check already use. */
+  background: var(--x-trust);
+  color: #131c2e;
+  border: 2.5px solid var(--x-bg);
+}
+
+.xidig-aniga__names {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+  padding-bottom: 3px;
+}
+
+.xidig-aniga__name {
+  margin: 0;
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.xidig-aniga__headline {
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+  text-wrap: pretty;
+}
+
+.xidig-aniga__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+/* Mobile splits the action row evenly (10a/10c); desktop lets the buttons take
+   their own width beside the name. `flex: 1 1 auto` + wrap keeps a long Somali
+   label from squeezing its neighbour off the row. */
+.xidig-aniga__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.xidig-aniga__actions > * {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.xidig-aniga__bio {
+  margin: 0;
+  font-size: var(--x-text-body);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+/* ── Module shell (components/profile/modules/module-card.tsx) ─────────────── */
+
+.xidig-amodule {
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 12px 14px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Flag-held module (Tirakoobka). Dashed is the whole visual claim — built, not
+   published — so nothing else about the card changes. */
+.xidig-amodule--locked {
+  border-style: dashed;
+  border-color: var(--x-border-strong);
+  gap: 9px;
+}
+
+.xidig-amodule__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.xidig-amodule__grip {
+  color: var(--x-muted);
+  flex: none;
+}
+
+.xidig-amodule__label {
+  margin: 0;
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  color: var(--x-muted);
+  text-transform: uppercase;
+  min-width: 0;
+}
+
+/* Plain system state, never an award: neutral chip, no --x-trust anywhere. */
+.xidig-amodule__flag {
+  padding: 0.05rem 0.5rem;
+  font-size: 10px;
+  color: var(--x-muted);
+  flex: none;
+}
+
+/* Deliberately `flex: 0 1 auto`, not `flex: none`: the skills module passes a
+   whole sentence through this slot ("Marag-furka asxaabta · adiguna waad
+   marag-furi kartaa"), and an unshrinkable header would overflow at Somali
+   length. Icon buttons inside keep their own `flex: none`. */
+.xidig-amodule__actions {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.xidig-amodule__body {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.xidig-amodule__note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-amodule__eye {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+/* The locked eye is permanently `disabled` and must LOOK inert — the house
+   .xidig-icon-button:hover tints unconditionally, and .xidig-icon-button
+   :disabled fills a gray disc that would read as a control mid-press. Flat and
+   muted instead (DESIGN.md §4), with the hover response explicitly killed. */
+.xidig-amodule__eye:disabled,
+.xidig-amodule__eye:disabled:hover {
+  background: transparent;
+  border-color: transparent;
+  color: var(--x-muted);
+  cursor: not-allowed;
+}
+
+/* ── Bandhig — showcase (§3.1, v1–v5) ─────────────────────────────────────── */
+
+.xidig-ashowcase {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.xidig-ashowcase__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.xidig-ashowcase__tile {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--x-radius-s);
+  overflow: hidden;
+  /* Same static border-tone tint the skeleton primitive uses — never raw
+     --x-surface-2, which is white-on-white in light. */
+  background: color-mix(in srgb, var(--x-border) 35%, var(--x-surface));
+}
+
+.xidig-ashowcase__slot,
+.xidig-ashowcase__tile .xidig-media-slot {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  border-radius: 0;
+}
+
+/* The 18px corner cut is the signature for full-size media; at ~110px square
+   it would eat the tile. The tile owns the rounding here. */
+.xidig-ashowcase__tile .xidig-media-slot--revealed {
+  clip-path: none;
+}
+
+.xidig-ashowcase__tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+  border-radius: 0;
+}
+
+.xidig-ashowcase__tile .xidig-media-slot__thumb-btn {
+  height: 100%;
+}
+
+/* A .xidig-tag is transparent by default, which over a photograph is
+   unreadable. The chip gets an opaque surface FILL and wears its tint as a
+   background-image on top — so what paints is exactly the trust-soft-over-
+   surface pair the AA gate already asserts, not tint-over-photo. */
+.xidig-ashowcase__chip {
+  position: absolute;
+  top: 5px;
+  inset-inline-start: 5px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0.02rem 0.4rem;
+  font-size: 9.5px;
+  line-height: 1.6;
+  background-color: var(--x-surface);
+  max-width: calc(100% - 10px);
+}
+
+.xidig-ashowcase__chip.xidig-tag--trust {
+  background-image: linear-gradient(var(--x-trust-soft), var(--x-trust-soft));
+}
+
+/* One link per tile, laid OVER the slot (a button may not live inside an
+   anchor). It sits under the Lite placeholder overlay so "Muuji" — the only
+   control with no other route to its outcome — stays clickable; the
+   thumb-upgrade button does have another route (open the item) and stays
+   keyboard-reachable regardless, since z-index does not touch tab order. */
+.xidig-ashowcase__link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: var(--x-radius-s);
+}
+
+.xidig-ashowcase__tile .xidig-media-slot__overlay {
+  z-index: 3;
+}
+
+.xidig-ashowcase__link:focus-visible {
+  outline: 2px solid var(--x-accent);
+  /* Inset: an outward ring would be clipped by the tile's overflow:hidden. */
+  outline-offset: -2px;
+}
+
+/* A pinned ref with no media is text: the link stops being an overlay and
+   becomes the tile, so the title is what the reader gets. */
+.xidig-ashowcase__tile--text {
+  display: grid;
+  align-items: end;
+  border: 1px solid var(--x-border);
+  background: var(--x-surface);
+}
+
+.xidig-ashowcase__tile--text .xidig-ashowcase__link {
+  position: static;
+  display: grid;
+  align-content: end;
+  height: 100%;
+  padding: 8px;
+  text-decoration: none;
+  color: var(--x-fg);
+}
+
+.xidig-ashowcase__title {
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: pretty;
+  overflow: hidden;
+}
+
+/* The add tile is the dashed outline itself, so the li stops painting a fill
+   and hands its whole box to the anchor. */
+.xidig-ashowcase__tile--add {
+  display: grid;
+  background: transparent;
+  overflow: visible;
+}
+
+.xidig-ashowcase__add {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  border: 1.5px dashed var(--x-border-strong);
+  border-radius: var(--x-radius-s);
+  background: transparent;
+  color: var(--x-muted);
+  font-size: 10.5px;
+  text-align: center;
+  text-decoration: none;
+  padding: 4px;
+}
+
+.xidig-ashowcase__add:hover {
+  border-color: var(--x-accent);
+  color: var(--x-accent-text);
+}
+
+.xidig-ashowcase__add:active {
+  background: var(--x-accent-soft);
+}
+
+.xidig-ashowcase__add:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+/* v1 — the skeleton IS the grid: same tiles, same cap, same gaps, so nothing
+   reflows when the pins land. */
+.xidig-ashowcase__tile-skeleton {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+}
+
+.xidig-ashowcase__note-skeleton {
+  width: 72%;
+}
+
+/* v2 — owner-only. A visitor never reaches this: the module returns null. */
+.xidig-ashowcase__empty {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 1.25rem var(--x-space-xs);
+}
+
+.xidig-ashowcase__empty-mark {
+  display: inline-flex;
+  opacity: 0.55;
+}
+
+.xidig-ashowcase__empty-title {
+  font-family: var(--x-display);
+  font-size: var(--x-text-l);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.xidig-ashowcase__empty-body {
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+  max-width: 32rem;
+  text-wrap: pretty;
+}
+
+/* v4 — the module fails alone, inside the house error Banner (which sets its
+   own --x-danger text colour; these only own the rhythm). */
+.xidig-ashowcase__error-title {
+  display: block;
+  font-family: var(--x-display);
+  font-size: var(--x-text-ui);
+}
+
+.xidig-ashowcase__error-body {
+  display: block;
+  font-size: var(--x-text-s);
+  margin: 2px 0 var(--x-space-xs);
+  text-wrap: pretty;
+}
+
+/* v5 — a queued pin is a state chip, never a spinner. */
+.xidig-ashowcase__queue {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.xidig-ashowcase__queue-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.xidig-ashowcase__queue-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  color: var(--x-muted);
+}
+
+.xidig-ashowcase__queue-meta {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  min-width: 0;
+  text-wrap: pretty;
+}
+
+/* v3 — Lite states what it did, in the same box. The grid never shrinks. */
+.xidig-ashowcase__lite {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* ── Xirfadaha — skills (§3.2) ────────────────────────────────────────────────
+   Depth is carried by SIZE, in exactly three steps. A per-rank size would turn
+   a cloud into a leaderboard, which is the reading the module rules out. */
+
+.xidig-askills {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.xidig-askills__item {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* "+ Ku dar" / "Marag-fur" ride in the cloud rather than under it — they are
+   the next chip, not a footer, which is why they centre on the chip line. */
+.xidig-askills__item--action {
+  align-self: center;
+}
+
+.xidig-askills__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.xidig-askills__chip--lead {
+  padding: 0.32rem 0.85rem;
+  font-size: var(--x-text-s);
+  font-weight: 600;
+  color: var(--x-accent-text);
+  background: var(--x-accent-soft);
+  border-color: transparent;
+}
+
+.xidig-askills__chip--mid {
+  padding: 0.28rem 0.75rem;
+}
+
+.xidig-askills__chip--tail {
+  padding: 0.22rem 0.65rem;
+  font-size: var(--x-text-xs);
+}
+
+/* Already endorsed by this viewer. A quiet accent edge, no second hue and no
+   fill — the chip is still the skill, not a receipt for the reader's own tap. */
+.xidig-askills__chip--endorsed {
+  border-color: color-mix(in srgb, var(--x-accent) 35%, transparent);
+}
+
+/* "×12" glued to its label: the count is a glance, and a line break between
+   the two would read as a stray number. */
+.xidig-askills__count {
+  font-size: var(--x-text-xs);
+  font-weight: 700;
+  color: var(--x-accent-text);
+  white-space: nowrap;
+}
+
+.xidig-askills__meta {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-align: end;
+  text-wrap: pretty;
+  min-width: 0;
+}
+
+.xidig-askills__action {
+  padding: 0.26rem 0.8rem;
+  font-size: var(--x-text-xs);
+}
+
+/* ── Bogagga dibadda — external links (§3.3, v6) ──────────────────────────────
+   Strictly additive tiers: chip → OG card → verified check. A failure at any
+   tier renders NOTHING, so there is no reserved box to collapse (A6) — which
+   is why no rule below reserves height for a preview. */
+
+.xidig-alinks__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.xidig-alinks__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  text-decoration: none;
+  color: var(--x-muted);
+}
+
+a.xidig-alinks__chip:hover,
+.xidig-alinks__add:hover {
+  border-color: var(--x-accent);
+  color: var(--x-accent-text);
+}
+
+a.xidig-alinks__chip:active,
+.xidig-alinks__add:active {
+  background: color-mix(in srgb, var(--x-border) 60%, transparent);
+  transform: translateY(1px);
+}
+
+a.xidig-alinks__chip:focus-visible,
+.xidig-alinks__add:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+/* Pending is the clock chip replacing the globe — "being checked", not "a page
+   that is also being checked". Nothing about it hints at a future badge, so the
+   dashed edge borrows the locked-module grammar already on this page (built /
+   unsettled) rather than inventing a colour for waiting. */
+.xidig-alinks__chip--pending {
+  border-style: dashed;
+}
+
+.xidig-alinks__pending {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+/* Tier 3. Granted only by a completed link-back check, and the only orange on
+   the module. Ink on the fill is 7.30:1 in both palettes. */
+.xidig-alinks__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 13px;
+  height: 13px;
+  border-radius: var(--x-radius-pill);
+  background: var(--x-trust);
+  color: #131c2e;
+}
+
+.xidig-alinks__add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--x-muted);
+  text-decoration: none;
+}
+
+/* Tier 2. --x-surface-2 with a BORDER: the fill alone is invisible in light. */
+.xidig-alinks__preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--x-surface-2);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius-s);
+  padding: 9px 11px;
+  min-width: 0;
+}
+
+.xidig-alinks__thumb {
+  width: 76px;
+  aspect-ratio: 16 / 10;
+  border-radius: 6px;
+  flex: none;
+  overflow: hidden;
+}
+
+.xidig-alinks__thumb.xidig-media-slot--revealed {
+  clip-path: none;
+}
+
+.xidig-alinks__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+  border-radius: 0;
+}
+
+.xidig-alinks__preview-text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-alinks__preview-title {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+/* Member-supplied host string: ellipsis rather than a sideways page scroll. */
+.xidig-alinks__preview-source {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xidig-alinks__ladder {
+  display: grid;
+  gap: 4px;
+  border-top: 1px solid var(--x-border);
+  padding-top: 9px;
+  min-width: 0;
+}
+
+.xidig-alinks__ladder-title {
+  margin: 0;
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--x-muted);
+}
+
+.xidig-alinks__ladder-note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* ── Waxaan raadinayaa — looking for (§3.4) ───────────────────────────────── */
+
+.xidig-alooking__tags {
+  min-width: 0;
+}
+
+/* Accent-soft callout: the row is a suggestion, not an achievement, so it is
+   deliberately the cold accent and never trust orange. Wraps at Somali length
+   — the button drops to its own line rather than crushing the reason string. */
+.xidig-alooking__match {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: var(--x-accent-soft);
+  border: 1px solid color-mix(in srgb, var(--x-accent) 30%, transparent);
+  border-radius: var(--x-radius-s);
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+.xidig-alooking__glyph {
+  display: inline-flex;
+  color: var(--x-accent-text);
+  flex: none;
+}
+
+.xidig-alooking__match-text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.xidig-alooking__match-title {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+/* The reason is the module's whole claim — muted, but never truncated. */
+.xidig-alooking__match-reason {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-alooking__view {
+  flex: none;
+  margin-inline-start: auto;
+  padding: 0.3rem 0.8rem;
+  font-size: var(--x-text-xs);
+}
+
+/* ── Tirakoobka — metrics (§3.5) ─────────────────────────────────────────────
+   Dashed frame + inert eye come from .xidig-amodule--locked; this is only the
+   stat grid. minmax(0,1fr) so a long Somali label wraps instead of widening. */
+
+.xidig-ametrics__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.xidig-ametrics__stat {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.xidig-ametrics__value {
+  font-family: var(--x-display);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.xidig-ametrics__label {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* ── Adiga kaliya ayaa arka — owner-private stats (§3.6, a4) ──────────────── */
+
+.xidig-aprivate {
+  background: var(--x-surface);
+  border: 1px dashed var(--x-border-strong);
+  border-radius: var(--x-radius);
+  padding: 13px 15px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.xidig-aprivate__title {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* a4 — the cache age lands ABOVE the numbers, so it is read before they are
+   trusted. Same rhythm as the note, deliberately not louder. */
+.xidig-aprivate__cache {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-aprivate__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.xidig-aprivate__stat {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.xidig-aprivate__value {
+  font-family: var(--x-display);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.xidig-aprivate__label {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-aprivate__note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* Rail variant (5c): 320px is too narrow for three columns of spelled-out
+   Somali labels, so the stats become baseline rows. */
+.xidig-aprivate--rail {
+  padding: 15px 17px;
+  gap: 11px;
+}
+
+.xidig-aprivate--rail .xidig-aprivate__grid {
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.xidig-aprivate--rail .xidig-aprivate__stat {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.xidig-aprivate--rail .xidig-aprivate__value {
+  font-size: 20px;
+  min-width: 2.6rem;
+  flex: none;
+}
+
+.xidig-aprivate--rail .xidig-aprivate__label {
+  font-size: var(--x-text-s);
+}
+
+/* ── Caawimo — helper history (§3.7) ─────────────────────────────────────── */
+
+.xidig-ahelper {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.xidig-ahelper__item {
+  min-width: 0;
+}
+
+/* The whole row is the receipt, so the whole row is the link to the Codsi. */
+.xidig-ahelper__row {
+  display: grid;
+  gap: 7px;
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 13px 16px;
+  text-decoration: none;
+  color: var(--x-fg);
+  min-width: 0;
+}
+
+.xidig-ahelper__row:hover {
+  border-color: var(--x-border-strong);
+  background: var(--x-bg);
+}
+
+.xidig-ahelper__row:active {
+  transform: translateY(1px);
+}
+
+.xidig-ahelper__row:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+.xidig-ahelper__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.xidig-ahelper__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+}
+
+.xidig-ahelper__time {
+  margin-inline-start: auto;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  flex: none;
+}
+
+.xidig-ahelper__title {
+  font-size: var(--x-text-ui);
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+/* The asker IS the evidence, so the credit line wraps rather than truncates. */
+.xidig-ahelper__credit {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+  min-width: 0;
+}
+
+.xidig-ahelper__avatar {
+  flex: none;
+}
+
+/* ── Warshadaha — pinned Spaces (§3.8) ───────────────────────────────────── */
+
+.xidig-aspaces {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  min-width: 0;
+}
+
+.xidig-aspaces__item + .xidig-aspaces__item {
+  border-top: 1px solid var(--x-border);
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
+.xidig-aspaces__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px;
+  border-radius: var(--x-radius-s);
+  text-decoration: none;
+  color: var(--x-fg);
+  min-width: 0;
+}
+
+.xidig-aspaces__row:hover {
+  background: var(--x-bg);
+}
+
+.xidig-aspaces__row:active {
+  transform: translateY(1px);
+}
+
+.xidig-aspaces__row:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+}
+
+.xidig-aspaces__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--x-radius-s);
+  background: var(--x-accent-soft);
+  color: var(--x-accent-text);
+  flex: none;
+}
+
+.xidig-aspaces__text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Member-supplied names: ellipsis, never a sideways scroll. */
+.xidig-aspaces__name {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xidig-aspaces__meta {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xidig-aspaces__edit {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+/* In-module empty (owner only): deliberately NOT the house EmptyState card,
+   which would double-frame inside .xidig-amodule. Left-aligned, because it is
+   a sentence inside a section rather than a whole-surface state. */
+.xidig-aspaces__empty {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.xidig-aspaces__empty-body {
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+  text-wrap: pretty;
+}
+
+/* ── Suuq listing (§3.9) ─────────────────────────────────────────────────── */
+
+.xidig-asuuq {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.xidig-asuuq__cover {
+  aspect-ratio: 16 / 7;
+  border-radius: var(--x-radius-s);
+  overflow: hidden;
+}
+
+.xidig-asuuq__cover.xidig-media-slot--revealed {
+  clip-path: none;
+}
+
+.xidig-asuuq__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+  border-radius: 0;
+}
+
+.xidig-asuuq__head {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.xidig-asuuq__name {
+  font-size: var(--x-text-ui);
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+.xidig-asuuq__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  min-width: 0;
+}
+
+.xidig-asuuq__verified {
+  justify-self: start;
+}
+
+/* The testimonial is fenced off from the listing's own self-description: a
+   rule above it says where the unverified copy stops and the attested quote
+   starts. */
+.xidig-asuuq__testimonial {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid var(--x-border);
+  padding-top: 10px;
+  min-width: 0;
+}
+
+.xidig-asuuq__testimonial-label {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.xidig-asuuq__quote {
+  margin: 0;
+  font-size: var(--x-text-s);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+/* The attribution is what makes the quote checkable, so it reads as a link. */
+.xidig-asuuq__customer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-decoration: none;
+  min-width: 0;
+}
+
+.xidig-asuuq__customer:hover {
+  color: var(--x-fg);
+  text-decoration: underline;
+}
+
+.xidig-asuuq__customer:active {
+  transform: translateY(1px);
+}
+
+.xidig-asuuq__customer:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+  border-radius: var(--x-radius-s);
+}
+
+.xidig-asuuq__customer-avatar {
+  flex: none;
+}
+
+.xidig-asuuq__cta {
+  justify-content: center;
+  width: 100%;
+}
+
+.xidig-asuuq__empty {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.xidig-asuuq__empty-body {
+  color: var(--x-muted);
+  font-size: var(--x-text-s);
+  text-wrap: pretty;
+}
+
+/* ── Module manager (10b rail / 10e sheet, v7) ───────────────────────────── */
+
+.xidig-amanager {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.xidig-amanager--rail {
+  background: var(--x-surface);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius);
+  padding: 15px 17px;
+}
+
+/* --sheet rides .xidig-modal__panel, which already owns surface, radius,
+   padding and the lift — this only sets the rhythm inside it. */
+.xidig-amanager--sheet {
+  gap: 12px;
+}
+
+.xidig-amanager__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.xidig-amanager__title {
+  margin: 0;
+  font-family: var(--x-display);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+  color: var(--x-muted);
+  text-transform: uppercase;
+  min-width: 0;
+}
+
+.xidig-amanager__hint {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-amanager__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+/* Row tint is --x-bg (the house row wash): --x-surface-2 would vanish against
+   the card in light. `cursor: grab` advertises the pointer enhancement; the
+   up/down buttons are the real, keyboard-first control. */
+.xidig-amanager__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--x-radius-s);
+  background: var(--x-bg);
+  cursor: grab;
+  min-width: 0;
+}
+
+.xidig-amanager__row--locked {
+  border-style: dashed;
+  border-color: var(--x-border-strong);
+  background: transparent;
+}
+
+.xidig-amanager__row--dragging {
+  border-color: var(--x-accent);
+  background: var(--x-accent-soft);
+  cursor: grabbing;
+}
+
+.xidig-amanager__grip {
+  color: var(--x-muted);
+  flex: none;
+}
+
+.xidig-amanager__text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.xidig-amanager__label {
+  font-size: var(--x-text-s);
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+/* Names the decider in plain system language — never a teaser, so it stays
+   muted body copy rather than anything that reads as a promotion. */
+.xidig-amanager__sub {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+.xidig-amanager__flag {
+  padding: 0.05rem 0.5rem;
+  font-size: 10px;
+  color: var(--x-muted);
+  flex: none;
+}
+
+.xidig-amanager__controls {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+.xidig-amanager__move {
+  width: 1.7rem;
+  height: 1.7rem;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.xidig-amanager__eye {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+.xidig-amanager__save {
+  justify-content: center;
+}
+
+.xidig-amanager__note {
+  margin: 0;
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* v7 — a queued save is a state chip in a bordered block, never a spinner:
+   a spinner would claim work is in flight while the radio is off. */
+.xidig-amanager__queue {
+  display: grid;
+  gap: 4px;
+  background: var(--x-bg);
+  border: 1px solid var(--x-border);
+  border-radius: var(--x-radius-s);
+  padding: 8px 10px;
+  min-width: 0;
+}
+
+.xidig-amanager__queue-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  justify-self: start;
+  color: var(--x-muted);
+}
+
+.xidig-amanager__queue-meta,
+.xidig-amanager__queue-note {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  text-wrap: pretty;
+}
+
+/* Text-button, mirroring .xidig-codsi-queue__remove — "Tirtir" is a small
+   reversal inside a sentence, not a second primary action. */
+.xidig-amanager__queue-cancel {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--x-accent-text);
+  cursor: pointer;
+}
+
+.xidig-amanager__queue-cancel:hover {
+  text-decoration: underline;
+}
+
+.xidig-amanager__queue-cancel:active {
+  transform: translateY(1px);
+}
+
+.xidig-amanager__queue-cancel:focus-visible {
+  outline: 2px solid var(--x-accent);
+  outline-offset: 2px;
+  border-radius: var(--x-radius-s);
+}
+
+.xidig-amanager__queue-cancel:disabled {
+  color: var(--x-muted);
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
+.xidig-amanager__saved {
+  margin: 0;
+  color: var(--x-ok);
+  font-size: var(--x-text-xs);
+}
+
+.xidig-amanager__trigger {
+  justify-content: center;
+}
+
+/* ── Motion (double-gated: OS preference AND the in-app switch) ───────────────
+   The appearance block's global kills already zero every transition; declaring
+   these inside the gate keeps that fact legible at the rule itself, the same
+   way the skeleton shimmer and the modal entry animations are written. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']) .xidig-ashowcase__add,
+  html:not([data-motion='off']) a.xidig-alinks__chip,
+  html:not([data-motion='off']) .xidig-alinks__add,
+  html:not([data-motion='off']) .xidig-ahelper__row,
+  html:not([data-motion='off']) .xidig-aspaces__row,
+  html:not([data-motion='off']) .xidig-asuuq__customer,
+  html:not([data-motion='off']) .xidig-amanager__row,
+  html:not([data-motion='off']) .xidig-amanager__queue-cancel {
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease,
+      color 120ms ease,
+      transform 80ms ease;
+  }
+}
+
+/* ── Desktop (10b / 10d / 8b) ────────────────────────────────────────────────
+   64rem is the house desktop step — the same one that swaps the bottom tab bar
+   for RailNav. minmax(0,1fr) on the content column is load-bearing: a bare
+   `1fr` grid child keeps min-width:auto and the OG title / handle runs inside
+   it would push the page sideways instead of ellipsising (spec §6 trap 2). */
+@media (min-width: 64rem) {
+  .xidig-aniga__cover {
+    height: 150px;
+  }
+
+  .xidig-aniga__body {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 24px;
+    align-items: start;
+    padding: 0 26px 40px;
+  }
+
+  .xidig-aniga__identity {
+    margin-top: -30px;
+    gap: 15px;
+  }
+
+  .xidig-aniga__ident {
+    gap: 15px;
+  }
+
+  .xidig-aniga__check {
+    width: 24px;
+    height: 24px;
+  }
+
+  .xidig-aniga__name {
+    font-size: 24px;
+    line-height: 1.15;
+  }
+
+  .xidig-aniga__headline {
+    font-size: var(--x-text-ui);
+  }
+
+  /* Beside the name the buttons take their own width; only the phone splits
+     the row evenly. */
+  .xidig-aniga__actions > * {
+    flex: 0 0 auto;
+  }
+
+  /* The rail is sticky and self-aligned so it does not stretch to the
+     column's height — `align-items: start` on the grid keeps it honest. */
+  .xidig-aniga__rail {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    margin-top: 14px;
+  }
+
+  .xidig-amodule {
+    padding: 14px 16px;
+    gap: 11px;
+  }
+
+  .xidig-amodule__label {
+    font-size: 13.5px;
+  }
+
+  /* The rail steps its chrome down one size (10b/10d) — the SVG width/height
+     attributes are intrinsic defaults, so the box is what changes here. */
+  .xidig-aniga__rail .xidig-amodule__eye {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+
+  .xidig-aniga__rail .xidig-amodule__grip {
+    width: 13px;
+    height: 13px;
+  }
+
+  .xidig-ashowcase__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .xidig-ashowcase__chip {
+    font-size: 10px;
+  }
+
+  /* One step larger at the top of the ramp (8b) — still three steps. */
+  .xidig-askills__chip--lead {
+    padding: 0.35rem 0.95rem;
+    font-size: var(--x-text-ui);
+  }
+
+  .xidig-askills__chip--mid {
+    padding: 0.3rem 0.8rem;
+    font-size: var(--x-text-s);
+  }
+
+  .xidig-askills__chip--tail {
+    padding: 0.24rem 0.7rem;
+  }
+
+  .xidig-alinks__thumb {
+    width: 70px;
+  }
+}
+
+/* ── Xogta — the owner's facts card (docs/aniga-modules.md, 11 Aug) ──────── */
+
+/* Label ABOVE value, unlike the side-by-side fact grids elsewhere: these are
+   SELF-DECLARED facts, and the demotion from pill to definition list is the
+   whole epistemic signal (a `.xidig-tag` here would read as attested).
+   Block dt/dd stack on their own, so this stays flow layout — nothing inside
+   .xidig-section's grid that could refuse to shrink. */
+.xidig-afacts {
+  margin: 0;
+  min-width: 0;
+}
+
+.xidig-afacts dt {
+  color: var(--x-muted);
+  font-size: var(--x-text-xs);
+  font-weight: 600;
+}
+
+.xidig-afacts dd {
+  margin: 0 0 var(--x-space-s);
+  font-size: var(--x-text-s);
+  text-wrap: pretty;
+}
+
+.xidig-afacts dd:last-of-type {
+  margin-bottom: 0;
+}
+
+/* .xidig-section carries a bottom margin for the stacked settings pages. The
+   rail is a gapped grid, so that margin would sit UNDER the gap and space this
+   card differently from the manager and the private block beside it. */
+.xidig-aniga__rail .xidig-section {
+  margin-bottom: 0;
 }
