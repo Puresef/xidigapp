@@ -281,7 +281,7 @@ export function MapBrowser({
       </p>
       {pending ? (
         <p className="xidig-card__meta" role="status">
-          <AnimatedMark mode="flap" size={20} className="xidig-flap-inline" />
+          <AnimatedMark mode="loading" size={20} className="xidig-flap-inline" />
           {t('state.loading')}
         </p>
       ) : null}

@@ -89,10 +89,15 @@ export function InterestBar({
       {/* Social proof — Garab / Co-sign count */}
       <p className="xidig-card__body">
         {t('capital.cosignCount', { count: counts.cosign })}
+        {/* Finance surface: the G3 motion doctrine locks Maal/capital marks
+            to the static rest frame — provenance is shown by a static trust
+            ring on the card, never by an animated mark. `surface="capital"`
+            makes the policy, not this call site, enforce that. */}
         {celebrated > 0 ? (
           <AnimatedMark
             key={celebrated}
-            mode="ceremony"
+            mode="celebrate"
+            surface="capital"
             size={20}
             className="xidig-celebrate-inline"
           />

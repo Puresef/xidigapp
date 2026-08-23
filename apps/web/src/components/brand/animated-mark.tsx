@@ -1,23 +1,52 @@
-import type { ReactNode } from 'react';
+import type {
+  AnimationEventHandler,
+  KeyboardEventHandler,
+  MouseEventHandler,
+  ReactNode,
+} from 'react';
+
+import { motionAllowed } from '@/lib/motion-policy';
 
 /**
- * AnimatedMark — the brand mark with its three motions, by scenario
- * (mark-redesign spec §4, docs/superpowers/specs/2026-07-17-mark-redesign-design.md):
+ * AnimatedMark — the brand mark and its motion states, by scenario
+ * (mark-redesign spec §4 + the G1 motion direction approved 22 Aug 2026,
+ * implemented as G3: docs/superpowers/specs/2026-07-17-mark-redesign-design.md
+ * and the "Xidig Motion G3" design project):
  *
- *   - `assemble`  plays ONCE on entry surfaces: the X converges from the four
- *                 corners, then the two woven star halves slide in and lock —
- *                 scattered → gathered.
- *   - `flap`      calm whole-butterfly fold loop — the loading/breathing pulse.
- *   - `ceremony`  one-shot wings-fold-and-spread — celebration moments only
- *                 (vote cast, co-sign, badge reveal), never routine taps.
- *   - `hero`      assemble once, then rest and occasionally breathe — the
- *                 living hero mark (assemble layers + a gentle wrapper loop).
- *   - `static`    the mark, no layers, no motion.
+ *   - `static`     the mark, no layers, no motion.
+ *   - `assemble`   plays ONCE on entry surfaces: the X converges from the four
+ *                  corners, then the two woven star halves slide in and lock.
+ *   - `hero`       assemble once, then rest and occasionally breathe — the
+ *                  living hero mark.
+ *   - `idle`       12 s wing-set — front door + auth ONLY.
+ *   - `loading`    the calm whole-butterfly fold LOOP (the loading pulse).
+ *                  This was called `flap` before G3; the class is unchanged.
+ *   - `flap`       a 260 ms ONE-SHOT receipt: post published, Garab given, DM
+ *                  accepted. Wire it behind createReceiptGuard() so a bulk
+ *                  action or a retry storm collapses into one beat.
+ *   - `celebrate`  a 2.2 s once-ever milestone (onboarding complete, first
+ *                  post, Warshad created, Verified/Founding reveal). Pass
+ *                  `earned` — or mode `celebrate-earned` — for the trust ring.
+ *   - `ceremony`   legacy alias for `celebrate`.
  *
  * CSS-only (keyframes in globals.css under .xidig-animark): server-renderable,
  * zero client JS. The BASE state of every layer is the FINAL frame — motion-off
  * and reduced-motion visitors always see the complete mark, never a mid-fold
- * frame (the house double gate lives in the CSS, not here).
+ * frame.
+ *
+ * GATING. The three global gates — prefers-reduced-motion, html[data-motion='off']
+ * (Appearance + the Lite animations pref) and html[data-lite='1'] (Xawli yar) —
+ * are enforced in CSS, and both attributes are server-rendered in app/layout.tsx,
+ * so a gated visitor never paints a frame of motion. This component deliberately
+ * does NOT consult the document at render time: doing so would either force the
+ * whole mark into a client bundle or mismatch on hydration. Client callers that
+ * want to skip the work entirely should ask lib/motion-policy's gatesOpen()
+ * inside the event handler, next to motionFor().
+ *
+ * The SURFACE gate is enforced here, because it is pure: on a surface in
+ * NO_MOTION_SURFACES (safety, moderation, court, errors, and every
+ * finance/Maal/capital/ledger/demotion surface) a motion mode renders as the
+ * static rest frame, same box.
  *
  * `label` is the accessible name — pass a translated brand string (t('app.name'))
  * so the component stays locale-pure under the i18n lint.
@@ -27,11 +56,20 @@ import type { ReactNode } from 'react';
  * the two woven star halves. Keep them in sync with that canonical SVG (the
  * GATE test in animated-mark.test.tsx enforces it). The arms are Somali Blue
  * #0077cc — unified with the favicon/install identity per the 1 Aug ruling
- * (docs/brand-direction.md §6; the wider --x-accent sweep is part (b),
- * tracked separately).
+ * (docs/brand-direction.md §6).
  */
 
-export type AnimatedMarkMode = 'static' | 'assemble' | 'flap' | 'ceremony' | 'hero';
+export type AnimatedMarkMode =
+  | 'static'
+  | 'assemble'
+  | 'hero'
+  | 'idle'
+  | 'loading'
+  | 'flap'
+  | 'celebrate'
+  | 'celebrate-earned'
+  /** @deprecated legacy alias for `celebrate`. */
+  | 'ceremony';
 
 const VIEW_BOX = '437 119 540 540';
 
@@ -69,10 +107,27 @@ function FullSvg() {
   );
 }
 
+/** Mode → rig class. `loading` keeps the shipped loop's class untouched. */
+const MODE_CLASS: Record<Exclude<AnimatedMarkMode, 'ceremony' | 'celebrate-earned'>, string> = {
+  static: '',
+  assemble: 'xidig-animark--assemble',
+  hero: 'xidig-animark--hero',
+  idle: 'xidig-animark--idle',
+  loading: 'xidig-animark--flap',
+  flap: 'xidig-animark--flap1',
+  celebrate: 'xidig-animark--celebrate',
+};
+
+/** Modes the surface gate can veto. Entry rituals are not motion "events". */
+const GATEABLE = new Set(['idle', 'loading', 'flap', 'celebrate']);
+
 export function AnimatedMark({
   mode = 'static',
   size = 20,
   label,
+  surface,
+  earned = false,
+  interactive,
   className,
 }: {
   mode?: AnimatedMarkMode;
@@ -82,13 +137,39 @@ export function AnimatedMark({
    *  visible brand text (e.g. the nav wordmark): it renders decorative
    *  (aria-hidden) instead of an img with an empty name. */
   label?: string | undefined;
+  /** Where this mark lives. Surfaces in NO_MOTION_SURFACES render static. */
+  surface?: string | undefined;
+  /** Earned reveals only (Verified, Founding): adds the static-ringed
+   *  celebrate. The ring is a ::after pseudo-element — the mark's own paths
+   *  are never restyled. */
+  earned?: boolean;
+  /** Client-only DOM hooks for the skippable celebrate — see
+   *  components/brand/celebrate-mark.tsx. NEVER pass this from a server
+   *  component (handlers can't cross the RSC boundary); every other mount
+   *  omits it, which is what keeps the mark zero-JS. */
+  interactive?: {
+    onClick?: MouseEventHandler<HTMLSpanElement>;
+    onKeyDown?: KeyboardEventHandler<HTMLSpanElement>;
+    onAnimationEnd?: AnimationEventHandler<HTMLSpanElement>;
+    /** Set to 'button' when the mark itself is the skip affordance. */
+    role?: 'button';
+    tabIndex?: number;
+  };
   className?: string | undefined;
 }) {
-  const rootClass = ['xidig-animark', `xidig-animark--${mode}`, className]
-    .filter(Boolean)
-    .join(' ');
+  let resolved: Exclude<AnimatedMarkMode, 'ceremony' | 'celebrate-earned'> =
+    mode === 'ceremony' || mode === 'celebrate-earned' ? 'celebrate' : mode;
+  const ringed = earned || mode === 'celebrate-earned';
+  if (GATEABLE.has(resolved) && !motionAllowed(surface)) resolved = 'static';
+
+  const modeClass =
+    resolved === 'celebrate' && ringed
+      ? `${MODE_CLASS.celebrate} xidig-animark--earned`
+      : MODE_CLASS[resolved];
+  const rootClass = ['xidig-animark', modeClass, className].filter(Boolean).join(' ');
+
   let layers: ReactNode;
-  if (mode === 'assemble' || mode === 'hero') {
+  if (resolved === 'assemble' || resolved === 'hero') {
     layers = (
       <>
         <span className="xidig-animark__q xidig-animark__q--1" aria-hidden="true"><ArmsSvg /></span>
@@ -99,7 +180,7 @@ export function AnimatedMark({
         <span className="xidig-animark__star xidig-animark__star--l" aria-hidden="true"><StarLeftSvg /></span>
       </>
     );
-  } else if (mode === 'ceremony') {
+  } else if (resolved === 'celebrate') {
     layers = (
       <>
         <span className="xidig-animark__half xidig-animark__half--l" aria-hidden="true"><FullSvg /></span>
@@ -110,11 +191,19 @@ export function AnimatedMark({
     layers = <FullSvg />;
   }
   const named = typeof label === 'string' && label !== '';
+  const a11y = interactive?.role
+    ? { role: interactive.role, tabIndex: interactive.tabIndex ?? 0, 'aria-label': label }
+    : named
+      ? { role: 'img', 'aria-label': label }
+      : { 'aria-hidden': true };
   return (
     <span
       className={rootClass}
       style={{ width: size, height: size }}
-      {...(named ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
+      onClick={interactive?.onClick}
+      onKeyDown={interactive?.onKeyDown}
+      onAnimationEnd={interactive?.onAnimationEnd}
+      {...a11y}
     >
       {layers}
     </span>

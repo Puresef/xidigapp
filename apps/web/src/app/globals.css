@@ -2733,10 +2733,13 @@ fieldset.xidig-field > legend {
 }
 
 /* ============================================================================
- * AnimatedMark (mark-redesign spec §4) — the brand mark's three motions.
+ * AnimatedMark (mark-redesign spec §4) — the brand mark's entry rituals:
+ * assemble, hero, and the loading fold loop (.xidig-animark--flap, whose API
+ * name became "loading" in G3). The G3 motion states — idle, the one-shot
+ * flap receipt, and celebrate — ride the same rig in the block further down.
  * BASE STATE IS THE FINAL FRAME everywhere: with motion off (reduced-motion
- * pref or html[data-motion='off']) every layer sits assembled and whole.
- * Animations apply ONLY inside the double gate below.
+ * pref, html[data-motion='off'] or html[data-lite='1']) every layer sits
+ * assembled and whole. Animations apply ONLY inside the double gate below.
  * ========================================================================= */
 .xidig-animark {
   position: relative;
@@ -2839,12 +2842,6 @@ fieldset.xidig-field > legend {
     transform-origin: 50% 50%;
     animation: xidig-animark-flap 2.6s cubic-bezier(0.55, 0, 0.35, 1) infinite;
   }
-  html:not([data-motion='off']) .xidig-animark--ceremony .xidig-animark__half--l {
-    animation: xidig-animark-fold-l 0.9s cubic-bezier(0.55, 0, 0.35, 1) 1;
-  }
-  html:not([data-motion='off']) .xidig-animark--ceremony .xidig-animark__half--r {
-    animation: xidig-animark-fold-r 0.9s cubic-bezier(0.55, 0, 0.35, 1) 1;
-  }
 }
 
 @keyframes xidig-animark-q1 {
@@ -2927,27 +2924,248 @@ fieldset.xidig-field > legend {
     transform: rotateY(64deg) scaleX(0.32);
   }
 }
-@keyframes xidig-animark-fold-l {
-  0%,
-  100% {
-    transform: none;
-  }
-  35% {
-    transform: rotateY(62deg);
-  }
+/* ============================================================================
+ * Xidig mark motion — G1 direction approved 22 Aug 2026, G3 implementation
+ * (design project "Xidig Motion G3", file g3/xidig-animark-motion.css).
+ * CSS only on the rig above: no animation runtime (no Rive / Lottie / Figma),
+ * no new assets, no new DOM — celebrate's bloom and the earned trust ring are
+ * pseudo-elements, so the mark's paths are never restyled.
+ *
+ * States (API names in components/brand/animated-mark.tsx):
+ *   .xidig-animark--idle        12 s cycle · front-door hero + auth ONLY
+ *   .xidig-animark--flap1       260 ms one-shot receipt (API mode "flap")
+ *   .xidig-animark--celebrate   2.2 s once-ever milestone
+ *   .xidig-animark--earned      + trust ring, earned reveals only
+ * The shipped loading loop keeps its class (.xidig-animark--flap); its API
+ * name becomes "loading".
+ *
+ * Gates — every gated path resolves to the rest frame in the same box:
+ *   @media (prefers-reduced-motion: reduce)  → the rules below never apply
+ *   html[data-motion='off']                  → selector gate + hard kill
+ *   html[data-lite='1'] (Xawli yar)           → selector gate + hard kill
+ * Both attributes are server-rendered in app/layout.tsx, so the gate is
+ * decided before first paint — no boot script, no flash of motion.
+ * ========================================================================= */
+.xidig-animark--idle,
+.xidig-animark--flap1,
+.xidig-animark--celebrate {
+  perspective: 640px;
+  /* Locked ceilings: flap <= 300ms, celebrate <= 2500ms. */
+  --x-motion-flap: 260ms;
+  --x-motion-celebrate: 2200ms;
+  --x-motion-idle-cycle: 12s;
+  --x-motion-fold: cubic-bezier(0.55, 0, 0.35, 1); /* the shipped fold curve */
 }
-@keyframes xidig-animark-fold-r {
-  0%,
-  100% {
-    transform: none;
+
+/* Celebrate light: accent bloom BEHIND the mark — never tints the paths. */
+.xidig-animark--celebrate::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 170%;
+  height: 170%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.5);
+  background: radial-gradient(circle, rgba(0, 119, 204, 0.3) 0%, rgba(0, 119, 204, 0) 62%);
+}
+
+/* Earned reveals ONLY (Verified, Founding): the trust ring sits AROUND the
+   mark as a bordered pseudo-element — the mark itself never wears orange. */
+.xidig-animark--celebrate.xidig-animark--earned::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 134%;
+  height: 134%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.72);
+  border: 2px solid var(--x-trust);
+}
+
+/* Motion applies ONLY inside the gates. Longhands on purpose: they keep
+   animation-name introspectable for the acceptance tests. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion='off']):not([data-lite='1']) .xidig-animark--idle > svg {
+    transform-origin: 50% 50%;
+    animation-name: xidig-animark-idle;
+    animation-duration: var(--x-motion-idle-cycle);
+    animation-timing-function: var(--x-motion-fold);
+    animation-iteration-count: infinite;
   }
-  35% {
-    transform: rotateY(-62deg);
+  html:not([data-motion='off']):not([data-lite='1']) .xidig-animark--flap1 > svg {
+    transform-origin: 50% 50%;
+    animation-name: xidig-animark-flap1;
+    animation-duration: var(--x-motion-flap);
+    animation-timing-function: var(--x-motion-fold);
+    animation-iteration-count: 1;
+    animation-fill-mode: both;
+  }
+  html:not([data-motion='off']):not([data-lite='1']) .xidig-animark--celebrate {
+    animation-name: xidig-animark-cel-lift;
+    animation-duration: var(--x-motion-celebrate);
+    animation-timing-function: var(--x-motion-fold);
+    animation-iteration-count: 1;
+    animation-fill-mode: both;
+  }
+  html:not([data-motion='off']):not([data-lite='1'])
+    .xidig-animark--celebrate
+    .xidig-animark__half--l {
+    animation-name: xidig-animark-cel-fold-l;
+    animation-duration: var(--x-motion-celebrate);
+    animation-timing-function: var(--x-motion-fold);
+    animation-iteration-count: 1;
+    animation-fill-mode: both;
+  }
+  html:not([data-motion='off']):not([data-lite='1'])
+    .xidig-animark--celebrate
+    .xidig-animark__half--r {
+    animation-name: xidig-animark-cel-fold-r;
+    animation-duration: var(--x-motion-celebrate);
+    animation-timing-function: var(--x-motion-fold);
+    animation-iteration-count: 1;
+    animation-fill-mode: both;
+  }
+  html:not([data-motion='off']):not([data-lite='1']) .xidig-animark--celebrate::before {
+    animation-name: xidig-animark-cel-glow;
+    animation-duration: var(--x-motion-celebrate);
+    animation-timing-function: var(--x-motion-fold);
+    animation-iteration-count: 1;
+    animation-fill-mode: both;
+  }
+  html:not([data-motion='off']):not([data-lite='1'])
+    .xidig-animark--celebrate.xidig-animark--earned::after {
+    animation-name: xidig-animark-cel-ring;
+    animation-duration: var(--x-motion-celebrate);
+    animation-timing-function: var(--x-motion-fold);
+    animation-iteration-count: 1;
+    animation-fill-mode: both;
   }
 }
 
-/* Mount alignment: nav brand slot, the signin entry ritual, the flap while
-   authenticating, and inline ceremony/flap marks beside text. */
+/* Hard kill — belt over the selector gate. Also covers the shipped assemble /
+   hero / loading rules above, which only gate on data-motion. */
+html[data-motion='off'] .xidig-animark,
+html[data-motion='off'] .xidig-animark *,
+html[data-motion='off'] .xidig-animark::before,
+html[data-motion='off'] .xidig-animark::after,
+html[data-lite='1'] .xidig-animark,
+html[data-lite='1'] .xidig-animark *,
+html[data-lite='1'] .xidig-animark::before,
+html[data-lite='1'] .xidig-animark::after {
+  animation: none !important;
+}
+
+/* Rest frame = frame 0 = frame 100% on every state: the static fallback and
+   the landing frame are the same picture, in the same box. */
+@keyframes xidig-animark-idle {
+  0% {
+    transform: none;
+  }
+  5.5% {
+    transform: rotateY(22deg);
+  }
+  10%,
+  100% {
+    transform: none;
+  }
+}
+@keyframes xidig-animark-flap1 {
+  0% {
+    transform: none;
+  }
+  40% {
+    transform: rotateY(56deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes xidig-animark-cel-fold-l {
+  0% {
+    transform: rotateY(0deg);
+  }
+  18% {
+    transform: rotateY(66deg);
+  }
+  40%,
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+@keyframes xidig-animark-cel-fold-r {
+  0% {
+    transform: rotateY(0deg);
+  }
+  18% {
+    transform: rotateY(-66deg);
+  }
+  40%,
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+@keyframes xidig-animark-cel-lift {
+  0% {
+    transform: scale(1);
+  }
+  18% {
+    transform: scale(0.985);
+  }
+  42% {
+    transform: scale(1.055);
+  }
+  70%,
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes xidig-animark-cel-glow {
+  0%,
+  28% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  48% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  72% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+}
+@keyframes xidig-animark-cel-ring {
+  0%,
+  42% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.72);
+  }
+  56% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  84% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.07);
+  }
+}
+
+/* Mount alignment: nav brand slot, the signin entry ritual, the loading loop
+   while authenticating, and inline celebrate/flap marks beside text. */
 .xidig-brand__mark {
   margin-right: 0.45rem;
 }

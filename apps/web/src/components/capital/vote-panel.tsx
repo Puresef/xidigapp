@@ -112,10 +112,15 @@ export function VotePanel({
         </div>
       ) : null}
       <p className="xidig-card__meta">
+        {/* Finance surface: the G3 motion doctrine locks Maal/capital marks
+            to the static rest frame — provenance is shown by a static trust
+            ring on the card, never by an animated mark. `surface="capital"`
+            makes the policy, not this call site, enforce that. */}
         {celebrated > 0 ? (
           <AnimatedMark
             key={celebrated}
-            mode="ceremony"
+            mode="celebrate"
+            surface="capital"
             size={22}
             className="xidig-celebrate-inline"
           />

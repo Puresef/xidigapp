@@ -683,6 +683,7 @@ export const so = {
     one: 'Menu-ga akoonka, {count} fariin aan la akhriyin',
     other: 'Menu-ga akoonka, {count} fariimo aan la akhriyin',
   },
+  'a11y.skipCelebration': 'Ka bood dabaaldegga',
   'a11y.moveUp': 'Kor u qaad',
   'a11y.moveDown': 'Hoos u dhig',
 

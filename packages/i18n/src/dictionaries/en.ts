@@ -831,6 +831,7 @@ export const en = {
     one: 'Account menu, {count} unread message',
     other: 'Account menu, {count} unread messages',
   },
+  'a11y.skipCelebration': 'Skip celebration',
   'a11y.moveUp': 'Move up',
   'a11y.moveDown': 'Move down',
 

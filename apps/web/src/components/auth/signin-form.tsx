@@ -248,7 +248,7 @@ export function SignInForm({ initialMethod, next }: { initialMethod: SignInMetho
             button + hidden status text carry the state. */}
         {pending ? (
           <p className="xidig-auth__pending" role="status">
-            <AnimatedMark mode="flap" size={26} />
+            <AnimatedMark mode="loading" size={26} />
             <span className="xidig-visually-hidden">{t('state.loading')}</span>
           </p>
         ) : null}

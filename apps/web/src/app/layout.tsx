@@ -127,6 +127,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const motion = parseMotion(cookieStore.get(MOTION_COOKIE)?.value);
   const lite = await getLitePrefs();
   const motionOff = motion === 'off' || !lite.animations;
+  // html[data-lite='1'] is the Xawli yar gate for the brand-mark motion rig
+  // (G3 motion doctrine, globals.css .xidig-animark--*): with Lite active in
+  // ANY category the mark holds its rest frame, even if the member kept the
+  // `animations` switch on. Lite is restraint, not a per-category budget —
+  // and server-rendering the attribute means the gate is decided before first
+  // paint, so no boot script and no flash of motion.
+  const liteActive = isLiteActive(lite);
 
   const viewer = await getHeaderViewer();
 
@@ -180,6 +187,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       data-textsize={textSize}
       {...(theme !== 'system' ? { 'data-theme': theme } : {})}
       {...(motionOff ? { 'data-motion': 'off' } : {})}
+      {...(liteActive ? { 'data-lite': '1' } : {})}
     >
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
@@ -195,7 +203,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           {children}
           <LiteAutoPrompt
             signedIn={viewer.signedIn}
-            liteActive={isLiteActive(lite)}
+            liteActive={liteActive}
             regionSuggestsLite={geoSuggestsLite}
           />
           <SiteFooter />
