@@ -149,7 +149,8 @@ describe('the rail card (10b) — the arrangement in the owner’s order', () =>
     expect(row('spaces')?.textContent).toContain('Warshadaha aan doortay');
     // The rail keeps the short skills label; 320px has no room for the sheet's.
     expect(row('skills')?.querySelector('.xidig-amanager__label')?.textContent).toBe('Xirfadaha');
-    expect(document.querySelector('.xidig-amanager__title')?.textContent).toBe('Qaybaha bogga');
+    // Naming review 23 Aug: controls on your own hub say Aniga, never "bogga".
+    expect(document.querySelector('.xidig-amanager__title')?.textContent).toBe('Qaybaha Aniga');
     expect(document.querySelector('.xidig-amanager__hint')?.textContent).toBe('Jiid · dami');
   });
 

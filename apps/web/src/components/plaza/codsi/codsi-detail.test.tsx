@@ -317,7 +317,8 @@ describe('CodsiDetails', () => {
 describe('GuulPrompt — dismissible, never auto-posted', () => {
   it('offers Qor Guul as a link into the composer, plus a decline', () => {
     const html = render(createElement(GuulPrompt, { postId: 'p1' }));
-    expect(html).toContain('Make it a Guul?');
+    // Naming review 23 Aug: the English set says Win, not Guul.
+    expect(html).toContain('Make it a Win?');
     expect(html).toContain('You write it');
     expect(html).toContain('/plaza?compose=1');
     expect(html).toContain('No, thanks');

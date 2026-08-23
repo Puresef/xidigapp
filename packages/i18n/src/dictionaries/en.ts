@@ -150,7 +150,7 @@ export const en = {
   'state.emptyFeed': 'Be the first to post — the Plaza is open.',
   'state.comingSoon': 'Coming soon',
   'state.comingSoonBody':
-    'This part of Xidig opens in a later phase. The Suuq is live now — find builders and businesses.',
+    'This part of Xidig opens in a later phase. The Directory is live now — find builders and businesses.',
   'state.endOfList': 'That’s everything.',
   'state.errorTitle': 'Something went wrong',
 
@@ -399,7 +399,7 @@ export const en = {
   'mentor.hoursLabel': 'Hours',
   'mentor.hostLabel': 'Host',
   'mentor.bookCta': 'Book a slot',
-  'mentor.freeNote': 'Free — the Warshad hosts. {minutes} minutes each.',
+  'mentor.freeNote': 'Free — the Lab hosts. {minutes} minutes each.',
   'mentor.slotsTitle': 'Pick a time',
   'mentor.noSlots': 'No open slots right now.',
   'mentor.yourBooking': 'Your booking: {when}',
@@ -918,9 +918,9 @@ export const en = {
   // Aniga v3 Badge Canon (ruling 10). Garab rides one definition with the
   // threshold as a param — ×5/×25/×100 are the same badge, never a ladder.
   // Tooltips carry the full earning criterion the short chip label cannot.
-  'profile.badgeGarabMilestone': 'Garab ×{count}',
+  'profile.badgeGarabMilestone': 'Co-sign ×{count}',
   'profile.badgeGarabTooltip':
-    '{count} verified thanks, given by the askers whose Codsiyo this member resolved. It cannot be bought and cannot be removed.',
+    '{count} verified thanks, given by the askers whose Asks this member resolved. It cannot be bought and cannot be removed.',
   'profile.badgeTopHelperTooltip':
     'Last month’s most-verified helper. Chosen by member vote — one vote per member.',
   'profile.badgeFoundingMemberTooltip': 'One of the first 500 members who built this community.',
@@ -1164,9 +1164,9 @@ export const en = {
   'plaza.fulfilledByAfter': '{helper} helped — solved after {duration}.',
   'plaza.fulfilledAfter': 'Solved after {duration}.',
   'plaza.durationDays': { one: '{count} day', other: '{count} days' },
-  'plaza.guulPromptTitle': 'Make it a Guul?',
+  'plaza.guulPromptTitle': 'Make it a Win?',
   'plaza.guulPromptBody': 'Share the story on the Plaza so others learn what worked. You write it.',
-  'plaza.guulPromptCta': 'Write the Guul',
+  'plaza.guulPromptCta': 'Write the Win',
   'plaza.guulPromptDismiss': 'No, thanks',
   'plaza.guulPromptClose': 'Dismiss this suggestion',
   'plaza.garabHelperNote': 'You stood with them. The count shows only after you take part.',
@@ -1185,7 +1185,7 @@ export const en = {
   'plaza.commentPlaceholder': 'Write a reply…',
   'plaza.reportCodsi': 'Report this ask',
   'plaza.threadPublicNote':
-    'The help conversation happens in Fariimo. What’s written here is public — the whole community sees it.',
+    'The help conversation happens in Messages. What’s written here is public — the whole community sees it.',
   'plaza.pollClosed': 'Poll closed',
   'plaza.pollClosesIn': 'Closes {when}',
   'plaza.commentsCount': { one: '{count} comment', other: '{count} comments' },
@@ -1647,7 +1647,7 @@ export const en = {
   'search.seeMore': 'See more',
   'search.signInForMore': 'Sign in to search posts and member-only Spaces.',
   'search.teachBody':
-    'One box for the whole community: find people by any spelling (Maxamed or Mohamed), businesses by name or what they do, Spaces to join, and Madal posts.',
+    'One box for the whole community: find people by any spelling (Maxamed or Mohamed), businesses by name or what they do, Spaces to join, and Plaza posts.',
   'search.teachExample': 'Try a name, a trade, or a topic — “Maxamed”, “tailor”, “halal export”.',
   // Search polish (extras item 3): entity tabs, transparent sort labels,
   // per-tab teaching empty states.
@@ -2129,7 +2129,7 @@ export const en = {
   'events.tabPast': 'Past',
   'events.tabMine': 'Mine',
   'events.createAria': 'New event',
-  'events.hostLineLab': 'Host: {name} · Warshad',
+  'events.hostLineLab': 'Host: {name} · Lab',
   'events.hostLineMember': 'Host: {name}',
   // Card meta line stand-in when an online event has no venue name (9a).
   'events.venueOnline': 'Online',
@@ -2157,8 +2157,8 @@ export const en = {
   'events.cancelReleaseNote': 'Backing out is one tap — your seat frees up for someone else.',
   'events.hostCardTitle': 'Host',
   'events.hostPastEventsLab': {
-    one: 'Warshad · {count} past event',
-    other: 'Warshad · {count} past events',
+    one: 'Lab · {count} past event',
+    other: 'Lab · {count} past events',
   },
   'events.hostPastEventsMember': {
     one: '{count} past event',
@@ -2167,8 +2167,8 @@ export const en = {
   'events.reportEvent': 'Report this event',
   'events.emptyTitle': 'No upcoming events',
   'events.emptyBody':
-    "Events are born in Warshads, the Suuq, and community posts — that's where they'll appear for you.",
-  'events.emptyCtaLabs': 'Browse Warshads',
+    "Events are born in Labs, the Directory, and community posts — that's where they'll appear for you.",
+  'events.emptyCtaLabs': 'Browse Labs',
   'events.emptyCtaCreate': 'Create an event',
   'events.offlineStale': 'No internet. This list is from {age}.',
   'events.queuedRsvp': 'RSVP — waiting',
@@ -2303,7 +2303,7 @@ export const en = {
   'profile.moduleSpaces': 'Chosen Spaces',
   'profile.moduleSpacesOwn': 'Spaces I chose',
   'profile.moduleHelper': 'Help given',
-  'profile.moduleSuuq': 'Suuq listing',
+  'profile.moduleSuuq': 'Directory listing',
   'profile.moduleMetrics': 'Metrics',
 
   // Header chrome — fixed above the modules (cover, avatar, name, headline).
@@ -2372,7 +2372,7 @@ export const en = {
   'profile.linksVisitorNote':
     '{site} is verified: the page links back to this profile. The other links are not verified.',
   'profile.linksVisitorNoteLong':
-    'The {site} check came from a verified link-back — tier three of the Xaqiiq ladder.',
+    'The {site} check came from a verified link-back — tier three of the Verified ladder.',
   'profile.linkVerifiedTitle': 'Verified',
   'profile.linkPending': 'Waiting',
   'profile.linkAddVerification': 'Add a link-back check so the chip earns its badge.',
@@ -2431,10 +2431,10 @@ export const en = {
   'profile.spacesEmptyOwn': 'You haven’t chosen any Spaces yet. You can pin up to 3.',
   'profile.testimonialTitle': 'Member testimonial',
   'profile.testimonialBy': '{name} · verified customer',
-  'profile.openSuuqListing': 'Open the Suuq listing',
-  'profile.addSuuqListing': 'Add a Suuq listing',
+  'profile.openSuuqListing': 'Open the Directory listing',
+  'profile.addSuuqListing': 'Add a Directory listing',
   'profile.suuqEmptyOwn':
-    'You don’t have a Suuq listing yet. If you run a business, add it so people can find you.',
+    'You don’t have a Directory listing yet. If you run a business, add it so people can find you.',
 
   // Mutuals — computed from shared Spaces only, never a contacts upload.
   'profile.mutuals': 'You both know: {names}',
@@ -2461,7 +2461,7 @@ export const en = {
   'profile.reportAction': 'Report',
 
   // Module manager — mobile sheet (10e) and desktop rail card (10b).
-  'profile.managerTitle': 'Page sections',
+  'profile.managerTitle': 'Profile sections',
   'profile.managerOpen': 'Arrange sections',
   'profile.managerSubtitle': 'Drag · switch off',
   'profile.managerDragHint': 'Drag to reorder',
@@ -2543,7 +2543,7 @@ export const en = {
   // Maal index, not the candidate board — marketing.capitalTeaser* stayed with the
   // board at /capital/candidates, where it is still true. No invest language here
   // either: this describes work organisations, and Xidig moves no money.
-  'maal.teaserTitle': 'Maal — work organisations you can join',
+  'maal.teaserTitle': 'Capital — work organisations you can join',
   'maal.teaserBody':
     'Labs and ventures in one place: a stated purpose, workstreams with named owners, a decision log, and an open contribution ledger. Stage is earned by work, never awarded — and no money moves through Xidig.',
   'maal.newLab': 'New Lab',

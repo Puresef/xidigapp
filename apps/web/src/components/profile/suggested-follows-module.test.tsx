@@ -77,7 +77,8 @@ function faysal(overrides: Record<string, unknown> = {}) {
   };
 }
 
-const PRIVACY = 'Kaliya xogtaada bogga ayaa la isticmaalay — sabab kasta waa la muujiyaa.';
+// Naming review 23 Aug: the Somali set says profile-ka, not a third word (bogga).
+const PRIVACY = 'Kaliya xogtaada profile-ka ayaa la isticmaalay — sabab kasta waa la muujiyaa.';
 
 describe('SuggestedFollows module variant (frame 9c "Kula talin")', () => {
   it('renders the module title, one person with reasons, and the privacy note', async () => {

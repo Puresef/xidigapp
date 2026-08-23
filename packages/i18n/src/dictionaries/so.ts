@@ -119,7 +119,7 @@ export const so = {
   'action.comment': 'Faallee',
   'action.edit': 'Wax ka beddel',
   'action.delete': 'Tirtir',
-  'action.editProfile': 'Wax ka beddel bogga',
+  'action.editProfile': 'Wax ka beddel Aniga',
   'action.share': 'Wadaag',
   'action.copyLink': 'Koobiyee linkiga',
   'action.linkCopied': 'Linkiga waa la koobiyeeyay.',
@@ -210,7 +210,7 @@ export const so = {
   'error.handleInvalid':
     'Magacyadu waxay isticmaalaan 3–30 xaraf oo yaryar, tiro, ama hoos-xariiq — sida maxamed_a.',
   'error.profileIncomplete':
-    'Marka hore dhammaystir boggaaga — waxay qaadanaysaa 2 daqiiqo oo keliya.',
+    'Marka hore dhammaystir profile-kaaga — waxay qaadanaysaa 2 daqiiqo oo keliya.',
   'error.duplicateListing':
     'Liis magacan leh oo kuu dhow ayaa hore u jiray. Ma ganacsigaagaa? Halkan ka sheeg inuu kaaga tahay.',
   'error.listingLimit':
@@ -249,7 +249,7 @@ export const so = {
     'Qoraalkan wax lagama beddeli karo maxaa yeelay waa la saaray. La xiriir kooxda taageerada haddii aad u malaynayso inay khalad tahay.',
 
   // Onboarding — first-session checklist (PRD §20)
-  'onboarding.completeProfile': 'Dhammaystir boggaaga',
+  'onboarding.completeProfile': 'Dhammaystir Aniga',
   'onboarding.pickLanes': 'Dooro waddooyinkaaga',
   'onboarding.followThree': 'Raac 3 dhise',
   'onboarding.firstPost': 'Qor qoraalkaaga ugu horreeya',
@@ -283,19 +283,19 @@ export const so = {
   'matching.suggestModuleTitle': 'Kula talin',
   'matching.reasonsPrefix': 'Sababta:',
   'matching.privacyNote':
-    'Kaliya xogtaada bogga ayaa la isticmaalay — sabab kasta waa la muujiyaa.',
+    'Kaliya xogtaada profile-ka ayaa la isticmaalay — sabab kasta waa la muujiyaa.',
 
   // Community Awards (PRD §20)
   'awards.title': 'Abaalmarinta Bulshada',
   'awards.subtitle': 'U codee kuwa ugu fiican rubucaan. Hal cod qeyb kasta — {quarter}.',
   'awards.emptyTitle': 'Wax abaalmarin ah oo furan ma jiraan hadda',
   'awards.emptyBody':
-    'Abaalmarinta Bulshada waxay socotaa rubuc kasta. Marka codaynta la furo, waxaad dooran doontaa Lab-ka ugu fiican, Guusha ugu weyn, iyo xubnaha ugu caawiyay. Dib u soo eeg.',
-  'awards.categoryBestLab': 'Lab-ka Ugu Fiican',
+    'Abaalmarinta Bulshada waxay socotaa rubuc kasta. Marka codaynta la furo, waxaad dooran doontaa Warshadda ugu fiican, Guusha ugu weyn, iyo xubnaha ugu caawiyay. Dib u soo eeg.',
+  'awards.categoryBestLab': 'Warshadda Ugu Fiican',
   'awards.categoryBestWin': 'Guusha Ugu Fiican',
   'awards.categoryMostHelpful': 'Kan Ugu Caawiya',
   'awards.categoryRisingBuilder': 'Dhisaha Soo Kacaya',
-  'awards.descBestLab': 'Lab-ka ugu badan wax soo saaray oo dhiirrigeliyay rubucaan.',
+  'awards.descBestLab': 'Warshadda ugu badan wax soo saartay oo dhiirrigelisay rubucaan.',
   'awards.descBestWin': 'Guusha horay u qaadday bulshada.',
   'awards.descMostHelpful': 'Xubinta ugu caawisay dadka kale.',
   'awards.descRisingBuilder': 'Dhisaha cusub ee horumar dhab ah sameeya.',
@@ -304,7 +304,7 @@ export const so = {
   'awards.castVote': 'Cod dir',
   'awards.yourVote': 'Codkaaga',
   'awards.noTargets':
-    'Wali waxba lagu codeeyo ma jiraan — raac xubno ama baadh Labs iyo Guulo marka hore.',
+    'Wali waxba lagu codeeyo ma jiraan — raac xubno ama baadh Warshado iyo Guulo marka hore.',
   'awards.resultTitle': '{category} — {period}: {name}',
   'awards.evidenceMostHelpful': {
     one: '{count} Codsi oo la xaliyay · qoraaga codsiga ayaa xaqiijiyay',
@@ -479,8 +479,8 @@ export const so = {
   'settings.dmPrivacyVerified': 'Xubnaha la xaqiijiyay oo keliya',
   'settings.dmPrivacyNone': 'Cidna',
   'settings.discoverableDirectory': 'Igu muuji buugga xubnaha',
-  'settings.discoverableSearchEngines': 'U oggolow mishiinada raadinta inay helaan boggayga',
-  'settings.locationGranularityLabel': 'Goobta lagu muujiyo boggaaga',
+  'settings.discoverableSearchEngines': 'U oggolow mishiinada raadinta inay helaan profile-kayga',
+  'settings.locationGranularityLabel': 'Goobta lagu muujiyo profile-kaaga',
   'settings.locationGranularityHint': 'Dooro sida saxda ah ee goobtaadu ugu muuqato dadka kale.',
   'settings.locationExact': 'Goobta saxda ah',
   'settings.locationCity': 'Magaalada oo keliya',
@@ -493,7 +493,7 @@ export const so = {
   'settings.unblock': 'Fur xannibaadda',
   'settings.mutedTitle': 'La aamusiyay',
   'settings.mutedIntro':
-    'Dadka iyo summadaha la aamusiyay kama muuqdaan bogaggaaga — lamana ogeysiiyo.',
+    'Dadka iyo summadaha la aamusiyay kama muuqdaan profile-kaaga — lamana ogeysiiyo.',
   'settings.reportInfoTitle': 'Warbixin-gudbinta',
   'settings.reportInfoBody':
     'Waxaad ka warbixin kartaa qoraal, fariin, ama xubin kasta. Kuwani waa sababaha ay kormeeruhu ku shaqeeyaan:',
@@ -578,7 +578,7 @@ export const so = {
   'settings.liteMoreLink': 'Xakamayn dheeraad ah: Xogta & Xawli yar',
   'settings.exportTitle': 'Soo dejiso xogtaada',
   'settings.exportBody':
-    'Soo dejiso nuqul ka mid ah boggaaga, qoraaladaada, faallooyinkaaga, suuqyadaada, kaydkaaga, iyo qoraalada aan dhammayn — hal fayl.',
+    'Soo dejiso nuqul ka mid ah profile-kaaga, qoraaladaada, faallooyinkaaga, suuqyadaada, kaydkaaga, iyo qoraalada aan dhammayn — hal fayl.',
   'settings.exportButton': 'Soo dejiso xogtayda',
   'settings.exportDone': 'Xogtaadu way soo degaysaa.',
   'settings.accountStatusTitle': 'Hakii ama tirtir akoonka',
@@ -586,14 +586,14 @@ export const so = {
     'Hakintu way qarisaa wax walba ilaa aad dib u gasho. Tirtiriddu waa mid rasmi ah 30 maalmood kadib.',
   // SO needs native review
   'settings.accountStatusHelp':
-    'Hakintu waxay qarisaa boggaaga iyo nuxurkaaga ilaa aad dib u gasho — waxba lama tirtiro. Codsashada tirtiridda waxay bilawdaa muddo 30 maalmood ah oo aad joojin karto waqti kasta; kadib akoonkaaga si joogto ah ayaa loo tirtiraa.',
+    'Hakintu waxay qarisaa profile-kaaga iyo nuxurkaaga ilaa aad dib u gasho — waxba lama tirtiro. Codsashada tirtiridda waxay bilawdaa muddo 30 maalmood ah oo aad joojin karto waqti kasta; kadib akoonkaaga si joogto ah ayaa loo tirtiraa.',
   'settings.accountStatusLink': 'Aad dejinta akoonka',
   // Phase 6 (§19) xakamaynta akoonka iskaa ah.
   // SO needs native review
   'settings.accountStatusSectionTitle': 'Xaaladda akoonka',
   'settings.deactivateButton': 'Haki akoonka',
   'settings.deactivateConfirm':
-    'Ma hakinaysaa akoonkaaga? Boggaaga iyo nuxurkaaga waa la qarinayaa ilaa aad dib u gasho. Waxba lama tirtiro.',
+    'Ma hakinaysaa akoonkaaga? Profile-kaaga iyo nuxurkaaga waa la qarinayaa ilaa aad dib u gasho. Waxba lama tirtiro.',
   'settings.requestDeletionButton': 'Codso tirtirid',
   'settings.cancelDeletionButton': 'Jooji tirtiridda',
   'settings.requestDeletionConfirm':
@@ -718,7 +718,7 @@ export const so = {
   'profile.displayNameLabel': 'Magaca',
   'profile.handleLabel': 'Magaca gaarka (handle)',
   'profile.handleHint':
-    'Xarfo yaryar, tiro, ama hoos-xariiq — 3 ilaa 30. Boggaagu wuxuu noqonayaa /u/magacaaga.',
+    'Xarfo yaryar, tiro, ama hoos-xariiq — 3 ilaa 30. Profile-kaagu wuxuu noqonayaa /u/magacaaga.',
   'profile.bioLabel': 'Ku saabsan',
   'profile.cityLabel': 'Magaalada',
   'profile.countryLabel': 'Dalka',
@@ -745,7 +745,7 @@ export const so = {
   'profile.contactWhatsappLabel': 'Lambarka WhatsApp',
   'profile.contactEmailLabel': 'Emailka xiriirka',
   'profile.contactWebsiteLabel': 'Websaydhka',
-  'profile.saved': 'Bogga waa la kaydiyay.',
+  'profile.saved': 'Profile-ka waa la kaydiyay.',
   'profile.followersCount': { one: '{count} raace', other: '{count} raacayaal' },
   'profile.vouchesCount': { one: '{count} dammaanad', other: '{count} dammaanad' },
   'profile.memberSince': 'Xubin ilaa {date}',
@@ -775,7 +775,7 @@ export const so = {
   'profile.verifStatusCommunity': 'Bulsho la xaqiijiyay',
   'profile.verifStatusIdentity': 'Aqoonsi la xaqiijiyay',
   'profile.joinCta': 'Ku biir Xidig si aad ula xiriirto {name}',
-  'profile.notSetUp': 'Weli boggaaga ma aadan dejin — waxay qaadanaysaa 2 daqiiqo oo keliya.',
+  'profile.notSetUp': 'Weli profile-kaaga ma aadan dejin — waxay qaadanaysaa 2 daqiiqo oo keliya.',
   // Phase 4.5 — media identity, open-to, pins, completion meter, suggested follows
   'profile.avatarLabel': 'Sawirka profile-ka',
   'profile.avatarUpdated': 'Sawirka waa la beddelay.',
@@ -1127,13 +1127,13 @@ export const so = {
 
   // --- Capital / Maal (§27 Capital block) ---
   'error.reviewerConflict':
-    'Waxaad xubin ka tahay Warshaddan, sidaas darteed ma eegi kartid Musharraxeeda. Taasi waa in dib-u-eegistu caddaalad ahaato.',
+    'Waxaad xubin ka tahay Warshaddan, sidaas darteed ma eegi kartid Musharaxeeda. Taasi waa in dib-u-eegistu caddaalad ahaato.',
   'error.candidateNotVisible':
-    'Musharraxan waxaa loo dejiyay dib-u-eegayaasha kaliya. Weydiiso hoggaamiyaha Warshadda si aad u gasho.',
+    'Musharaxan waxaa loo dejiyay dib-u-eegayaasha kaliya. Weydiiso hoggaamiyaha Warshadda si aad u gasho.',
   'error.notAReviewer': 'Kaliya dib-u-eegayaasha ayaa tan samayn kara.',
   'error.candidateNotSubmittable':
-    'Musharraxan lama gudbin karo hadda. Kaliya qabyo ayaa dib-u-eegis loo diri karaa.',
-  'error.voteClosed': 'Codbixinta Musharraxan waa xiran tahay.',
+    'Musharaxan lama gudbin karo hadda. Kaliya qabyo ayaa dib-u-eegis loo diri karaa.',
+  'error.voteClosed': 'Codbixinta Musharaxan waa xiran tahay.',
 
   // Habmaamul / akoon (§27 / §19) — SO waxaa loo baahan yahay dib-u-eegis afka hooyo
   'error.contentRemoved':
@@ -1541,7 +1541,7 @@ export const so = {
   'social.postOptions': 'Doorashooyinka qoraalka',
   'social.muteUser': 'Aamusi {name}',
   'social.muteTag': 'Aamusi #{tag}',
-  'social.mutedNotice': 'Waa la aamusiyay. Kuma arki doontid boggaaga. Ka fur Dejinta → Sirta.',
+  'social.mutedNotice': 'Waa la aamusiyay. Kuma arki doontid profile-kaaga. Ka fur Dejinta → Sirta.',
   'social.mutedListTitle': 'Aamusan',
   'social.mutedEmpty': 'Weli waxba ma aamusin.',
   'social.mutedTypeUser': 'Xubin',
@@ -1575,7 +1575,7 @@ export const so = {
   'search.sortNewest': 'Kuwa ugu cusub marka hore',
   'search.sortActivity': 'Dhaqdhaqaaqii u dambeeyay marka hore',
   'search.emptyPeople':
-    'Qof lama helin. Natiijada dadku waa bogagga xubnaha — isku day higgaad kasta oo magac (Maxamed, Mohamed) ama handle.',
+    'Qof lama helin. Natiijada dadku waa profile-yada xubnaha — isku day higgaad kasta oo magac (Maxamed, Mohamed) ama handle.',
   'search.emptyPeopleCta': 'Fiiri Suuqa',
   'search.emptyBusinesses':
     'Ganacsi lama helin. Ganacsiyadu waa liisaska xubnuhu ku hayaan Suuqa — dukaammo, adeegyo iyo xirfado.',
@@ -1600,14 +1600,14 @@ export const so = {
   'capital.indexTitle': 'Maal',
   'capital.indexSubtitle': 'Mashaariicda bulshadu dhistayso oo taageerayso.',
   'capital.labsEntryLink': 'Fiiri Maalka',
-  // Magaca guddiga musharrixiinta. /capital hadda waa tusmada Maalka (D1),
+  // Magaca guddiga musharaxiinta. /capital hadda waa tusmada Maalka (D1),
   // sidaas darteed guddigu wuxuu u guuray /capital/candidates.
-  'capital.candidatesTitle': 'Musharrixiinta Maalka',
+  'capital.candidatesTitle': 'Musharaxiinta Maalka',
   'capital.filterAll': 'Dhammaan',
   'capital.fromLab': 'Ka timid',
-  'capital.emptyTitle': 'Weli ma jiraan Musharrixiin',
+  'capital.emptyTitle': 'Weli ma jiraan Musharaxiin',
   'capital.emptyBody':
-    'Musharraxu waa mashruuc Warshad soo bandhigtay si loo taageero. Marka Warshadaha ay soo gudbiyaan, halkan ayay ka muuqan doonaan.',
+    'Musharaxu waa mashruuc Warshad soo bandhigtay si loo taageero. Marka Warshadaha ay soo gudbiyaan, halkan ayay ka muuqan doonaan.',
   'capital.emptyLabsLink': 'Fiiri Warshadaha',
   // Status badges
   'capital.statusDraft': 'Qabyo',
@@ -1617,7 +1617,7 @@ export const so = {
   'capital.statusParked': 'La dhigay',
   'capital.statusDeclined': 'La diiday',
   // Editor / pitch fields
-  'capital.editTitle': 'Wax ka beddel Musharraxa',
+  'capital.editTitle': 'Wax ka beddel Musharaxa',
   'capital.editSubtitle': 'Buuxi bandhigga, ka dibna u gudbi dib-u-eegis.',
   'capital.editorSaved': 'La kaydiyay.',
   'capital.fieldName': 'Magaca',
@@ -1632,7 +1632,7 @@ export const so = {
   'capital.uploading': 'Waa la soo shubayaa…',
   'capital.reviewersOnlyLabel': 'Dib-u-eegayaasha oo keliya',
   'capital.reviewersOnlyHint':
-    'Ka qari Musharraxan xubnaha ilaa la go’aamiyo; kaliya dib-u-eegayaasha iyo Warshaddaadu way arki karaan.',
+    'Ka qari Musharaxan xubnaha ilaa la go’aamiyo; kaliya dib-u-eegayaasha iyo Warshaddaadu way arki karaan.',
   'capital.submitCta': 'U gudbi dib-u-eegis',
   'capital.submitHint':
     'Gudbintu waxay furaysaa cod Taageere 7-maalmood ah, waxayna u dirtaa dib-u-eegayaasha.',
@@ -1648,7 +1648,7 @@ export const so = {
   'capital.reviewSubmit': 'Kaydi dib-u-eegista',
   'capital.reviewSaved': 'Dib-u-eegista waa la kaydiyay.',
   'capital.reviewerConflictNotice':
-    'Waxaad xubin ka tahay Warshaddan, sidaas darteed ma dib-u-eegi kartid Musharraxeeda. Taasi waa in dib-u-eegistu cadaalad ahaato.',
+    'Waxaad xubin ka tahay Warshaddan, sidaas darteed ma dib-u-eegi kartid Musharaxeeda. Taasi waa in dib-u-eegistu cadaalad ahaato.',
   // Decision controls
   'capital.decisionHeading': "Go'aan",
   'capital.decisionInReview': 'U gudbi dib-u-eegis',
@@ -1692,11 +1692,11 @@ export const so = {
   'capital.fundExpressCta': 'Diiwaan geli xiisaha sanduuqa',
   'capital.fundInterestRecorded':
     'Xiisahaaga sanduuqa waa la diiwaan geliyay. Kooxdu way kula soo xiriiri doontaa.',
-  'capital.fundSecondaryToggle': 'Sidoo kale muuji xiisaha Musharraxan gaarka ah',
-  'capital.candidateInterestLabel': 'Qoraal Musharraxan (ikhtiyaari)',
-  'capital.candidateInterestCta': 'Muuji xiisaha Musharraxan',
+  'capital.fundSecondaryToggle': 'Sidoo kale muuji xiisaha Musharaxan gaarka ah',
+  'capital.candidateInterestLabel': 'Qoraal Musharaxan (ikhtiyaari)',
+  'capital.candidateInterestCta': 'Muuji xiisaha Musharaxan',
   'capital.candidateInterestRecorded':
-    'La diiwaan geliyay — xiisahaaga Musharraxan waa la kaydiyay.',
+    'La diiwaan geliyay — xiisahaaga Musharaxan waa la kaydiyay.',
   'capital.securitiesDisclaimer':
     'Waxba halkan lagama bixinayo dammaanad-qaad maalgashi; nooca 1.0 waa kaliya ururinta ujeeddada.',
   // Venture timeline
@@ -1726,13 +1726,13 @@ export const so = {
   'marketing.seeProduct': 'Arag waxa gudaha ku jira',
   'marketing.groupsTitle': 'Wax kasta oo grupyadaadu maqan yihiin',
   'marketing.groupsBody':
-    'Grupyadu waxay ku fiican yihiin fariimo degdeg ah — Xidig se wuxuu bulshada siiyaa xusuus. Boggag shakhsi, raadin, qoraallo dadweyne, diiwaanka ganacsiga, goobo mashruuc, iyo fariimo aan ku lumin qulqulka.',
+    'Grupyadu waxay ku fiican yihiin fariimo degdeg ah — Xidig se wuxuu bulshada siiyaa xusuus. Profile-yo shakhsi, raadin, qoraallo dadweyne, diiwaanka ganacsiga, goobo mashruuc, iyo fariimo aan ku lumin qulqulka.',
   'marketing.groupsKeep':
     'Grupka qoyska u hay. Xidig waa bulshada Soomaalida ee aad raadin karto, raaci karto, wax la dhisan karto, kuna soo laaban karto.',
   'marketing.blockPlazaTitle': 'Quudin ujeeddo leh',
   'marketing.blockPlazaBody':
     'Qor salaan, codsiyo, guulo, iyo ra’yi-ururin — kuna fal-celi si inoo eg. Wadahadaladu waxay noqdaan xusuusta bulshada, ma aha buuq la dhaafo.',
-  'marketing.blockProfilesTitle': 'Boggaaga internetka Soomaalida',
+  'marketing.blockProfilesTitle': 'Profile-kaaga internetka Soomaalida',
   'marketing.blockProfilesBody':
     'Muuji xirfadahaaga, magaaladaada, xiriiriyayaashaada, Warshadahaaga, sumadahaaga, iyo waxa aad u furan tahay. Wadaag hal xiriiriye halkii aad mar walba is-sharxi lahayd.',
   'marketing.blockSuuqTitle': 'Hel dad iyo ganacsiyo',
@@ -1756,7 +1756,7 @@ export const so = {
   'marketing.finalCta': 'Ku soo laabo gurigaaga — barnaamijka bulshada Soomaalida.',
   'marketing.honestyTitle': 'Run ayaa aasaas ah',
   'marketing.honestyBody':
-    'Ma jiraan xubno la been-abuuray, tiro been ah, ama sawirro la sameeyay. Waxa Xidig muujiyo waa dhaqdhaqaaq xubnood oo run ah — tiro kasta oo boggan ku taalna waa mid run ah.',
+    'Ma jiraan xubno la been-abuuray, tiro been ah, ama sawirro la sameeyay. Waxa Xidig muujiyo waa dhaqdhaqaaq xubnood oo run ah — tiro kasta oo profile-kan ku taalna waa mid run ah.',
   'marketing.reportsTeaserBody':
     'Cilmi-baaris ay bulshadu isu keentay oo ku saabsan dhaqaalaha Soomaalida iyo qurbajoogta — la xigtay, daacad ah, lacag la’aanna la akhrisan karo.',
   // {count} waxaa laga soo qaataa getAllReports().length — weligaa tiro gacanta
@@ -1786,7 +1786,7 @@ export const so = {
   // Sharraxaadda meta ee /product (raadinta + kaadhka wadaagga) — qoraal
   // madax-bannaan; productIntro ("Waxa hoos ku qoran…") halkaas kuma habboona.
   'marketing.productDescription':
-    'Adeegga hadda shaqeeya: quudin ujeeddo leh, boggag xubnood, diiwaan la raadin karo oo dad iyo ganacsiyo leh, fariimo xudduud leh, Warshadaha, iyo mashaariic ay bulshadu taageerto.',
+    'Adeegga hadda shaqeeya: quudin ujeeddo leh, profile-yo xubnood, diiwaan la raadin karo oo dad iyo ganacsiyo leh, fariimo xudduud leh, Warshadaha, iyo mashaariic ay bulshadu taageerto.',
   'marketing.productTrustTitle': 'Kalsooni & xaqiijin',
   'marketing.productTrustBody':
     'Calaamado xaqiijin ah oo aqoonsi, bulsho, iyo ganacsi; maamul bini’aadam ah oo racfaan leh; iyo hab Lite ah oo xushmeeya xiriir kasta oo internet.',
@@ -1796,12 +1796,12 @@ export const so = {
   // /labs iyo /capital teasers
   'marketing.labsTeaserTitle': 'Warshad — si furan wax u dhis',
   'marketing.labsTeaserBody':
-    'Warshaddu waa koox yar oo si furan wax u dhisaysa: axdi, warbixin toddobaadle, horumar, iyo calaamad daacad ah marka hawshu hakato. Warshadaha xooggan waxay bulshada hor keeni karaan musharrax mashruuc.',
+    'Warshaddu waa koox yar oo si furan wax u dhisaysa: axdi, warbixin toddobaadle, horumar, iyo calaamad daacad ah marka hawshu hakato. Warshadaha xooggan waxay bulshada hor keeni karaan musharax mashruuc.',
   'marketing.labsTeaserNote':
     'Warshad kasta oo dadweyne horeba waxay u leedahay bog la wadaagi karo. Buugga Warshadaha oo dhammaystiran ayaa halkan ku furmaya dhawaan.',
   'marketing.capitalTeaserTitle': 'Maal — mashaariic ay bulshadu taageerto',
   'marketing.capitalTeaserBody':
-    'Musharraxiinta mashaariicdu waxay ka soo baxaan Warshadaha, si furan ayaa dib loogu eegaa, xubnuhuna way u codeeyaan. Maanta Xidig wuxuu diiwaangeliyaa ujeeddo keliya — ma jiraan lacago socda.',
+    'Musharaxiinta mashaariicdu waxay ka soo baxaan Warshadaha, si furan ayaa dib loogu eegaa, xubnuhuna way u codeeyaan. Maanta Xidig wuxuu diiwaangeliyaa ujeeddo keliya — ma jiraan lacago socda.',
 
   // /about
   'marketing.aboutTitle': 'Ku saabsan Xidig',
@@ -1813,7 +1813,7 @@ export const so = {
     'Si furan ayaanu wax u dhisnaa, tiro been ah ma sameyno, waxaanuna marka hore u naqshadeynaa xiriirka 2G ee Muqdisho.',
   'marketing.aboutCapitalTitle': 'Sida Maal u shaqeeyo',
   'marketing.aboutCapitalBody':
-    'Mashaariicdu waxay ku bilaabmaan Warshad, waxay noqdaan musharrax, si furanna xubnaha ayaa dib u eega oo u codeeya. Maanta tani waa hab-socod iyo diiwaangelin ujeeddo — ma aha sanduuq maalgashi, mana aha dalab maalgashi.',
+    'Mashaariicdu waxay ku bilaabmaan Warshad, waxay noqdaan musharax, si furanna xubnaha ayaa dib u eega oo u codeeya. Maanta tani waa hab-socod iyo diiwaangelin ujeeddo — ma aha sanduuq maalgashi, mana aha dalab maalgashi.',
   'marketing.aboutRolesTitle': 'Doorar, ma aha shaqooyin',
   'marketing.aboutRolesBody':
     'Xidig ma laha bog shaqo. Doorarka bulshada — maamulayaal, xaqiijiyayaal, la-taliyayaal — waxaa laga soo doortaa xubnaha gudahooda.',
@@ -1826,10 +1826,10 @@ export const so = {
     'Hal bulsho, laba heer. Qiimaha waxaa lala xaqiijiyaa xubnaha — laguma soo rogo.',
   'marketing.memberFreeTitle': 'Xubin — lacag la’aan',
   'marketing.memberFreeBody':
-    'Bog shakhsi iyo diiwaan ganacsi, Madasha, buugga, fariimaha, iyo ku biirista Kooxaha. Lacag la’aantu waa joogto.',
+    'Profile shakhsi iyo diiwaan ganacsi, Madasha, buugga, fariimaha, iyo ku biirista Kooxaha. Lacag la’aantu waa joogto.',
   'marketing.memberSupporterTitle': 'Taageere — qiyaastii $1/bishii',
   'marketing.memberSupporterBody':
-    'Dhammaan waxa bilaashka ah, oo lagu daray abuurista Warshadaha, soo bandhigista musharraxiinta, iyo codaynta maamulka bulshada.',
+    'Dhammaan waxa bilaashka ah, oo lagu daray abuurista Warshadaha, soo bandhigista musharaxiinta, iyo codaynta maamulka bulshada.',
   'marketing.memberBillingNote':
     'Lacag-bixintu weli ma shaqeyso. Qiimaha rasmiga ah waxaa lala xaqiijiyaa xubnaha ka hor inta aan qofna lacag laga qaadin.',
 
@@ -1878,7 +1878,7 @@ export const so = {
     'Xogta akoonkaaga waxaanu haynaa inta uu akoonkaagu firfircoon yahay. Markaad akoonkaaga tirtirto waxaa jira muddo nasasho oo gaaban oo aad go’aankaaga ku beddeli karto; ka dib markay dhaafto, xogtaada shakhsiga ah waa la saaraa halkii la kaydin lahaa. Xog qaar waa la sii hayn karaa oo kaliya haddii sharci na khasbo, ama si loo xalliyo warbixin ammaan ama muran — oo kaliya inta ay ujeeddadaasi socoto.',
   'marketing.privacyRightsTitle': 'Xuquuqdaada iyo xakamayntaada',
   'marketing.privacyRightsBody':
-    'Waad heli kartaa oo dib u eegi kartaa xogtaada, waad soo dejisan kartaa nuqul xogtaada ah, waad saxi kartaa boggaaga, akoonkaagana waad tirtiri kartaa — dhammaan Dejinta, qaybta xogta iyo arrimaha gaarka ah. Waxa kale oo aad ka geli kartaa ama ka bixi kartaa falanqaynta wakhti kasta. Haddii aad caawimo u baahan tahay adeegsiga xuquuqdan, nala soo xiriir waanu kuu jawaabi doonnaa.',
+    'Waad heli kartaa oo dib u eegi kartaa xogtaada, waad soo dejisan kartaa nuqul xogtaada ah, waad saxi kartaa profile-kaaga, akoonkaagana waad tirtiri kartaa — dhammaan Dejinta, qaybta xogta iyo arrimaha gaarka ah. Waxa kale oo aad ka geli kartaa ama ka bixi kartaa falanqaynta wakhti kasta. Haddii aad caawimo u baahan tahay adeegsiga xuquuqdan, nala soo xiriir waanu kuu jawaabi doonnaa.',
   'marketing.privacyTransfersTitle': 'Meesha xogtaada laga maamulo',
   'marketing.privacyTransfersBody':
     'Xidig wuxuu u adeegaa bulsho Soomaali oo caalami ah, gudaha iyo qurbaha, sidaas darteed xogtaada waxaa laga maamuli karaa server-o ku yaal dal aan kuu ahayn annaga iyo bixiyayaasha adeegga ee naga caawiya socodsiinta goobta. Meel kasta oo laga maamuloba, waxaanu ku dabaqnaa ilaalinta lagu sharxay siyaasaddan.',
@@ -1906,7 +1906,7 @@ export const so = {
     'Daacad ahow, sharciga raac, Xidigna badbaado. Ha dhibin, ha khiyaanayn, ha is-moodsiin, spam ha dirin, waxyaabo sharci-darro ama waxyeello leh ha qorin, goobtana ha weerarin. Heerarka buuxa waxay ku jiraan Tilmaamaha Bulshadayada, oo qayb ka ah shuruudahan. Waxa jebiya waa la saari karaa.',
   'marketing.termsFeesTitle': 'Xubinnimo iyo khidmado',
   'marketing.termsFeesBody':
-    'Ku biirista iyo xubinnimada aasaasiga ah waa lacag la’aan, lacag la’aantuna way sii jiri doontaa. Xubinnimada Taageeruhu — oo furta abuurista Warshad, hor-dhigista musharraxiin, iyo codbixin maamul-bulsheed — waxay ku kici doontaa qiyaastii $1 bishii marka lacag-bixintu shaqeyso. Lacag-bixintu weli firfircoon ma aha; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin, wax lacag ahna lama qaado ogolaanshahaaga la’aantiis.',
+    'Ku biirista iyo xubinnimada aasaasiga ah waa lacag la’aan, lacag la’aantuna way sii jiri doontaa. Xubinnimada Taageeruhu — oo furta abuurista Warshad, hor-dhigista musharaxiin, iyo codbixin maamul-bulsheed — waxay ku kici doontaa qiyaastii $1 bishii marka lacag-bixintu shaqeyso. Lacag-bixintu weli firfircoon ma aha; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin, wax lacag ahna lama qaado ogolaanshahaaga la’aantiis.',
   'marketing.termsCapitalTitle': 'Maal',
   'marketing.termsCapitalBody':
     'Adeegyada Maal waxay diiwaangeliyaan xiise iyo ujeeddo oo keliya. Waxba halkan kuma jiraan dalab dammaanado; v1.0 waa qabashada ujeeddo oo keliya. Waxba Xidig kuma jiraan talo maalgashi ama dalab maalgashi, waxna lacageed oo nool ma socdaan. Shuruudaha buuxa ee adeeg kasta oo lacageed waa la daabici doonaa ka hor inta uusan shaqayn.',
@@ -1968,7 +1968,7 @@ export const so = {
   'events.publicIndexIntro':
     'Munaasabadaha dadweynaha ee bulshada Xidig. Xubnuhu waxay arkaan wax dheeraad ah, wayna ka qaybgeli karaan.',
   'events.empty':
-    'Weli ma jiraan munaasabado soo socda. Hoggaamiyeyaasha Labs-ka, ganacsiyada la xaqiijiyay iyo maamulayaashu way martigelin karaan.',
+    'Weli ma jiraan munaasabado soo socda. Hoggaamiyeyaasha Warshadaha, ganacsiyada la xaqiijiyay iyo maamulayaashu way martigelin karaan.',
   'events.categoryAll': 'Dhammaan',
   'events.newEvent': 'Martigeli munaasabad',
   'events.upcomingTitle': 'Munaasabado soo socda',
@@ -2029,7 +2029,7 @@ export const so = {
   'events.formCapacity': 'Tirada ugu badan (ikhtiyaari)',
   'events.formSubmit': 'Daabac munaasabadda',
   'events.notEligible':
-    'Martigelinta munaasabadaha waxaa hadda u furan hoggaamiyeyaasha Labs-ka, ganacsiyada la xaqiijiyay iyo maamulayaasha.',
+    'Martigelinta munaasabadaha waxaa hadda u furan hoggaamiyeyaasha Warshadaha, ganacsiyada la xaqiijiyay iyo maamulayaasha.',
   'events.cancelEvent': 'Jooji munaasabadda',
   'events.cancelConfirm':
     'Ma joojinaysaa munaasabaddan? Qof kasta oo ka qaybgalay waa loo sheegi doonaa.',
@@ -2109,7 +2109,7 @@ export const so = {
   'error.eventNotOpen': 'Ka-qaybgalka munaasabaddan waa xidhan yahay.',
   'error.eventCategoryInvalid': 'Dooro qayb munaasabadeed oo sax ah.',
   'error.eventCreationNotAllowed':
-    'Martigelinta munaasabadaha waxaa hadda u furan hoggaamiyeyaasha Labs-ka, ganacsiyada la xaqiijiyay iyo maamulayaasha.',
+    'Martigelinta munaasabadaha waxaa hadda u furan hoggaamiyeyaasha Warshadaha, ganacsiyada la xaqiijiyay iyo maamulayaasha.',
   'error.eventEnded': 'Munaasabaddan waa dhammaatay — diiwaankeedu waa mid taagan.',
   'error.eventCheckinNotOpen':
     'Imaatinka waxaa la diiwaangelin karaa marka munaasabaddu bilaabato.',
@@ -2358,7 +2358,7 @@ export const so = {
   'profile.reportAction': 'Ka warbixi',
 
   // Habaynta qaybaha — sheet-ka mobilada (10e) iyo kaadhka desktop-ka (10b).
-  'profile.managerTitle': 'Qaybaha bogga',
+  'profile.managerTitle': 'Qaybaha Aniga',
   'profile.managerOpen': 'Habee qaybaha',
   'profile.managerSubtitle': 'Jiid · dami',
   'profile.managerDragHint': 'Jiid si aad u kala horraysiiso',
@@ -2459,10 +2459,10 @@ export const so = {
   'maal.noOpenWork': 'Shaqo furan ma jirto',
   'maal.actionOpen': 'Fur',
   'maal.actionRequest': 'Codso',
-  // Xiriirka aamusan ee guddiga musharrixiinta (D1: wuxuu u guuray
+  // Xiriirka aamusan ee guddiga musharaxiinta (D1: wuxuu u guuray
   // /capital/candidates — waxba lama tirtirin, sidaas darteed waxba yaanay
   // gaari waynin).
-  'maal.candidatesLink': 'Guddiga musharrixiinta Maalka',
+  'maal.candidatesLink': 'Guddiga musharaxiinta Maalka',
   'maal.indexLaw':
     "Maal-nimadu waa heer, ma aha abaalmarin. Warshad waxay noqotaa Maal marka ay qorto ujeeddo, magacowdo hoggaan, oo qaadato qaab-dhismeedka shaqada — waxayna ku noqotaa Warshad haddii firfircooni-la'aantu dhaafto xadka waqti-dhaafka — si toos ah, ogeysiis hore, iyo diiwaan guud. Celintu waxba ma lumiso: axdiga, diiwaanka iyo go'aannadu way sii jiraan, waxayna dib u noqonaysaa Maal marka shuruudaha dib loo buuxiyo. Labadooduba isku meel ayay ku jiraan si aan qofna u qarsoodin heerka dhabta ah.",
 
