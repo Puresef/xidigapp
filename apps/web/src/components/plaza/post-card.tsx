@@ -25,6 +25,7 @@ import { LITE_BUNDLES, type LitePrefs } from '@/lib/lite/prefs';
 import type { PostView } from '@/lib/plaza/views';
 
 import { EmbedFrame } from './embed-frame';
+import { isVerifiedProfile } from '@/lib/profile-verified';
 import { PollBlock } from './poll-block';
 import { PostLink } from './post-link';
 import { ReactionBar } from './reaction-bar';
@@ -143,9 +144,7 @@ export function PostCard({
       </p>
     ) : null;
 
-  const verified =
-    author?.verification_status === 'community_verified' ||
-    author?.verification_status === 'identity_verified';
+  const verified = isVerifiedProfile(author?.verification_status);
 
   // Feed cards clamp the body to 4 lines (detail pages NEVER clamp). CSS
   // line-clamp can't report overflow without client measurement, so the

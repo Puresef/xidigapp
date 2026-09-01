@@ -9,6 +9,7 @@ import type { MessageKey } from '@xidig/i18n';
 import { CHROME_KEYS, STAGE_KEYS } from '@/lib/labs/labels';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { Avatar } from '../media/avatar';
+import { isVerifiedProfile } from '@/lib/profile-verified';
 import { MediaSlot } from '../media/media-slot';
 import { Excerpt, Highlight } from './highlight';
 import type { SearchLab, SearchListing, SearchPerson, SearchPost } from './types';
@@ -37,7 +38,6 @@ const LISTING_THUMB_EST_BYTES = 30_000;
 /** Body preview budget in the post row — two comfortable lines. */
 const EXCERPT_CHARS = 150;
 
-const PROFILE_VERIFIED = ['community_verified', 'identity_verified'];
 
 /** Joins the parts of a meta line, dropping the ones this row doesn't have. */
 function metaLine(parts: (string | null | undefined | false)[]): string {
@@ -91,7 +91,7 @@ export function PersonRow({
   query: string;
   prefs: LitePrefs;
 }) {
-  const verified = PROFILE_VERIFIED.includes(person.verificationStatus);
+  const verified = isVerifiedProfile(person.verificationStatus);
   return (
     <li className="xidig-search-row">
       <Link className="xidig-search-row__link" href={`/u/${person.handle}`}>
@@ -228,7 +228,7 @@ export function PostRow({
   const t = useT();
   const { locale } = useLocale();
   const author = post.author;
-  const verified = author !== null && PROFILE_VERIFIED.includes(author.verificationStatus);
+  const verified = author !== null && isVerifiedProfile(author.verificationStatus);
   const typeKey = POST_TYPE_KEYS[post.type];
   return (
     <li className="xidig-search-row">

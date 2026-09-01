@@ -6,6 +6,7 @@ import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { useT } from '@xidig/i18n/react';
 
 import { ApiRequestError, apiGet } from '@/lib/api-client';
+import type { LaneOption } from '@/lib/aniga/lanes';
 import type { PlainError } from '@/lib/errors';
 import { LANES } from '@/lib/lanes';
 import { Avatar } from '../media/avatar';
@@ -47,8 +48,16 @@ interface ProfilePage {
   nextCursor: string | null;
 }
 
-export function PeopleDirectory() {
+export function PeopleDirectory({ laneOptions }: { laneOptions?: LaneOption[] }) {
   const t = useT();
+  // Lane filter options come from the lanes LOOKUP TABLE via the server page
+  // (loadLaneCatalog — localized labels, ops-added lanes appear without a
+  // deploy; same pattern as the profile editor's picker). The frozen LANES
+  // const is only the degraded fallback for an absent/empty catalog.
+  const lanes: LaneOption[] =
+    laneOptions && laneOptions.length > 0
+      ? laneOptions
+      : LANES.map((slug) => ({ slug, label: slug }));
   const [q, setQ] = useState('');
   const [skill, setSkill] = useState('');
   const [lane, setLane] = useState('');
@@ -150,9 +159,9 @@ export function PeopleDirectory() {
             onChange={(e) => setLane(e.target.value)}
           >
             <option value="">{t('suuq.anyOption')}</option>
-            {LANES.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {lanes.map((option) => (
+              <option key={option.slug} value={option.slug}>
+                {option.label}
               </option>
             ))}
           </select>

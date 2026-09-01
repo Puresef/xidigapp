@@ -7,8 +7,9 @@
  * The runtime source of truth is now the `lanes` DB lookup table (migration
  * 20260718100000) — the profile picker reads it so ops can add a sector without
  * a deploy. This const mirrors the seed and stays the canonical `Lane` type +
- * the directory filter's option list + a fallback if the fetch returns nothing.
- * Keep it in sync with the migration seed.
+ * the shared FALLBACK when the lanes-table fetch returns nothing — the
+ * directory filter and the profile picker both read the DB catalog first
+ * (loadLaneCatalog). Keep it in sync with the migration seed.
  */
 export const LANES = [
   'fintech',

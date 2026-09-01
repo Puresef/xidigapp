@@ -15,7 +15,8 @@ import {
 } from '@/lib/plaza/constants';
 import { feedQuerySchema, postCreateSchema } from '@/lib/plaza/schemas';
 import { hydratePosts, POST_COLUMNS } from '@/lib/plaza/views';
-import { hydrateOnePost, isSupporter, postScanText } from '@/lib/posts-api';
+import { hasCapability } from '@/lib/membership';
+import { hydrateOnePost, postScanText } from '@/lib/posts-api';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { awardReputation } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -101,9 +102,9 @@ export async function POST(request: Request): Promise<Response> {
 
     // §26/§27 daily post cap by tier; the copy is post_limit's, not the
     // generic rate_limited, so check-then-throw instead of enforceRateLimit.
-    const supporter = await isSupporter(ctx);
+    const elevated = await hasCapability(ctx, 'elevated_limits');
     const allowed = await checkRateLimit(`posts:${ctx.appUser.id}`, {
-      max: supporter ? POST_LIMIT_SUPPORTER : POST_LIMIT_FREE,
+      max: elevated ? POST_LIMIT_SUPPORTER : POST_LIMIT_FREE,
       windowSeconds: RATE_WINDOW_DAY_SECONDS,
     });
     if (!allowed) throw new ApiError('post_limit', 429);

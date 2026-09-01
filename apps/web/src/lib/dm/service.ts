@@ -8,6 +8,7 @@ import { sendEmailChecked } from '@/lib/email/send';
 import { dmRequestEmail } from '@/lib/email/templates';
 import { notify } from '@/lib/notifications/notify';
 import { isChannelEnabled } from '@/lib/notifications/prefs';
+import { isVerifiedProfile } from '@/lib/profile-verified';
 
 import { DM_PREVIEW_LENGTH, DM_REQUEST_WINDOW_SECONDS } from './constants';
 import { presentConversationStatus } from './presentation';
@@ -241,11 +242,7 @@ export async function startConversation(
       .select('verification_status')
       .eq('user_id', initiatorId)
       .maybeSingle();
-    // "Verified" = either §11 verification tier (community or identity).
-    const senderVerified =
-      sender?.verification_status === 'community_verified' ||
-      sender?.verification_status === 'identity_verified';
-    if (!senderVerified) throw new ApiError('dm_blocked', 403);
+    if (!isVerifiedProfile(sender?.verification_status)) throw new ApiError('dm_blocked', 403);
   }
 
   const existing = await findConversationByPair(admin, initiatorId, recipientId);

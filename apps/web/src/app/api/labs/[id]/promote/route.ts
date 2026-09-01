@@ -8,7 +8,7 @@ import { promoteToCandidate, promoteToLab } from '@/lib/labs/service';
 import { venturePromoteSchema } from '@/lib/maal/schemas';
 import { promoteToVenture } from '@/lib/maal/service';
 import { loadVentureForViewer } from '@/lib/maal/views';
-import { isSupporter } from '@/lib/posts-api';
+import { hasCapability } from '@/lib/membership';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -76,8 +76,8 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
 
     if (input.target === 'lab') {
       if (lab.space_mode !== 'club') throw new ApiError('invalid_request', 400);
-      // Becoming a Lab is gated behind Supporter, same as creating one.
-      if (!(await isSupporter(ctx))) throw new ApiError('not_supporter', 403);
+      // Becoming a Lab rides the same create_lab capability as creating one.
+      if (!(await hasCapability(ctx, 'create_lab'))) throw new ApiError('not_supporter', 403);
       const updated = await promoteToLab(admin, lab, ctx.appUser.id, input);
       return apiOk({ lab: await hydrateOneLab(admin, ctx.appUser.id, updated) });
     }

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import type { Database } from '@xidig/db';
+import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
 
 import { ApiRequestError, apiGet, apiPatch } from '@/lib/api-client';
@@ -17,6 +19,16 @@ import { PlainErrorBanner } from '../auth/plain-error';
  * itself is NEVER in the list payload — it is fetched on demand, and the fetch
  * is logged server-side (§14 accountability).
  */
+
+type VerificationType = Database['public']['Enums']['verification_type'];
+
+// Compile-guarded label map: when the verification_type enum grows (type
+// regen), this Record stops compiling until the new type gets a label — the
+// previous ternary silently labeled every non-business type as Identity.
+const TYPE_LABEL_KEY: Record<VerificationType, MessageKey> = {
+  identity: 'admin.verifyTypeIdentity',
+  business: 'admin.verifyTypeBusiness',
+};
 
 export interface VerificationItem {
   id: string;
@@ -110,9 +122,12 @@ export function VerificationsQueue({ initialItems }: { initialItems: Verificatio
           <li key={item.id} className="xidig-card">
             <p className="xidig-chip-row">
               <span className="xidig-tag">
-                {item.type === 'business'
-                  ? t('admin.verifyTypeBusiness')
-                  : t('admin.verifyTypeIdentity')}
+                {(() => {
+                  // An unmapped type renders its raw slug — visible and odd,
+                  // never mislabeled as a different credential.
+                  const key = TYPE_LABEL_KEY[item.type as VerificationType];
+                  return key ? t(key) : item.type;
+                })()}
               </span>
               <span className="xidig-tag">
                 {item.status === 'scheduled'

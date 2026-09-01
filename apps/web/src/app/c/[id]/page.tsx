@@ -30,7 +30,7 @@ import {
 import { getLitePrefs } from '@/lib/lite/server';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { getT } from '@/lib/locale';
-import { isSupporter } from '@/lib/posts-api';
+import { hasCapability } from '@/lib/membership';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -107,8 +107,9 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
   const canReview = isModOrAdmin && !isLabMember && candidate.status !== 'draft';
   const isConflicted = isModOrAdmin && isLabMember;
 
-  // Governance vote: Supporter capability + window open (submitted / in_review).
-  const supporter = await isSupporter(ctx);
+  // Governance vote panel mirrors the cast route's gate exactly — the same
+  // vote_candidate capability, never a tier slug (api/candidates/[id]/vote).
+  const supporter = await hasCapability(ctx, 'vote_candidate');
   const windowOpen =
     candidate.vote_opens_at !== null &&
     ['submitted', 'in_review'].includes(candidate.status) &&

@@ -128,9 +128,13 @@ vi.mock('@/lib/rate-limit', () => ({
 vi.mock('@sentry/nextjs', () => ({
   captureException: () => {},
 }));
-vi.mock('@/lib/posts-api', () => ({
-  isSupporter: async () => false,
+// Recording mock: tests pin WHICH capability a gate checks, not just that a
+// check exists — a capability-name swap must fail a test, not ride on the
+// supporter tier happening to hold every gate today.
+const membershipMock = vi.hoisted(() => ({
+  hasCapability: vi.fn(async () => false),
 }));
+vi.mock('@/lib/membership', () => membershipMock);
 vi.mock('@/lib/reputation/service', () => ({
   awardBadge: async () => {},
 }));
@@ -140,7 +144,7 @@ vi.mock('@/lib/labs/service', () => ({
   },
 }));
 
-import { GET } from './route';
+import { GET, POST } from './route';
 
 const USER_ID = '11111111-1111-4111-8111-111111111111';
 const LEAD_ID = '22222222-2222-4222-8222-222222222222';
@@ -335,5 +339,34 @@ describe('GET /api/labs — tab counts', () => {
     const response = await GET(getRequest());
 
     expect(response.status).toBe(401);
+  });
+});
+
+describe('POST /api/labs — the Lab-create gate is the create_lab capability', () => {
+  it('403s mode=lab without create_lab, and pins the exact capability name', async () => {
+    authHolder.ctx = contextFor(new FakeClient());
+    adminHolder.client = new FakeClient();
+    membershipMock.hasCapability.mockResolvedValueOnce(false);
+
+    const response = await POST(
+      new Request('https://app.xidig.net/api/labs', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'lab',
+          name: 'Xawilaad Sandbox 2',
+          slug: 'xawilaad-sandbox-2',
+          problemStatement: 'p',
+          hypothesis: 'h',
+          successDefinition: 's',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    // The capability NAME is the contract — a swap to any other gate the
+    // supporter tier happens to hold must fail here, not in production when
+    // a third tier arrives.
+    expect(membershipMock.hasCapability).toHaveBeenCalledWith(expect.anything(), 'create_lab');
   });
 });

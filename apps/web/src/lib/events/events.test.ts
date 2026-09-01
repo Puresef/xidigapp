@@ -5,7 +5,7 @@ import { resolveCreationRight, containerOf, type CreationFacts } from './authz';
 import { RSVP_COUNT_FLOOR } from './constants';
 import { eventToIcs, googleCalendarUrl, icsEscape, icsUtc } from './ics';
 import { eventCreateSchema, eventUpdateSchema, isValidTimezone, rsvpSchema } from './schemas';
-import { slugifyEventTitle } from './slug';
+import { RESERVED_EVENT_SLUGS, allocateEventSlug, slugifyEventTitle } from './slug';
 import {
   EVENT_MEMBER_COLUMNS,
   EVENT_PUBLIC_COLUMNS,
@@ -284,6 +284,33 @@ describe('slugifyEventTitle', () => {
   });
   it('falls back to "event" when nothing survives', () => {
     expect(slugifyEventTitle('!!!')).toBe('event');
+  });
+});
+
+describe('allocateEventSlug reserved slugs', () => {
+  /** Fake admin whose events table is empty — every candidate is DB-free. */
+  function emptyEventsAdmin() {
+    const query = {
+      select: () => query,
+      eq: () => query,
+      maybeSingle: async () => ({ data: null, error: null }),
+    };
+    return { from: () => query } as unknown as Parameters<typeof allocateEventSlug>[0];
+  }
+
+  it('never mints a slug shadowed by a next.config 301 — the suffix wins instead', async () => {
+    // "Mogadishu Launch Party" folds to the OLD site's fabricated marketing
+    // slug, which permanently 308s to /waitlist before routing: the bare slug
+    // would make the event page, its share links and its .ics unreachable.
+    const slug = await allocateEventSlug(emptyEventsAdmin(), 'Mogadishu Launch Party');
+    expect(slug).toBe('mogadishu-launch-party-2');
+    expect(RESERVED_EVENT_SLUGS.has('mogadishu-launch-party')).toBe(true);
+  });
+
+  it('unreserved titles still mint the bare slug', async () => {
+    expect(await allocateEventSlug(emptyEventsAdmin(), 'Casho & Chat Hargeisa')).toBe(
+      'casho-chat-hargeisa',
+    );
   });
 });
 

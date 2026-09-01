@@ -12,7 +12,7 @@ import {
   LAB_COLUMNS,
   type LabRow,
 } from '@/lib/labs/views';
-import { isSupporter } from '@/lib/posts-api';
+import { hasCapability } from '@/lib/membership';
 import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/pagination';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { BADGE_SLUGS } from '@/lib/reputation/constants';
@@ -94,8 +94,9 @@ export async function POST(request: Request): Promise<Response> {
     const input = labCreateSchema.parse(await request.json());
     const admin = getSupabaseAdmin();
 
-    // Creating a Lab needs a Supporter membership (§27); a Club is free.
-    if (input.mode === 'lab' && !(await isSupporter(ctx))) {
+    // Creating a Lab needs the create_lab capability (§27); a Club is free.
+    // Capability row, not tier slug — a tier holds this only when granted.
+    if (input.mode === 'lab' && !(await hasCapability(ctx, 'create_lab'))) {
       throw new ApiError('not_supporter', 403);
     }
 

@@ -4,6 +4,7 @@ import { writeAudit } from '@/lib/audit';
 import { COMMUNITY_VOUCH_THRESHOLD } from '@/lib/moderation/constants';
 import { vouchSchema } from '@/lib/moderation/schemas';
 import { insertNotification } from '@/lib/notifications/notify';
+import { isVerifiedProfile } from '@/lib/profile-verified';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -33,11 +34,7 @@ export async function POST(request: Request): Promise<Response> {
       .eq('user_id', ctx.appUser.id)
       .maybeSingle();
     if (voucherError) throw new Error(`voucher lookup failed: ${voucherError.message}`);
-    if (
-      !voucher ||
-      (voucher.verification_status !== 'community_verified' &&
-        voucher.verification_status !== 'identity_verified')
-    ) {
+    if (!voucher || !isVerifiedProfile(voucher.verification_status)) {
       throw new ApiError('forbidden', 403);
     }
 

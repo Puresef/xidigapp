@@ -46,13 +46,13 @@ function stubPage(row: typeof profile) {
   );
 }
 
-async function render() {
+async function render(props: Parameters<typeof PeopleDirectory>[0] = {}) {
   const host = document.createElement('div');
   document.body.append(host);
   await act(async () => {
     createRoot(host).render(
       <LocaleProvider initialLocale="en">
-        <PeopleDirectory />
+        <PeopleDirectory {...props} />
       </LocaleProvider>,
     );
   });
@@ -113,5 +113,38 @@ describe('PeopleDirectory chip row', () => {
       String(call[0]).includes('same key'),
     );
     expect(keyComplaints).toHaveLength(0);
+  });
+});
+
+describe('PeopleDirectory lane filter options', () => {
+  it('renders the catalog prop — an ops-added lane appears with its localized label, no deploy', async () => {
+    stubPage(profile);
+    const host = await render({
+      laneOptions: [
+        { slug: 'fintech', label: 'Fintech' },
+        // Not in the shipped LANES const — exists only as a lanes-table row,
+        // exactly what the admin suggest-and-promote flow inserts at runtime.
+        { slug: 'khayraad-badeed', label: 'Khayraad Badeed' },
+      ],
+    });
+
+    const options = [...host.querySelectorAll('#people-lane option')].map((el) => ({
+      value: (el as HTMLOptionElement).value,
+      label: el.textContent,
+    }));
+    expect(options).toContainEqual({ value: 'khayraad-badeed', label: 'Khayraad Badeed' });
+    // Value is the slug, label is the localized name — never slug-as-label
+    // when the catalog carries a real name.
+    expect(options).toContainEqual({ value: 'fintech', label: 'Fintech' });
+  });
+
+  it('falls back to the shipped LANES slugs when no catalog is passed', async () => {
+    stubPage(profile);
+    const host = await render();
+    const values = [...host.querySelectorAll('#people-lane option')].map(
+      (el) => (el as HTMLOptionElement).value,
+    );
+    expect(values).toContain('fintech');
+    expect(values.length).toBeGreaterThan(5);
   });
 });

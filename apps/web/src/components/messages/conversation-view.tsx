@@ -19,6 +19,7 @@ import { createClient } from '@/lib/supabase-browser';
 import { Avatar } from '../media/avatar';
 import { PlainErrorBanner } from '../auth/plain-error';
 import { Banner } from '../banner';
+import { isVerifiedProfile } from '@/lib/profile-verified';
 import { EmptyState } from '../empty-state';
 import { ConversationMenu } from './conversation-menu';
 import { formatVoiceDuration, VoiceNoteBubble, VoiceRecorderButton, type RecordedClip } from './voice-note';
@@ -420,9 +421,7 @@ export function ConversationView({
   const canCompose = header.status === 'accepted';
   const isIncomingRequest = header.status === 'pending' && !header.isInitiator;
   const isPendingSent = header.status === 'pending' && header.isInitiator;
-  const otherVerified =
-    header.other?.verificationStatus === 'community_verified' ||
-    header.other?.verificationStatus === 'identity_verified';
+  const otherVerified = isVerifiedProfile(header.other?.verificationStatus);
 
   return (
     <section className="xidig-dm" aria-label={blockedByMe ? t('messages.blockedHeaderName') : name}>

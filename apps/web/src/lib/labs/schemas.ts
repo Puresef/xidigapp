@@ -62,7 +62,11 @@ export const labSlugSchema = z
   .max(LAB_SLUG_MAX)
   .regex(LAB_SLUG_REGEX, 'lowercase letters, numbers and dashes');
 
-export const skillSchema = z.string().trim().min(1).max(SKILL_MAX);
+// Skill tokens are ONE canonical vocabulary across profiles.skills,
+// endorsements and lab_skill_needs: btrim(lower()). The DB trigger
+// (migration 20260901000100) is authoritative; folding here too keeps the
+// value the API works with identical to what lands in the row.
+export const skillSchema = z.string().trim().toLowerCase().min(1).max(SKILL_MAX);
 
 const visibilitySchema = z.enum(['private', 'members', 'public']);
 const joinModeSchema = z.enum(['open', 'request', 'invite']);

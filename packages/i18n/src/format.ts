@@ -136,11 +136,21 @@ const RELATIVE_TIME_KEYS: Record<RelativeTimeUnit, { past: MessageKey; future: M
 
 // Direct dictionary access instead of createTranslator: translate.ts imports
 // from this module, so importing it back would create a cycle. The widened
-// type lets a general MessageKey index the (partial) Somali dictionary.
-const somali: Readonly<Partial<Record<MessageKey, Message>>> = so;
+// type lets a general MessageKey index the (partial) non-English dictionaries.
+//
+// Record<Exclude<Locale, 'en'>, …> is load-bearing: everywhere else a new
+// locale is compiler-enforced (translate.ts registers dictionaries in a
+// Record<Locale, …>), but this module is the hydration-critical relative-time
+// path whose failure mode is SILENT English fallback (docs/i18n.md — a bug of
+// exactly that shape took a release to find). This map makes an unregistered
+// locale a compile error here too, instead of every timestamp quietly
+// rendering English for that locale.
+const partials: Readonly<
+  Record<Exclude<Locale, 'en'>, Readonly<Partial<Record<MessageKey, Message>>>>
+> = { so };
 
 function timeMessage(key: MessageKey, locale: Locale): Message {
-  return (locale === 'so' ? somali[key] : undefined) ?? en[key];
+  return (locale === 'en' ? undefined : partials[locale][key]) ?? en[key];
 }
 
 function relativeTimeText(value: number, unit: RelativeTimeUnit, locale: Locale): string {

@@ -5,6 +5,7 @@ import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser, type AuthContext } from '@/lib/auth/guards';
+import { hasCapability } from '@/lib/membership';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { awardReputation } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -113,17 +114,6 @@ export async function GET(
   }
 }
 
-/** §26 quotas key off membership tier; a missing profile row means free. */
-async function isSupporter(ctx: AuthContext): Promise<boolean> {
-  const { data } = await ctx.supabase
-    .from('profiles')
-    .select('membership_tier_id')
-    .eq('user_id', ctx.appUser.id)
-    .maybeSingle();
-  const tier = data?.membership_tier_id;
-  return typeof tier === 'string' && tier.toLowerCase() !== 'free';
-}
-
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -138,9 +128,9 @@ export async function POST(
     const post = await loadVisiblePost(ctx, postId);
     if (!post || post.status !== 'published') throw new ApiError('not_found', 404);
 
-    const supporter = await isSupporter(ctx);
+    const elevated = await hasCapability(ctx, 'elevated_limits');
     const withinLimit = await checkRateLimit(`comments:${ctx.appUser.id}`, {
-      max: supporter ? COMMENT_LIMIT_SUPPORTER : COMMENT_LIMIT_FREE,
+      max: elevated ? COMMENT_LIMIT_SUPPORTER : COMMENT_LIMIT_FREE,
       windowSeconds: RATE_WINDOW_DAY_SECONDS,
     });
     if (!withinLimit) throw new ApiError('comment_limit', 429);

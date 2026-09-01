@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { RESERVED_EVENT_SLUGS } from '@/lib/events/slug';
+
 import {
   CANDIDATE_COPY,
   DM_THREADS,
@@ -362,6 +364,17 @@ describe('listings, events, graph', () => {
       if (persona.verification === 'community_verified') {
         expect(vouchers.length, `${vouchee} needs 3 vouches`).toBeGreaterThanOrEqual(3);
       }
+    }
+  });
+});
+
+describe('reserved event slugs', () => {
+  it('no seeded event key collides with a next.config 301-shadowed slug', () => {
+    // The seeder inserts events with hardcoded keys as slugs, bypassing
+    // allocateEventSlug's RESERVED_EVENT_SLUGS guard — a reserved key here
+    // would mint an event whose URL permanently 308s to /waitlist.
+    for (const event of EVENTS) {
+      expect(RESERVED_EVENT_SLUGS.has(event.key), event.key).toBe(false);
     }
   });
 });

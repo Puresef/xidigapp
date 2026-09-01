@@ -13,6 +13,7 @@ import type { PlainError } from '@/lib/errors';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { createClient } from '@/lib/supabase-browser';
 
+import { isVerifiedProfile } from '@/lib/profile-verified';
 import { Avatar } from '../media/avatar';
 import { EmptyState } from '../empty-state';
 import { PlainErrorBanner } from '../auth/plain-error';
@@ -36,10 +37,7 @@ interface InboxResponse {
 }
 
 function isVerified(item: InboxItem): boolean {
-  return (
-    item.other?.verificationStatus === 'community_verified' ||
-    item.other?.verificationStatus === 'identity_verified'
-  );
+  return isVerifiedProfile(item.other?.verificationStatus);
 }
 
 export function MessagesInbox({

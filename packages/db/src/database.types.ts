@@ -3569,6 +3569,7 @@ export type Database = {
           links: Json
           location_city: string | null
           location_country: string | null
+          location_country_code: string | null
           longitude: number | null
           membership_tier_id: string
           region_attested_at: string | null
@@ -3597,6 +3598,7 @@ export type Database = {
           links?: Json
           location_city?: string | null
           location_country?: string | null
+          location_country_code?: string | null
           longitude?: number | null
           membership_tier_id?: string
           region_attested_at?: string | null
@@ -3625,6 +3627,7 @@ export type Database = {
           links?: Json
           location_city?: string | null
           location_country?: string | null
+          location_country_code?: string | null
           longitude?: number | null
           membership_tier_id?: string
           region_attested_at?: string | null
@@ -5384,6 +5387,7 @@ export type Database = {
           skill: string
         }[]
       }
+      fold_country_code: { Args: { raw: string }; Returns: string }
       gen_random_uuid: { Args: never; Returns: string }
       gen_salt: { Args: { "": string }; Returns: string }
       get_signup_mode: { Args: never; Returns: string }
@@ -5569,6 +5573,8 @@ export type Database = {
         | "builder_path"
         | "investor_path"
         | "intelligence_updates"
+        | "supporter_spaces"
+        | "elevated_limits"
       mod_action_type:
         | "remove_content"
         | "restore_content"
@@ -5853,6 +5859,8 @@ export const Constants = {
         "builder_path",
         "investor_path",
         "intelligence_updates",
+        "supporter_spaces",
+        "elevated_limits",
       ],
       mod_action_type: [
         "remove_content",

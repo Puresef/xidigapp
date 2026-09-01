@@ -4,6 +4,7 @@ import { apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/pagination';
+import { VERIFIED_PROFILE_STATUSES } from '@/lib/profile-verified';
 import { applyLocationGranularity, loadLocationGranularities } from '@/lib/profile-view';
 import { normalizeSearchName } from '@/lib/search-norm';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -20,8 +21,12 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  */
 
 const querySchema = z.object({
-  skill: z.string().trim().min(1).max(40).optional(),
-  lane: z.string().trim().min(1).max(40).optional(),
+  // skills/lanes are stored as canonical lowercase tokens (skill trigger
+  // 20260718200000; lane slugs format-locked lowercase) and `contains` is a
+  // case-sensitive text[] match — fold the params like openTo below, so
+  // ?skill=React from the free-text /suuq input or a deep link still hits.
+  skill: z.string().trim().toLowerCase().min(1).max(40).optional(),
+  lane: z.string().trim().toLowerCase().min(1).max(40).optional(),
   country: z.string().trim().min(1).max(120).optional(),
   city: z.string().trim().min(1).max(120).optional(),
   openTo: z
@@ -102,7 +107,7 @@ export async function GET(request: Request): Promise<Response> {
     if (params.city) query = query.ilike('location_city', params.city);
     // Verified filter (§14): both verified tiers count as "verified".
     if (params.verification === 'verified') {
-      query = query.in('verification_status', ['community_verified', 'identity_verified']);
+      query = query.in('verification_status', [...VERIFIED_PROFILE_STATUSES]);
     }
     if (params.skill) query = query.contains('skills', [params.skill]);
     if (params.lane) query = query.contains('lanes', [params.lane]);

@@ -37,7 +37,10 @@ export async function findLabsSeekingSkills(
   client: SupabaseClient<Database>,
   skills: string[],
 ): Promise<LabMatch[]> {
-  const wanted = [...new Set(skills.map((s) => s.trim()).filter(Boolean))];
+  // Fold to the canonical lowercase skill token — lab_skill_needs.skill is
+  // trigger-normalized (migration 20260901000100) and the .in() join below is
+  // case-sensitive, so an unfolded "React" would match nothing.
+  const wanted = [...new Set(skills.map((s) => s.trim().toLowerCase()).filter(Boolean))];
   if (wanted.length === 0) return [];
 
   const { data: needs } = await client

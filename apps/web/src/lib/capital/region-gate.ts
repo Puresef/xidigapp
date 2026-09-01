@@ -33,7 +33,12 @@ export interface GateDecision {
 }
 
 export interface GateInputs {
-  /** profiles.location_country for the caller (may be null if unset). */
+  /**
+   * profiles.location_country_code for the caller — the server-derived ISO
+   * alpha-2 fold of the free-text display country (null if unset/unrecognized).
+   * Never the raw display string: display text and compliance input are
+   * deliberately separate columns (migration 20260901000000).
+   */
   profileCountry: string | null | undefined;
   /** Country derived from the request's geo-IP header (null if unknown). */
   geoCountry: string | null | undefined;

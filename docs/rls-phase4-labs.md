@@ -13,7 +13,7 @@ any lab table.
 
 | Function                   | Answers                                                   | Notes                                 |
 | -------------------------- | --------------------------------------------------------- | ------------------------------------- |
-| `is_supporter()`           | caller is on a paid tier (`membership_tier_id <> 'free'`) | gates `is_supporter_only` Spaces      |
+| `is_supporter()`           | caller's tier holds the `supporter_spaces` capability (`tier_capabilities` join; migration 20260901000300 — no longer "any paid tier") | gates `is_supporter_only` Spaces      |
 | `is_lab_member(lab)`       | caller is an `active` member of `lab`                     | Private read + engagement gates       |
 | `can_read_lab(lab)`        | caller may read the Space                                 | implements §16 Private/Members/Public |
 | `can_read_lab_roster(lab)` | caller may read the member list                           | applies `member_list_visibility`      |

@@ -20,6 +20,7 @@ import { getLitePrefs } from '@/lib/lite/server';
 import { getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { encodeCursor } from '@/lib/pagination';
+import { isVerifiedProfile } from '@/lib/profile-verified';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@xidig/db';
@@ -83,9 +84,7 @@ async function computeRequestContext(
   return {
     sharedLabName,
     repliedAskTitle: replyRow?.posts?.title ?? null,
-    verified:
-      profile.data?.verification_status === 'community_verified' ||
-      profile.data?.verification_status === 'identity_verified',
+    verified: isVerifiedProfile(profile.data?.verification_status),
     memberYear: profile.data?.created_at
       ? new Date(profile.data.created_at).getFullYear()
       : null,

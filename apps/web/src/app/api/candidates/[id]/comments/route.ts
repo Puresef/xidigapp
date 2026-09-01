@@ -12,7 +12,7 @@ import {
 } from '@/lib/plaza/constants';
 import { commentCreateSchema } from '@/lib/plaza/schemas';
 import { COMMENT_COLUMNS, hydrateComments, type CommentRow } from '@/lib/plaza/views';
-import { isSupporter } from '@/lib/posts-api';
+import { hasCapability } from '@/lib/membership';
 import { scanTextContent } from '@/lib/moderation/scan';
 import { notifyMentions } from '@/lib/notifications/mentions';
 import { insertNotification } from '@/lib/notifications/notify';
@@ -95,9 +95,9 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
 
     const cand = await loadCandidateForViewer(ctx, id);
 
-    const supporter = await isSupporter(ctx);
+    const elevated = await hasCapability(ctx, 'elevated_limits');
     const withinLimit = await checkRateLimit(`comments:${ctx.appUser.id}`, {
-      max: supporter ? COMMENT_LIMIT_SUPPORTER : COMMENT_LIMIT_FREE,
+      max: elevated ? COMMENT_LIMIT_SUPPORTER : COMMENT_LIMIT_FREE,
       windowSeconds: RATE_WINDOW_DAY_SECONDS,
     });
     if (!withinLimit) throw new ApiError('comment_limit', 429);

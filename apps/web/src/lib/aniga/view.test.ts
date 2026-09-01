@@ -568,7 +568,9 @@ describe('looking for — every match carries a reason (§3.4)', () => {
   function matchCaller() {
     return new FakeClient(
       callerSeeds({
-        lab_skill_needs: [{ lab_id: LAB, skill: 'Amniga xogta' }],
+        // Stored canonical: lab_skill_needs.skill is btrim(lower()) since
+        // migration 20260901000100, same as every other skill surface.
+        lab_skill_needs: [{ lab_id: LAB, skill: 'amniga xogta' }],
         labs: [
           {
             id: LAB,
@@ -596,7 +598,7 @@ describe('looking for — every match carries a reason (§3.4)', () => {
     expect(match.reason).toBe(t('profile.matchReasonSkill'));
     expect(match.reason.length).toBeGreaterThan(0);
     expect(match.title).toContain('Suuq-Card');
-    expect(match.title).toContain('Amniga xogta');
+    expect(match.title).toContain('amniga xogta');
     expect(match).toMatchObject({ href: '/labs/suuq-card', memberCount: 2 });
   });
 

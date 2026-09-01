@@ -108,6 +108,15 @@ export async function PATCH(
     const input = verificationDecisionSchema.parse(body);
 
     if (input.decision === 'approved') {
+      // Exhaustiveness guard BEFORE any state is written. The award effects
+      // below enumerate verification types and there is NO transaction — an
+      // unhandled type (the enum grows by migration; if/else-if has no
+      // compile-time exhaustiveness) must 500 here, not record an approved
+      // status + mod action + notification with zero credential effect.
+      if (verification.type !== 'identity' && verification.type !== 'business') {
+        throw new Error(`unhandled verification type: ${String(verification.type)}`);
+      }
+
       const { error } = await admin
         .from('verifications')
         .update({

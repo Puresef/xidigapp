@@ -131,6 +131,8 @@ This PRD is the single source of truth for building **Xidig v1.0** as a first‑
 - Report: reporterUserId, targetType, targetId, reason, status, resolution
 - AuditLog: actorUserId, action, targetType, targetId, metadata, createdAt
 
+> **Shipped-schema note (Sep 2026):** the raw shapes above are the original sketch, and the built schema has since superseded several of them the §25.5 way — lanes/skills ride seeded lookup tables with normalize triggers and a suggest-to-admin flow (raw arrays remain only as canonical-token storage), listing categories and membership tiers are slug-keyed lookup tables, tags are id-referenced rows, and `location_country` (display text) is paired with a derived `location_country_code` for the Capital gate. Where this section and the migrations disagree, the migrations win (§ PRD-is-living).
+
 ## 11) Prompt pack (copy/paste)
 
 ### How to use this prompt pack
@@ -590,6 +592,7 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 - **Somali business intelligence layer:** surface aggregate insights from Directory data — "37 fintech builders in Mogadishu", "most active sector this month: import/export"; monthly intelligence report emailed to Supporters; a press-worthy data layer no one else produces for this market
 - **Export readiness score:** for import/export business listings, an optional checklist score (documentation, certifications, capacity, contacts); unique data layer for the market
 - **Location-based discovery:** members set where they live / are based on their profile (free-text city/region via locationCity/locationCountry — see §10, editable anytime); Directory, Map, and matching use **proximity / distance** (and optionally timezone), not a fixed grouping; there is no separate chapter or city-grouping taxonomy
+- **Future-ready (§25.5):** Directory, map, and matching remain Somali-first at launch, but location and taxonomy stay modeled so future communities/markets can be added without a rewrite — normalized taxonomy tokens (lanes/skills/categories as lookup rows), free-text geography kept separate from any derived/compliance fields, no Somali-only assumption baked into query logic
 
 ## 19) Moderation, safety & account policy (standard app policy)
 
@@ -626,7 +629,7 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 
 ## 22) Platform requirements
 
-- **Bilingual:** Somali + English UI from day one (i18n architecture), per-user toggle
+- **Bilingual:** Somali + English UI from day one (i18n architecture), per-user toggle. EN/SO are the only launch languages, but the i18n system must support additional locales later (§25.5): compiler-enforced `Record<Locale, …>` registration, `name_<locale>` label columns on lookup tables, no logic keyed on display strings — see docs/i18n.md "Adding a locale"
 - **Mobile:** responsive PWA, installable, push notifications (Android full; iOS 16.4+ limited), lightweight
 - **API-first architecture:** clean separation between frontend and backend from day one so a React Native app can consume the same API in v1.2 without a rewrite
 - **Low-bandwidth mode ("Lite" / Xawli yar) — defer, never disable:** Lite mode is a **delivery constraint, not a scope constraint** — no feature is ever cut or hidden for bandwidth. Every image/embed/map renders through one reusable **MediaSlot** component: normal mode renders the asset (WebP + lazy-loading everywhere); Lite mode renders a ~0-byte placeholder (blurhash/LQIP stored at upload, or initials avatar) with the alt-text label, estimated size, and a **(Show / Muuji)** tap target that fetches that one asset on demand. Revealed assets stay visible for the session; pages with several hidden assets offer "show all on this page". **Granular controls, not one kill-switch:** images / embeds / map tiles / animations individually toggleable plus bundles (Text only / Essentials / Everything) and a "small avatars always on" option (<8 KB thumbs keep the app feeling human at near-zero cost). A data-saved counter ("Lite mode saved you ~4.2 MB this week") makes the mode feel like a gift. **Auto pop-up offering the mode when 3G/2G is detected or the user is in a low-bandwidth region.** Future phases must build to this pattern — new media features route through MediaSlot instead of being descoped.
@@ -673,6 +676,22 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 - No Swift/Kotlin native planned — React Native via Expo covers all requirements without two separate codebases
 - Principle: free keeps the community core (Plaza, chat, social, browsing); Supporter unlocks governance, Lab creation, Builder/Investor paths, and heavy-bandwidth features
 
+## 25.5) Future-ready architecture (Somali-first surface, extensible infrastructure)
+
+> **The sync rule: surface positioning stays Somali-first. Architecture stays extensible. No global launch features unless separately approved.**
+
+- **Keep hardcoded at the surface** — copy, brand, and seeded data are correctly Somali-first: Somali builders, Somali businesses, diaspora, the Somalia-region Capital gate, EN/SO as the launch languages, Somali-economy seed tags/lanes/categories.
+- **Avoid hardcoding in architecture** — database schema, RLS, API logic, search/matching, i18n plumbing, and URL structure must not assume *forever*: only one community, only Somali users, only EN/SO locales, only one tag vocabulary, only Somalia/diaspora geography, only one verification type, only one partner type.
+- **The working rules** (already the house style — hold every new build to them):
+  - Lookup/config tables for lists likely to grow (tiers, lanes, skills, categories, badges); enums only for closed state machines. DB enum *values* stay English; the display layer maps them to vocabulary.
+  - Search and matching join on normalized IDs/slugs/canonical tokens, never display labels ("match both labels to the same normalized token, never 'finance' text to 'maal' text").
+  - Access control via roles/capabilities/lookup joins (`tier_capabilities` + `has_capability()`), never a literal business value (tier slug, country name, locale) in a policy or route branch.
+  - Display text and compliance/logic inputs are separate fields (e.g. free-text `location_country` for display vs the derived `location_country_code` the Capital gate reads).
+  - EN/SO are the only launch languages, but a third locale must be additive: register-in-a-`Record<Locale, …>` plumbing, `name_<locale>` label columns, no logic keyed on display strings.
+- **Classification for audits** — every hardcoding finding is one of: (1) correct surface copy, leave as-is; (2) acceptable v1.0 constant, leave + document; (3) risky architecture hardcoding, fix minimally; (4) scope creep, reject for v1.0.
+- **Explicitly NOT to build now** (scope creep, re-affirmed by the Sep 2026 audit): a communities/markets table or `community_id` columns, locale-prefixed URLs/hreflang, translation-table engines, a country gazetteer/geocoder, a config-driven verification-type registry, partner/program abstractions, any UI for hypothetical non-Somali audiences. These wait until a real flow exists, not a hypothetical one.
+- **No worldwide repositioning:** future-ready seams are an architecture posture only — the product is not repositioned as generic or worldwide, in copy, SEO, or strategy. Somali-first is the launch and near-term identity, not a temporary skin.
+
 ## 26) Build inputs & constants (for one-shot builds)
 
 - **Design:** follow the [Xidig Brand Guide](https://app.notion.com/p/Xidig-Brand-Guide-4b6bc4ea07404a96aa81aad60d30e9b8?pvs=21) for colors, typography, and tone
@@ -687,6 +706,7 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 - **Required accounts/env vars before build:** Supabase, Resend or Postmark, MapTiler, Typesense/Meilisearch, PostHog, Upstash, Sentry, AI provider key (moderation pre-scan + AI accounts)
 - **Plain language errors:** every error state must use human language, not technical codes; errors should explain what happened, why, and what to do next; see section 27
 - **Human inputs a builder cannot generate:** Somali translation strings (ship English + i18n keys first), final brand assets, content policy document, verifier call scheduling (use an external booking link in v1), legal review of the Capital disclaimer, seed-content review before launch
+- **Future-ready build rule (§25.5):** do not add global launch features, but flag unnecessary hardcoding of community, language, region, tags, or verification types — when a schema/API/RLS/tag/i18n/location choice would needlessly block future communities, languages, or markets, choose the extensible version if it adds no user-facing scope
 
 ## 27) Plain language error messages
 

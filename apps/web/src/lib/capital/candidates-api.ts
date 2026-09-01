@@ -109,26 +109,26 @@ export async function requireReviewer(ctx: AuthContext, candidateId: string): Pr
   if (!data) throw new ApiError('reviewer_conflict', 403);
 }
 
-/** The caller's Somalia region signals (profile country) for the invest gate. */
+/**
+ * The caller's profile country for the invest gate — the server-derived
+ * location_country_code (ISO alpha-2, trigger-folded from the free-text
+ * display country; migration 20260901000000), NOT the raw display string.
+ * A member who typed "Somalia"/"Soomaaliya" folds to 'so' and passes; an
+ * unrecognized country folds to null and fails closed (country_mismatch).
+ */
 export async function getProfileCountry(
   admin: SupabaseClient<Database>,
   userId: string,
 ): Promise<string | null> {
   const { data, error } = await admin
     .from('profiles')
-    .select('location_country')
+    .select('location_country_code')
     .eq('user_id', userId)
     .maybeSingle();
   if (error) throw new Error(`profile country lookup failed: ${error.message}`);
-  return data?.location_country ?? null;
+  return data?.location_country_code ?? null;
 }
 
-/** True when the caller holds a membership capability (RLS-scoped rpc). */
-export async function hasCapability(
-  ctx: AuthContext,
-  cap: Database['public']['Enums']['membership_capability'],
-): Promise<boolean> {
-  const { data, error } = await ctx.supabase.rpc('has_capability', { cap });
-  if (error) throw new Error(`capability check failed: ${error.message}`);
-  return data === true;
-}
+// Capability checks live in the shared membership boundary now; re-exported
+// here so existing Capital imports keep working.
+export { hasCapability } from '@/lib/membership';

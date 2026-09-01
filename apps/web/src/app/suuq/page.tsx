@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { BusinessDirectory } from '@/components/suuq/business-directory';
 import { PeopleDirectory } from '@/components/suuq/people-directory';
+import { loadLaneCatalog } from '@/lib/aniga/lanes';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getCategories } from '@/lib/categories';
 import { getLitePrefs } from '@/lib/lite/server';
@@ -34,6 +35,9 @@ export default async function SuuqPage({
   const t = await getT();
   const locale = await getLocale();
   const categories = await getCategories(ctx.supabase, locale);
+  // Lane filter options from the lanes lookup table (localized; ops-added
+  // lanes appear without a deploy) — same catalog the profile editor uses.
+  const laneOptions = tab === 'people' ? await loadLaneCatalog(ctx.supabase, locale) : [];
   const prefs = tab === 'map' ? await getLitePrefs() : null;
 
   return (
@@ -70,7 +74,7 @@ export default async function SuuqPage({
       </div>
 
       {tab === 'people' ? (
-        <PeopleDirectory />
+        <PeopleDirectory laneOptions={laneOptions} />
       ) : tab === 'map' && prefs ? (
         <BusinessDirectory categories={categories} view="map" prefs={prefs} />
       ) : (

@@ -52,16 +52,6 @@ export function isModOrAdmin(ctx: AuthContext): boolean {
   return ctx.appUser.role === 'mod' || ctx.appUser.role === 'admin';
 }
 
-/** §26 tier check: any non-free membership tier gets the Supporter limits. */
-export async function isSupporter(ctx: AuthContext): Promise<boolean> {
-  const { data } = await ctx.supabase
-    .from('profiles')
-    .select('membership_tier_id')
-    .eq('user_id', ctx.appUser.id)
-    .maybeSingle();
-  return (data?.membership_tier_id ?? 'free').toLowerCase() !== 'free';
-}
-
 /** The text blob the AI pre-scan judges (§15): title + body when both exist. */
 export function postScanText(title: string | null | undefined, body: string): string {
   return [title, body].filter(Boolean).join('\n\n');
