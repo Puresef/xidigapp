@@ -41,8 +41,10 @@ export const dynamic = 'force-dynamic';
  * Signed-out visitors get the narrow build-in-public projection when the
  * candidate is public/timeline_public — that projection NEVER carries invest
  * language. Reviewer console (rubric form + decision controls) shows for a
- * mod/admin who is NOT a member of the candidate's Lab (recusal §17). Invest is
- * region-gated inside InterestBar → MaalgeliCta.
+ * mod/admin who is NOT a member of the candidate's Lab (recusal §17). There is
+ * no invest surface: investing is not currently offered on Xidig (A2
+ * containment) — InterestBar carries only the non-financial help/cosign
+ * signals, and the API refuses invest intents server-side.
  */
 
 const idSchema = z.string().uuid();

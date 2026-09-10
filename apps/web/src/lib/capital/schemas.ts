@@ -128,9 +128,10 @@ export const candidateInterestSchema = z.object({
 
 export type CandidateInterestInput = z.infer<typeof candidateInterestSchema>;
 
-// --- fund-first invest intent (candidate_id = null) -------------------------
-// The Maalgeli CTA opens the Xidig Venture Fund first; attestation is REQUIRED
-// because this is invest intent and always region-gated.
+// --- fund-level invest intent (candidate_id = null) -------------------------
+// HISTORICAL SHAPE: the old fund funnel's payload. New submissions are refused
+// (A2 containment — investing is not currently offered); the schema is kept
+// only as the record of what the retraction DELETE path's rows once carried.
 
 export const fundInterestSchema = z.object({
   message: z.string().trim().max(INTEREST_MESSAGE_MAX).optional(),

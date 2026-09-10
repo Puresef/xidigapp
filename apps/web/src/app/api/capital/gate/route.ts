@@ -1,39 +1,25 @@
-import { apiOk, handleApiError } from '@/lib/api';
+import { ApiError, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
-import { getProfileCountry } from '@/lib/capital/candidates-api';
-import { evaluateCapitalGate, getGeoCountry } from '@/lib/capital/region-gate';
-import { gateEvaluateSchema } from '@/lib/capital/schemas';
-import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
- * Evaluate + persist the Somalia region gate for the current session (§17,
- * compliance-critical). This is what the Maalgeli UI calls to decide whether to
- * show the invest surface at all: it reads the three signals — profile country,
- * geo-IP-derived country header, and the self-attestation checkbox — and returns
- * the decision. evaluateCapitalGate ALWAYS writes an append-only
- * capital_gate_evaluations row (compliance log) regardless of the outcome; the
- * raw IP is never read or stored. This is a decision-only endpoint — it creates
- * no interest.
+ * Capital region-gate endpoint — DISABLED (A2 containment).
+ *
+ * Investment intent is not currently offered on Xidig: there is no approved
+ * fund or offering, so there is nothing for this endpoint to gate. It refuses
+ * every caller with the truthful capital_unavailable error — deliberately NOT
+ * a geography message, because availability (not member location) is the
+ * reason. No gate is evaluated and no capital_gate_evaluations row is written
+ * (the append-only log records real evaluations only; the historical rows are
+ * retained untouched). The pure region-gate lib (lib/capital/region-gate.ts)
+ * and its tests are kept for any future, separately-approved activation —
+ * which requires the PRD §15/D-08 legal gates plus an explicit code change
+ * here, never a flag flip.
  */
 
-export async function POST(request: Request): Promise<Response> {
+export async function POST(): Promise<Response> {
   try {
-    const ctx = await requireUser();
-    const input = gateEvaluateSchema.parse(await request.json());
-    const admin = getSupabaseAdmin();
-
-    const geoCountry = getGeoCountry(request);
-    const profileCountry = await getProfileCountry(admin, ctx.appUser.id);
-
-    const decision = await evaluateCapitalGate(admin, {
-      userId: ctx.appUser.id,
-      profileCountry,
-      geoCountry,
-      attested: input.attested,
-      candidateId: null,
-    });
-
-    return apiOk({ granted: decision.granted, reason: decision.reason });
+    await requireUser();
+    throw new ApiError('capital_unavailable', 403);
   } catch (error) {
     return handleApiError(error);
   }

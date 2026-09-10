@@ -259,6 +259,7 @@ export const en = {
 
   // --- Labs / Warshad (§27 Labs block) ---
   'error.notSupporter': 'Creating a Lab requires a Supporter membership.',
+  'error.capitalUnavailable': "Investing isn't offered on Xidig right now.",
   'error.charterIncomplete':
     'Your Lab charter needs a few more fields before it can go live. Complete them here.',
   'error.labSlugTaken': 'That Lab address is already taken. Try a different one.',
@@ -308,11 +309,6 @@ export const en = {
     "You've already voted in this category. Each member gets one vote per category.",
   // Munaasabado dispatch (Task 2) — Community Awards results, Mentor booking.
   'error.awardCycleNotClosed': 'Voting is still open for that cycle.',
-
-  // Informational notice (non-error): non-Somalia invest attempt falls back to
-  // the informational view. Returned via apiNotice, never thrown.
-  'notice.capitalRegionGated':
-    "Investment features are available to Somalia-region members. You're seeing the informational view.",
 
   // Onboarding — first-session checklist (PRD §20)
   'onboarding.completeProfile': 'Complete your profile',
@@ -1755,29 +1751,12 @@ export const en = {
   'capital.cosignDone': 'Co-signed',
   'capital.canHelp': 'I can help',
   'capital.canHelpDone': 'Offered to help',
-  'capital.maalgeliHint': 'Opens the Xidig Venture Fund.',
-  'capital.regionGatedNotice':
-    "Investment features are available to Somalia-region members. You're seeing the informational view.",
-  'capital.exploreFundInfo': 'You can still explore the Xidig Venture Fund.',
-  // Region attestation modal
-  'capital.attestTitle': 'Confirm your region',
-  'capital.attestBody':
-    'Investment intent is available to members based in Somalia. Please confirm before continuing.',
-  'capital.attestCheckbox': 'I confirm I am based in Somalia.',
-  'capital.attestConfirm': 'Confirm',
-  // Venture fund modal (fund-first funnel)
-  'capital.fundTitle': 'Xidig Venture Fund',
-  'capital.fundIntro':
-    'Register your interest in the fund. This is the primary way to back ventures on Xidig.',
-  'capital.fundMessageLabel': "Anything you'd like the fund to know (optional)",
-  'capital.fundExpressCta': 'Register fund interest',
-  'capital.fundInterestRecorded': 'Your fund interest is recorded. The team will be in touch.',
-  'capital.fundSecondaryToggle': 'Also flag interest in this specific Candidate',
-  'capital.candidateInterestLabel': 'Note for this Candidate (optional)',
-  'capital.candidateInterestCta': 'Flag interest in this Candidate',
-  'capital.candidateInterestRecorded': 'Noted — your interest in this Candidate is recorded.',
+  // A2 containment: invest/fund promotional keys removed with their surfaces —
+  // investing is not currently offered, and copy must not advertise a fund or
+  // frame unavailability as a geography rule. The disclaimer stays on the
+  // standalone Capital/About surfaces and states the plain status.
   'capital.securitiesDisclaimer':
-    'Nothing here is an offer of securities; v1.0 is intent capture only.',
+    'Nothing here is an offer of securities, and Xidig does not currently offer investment.',
   // Venture timeline
   'capital.timelineHeading': 'Venture timeline',
   'capital.timelineCreated': 'Created',

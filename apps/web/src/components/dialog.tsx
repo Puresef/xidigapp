@@ -124,7 +124,7 @@ export function Dialog({
     // subsequent keydown then bypasses the overlay handler — Tab walks the
     // hidden page and Escape goes dead. That matters whenever the press does
     // NOT dismiss (closeOnBackdrop={false}, or an onClose that swallows the
-    // call like AttestationModal while pending); when it does dismiss, the
+    // call while an action is pending); when it does dismiss, the
     // close effect hands focus back to the invoker so preventing the default
     // is moot. preventDefault on mousedown blocks only the focus change.
     event.preventDefault();

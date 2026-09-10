@@ -18,10 +18,9 @@ import { describe, expect, it } from 'vitest';
 
 // Repo-relative to this test (apps/web/src/components/).
 const FORBIDDEN = [
-  // Money-critical Maal / §17 compliance funnel.
-  'capital/maalgeli-cta.tsx',
-  'capital/attestation-modal.tsx',
-  'capital/venture-fund-modal.tsx',
+  // Money-critical Maal surfaces. (The maalgeli-cta / attestation-modal /
+  // venture-fund-modal entries were removed with those components under A2
+  // containment — no invest funnel exists to police.)
   'capital/review-form.tsx',
   'capital/decision-controls.tsx',
   // Maal venture workspace (F2 §5, frames 7c–7g + m3/m5). The ledger is an

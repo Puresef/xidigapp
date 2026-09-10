@@ -12,18 +12,17 @@ import type { InterestCounts } from '@/lib/capital/views';
 import type { PlainError } from '@/lib/errors';
 
 import { PlainErrorBanner } from '../auth/plain-error';
-import { MaalgeliCta } from './maalgeli-cta';
 
 /**
- * Interest bar (§17). Three signals:
- *  - Garab / Co-sign: social-proof count ("142 co-signs") + a toggle. NEVER
- *    gated, available in every region.
- *  - "I can help": a non-financial offer toggle. NEVER gated.
- *  - Maalgeli (Invest): region-gated — delegated entirely to MaalgeliCta, which
- *    hides itself (informational view) outside Somalia.
+ * Interest bar. Two signals, both non-financial and NEVER gated:
+ *  - Garab / Co-sign: social-proof count ("142 co-signs") + a toggle.
+ *  - "I can help": a concrete non-financial offer toggle.
  *
- * help/cosign counts come from candidate_interest_counts (aggregate — no
- * enumeration of who). The viewer's own toggles come from their own-row reads.
+ * The invest slot (Maalgeli CTA → fund modal) was removed under A2
+ * containment: Xidig does not currently offer investment, so no invest
+ * affordance or fund copy renders here at all. help/cosign counts come from
+ * candidate_interest_counts (aggregate — no enumeration of who). The viewer's
+ * own toggles come from their own-row reads.
  */
 
 type InterestType = Enums<'interest_type'>;
@@ -50,7 +49,6 @@ export function InterestBar({
   // Ceremony on ACTIVATING a co-sign (spec §4) — never on un-toggling.
   const [celebrated, setCelebrated] = useState(0);
 
-  // help + cosign only — invest is never toggled here (goes through MaalgeliCta).
   function toggle(type: 'help' | 'cosign') {
     if (pending) return;
     const active = mine.has(type);
@@ -135,9 +133,6 @@ export function InterestBar({
           {mine.has('help') ? t('capital.canHelpDone') : t('capital.canHelp')}
         </button>
       </div>
-
-      {/* Region-gated invest — hides itself outside Somalia */}
-      <MaalgeliCta candidateId={candidateId} />
     </section>
   );
 }

@@ -394,9 +394,8 @@ export const CANDIDATE_META = {
     ],
     helpInterests: ['khalid_codes', 'hamdi_agritech', 'daauud_devops'],
     cosignInterests: ['yusuf_xawilaad', 'cawo_cargo', 'sagal_ux', 'khadra_coop', 'deeq_organiser'],
-    /** ifrah passes the SO gate; abshir is denied (US profile country). */
-    investGranted: ['ifrah_invest'],
-    investDenied: [{ handle: 'abshir_maal', reason: 'country_mismatch', profileCountry: 'US' }],
+    // (investGranted/investDenied removed under A2 containment — the seeder no
+    // longer fabricates invest intents or gate evaluations.)
   },
   /** Draft candidate — visible only to lab members/creator/mods. */
   hooyo: {

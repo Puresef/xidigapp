@@ -1111,6 +1111,8 @@ export const so = {
 
   // Labs / Warshad errors (§27)
   'error.notSupporter': 'Abuurista Warshad waxay u baahan tahay xubinnimo Taageere.',
+  // PROVISIONAL wording pending the native SO review (G34) — neutral status only.
+  'error.capitalUnavailable': 'Maalgashi hadda laguma bixiyo Xidig.',
   'error.charterIncomplete':
     'Axdiga Warshaddaadu wuxuu u baahan yahay dhawr meelood oo dheeraad ah ka hor inta aan la daabicin. Halkan ku dhammee.',
   'error.labSlugTaken': 'Ciwaankaas Warshad horey ayaa loo qaatay. Mid kale isku day.',
@@ -1158,9 +1160,6 @@ export const so = {
   'error.awardAlreadyVoted':
     'Horeba ayaad ugu codaysay qeybtan. Xubin kasta waxay codaysaa hal cod qeyb kasta.',
   'error.awardCycleNotClosed': 'Codayntu weli way furan tahay xilligaas.',
-
-  'notice.capitalRegionGated':
-    'Astaamaha maalgelintu waxay diyaar u yihiin xubnaha gobolka Soomaaliya. Waxaad arkaysaa muuqaalka macluumaadka.',
 
   // Fariimo — Messages / DMs
   'messages.subtitle': 'Sheekooyinkaaga 1:1 ee dhisayaasha kale.',
@@ -1674,31 +1673,10 @@ export const so = {
   'capital.cosignDone': 'La garbeeyay',
   'capital.canHelp': 'Waan caawin karaa',
   'capital.canHelpDone': 'Caawimo la bixiyay',
-  'capital.maalgeliHint': 'Waxay furaysaa Sanduuqa Maalgashiga Xidig.',
-  'capital.regionGatedNotice':
-    'Sifooyinka maalgashigu waxay diyaar u yihiin xubnaha gobolka Soomaaliya. Waxaad arkaysaa muuqaalka macluumaadka.',
-  'capital.exploreFundInfo': 'Wali waad baari kartaa Sanduuqa Maalgashiga Xidig.',
-  // Region attestation modal
-  'capital.attestTitle': 'Xaqiiji gobolkaaga',
-  'capital.attestBody':
-    'Ujeeddada maalgashigu waxay diyaar u tahay xubnaha ku sugan Soomaaliya. Fadlan xaqiiji ka hor intaadan sii wadin.',
-  'capital.attestCheckbox': 'Waxaan xaqiijinayaa inaan ku sugnahay Soomaaliya.',
-  'capital.attestConfirm': 'Xaqiiji',
-  // Venture fund modal (fund-first funnel)
-  'capital.fundTitle': 'Sanduuqa Maalgashiga Xidig',
-  'capital.fundIntro':
-    'Diiwaan geli xiisahaaga sanduuqa. Tanu waa habka ugu horreeya ee lagu taageero mashaariicda Xidig.',
-  'capital.fundMessageLabel': 'Wax kasta oo aad rabto in sanduuqu ogaado (ikhtiyaari)',
-  'capital.fundExpressCta': 'Diiwaan geli xiisaha sanduuqa',
-  'capital.fundInterestRecorded':
-    'Xiisahaaga sanduuqa waa la diiwaan geliyay. Kooxdu way kula soo xiriiri doontaa.',
-  'capital.fundSecondaryToggle': 'Sidoo kale muuji xiisaha Musharaxan gaarka ah',
-  'capital.candidateInterestLabel': 'Qoraal Musharaxan (ikhtiyaari)',
-  'capital.candidateInterestCta': 'Muuji xiisaha Musharaxan',
-  'capital.candidateInterestRecorded':
-    'La diiwaan geliyay — xiisahaaga Musharaxan waa la kaydiyay.',
+  // A2 containment: invest/fund promotional keys removed with their surfaces
+  // (see en.ts note). PROVISIONAL wording pending the native SO review (G34).
   'capital.securitiesDisclaimer':
-    'Waxba halkan lagama bixinayo dammaanad-qaad maalgashi; nooca 1.0 waa kaliya ururinta ujeeddada.',
+    'Waxba halkan lagama bixinayo dammaanad-qaad maalgashi; Xidig hadda ma bixiso maalgashi.',
   // Venture timeline
   'capital.timelineHeading': 'Jadwalka mashruuca',
   'capital.timelineCreated': 'La abuuray',

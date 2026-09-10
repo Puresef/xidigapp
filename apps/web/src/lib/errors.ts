@@ -184,6 +184,12 @@ export const ERROR_DEFS = {
   charter_incomplete: { messageKey: 'error.charterIncomplete' },
   lab_slug_taken: { messageKey: 'error.labSlugTaken' },
   lab_join_closed: { messageKey: 'error.labJoinClosed' },
+
+  // --- Capital (A2 containment) ------------------------------------------------------
+  // Investment intent is NOT currently offered on Xidig (no approved fund or
+  // offering). Truthful refusal — never framed as a geography restriction:
+  // eligibility is not the reason, availability is.
+  capital_unavailable: { messageKey: 'error.capitalUnavailable' },
   lab_already_member: { messageKey: 'error.labAlreadyMember' },
   lab_collab_invalid: { messageKey: 'error.labCollabInvalid' },
   pinned_full: { messageKey: 'error.pinnedFull' },
@@ -348,10 +354,6 @@ export const NOTICE_KEYS = {
   // Phase 4 (Labs). §27: "Your request to join has been sent…" — success-path
   // plain-language copy shown when a request-to-join Space accepts the request.
   lab_join_requested: 'lab.noticeJoinRequested',
-  // Phase 5 (Capital). §27: non-Somalia invest attempt falls back to the
-  // informational view — a success-path notice, never an error. The Maalgeli
-  // UI reads capital.regionGatedNotice; the API returns this on invest/gate.
-  capital_region_gated: 'notice.capitalRegionGated',
   // Phase 6 (Moderation / Verification / Account lifecycle) — §27 success-path
   // plain-language copy.
   appeal_submitted: 'messages.appealSubmitted',

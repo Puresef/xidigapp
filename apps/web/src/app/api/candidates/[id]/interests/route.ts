@@ -1,33 +1,37 @@
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
-import { apiNotice, apiOk, handleApiError } from '@/lib/api';
+import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
-import {
-  getProfileCountry,
-  loadCandidateForViewer,
-  parseCandidateId,
-} from '@/lib/capital/candidates-api';
-import { getGeoCountry, evaluateCapitalGate } from '@/lib/capital/region-gate';
+import { loadCandidateForViewer, parseCandidateId } from '@/lib/capital/candidates-api';
 import { candidateInterestSchema, interestTypeSchema } from '@/lib/capital/schemas';
 import type { InterestCounts } from '@/lib/capital/views';
-import { BADGE_SLUGS } from '@/lib/reputation/constants';
-import { awardBadge } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
- * Candidate interest signals (§17, compliance-critical).
+ * Candidate interest signals.
  *
- *   help  ("I can help")  — non-financial, any member, ALL regions, NEVER gated.
- *   cosign (Garab)        — non-financial, any member, ALL regions, NEVER gated.
- *   invest (Maalgeli)     — SOMALIA-REGION GATED: geo-IP country AND profile
- *                           country AND self-attestation, all three required.
+ *   help  ("I can help")  — non-financial, any member, NEVER gated.
+ *   cosign (Garab)        — non-financial, any member, NEVER gated.
+ *   invest                — SUBMISSION DISABLED (A2 containment): Xidig does
+ *                           not currently offer investment, so a new invest
+ *                           intent is refused with the truthful
+ *                           capital_unavailable error before any candidate
+ *                           lookup. Not a geography rule — availability is
+ *                           the reason. No gate evaluation, no gate logging,
+ *                           no row. DELETE still lets a member retract an
+ *                           invest intent recorded while the old funnel was
+ *                           live (data control, not promotion); other
+ *                           existing rows are retained untouched pending the
+ *                           owner's retention ruling (reconciliation Q2).
  *
- * For invest we ALWAYS evaluate + LOG the gate (evaluateCapitalGate writes an
- * append-only capital_gate_evaluations row). If the gate is not granted we do
- * NOT create the invest interest and return the informational
- * capital_region_gated notice — no invest action, no invest data. Reading a
- * candidate is required for any interest (a hidden candidate is a 404). Writes
- * go through the service role; counts return via candidate_interest_counts.
+ * No interest type awards a badge: the Early Backer award (previously granted
+ * on cosign AND invest) is stopped — a financially-connoted badge must not
+ * ride a non-financial support gesture, and no invest path exists. The badge
+ * definition and historically awarded badges are retained as truthful history.
+ *
+ * Reading a candidate is required for help/cosign (a hidden candidate is a
+ * 404). Writes go through the service role; counts return via
+ * candidate_interest_counts.
  */
 
 interface Ctx {
@@ -51,31 +55,15 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
     const ctx = await requireUser();
     const id = parseCandidateId((await context.params).id);
     const input = candidateInterestSchema.parse(await request.json());
+
+    // A2 containment: new invest intent is not offered — refused before any
+    // candidate lookup (the refusal reveals nothing about the candidate).
+    if (input.type === 'invest') throw new ApiError('capital_unavailable', 403);
+
     const admin = getSupabaseAdmin();
 
     // Must be able to read the candidate to express interest on it.
     await loadCandidateForViewer(ctx, id);
-
-    if (input.type === 'invest') {
-      // Region gate: geo header + profile country + attestation, all three.
-      const geoCountry = getGeoCountry(request);
-      const profileCountry = await getProfileCountry(admin, ctx.appUser.id);
-      const decision = await evaluateCapitalGate(admin, {
-        userId: ctx.appUser.id,
-        profileCountry,
-        geoCountry,
-        attested: input.attested === true,
-        candidateId: id,
-      });
-
-      if (!decision.granted) {
-        // Do NOT create the invest interest — informational view only.
-        return apiNotice('capital_region_gated', {
-          reason: decision.reason,
-          counts: await readCounts(admin, id),
-        });
-      }
-    }
 
     const { error } = await admin.from('interests').upsert(
       {
@@ -92,10 +80,6 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
       distinctId: ctx.appUser.id,
       userId: ctx.appUser.id,
     });
-    // A real "backing" (cosign/invest, not help) earns the Early Backer badge once.
-    if (input.type === 'cosign' || input.type === 'invest') {
-      await awardBadge(admin, { userId: ctx.appUser.id, slug: BADGE_SLUGS.earlyBacker });
-    }
 
     return apiOk({ counts: await readCounts(admin, id), type: input.type });
   } catch (error) {

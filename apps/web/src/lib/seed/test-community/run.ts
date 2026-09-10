@@ -658,35 +658,13 @@ async function seedCandidates(ctx: Ctx): Promise<void> {
       type: 'cosign' as const,
       message: null,
     })),
-    ...meta.investGranted.map((h) => ({
-      candidate_id: cand.id,
-      user_id: uid(ctx, h),
-      type: 'invest' as const,
-      message: 'Maalgeli intent (test community)',
-    })),
   ]);
 
-  // Region-gate compliance log: one granted, one denied evaluation.
-  await insertMany(ctx, 'capital_gate_evaluations', [
-    ...meta.investGranted.map((h) => ({
-      user_id: uid(ctx, h),
-      profile_country: 'SO',
-      geo_ip_country: 'SO',
-      attested: true,
-      granted: true,
-      reason: 'granted',
-      candidate_id: cand.id,
-    })),
-    ...meta.investDenied.map((d) => ({
-      user_id: uid(ctx, d.handle),
-      profile_country: d.profileCountry,
-      geo_ip_country: d.profileCountry,
-      attested: true,
-      granted: false,
-      reason: d.reason,
-      candidate_id: cand.id,
-    })),
-  ]);
+  // A2 containment: no invest interests and no gate evaluations are seeded —
+  // Xidig does not currently offer investment, and seed data must not
+  // fabricate an invest funnel that the product no longer has. (Historical
+  // Dev rows from earlier seeds are retained untouched pending the owner's
+  // retention ruling — reconciliation Q2.)
 
   // Candidate 2: a draft only lab members/creator/mods can see.
   const draft = await ctx.admin

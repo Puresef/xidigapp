@@ -5,8 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LocaleProvider } from '@xidig/i18n/react';
 
-import { AttestationModal } from './capital/attestation-modal';
-import { VentureFundModal } from './capital/venture-fund-modal';
 import { Dialog } from './dialog';
 
 /**
@@ -280,39 +278,6 @@ describe('Dialog', () => {
   });
 });
 
-describe('Capital modals on the Dialog primitive', () => {
-  it('AttestationModal: Escape cancels when idle, stays put while pending', () => {
-    const onCancel = vi.fn();
-    mount(
-      <AttestationModal open pending={false} onConfirm={() => {}} onCancel={onCancel} />,
-    );
-    expect(panel()).not.toBeNull();
-    pressKey('Escape');
-    expect(onCancel).toHaveBeenCalledTimes(1);
-
-    act(() => root!.unmount());
-    root = null;
-
-    // Pending: Escape/backdrop/corner-X all follow the disabled Cancel button.
-    mount(<AttestationModal open pending onConfirm={() => {}} onCancel={onCancel} />);
-    pressKey('Escape');
-    act(() => {
-      backdrop()!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    });
-    expect(onCancel).toHaveBeenCalledTimes(1);
-    expect(panel()).not.toBeNull();
-  });
-
-  it('VentureFundModal: renders titled dialog; Escape reaches onClose', () => {
-    const onClose = vi.fn();
-    mount(<VentureFundModal open candidateId={null} onClose={onClose} />);
-    const dlg = panel()!;
-    expect(dlg).not.toBeNull();
-    const heading = document.getElementById(dlg.getAttribute('aria-labelledby')!)!;
-    expect(heading.textContent).toBe('Xidig Venture Fund');
-    // Layout hook survives the migration.
-    expect(dlg.classList.contains('xidig-capital-fund')).toBe(true);
-    pressKey('Escape');
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-});
+// (The AttestationModal / VentureFundModal cases lived here until A2
+// containment removed those components — investing is not currently offered,
+// so no invest dialog exists to exercise.)
