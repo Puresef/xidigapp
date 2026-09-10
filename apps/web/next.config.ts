@@ -62,10 +62,12 @@ const nextConfig: NextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          // No code path uses these device APIs today (verified: zero
-          // getUserMedia/geolocation callers) — loosen per-feature if a
-          // future phase needs them (e.g. in-app verification calls).
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          // microphone=(self): DM voice notes (components/messages/voice-note.tsx)
+          // record via getUserMedia — an empty allowlist denies our own origin
+          // before the browser prompt. Camera/geolocation have zero callers;
+          // keep them locked until a real feature needs them (e.g. in-app
+          // verification calls). Pinned by lib/security-headers.test.ts.
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=()' },
         ],
       },
     ];
