@@ -7,9 +7,10 @@ import { frontMetadata } from '@/lib/seo';
 
 /**
  * /about — story and mission (docs/front-door-plan.md §3). Severable by
- * design: the fund/Maalgeli section is deliberately ABSENT until legal
- * sign-off (locked decision) — Capital is explained only as a candidate
- * pipeline with intent capture. Also owns the roles-not-careers message
+ * design: no fund section exists (A2 removed the invest funnel entirely) —
+ * Capital is explained only as an open candidate pipeline, with the copy
+ * stating that investing is not currently offered. Also owns the
+ * roles-not-careers message
  * (/careers 301s here: community roles are appointed from within, there is
  * no hiring page).
  */

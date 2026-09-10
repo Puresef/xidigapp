@@ -1531,12 +1531,12 @@ export const en = {
   'lab.dormantBanner':
     'This Lab has been quiet for 4 weeks and is marked Dormant. Are you still working on this? Revive it with a quick update.',
   'lab.ipBanner':
-    'Reminder: until the member vote settles ownership rules, anything you publish here stays yours. Publish artifacts thoughtfully.',
+    'Reminder: what you publish here stays yours. Publish artifacts thoughtfully.',
   'lab.skillGapBannerLead':
     'You’ve been looking for {skill} for over a week. Want to widen the net or refresh the ask?',
   'lab.crossPostedFrom': 'Cross-posted from {name}',
   'lab.candidateHandoffNote':
-    'This puts the Lab forward as a Venture Candidate — a hand-off marker. Investment tools come later.',
+    'This puts the Lab forward as a Venture Candidate — a hand-off marker. No investment tools are attached.',
   'lab.sprintCountdown': {
     one: '{count} day left in this sprint',
     other: '{count} days left in this sprint',
@@ -1807,13 +1807,17 @@ export const en = {
     'Start a casual Club; promote it to a Lab when it gets serious. Updates, decisions, links, and members stay in one place.',
   'marketing.blockCapitalTitle': 'Back what’s being built',
   'marketing.blockCapitalBody':
-    'Co-sign promising ventures, offer help, and follow build-in-public timelines. Investment-intent features are region-gated and intent-only — no live financial flows.',
+    'Co-sign promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
   'marketing.blockLiteTitle': 'Built for our internet',
   'marketing.blockLiteBody':
     'Somali and English from day one. Lite mode for slow connections — images, maps, and embeds load only when you tap.',
-  'marketing.blockOwnedTitle': 'Community-owned, not algorithm-owned',
+  // A3 claims containment: ownership/governance wording must reflect rights
+  // that actually exist (owner ruling). "Community-led" and "member
+  // participation" replace ownership/governance claims until a legal
+  // structure exists; final wording subject to legal review.
+  'marketing.blockOwnedTitle': 'Community-led, not algorithm-led',
   'marketing.blockOwnedBody':
-    'Transparent moderation, visible rules, member governance — and no engagement-bait ranking. What you follow is what you see.',
+    'Transparent moderation, visible rules, member participation — and no engagement-bait ranking. What you follow is what you see.',
   'marketing.finalCta': 'Come home to the Somali social app.',
   'marketing.honestyTitle': 'Real by default',
   'marketing.honestyBody':
@@ -1869,12 +1873,12 @@ export const en = {
   'marketing.aboutStory1':
     'Xidig means star. We are building the place where the Somali nation’s builders — at home and across the diaspora — find each other and build together.',
   'marketing.aboutStory2':
-    'Talent is everywhere in our community; trust and discovery are not. Xidig is member-owned infrastructure for both: a public square, build-in-public workshops, a business directory, and a community that backs its own.',
+    'Talent is everywhere in our community; trust and discovery are not. Xidig is community-led infrastructure for both: a public square, build-in-public workshops, a business directory, and a community that backs its own.',
   'marketing.aboutStory3':
     'We build in public, we don’t fake numbers, and we design for a 2G connection in Mogadishu first.',
   'marketing.aboutCapitalTitle': 'How Capital works',
   'marketing.aboutCapitalBody':
-    'Ventures start as Labs, become candidates, and are reviewed and voted on by members in the open. Today this is a pipeline and intent capture — not a fund, and not an offer of investment.',
+    'Ventures start as Labs, become candidates, and are reviewed in the open. Investing is not currently offered on Xidig — there is no fund and no offer of investment, and any future financial feature is subject to legal review before it exists.',
   'marketing.aboutRolesTitle': 'Roles, not careers',
   'marketing.aboutRolesBody':
     'Xidig has no hiring page. Community roles — moderators, verifiers, mentors — are earned and appointed from within the membership.',
@@ -1969,8 +1973,10 @@ export const en = {
   'marketing.termsFeesBody':
     'Joining and core membership are free, and free stays free. Supporter membership — which unlocks creating Labs, putting candidates forward, and voting in community governance — will cost around $1 per month once billing goes live. Billing is not active yet; the confirmed price is announced to members before anyone is charged, and nothing is billed without your agreement.',
   'marketing.termsCapitalTitle': 'Capital',
+  // A3: conservative post-A2 wording — investment is not offered and intent is
+  // no longer captured. Placeholder pending exact legal-reviewed ToS text.
   'marketing.termsCapitalBody':
-    'Capital features record interest and intent only. Nothing here is an offer of securities; v1.0 is intent capture only. Nothing on Xidig is investment advice or a solicitation to invest, and there are no live financial flows. Full terms for any financial feature will ship before that feature goes live.',
+    'Xidig does not currently offer investment. Nothing on Xidig is an offer of securities, investment advice, or a solicitation to invest, and there are no financial flows. If any financial feature is ever offered, its full terms will be published and legally reviewed before it goes live.',
   'marketing.termsModerationTitle': 'Moderation and enforcement',
   'marketing.termsModerationBody':
     'Xidig is moderated by people, not just automation. We may remove content, or warn, suspend, or close accounts that break these terms or the Community Guidelines. Where we act against your account or content, you can appeal the decision through the in-app process, and a moderator will review it.',
@@ -2624,7 +2630,7 @@ export const en = {
     'The members chose this. Xidig does not choose — and nothing is recorded secretly.',
   'maal.capitalDormantTitle': 'Investment — dormant',
   'maal.capitalDormantBody':
-    'The structure is ready: shares, a ledger, and pledges. Money cannot move until Xidig’s escrow is built.',
+    'Money does not move on Xidig, and no investment or pledging is currently offered. The ledger records contributions only.',
   'maal.capitalDormantLink': 'See the structure',
 
   // 7c — the work board. Hours are one contribution type, entered by the
@@ -2703,7 +2709,7 @@ export const en = {
   'maal.weightsLink': 'See the weights',
   'maal.moneyCardTitle': 'Money as a contribution',
   'maal.moneyCardBody':
-    'The money contribution type exists in the ledger, but it is not open. When Xidig’s escrow is built, it will run on these same weights — nothing else changes.',
+    'The money contribution type exists in the ledger, but it is not open. Xidig does not currently offer any way to move money.',
   'maal.exportCsv': 'Download CSV',
   // The CSV's own header row. Localised like any other label: a member's copy of
   // the ledger is their record of an agreement between members, and it is read
@@ -2804,7 +2810,7 @@ export const en = {
   // 7f — capital. Every control is built and disabled, and the reason is the
   // real one. No date is promised anywhere on this surface.
   'maal.escrowNotice':
-    'This whole section is built, but money cannot move. Xidig has no escrow yet — we refused to hold people’s money before that is built.',
+    'Money cannot move here. Xidig holds no one’s money, and no escrow or pledging is currently offered.',
   'maal.needTitle': 'The declared need',
   'maal.needAmount': 'Amount',
   'maal.needPurpose': 'Purpose',
@@ -2813,15 +2819,15 @@ export const en = {
   'maal.pledgeCta': 'Pledge',
   'maal.pledgeAmountAria': 'Pledge amount',
   'maal.pledgeLockNote':
-    'Locked until the escrow is built. When it opens, the money goes into escrow — it does not go straight to a founder’s account.',
+    'Locked — pledging is not currently offered on Xidig, and money never goes straight to a founder’s account.',
   'maal.worksNowTitle': 'What works today',
   'maal.worksLedger': 'The contribution and share ledger',
   'maal.worksNeed': 'The declared need and its decision',
   'maal.worksMoneyWeight': 'Money weighted as a contribution',
   'maal.worksPledgeLocked': 'Money pledges — locked',
-  'maal.worksEscrow': 'Escrow — not built yet',
+  'maal.worksEscrow': 'Escrow — not offered',
   'maal.capitalFooter':
-    'We are not promising a date. When the escrow is ready, we will tell you — until then, the work is what matters.',
+    'We are not promising an escrow or a date. Money does not currently move on Xidig — the work is what matters.',
 
   // States m1–m5. The dormancy notice and the ledger-read error are one key
   // each: both say "nothing was lost" in the same breath as "something is

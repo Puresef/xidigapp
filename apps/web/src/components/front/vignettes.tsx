@@ -301,7 +301,7 @@ function LiteVignette({ labels }: { labels: VignetteLabels }) {
   );
 }
 
-/* 8 ── Community-owned: the engagement-bait dial switching OFF; a tangled
+/* 8 ── Community-led: the engagement-bait dial switching OFF; a tangled
        ranking scribble untangling into a straight chronological line. */
 function OwnedVignette({ labels }: { labels: VignetteLabels }) {
   return (

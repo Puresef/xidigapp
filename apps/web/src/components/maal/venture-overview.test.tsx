@@ -307,7 +307,7 @@ describe('7b — the member/lead workspace', () => {
       node.textContent?.includes('Maalgashi — hurdo'),
     );
     expect(card).toBeDefined();
-    expect(card!.textContent).toContain('Lacag ma dhaqaaqi karto');
+    expect(card!.textContent).toContain('Lacag kuma dhaqaaqdo Xidig');
     expect(card!.querySelector('a')?.getAttribute('href')).toBe('/labs/suuq-card?tab=capital');
   });
 });

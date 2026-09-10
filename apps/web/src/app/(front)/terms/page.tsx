@@ -8,8 +8,9 @@ import { frontMetadata } from '@/lib/seo';
 /**
  * /terms — live, indexed, founder-reviewed (blocker B1). Severable by design:
  * Capital/payments mechanics are deliberately NOT enumerated (the Capital
- * section records the intent-only posture and keeps the securities disclaimer
- * verbatim, deferring detailed terms to before any financial feature ships) —
+ * section states that investment is not currently offered — A3 conservative
+ * wording pending legal review — and keeps the securities disclaimer,
+ * deferring detailed terms to before any financial feature ships) —
  * preserving the protective intent of the old two-document split inside the
  * single-doc model. The only unresolved facts are the two bracketed
  * placeholders ([XIDIG LEGAL ENTITY], [GOVERNING JURISDICTION]).

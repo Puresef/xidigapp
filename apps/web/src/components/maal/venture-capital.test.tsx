@@ -87,16 +87,18 @@ describe('the pledge control is built and inert', () => {
   it('states the real reason beside the control, not behind it', async () => {
     const host = await render(capital());
     const card = host.querySelector('.xidig-pledge')?.closest('.xidig-venture__card');
-    expect(card!.textContent).toContain('Xiran ilaa amaanka la dhiso');
-    // …and money goes into escrow, not to a founder.
-    expect(card!.textContent).toContain('ma tagto akoonka aasaasaha si toos ah');
+    // A3 claims containment: the lock copy states the truthful status
+    // ("pledging is not currently offered") with no escrow promise…
+    expect(card!.textContent).toContain('ballanqaad hadda laguma bixiyo Xidig');
+    // …and money never goes straight to a founder.
+    expect(card!.textContent).toContain('uma tagto akoonka aasaasaha');
   });
 
-  it('leads with the escrow refusal as a system notice', async () => {
+  it('leads with the no-money-moves status as a system notice', async () => {
     const host = await render(capital());
     const notice = host.querySelector('.xidig-system-notice')?.textContent ?? '';
-    expect(notice).toContain('lacag ma dhaqaaqi karto');
-    expect(notice).toContain('waxaan diidnay');
+    expect(notice).toContain('Lacag halkan kuma dhaqaaqdo');
+    expect(notice).toContain('cidna lacagteeda ma hayo');
   });
 });
 
@@ -117,7 +119,7 @@ describe('the declared need and what works today', () => {
     const pending = rows.filter((row) => row.className.includes('--pending'));
     expect(pending.map((row) => row.textContent)).toEqual([
       'Ballanqaad lacageed — xiran',
-      'Amaan (escrow) — weli lama dhisin',
+      'Amaan (escrow) — lama bixiyo',
     ]);
   });
 });
@@ -126,7 +128,9 @@ describe('no date is promised anywhere', () => {
   it('carries the footer promise and nothing warmer', async () => {
     const host = await render(capital());
     const text = host.textContent ?? '';
-    expect(text).toContain('Ma ballanqaadno taariikh');
+    // The footer promises NOTHING — no escrow, no date ("when the escrow is
+    // ready" is gone with the rest of the when/until promises).
+    expect(text).toContain('Ma ballanqaadno amaan (escrow) iyo taariikh midna');
     expect(text).toContain('shaqada ayaa muhiim');
   });
 

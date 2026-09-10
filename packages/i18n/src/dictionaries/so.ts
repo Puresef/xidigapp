@@ -1454,12 +1454,12 @@ export const so = {
   'lab.dormantBanner':
     'Warshaddan waxay aamusnayd 4 toddobaad waana loo calaamadeeyay Hurdo. Weli ma ka shaqaynaysaa? Ku soo nooleey warbixin degdeg ah.',
   'lab.ipBanner':
-    'Xusuusin: ilaa codbixinta xubnuhu ay xalliso xeerarka lahaanshaha, wax kasta oo aad halkan daabacdo adaa iska leh. Si taxadar leh u daabac wax-soo-saarka.',
+    'Xusuusin: wax kasta oo aad halkan daabacdo adaa iska leh. Si taxadar leh u daabac wax-soo-saarka.',
   'lab.skillGapBannerLead':
     'In ka badan toddobaad ayaad raadinaysay {skill}. Ma rabtaa inaad ballaadhiso ama cusboonaysiiso codsiga?',
   'lab.crossPostedFrom': 'Laga soo daabacay {name}',
   'lab.candidateHandoffNote':
-    'Tani waxay Warshadda u soo bandhigaysaa Mashruuc — calaamad wareejin. Qalabka maalgashigu wuu dambeeyaa.',
+    'Tani waxay Warshadda u soo bandhigaysaa Mashruuc — calaamad wareejin. Qalab maalgashi kuma lifaaqna.',
   'lab.sprintCountdown': {
     one: '{count} maalin ka harsan wareegan',
     other: '{count} maalmood ka harsan wareegan',
@@ -1724,13 +1724,15 @@ export const so = {
     'Ku bilow Koox fudud; u dallacsii Warshad marka ay fikraddu culus noqoto. Warbixinno, go’aanno, xiriiriyayaal, iyo xubno — hal meel ayay ku wada jiraan.',
   'marketing.blockCapitalTitle': 'Taageer waxa la dhisayo',
   'marketing.blockCapitalBody':
-    'Garab sii mashaariicda mustaqbalka leh, caawimaad fidi, raacna jadwallada si furan loo dhisayo. Adeegyada ujeeddada maalgashigu waa kuwo gobol ku xaddidan oo ujeeddo-keliya ah — ma jiraan lacago socda.',
+    'Garab sii mashaariicda mustaqbalka leh, caawimaad fidi, raacna jadwallada si furan loo dhisayo. Maalgashi hadda laguma bixiyo Xidig.',
   'marketing.blockLiteTitle': 'Loo dhisay internetkeenna',
   'marketing.blockLiteBody':
     'Soomaali iyo Ingiriisi maalinta koowaad. Hab Lite ah oo loogu talagalay xiriirrada gaabis ah — sawirrada, khariidadaha, iyo lifaaqyadu waxay soo baxaan kaliya marka aad taabato.',
-  'marketing.blockOwnedTitle': 'Bulshadaa leh, algorithm-ku ma leh',
+  // A3 claims containment — PROVISIONAL wording pending the native SO review
+  // (G34): community-led framing replaces ownership claims.
+  'marketing.blockOwnedTitle': 'Bulshadaa hoggaamisa, algorithm-ku ma hoggaamiyo',
   'marketing.blockOwnedBody':
-    'Maamul hufan, xeerar muuqda, maamul xubneed — iyo kala-horreyn aan ku salaysnayn dabin-jiidasho. Waxa aad raacdo ayaa ah waxa aad aragto.',
+    'Maamul hufan, xeerar muuqda, ka-qaybgal xubneed — iyo kala-horreyn aan ku salaysnayn dabin-jiidasho. Waxa aad raacdo ayaa ah waxa aad aragto.',
   'marketing.finalCta': 'Ku soo laabo gurigaaga — barnaamijka bulshada Soomaalida.',
   'marketing.honestyTitle': 'Run ayaa aasaas ah',
   'marketing.honestyBody':
@@ -1786,12 +1788,12 @@ export const so = {
   'marketing.aboutStory1':
     'Xidig macnihiisu waa xiddig. Waxaanu dhisaynaa meesha ay dhisayaasha ummadda Soomaaliyeed — gudaha iyo qurbaha — isku helaan oo ay wax wada dhisaan.',
   'marketing.aboutStory2':
-    'Tayo iyo karti meel walba ayay bulshadeenna ka jiraan; kalsooni iyo is-helid se way yar yihiin. Xidig waa kaabayaal ay xubnuhu leeyihiin oo labadaba xalliya: madal dadweyne, warshado si furan wax loogu dhiso, buug ganacsi, iyo bulsho taageerta dadkeeda.',
+    'Tayo iyo karti meel walba ayay bulshadeenna ka jiraan; kalsooni iyo is-helid se way yar yihiin. Xidig waa kaabayaal ay bulshadu hoggaamiso oo labadaba xalliya: madal dadweyne, warshado si furan wax loogu dhiso, buug ganacsi, iyo bulsho taageerta dadkeeda.',
   'marketing.aboutStory3':
     'Si furan ayaanu wax u dhisnaa, tiro been ah ma sameyno, waxaanuna marka hore u naqshadeynaa xiriirka 2G ee Muqdisho.',
   'marketing.aboutCapitalTitle': 'Sida Maal u shaqeeyo',
   'marketing.aboutCapitalBody':
-    'Mashaariicdu waxay ku bilaabmaan Warshad, waxay noqdaan musharax, si furanna xubnaha ayaa dib u eega oo u codeeya. Maanta tani waa hab-socod iyo diiwaangelin ujeeddo — ma aha sanduuq maalgashi, mana aha dalab maalgashi.',
+    'Mashaariicdu waxay ku bilaabmaan Warshad, waxay noqdaan musharax, si furanna dib ayaa loo eegaa. Maalgashi hadda laguma bixiyo Xidig — ma jiro sanduuq, mana jiro dalab maalgashi; adeeg kasta oo lacageed oo mustaqbalka ah waxaa hor mari doonta dib-u-eegis sharci.',
   'marketing.aboutRolesTitle': 'Doorar, ma aha shaqooyin',
   'marketing.aboutRolesBody':
     'Xidig ma laha bog shaqo. Doorarka bulshada — maamulayaal, xaqiijiyayaal, la-taliyayaal — waxaa laga soo doortaa xubnaha gudahooda.',
@@ -1886,8 +1888,9 @@ export const so = {
   'marketing.termsFeesBody':
     'Ku biirista iyo xubinnimada aasaasiga ah waa lacag la’aan, lacag la’aantuna way sii jiri doontaa. Xubinnimada Taageeruhu — oo furta abuurista Warshad, hor-dhigista musharaxiin, iyo codbixin maamul-bulsheed — waxay ku kici doontaa qiyaastii $1 bishii marka lacag-bixintu shaqeyso. Lacag-bixintu weli firfircoon ma aha; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin, wax lacag ahna lama qaado ogolaanshahaaga la’aantiis.',
   'marketing.termsCapitalTitle': 'Maal',
+  // A3 — PROVISIONAL (G34) conservative wording pending legal-reviewed ToS text.
   'marketing.termsCapitalBody':
-    'Adeegyada Maal waxay diiwaangeliyaan xiise iyo ujeeddo oo keliya. Waxba halkan kuma jiraan dalab dammaanado; v1.0 waa qabashada ujeeddo oo keliya. Waxba Xidig kuma jiraan talo maalgashi ama dalab maalgashi, waxna lacageed oo nool ma socdaan. Shuruudaha buuxa ee adeeg kasta oo lacageed waa la daabici doonaa ka hor inta uusan shaqayn.',
+    'Xidig hadda ma bixiyo maalgashi. Waxba Xidig kuma jiraan dalab dammaanado, talo maalgashi, ama dalab lagu maalgashado, waxna lacageed ma socdaan. Haddii adeeg lacageed weligiis la bixiyo, shuruudihiisa oo buuxa waa la daabici doonaa, sharci ahaanna dib ayaa loo eegi doonaa, ka hor inta uusan shaqayn.',
   'marketing.termsModerationTitle': 'Maamul iyo hirgelin',
   'marketing.termsModerationBody':
     'Xidig waxaa maamula dad, ma aha kaliya farsamo. Waxaanu saari karnaa waxa la qoro, ama u digi karnaa, hakin karnaa, ama xidhi karnaa akoonnada jebiya shuruudahan ama Tilmaamaha Bulshada. Marka aanu wax ka qabanno akoonkaaga ama waxa aad qorto, waad racfaan qaadan kartaa go’aanka adigoo maraya habka barnaamijka, maamuluhuna wuu dib u eegi doonaa.',
@@ -2492,7 +2495,7 @@ export const so = {
     'Xubnaha ayaa doortay. Xidig ma dooranayo — mana jiro wax si qarsoodi ah loo diiwaangeliyo.',
   'maal.capitalDormantTitle': 'Maalgashi — hurdo',
   'maal.capitalDormantBody':
-    'Qaab-dhismeedku diyaar wuu yahay: saami, diiwaan, iyo ballanqaad. Lacag ma dhaqaaqi karto ilaa amaanka Xidig la dhiso.',
+    'Lacag kuma dhaqaaqdo Xidig, maalgashi iyo ballanqaadna hadda lama bixiyo. Diiwaanku wuxuu kaydiyaa wax-ku-darsiga oo keliya.',
   'maal.capitalDormantLink': 'Fiiri qaab-dhismeedka',
 
   // 7c — sabuuradda shaqada
@@ -2559,7 +2562,7 @@ export const so = {
   'maal.weightsLink': 'Fiiri miisaanka',
   'maal.moneyCardTitle': 'Lacag oo wax-ku-darsi ah',
   'maal.moneyCardBody':
-    'Nooca lacageed ee wax-ku-darsiga wuu jiraa diiwaanka, laakiin ma furan yahay. Marka amaanka Xidig la dhiso, wuxuu ku shaqeynayaa isla miisaankan — wax kale iskama beddelayo.',
+    'Nooca lacageed ee wax-ku-darsiga wuu jiraa diiwaanka, laakiin ma furan yahay. Xidig hadda ma bixiyo hab lacag lagu dhaqaajiyo.',
   'maal.exportCsv': 'Soo deji CSV',
   // Safka madaxa ee CSV-ga. Ereyada kale waxay ka yimaadaan furayaasha miiska
   // (colMember / logTypeLabel / logAmountLabel / colUnits / logTaskLabel).
@@ -2652,7 +2655,7 @@ export const so = {
 
   // 7f — maalgashi (hurdo). Taariikh lama ballanqaadayo meelna.
   'maal.escrowNotice':
-    'Qaybtan dhan waa la dhisay, laakiin lacag ma dhaqaaqi karto. Xidig weli ma laha amaan (escrow) — waxaan diidnay inaan lacagta dadka gacanta ku qabano ka hor inta aan taas la dhisin.',
+    'Lacag halkan kuma dhaqaaqdo. Xidig cidna lacagteeda ma hayo, amaan (escrow) iyo ballanqaadna hadda lama bixiyo.',
   'maal.needTitle': 'Baahida la sheegay',
   'maal.needAmount': 'Qaddarka',
   'maal.needPurpose': 'Ujeeddada',
@@ -2661,15 +2664,15 @@ export const so = {
   'maal.pledgeCta': 'Ballanqaad',
   'maal.pledgeAmountAria': 'Qaddarka ballanqaadka',
   'maal.pledgeLockNote':
-    'Xiran ilaa amaanka la dhiso. Marka la furo, lacagtu waxay gashaa amaan — ma tagto akoonka aasaasaha si toos ah.',
+    'Xiran — ballanqaad hadda laguma bixiyo Xidig, lacagna weligeed si toos ah uma tagto akoonka aasaasaha.',
   'maal.worksNowTitle': 'Waxa hadda shaqeeya',
   'maal.worksLedger': 'Diiwaanka wax-ku-darsiga iyo saamiga',
   'maal.worksNeed': "Baahida la sheegay iyo go'aankeeda",
   'maal.worksMoneyWeight': 'Miisaanka lacagta sida wax-ku-darsi',
   'maal.worksPledgeLocked': 'Ballanqaad lacageed — xiran',
-  'maal.worksEscrow': 'Amaan (escrow) — weli lama dhisin',
+  'maal.worksEscrow': 'Amaan (escrow) — lama bixiyo',
   'maal.capitalFooter':
-    'Ma ballanqaadno taariikh. Marka amaanku diyaar noqdo, waxaan idin ogeysiinaynaa — ilaa markaas, shaqada ayaa muhiim.',
+    'Ma ballanqaadno amaan (escrow) iyo taariikh midna. Lacag hadda kuma dhaqaaqdo Xidig — shaqada ayaa muhiim.',
 
   // Xaaladaha m1–m5
   'maal.loadingAria': 'Waa la soo rarayaa',
