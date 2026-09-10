@@ -10,11 +10,17 @@ role, after explicit authz) — no client `insert/update/delete` policy exists o
 any Capital table.
 
 Locked scope (§17 + Warya 7 Jul): Capital v1 is a **listing/intro service +
-intent capture + manual ops**. NO money movement, NO pledge ledger, NO payout
-states, NO tokens. Maalgeli (Invest) = intent capture only, Somalia-region gated
-(geo-IP AND profile country AND self-attestation — **all three**, enforced at the
-**app layer**; the `capital_gate_evaluations` log here is the compliance audit
-trail). Garab/Co-sign + "I can help" are non-financial and **never gated**.
+manual ops**. NO money movement, NO pledge ledger, NO payout states, NO tokens.
+Garab/Co-sign + "I can help" are non-financial and **never gated**.
+
+> **Superseded 10 Sep 2026 (A2 containment).** Intent capture is gone:
+> **investing is not offered on Xidig, in any region.** Every invest submission
+> path now returns `capital_unavailable` (403) without evaluating anything, and
+> the app-layer region gate is no longer called by any route. The RLS model
+> below is unchanged and still accurate — the tables, policies and API-only
+> write posture all remain — but read it as describing the *permission* model,
+> not an available product feature. `capital_gate_evaluations` retains its
+> historical rows and gains no new ones.
 
 ## Visibility predicates (SECURITY DEFINER, empty `search_path`)
 
@@ -89,13 +95,18 @@ reasons are meant to be visible, §17), rather than a separate reviewer-only
 scope. Write authz — `can_review_candidate` + recusal + aggregate recomputation
 of `venture_candidates.rubric_*_score` — is an API obligation (service role).
 
-`capital_gate_evaluations` is the **compliance audit log** (Seq 6 / §17). Every
-gate evaluation is written server-side with its three inputs
+`capital_gate_evaluations` is the **compliance audit log** (Seq 6 / §17). Each
+historical row records a gate evaluation with its three inputs
 (`profile_country`, `geo_ip_country` — derived country only, never the raw IP —
 and `attested`) and the decision (`granted`, `reason`). It is append-only and
-persists through anonymisation; no client role can update or delete it.
+persists through anonymisation; no client role can update or delete it. **Since
+A2 (10 Sep 2026) no route writes to it** — no gate is evaluated anywhere, so the
+table holds historical rows only and gains none.
 
-**Trusted geo header (compliance trust boundary).** `getGeoCountry`
+**Trusted geo header (compliance trust boundary) — retained, currently
+unreached.** No route calls this code today; it is documented because the lib is
+retained for a possible separately approved future activation, and because the
+trust reasoning must not be lost. `getGeoCountry`
 (`lib/capital/region-gate.ts`) reads the request country from **one** header:
 `x-vercel-ip-country`. On the Vercel deployment target this header is
 set-and-overwritten by the platform edge on every request, so a client cannot

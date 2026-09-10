@@ -97,13 +97,14 @@ there). Reseed / refresh with
 
 ## 10. Capital — a venture with live governance
 
-- **Login:** `ifrah_invest` (Supporter, SO region → invest-eligible).
+- **Login:** `ifrah_invest` (Supporter).
 - **URL:** `/capital`, then open **Xawilaad Sandbox** (submitted candidate).
 - **Shot:** the candidate page — pitch, rubric scores, the **Supporter vote
-  panel** (live 7-day window), interest bar (help / co-sign / **Maalgeli**).
-- **Shows:** §17 governance. Contrast with `abshir_maal` (US profile) where the
-  Maalgeli invest CTA is region-gated shut. Draft candidate **Hooyo Made** is
-  visible only to Iskaashato Hooyo members.
+  panel** (live 7-day window), interest bar (help / co-sign only).
+- **Shows:** §17 governance, and that the candidate pipeline carries **no invest
+  surface for any member in any region** — investing is not offered on Xidig
+  (A2 containment). Draft candidate **Hooyo Made** is visible only to Iskaashato
+  Hooyo members.
 
 ## 11. Community Awards
 
