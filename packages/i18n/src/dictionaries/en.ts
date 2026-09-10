@@ -646,9 +646,9 @@ export const en = {
   'settings.exportDone': 'Your export is downloading.',
   'settings.accountStatusTitle': 'Deactivate or delete account',
   'settings.accountStatusBody':
-    'Deactivating hides everything until you sign back in. Deleting is permanent after a 30-day grace period.',
+    'Deactivating hides everything until you sign back in. Deletion cannot be undone once the 30-day grace period ends.',
   'settings.accountStatusHelp':
-    'Deactivating hides your profile and content until you sign back in — nothing is deleted. Requesting deletion starts a 30-day grace period you can cancel any time; after that your account is permanently removed.',
+    'Deactivating hides your profile and content until you sign back in — nothing is deleted. Requesting deletion starts a 30-day grace period you can cancel any time. After it ends the account is closed and cannot be reopened. What you posted is not deleted with it — it stays on Xidig, attributed to a deleted member. Download your data first if you want a copy.',
   'settings.accountStatusLink': 'Go to account settings',
   // Phase 6 (§19) self-service account lifecycle controls.
   'settings.accountStatusSectionTitle': 'Account status',
@@ -657,7 +657,7 @@ export const en = {
     'Deactivate your account? Your profile and content are hidden until you sign back in. Nothing is deleted.',
   'settings.requestDeletionButton': 'Request deletion',
   'settings.requestDeletionConfirm':
-    'Request account deletion? You have 30 days to cancel before everything is permanently removed.',
+    'Request account deletion? You have 30 days to cancel. After that the account is closed and cannot be reopened, and what you posted stays on Xidig, attributed to a deleted member.',
   'settings.cancelDeletionButton': 'Cancel deletion',
   'settings.deletionPending': 'Your account is scheduled for deletion. {days} days left to cancel.',
   // Phase 6 (§14) member verification request.
@@ -1940,7 +1940,7 @@ export const en = {
     'Identity and business verification are optional and consent-based — you are never required to verify to use Xidig. Because verification can involve sensitive information, the full detail of what each process reviews and stores is published in a dedicated notice before verification opens to members, and you will be asked to consent at that point.',
   'marketing.privacyRetentionTitle': 'How long we keep it',
   'marketing.privacyRetentionBody':
-    'We keep your account data for as long as your account is active. When you delete your account there is a short grace period in which you can change your mind; after it passes, your personal data is removed rather than archived. Some records may be kept longer only where we are legally required to, or to resolve a safety report or dispute — and only for as long as that purpose lasts.',
+    'We keep your account data for as long as your account is active. When you ask us to delete your account there is a grace period in which you can change your mind. After it passes the account is closed and can no longer be used or reopened. Content you posted is not deleted with the account — it stays on Xidig, attributed to a deleted member. Operational, safety, moderation and audit records are kept under separate rules, and some of them cannot be altered once written. Copies can also remain in backups until those are cycled. We have not finished setting a retention period for every kind of record; when we do, it will be published here.',
   'marketing.privacyRightsTitle': 'Your rights and controls',
   'marketing.privacyRightsBody':
     'You can access and review your information, export a copy of your data, correct your profile, and delete your account — all from Settings, under the data and privacy section. You can also opt in or out of analytics at any time. If you would like help exercising any of these rights, contact us and we will respond.',
@@ -1965,7 +1965,7 @@ export const en = {
     'One person, one account. Keep your sign-in details secure and don’t share them; you are responsible for everything that happens under your account. Give us accurate information and keep it current. Tell us promptly if you think your account has been accessed without your permission.',
   'marketing.termsContentTitle': 'Your content',
   'marketing.termsContentBody':
-    'What you post stays yours — you keep ownership of your content. To operate the platform, you grant Xidig a non-exclusive, worldwide, royalty-free licence to host, store, display, and distribute your content to the members and visitors you chose to share it with, and to make the technical copies needed to run and back up the service. This licence exists only so Xidig can show your content the way you intended; it ends when you delete the content or your account, except for copies we must retain briefly for backups or legal reasons.',
+    'What you post stays yours — you keep ownership of your content. To operate the platform, you grant Xidig a non-exclusive, worldwide, royalty-free licence to host, store, display, and distribute your content to the members and visitors you chose to share it with, and to make the technical copies needed to run and back up the service. This licence exists only so Xidig can show your content the way you intended. It ends for an item when you delete that item. Closing your account does not by itself remove what you posted, so the licence continues for anything that remains, and copies can persist in backups until those are cycled.',
   'marketing.termsConductTitle': 'Acceptable use',
   'marketing.termsConductBody':
     'Be honest, be lawful, and keep Xidig safe. Don’t harass, deceive, impersonate, spam, or post unlawful or harmful content, and don’t abuse or attack the platform. The full standards live in our Community Guidelines, which form part of these terms. Content that breaks them can be removed.',

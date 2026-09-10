@@ -583,10 +583,10 @@ export const so = {
   'settings.exportDone': 'Xogtaadu way soo degaysaa.',
   'settings.accountStatusTitle': 'Hakii ama tirtir akoonka',
   'settings.accountStatusBody':
-    'Hakintu way qarisaa wax walba ilaa aad dib u gasho. Tirtiriddu waa mid rasmi ah 30 maalmood kadib.',
+    'Hakintu way qarisaa wax walba ilaa aad dib u gasho. Tirtiridda lama celin karo marka muddada 30 maalmood dhammaato.',
   // SO needs native review
   'settings.accountStatusHelp':
-    'Hakintu waxay qarisaa profile-kaaga iyo nuxurkaaga ilaa aad dib u gasho — waxba lama tirtiro. Codsashada tirtiridda waxay bilawdaa muddo 30 maalmood ah oo aad joojin karto waqti kasta; kadib akoonkaaga si joogto ah ayaa loo tirtiraa.',
+    'Hakintu waxay qarisaa profile-kaaga iyo nuxurkaaga ilaa aad dib u gasho — waxba lama tirtiro. Codsashada tirtiridda waxay bilawdaa muddo 30 maalmood ah oo aad joojin karto waqti kasta. Markay dhammaato, akoonka waa la xiraa lamana furi karo mar kale. Waxa aad soo qortay lama tirtiro — wuxuu ku sii jiraa Xidig, waxaana lagu tilmaamaa xubin la tirtiray. Marka hore soo dejiso xogtaada haddii aad nuqul rabto.',
   'settings.accountStatusLink': 'Aad dejinta akoonka',
   // Phase 6 (§19) xakamaynta akoonka iskaa ah.
   // SO needs native review
@@ -597,7 +597,7 @@ export const so = {
   'settings.requestDeletionButton': 'Codso tirtirid',
   'settings.cancelDeletionButton': 'Jooji tirtiridda',
   'settings.requestDeletionConfirm':
-    'Ma codsanaysaa in akoonka la tirtiro? Waxaad haysataa 30 maalmood aad joojin karto ka hor inta aan wax walba si joogto ah loo tirtirin.',
+    'Ma codsanaysaa in akoonka la tirtiro? Waxaad haysataa 30 maalmood oo aad joojin karto. Kadib akoonka waa la xiraa lamana furi karo mar kale, waxa aad soo qortayna wuxuu ku sii jiraa Xidig, lagana tilmaamo xubin la tirtiray.',
   'settings.deletionPending':
     'Akoonkaaga waxaa loo qorsheeyay in la tirtiro. {days} maalmood ayaa haray oo aad joojin karto.',
   // Phase 6 (§14) codsiga xaqiijinta xsubinta.
@@ -1855,7 +1855,7 @@ export const so = {
     'Xaqiijinta aqoonsiga iyo ganacsigu waa ikhtiyaari, ku salaysan ogolaansho — weligaa laguma qasbo inaad xaqiijiso si aad Xidig u isticmaasho. Sababtoo ah xaqiijintu waxay ku lug yeelan kartaa xog xasaasi ah, faah-faahinta buuxda ee waxa hab kasta baaro oo kaydiyo waxaa lagu daabacaa ogeysiis gaar ah ka hor inta aan xaqiijintu u furmin xubnaha, waana lagaa codsan doonaa ogolaansho markaas.',
   'marketing.privacyRetentionTitle': 'Muddada aanu haynno',
   'marketing.privacyRetentionBody':
-    'Xogta akoonkaaga waxaanu haynaa inta uu akoonkaagu firfircoon yahay. Markaad akoonkaaga tirtirto waxaa jira muddo nasasho oo gaaban oo aad go’aankaaga ku beddeli karto; ka dib markay dhaafto, xogtaada shakhsiga ah waa la saaraa halkii la kaydin lahaa. Xog qaar waa la sii hayn karaa oo kaliya haddii sharci na khasbo, ama si loo xalliyo warbixin ammaan ama muran — oo kaliya inta ay ujeeddadaasi socoto.',
+    'Xogta akoonkaaga waxaanu haynaa inta uu akoonkaagu firfircoon yahay. Markaad codsato in akoonkaaga la tirtiro waxaa jira muddo nasasho oo aad go’aankaaga ku beddeli karto. Markay dhaafto, akoonka waa la xiraa, lamana isticmaali karo lamana furi karo mar kale. Waxa aad soo qortay lama tirtiro — wuxuu ku sii jiraa Xidig, waxaana lagu tilmaamaa xubin la tirtiray. Diiwaannada hawlgalka, ammaanka, habmaamulka iyo hanti-dhawrka waxaa lagu hayaa xeerar gooni ah, qaarna lama beddeli karo marka la qoro. Nuqullo ayaa sidoo kale ku sii jiri kara kaydka ilaa la cusboonaysiiyo. Weli ma aanu dhammaystirin muddada hayntta ee nooc kasta oo diiwaan ah; marka la dhammaystiro halkan ayaa lagu daabici doonaa.',
   'marketing.privacyRightsTitle': 'Xuquuqdaada iyo xakamayntaada',
   'marketing.privacyRightsBody':
     'Waad heli kartaa oo dib u eegi kartaa xogtaada, waad soo dejisan kartaa nuqul xogtaada ah, waad saxi kartaa profile-kaaga, akoonkaagana waad tirtiri kartaa — dhammaan Dejinta, qaybta xogta iyo arrimaha gaarka ah. Waxa kale oo aad ka geli kartaa ama ka bixi kartaa falanqaynta wakhti kasta. Haddii aad caawimo u baahan tahay adeegsiga xuquuqdan, nala soo xiriir waanu kuu jawaabi doonnaa.',
@@ -1880,7 +1880,7 @@ export const so = {
     'Hal qof, hal akoon. Xog-gelintaada si ammaan ah u hay oo ha la wadaagin; adigaa mas’uul ka ah wax kasta oo akoonkaaga hoostiisa ka dhaca. Xog sax ah na sii oo cusbooneysii. Degdeg noogu sheeg haddii aad u malaynayso in akoonkaaga la galay ogolaanshahaaga la’aantiis.',
   'marketing.termsContentTitle': 'Waxa aad qorto',
   'marketing.termsContentBody':
-    'Waxa aad soo qortaa adigaa iska leh — lahaanshaha waad hayso. Si loo shaqeysiiyo goobta, waxaad Xidig siinaysaa oggolaansho aan gaar ahayn, caalami ah, lacag la’aan ah oo lagu marti-geliyo, kaydiyo, muujiyo, oo lagu gaarsiiyo xubnaha iyo booqdayaasha aad dooratay, iyo in laga sameeyo nuqullada farsamo ee loo baahan yahay socodsiinta iyo kaydinta adeegga. Oggolaanshahani wuxuu u jiraa oo kaliya si Xidig ugu muujiyo waxa aad qorto sidaad u rabtay; wuxuu dhammaadaa markaad tirtirto qoraalka ama akoonkaaga, marka laga reebo nuqullo aanu waajib ku ahayn inaan si gaaban u hayno kayd ama sabab sharci.',
+    'Waxa aad soo qortaa adigaa iska leh — lahaanshaha waad hayso. Si loo shaqeysiiyo goobta, waxaad Xidig siinaysaa oggolaansho aan gaar ahayn, caalami ah, lacag la’aan ah oo lagu marti-geliyo, kaydiyo, muujiyo, oo lagu gaarsiiyo xubnaha iyo booqdayaasha aad dooratay, iyo in laga sameeyo nuqullada farsamo ee loo baahan yahay socodsiinta iyo kaydinta adeegga. Oggolaanshahani wuxuu u jiraa oo kaliya si Xidig ugu muujiyo waxa aad qorto sidaad u rabtay. Wuxuu ku dhammaadaa qoraal gaar ah markaad qoraalkaas tirtirto. Xidhidda akoonkaagu keligeed ma saarto waxa aad soo qortay, sidaas darteed oggolaanshuhu wuu sii socdaa wixii hadhay, nuqulladana way ku sii jiri karaan kaydka ilaa la cusboonaysiiyo.',
   'marketing.termsConductTitle': 'Isticmaalka la aqbali karo',
   'marketing.termsConductBody':
     'Daacad ahow, sharciga raac, Xidigna badbaado. Ha dhibin, ha khiyaanayn, ha is-moodsiin, spam ha dirin, waxyaabo sharci-darro ama waxyeello leh ha qorin, goobtana ha weerarin. Heerarka buuxa waxay ku jiraan Tilmaamaha Bulshadayada, oo qayb ka ah shuruudahan. Waxa jebiya waa la saari karaa.',
