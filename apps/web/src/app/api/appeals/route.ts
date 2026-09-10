@@ -1,5 +1,5 @@
 import { ApiError, apiNotice, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireUserForAppeal } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
 import { resolveSubjectUser } from '@/lib/moderation/actions';
 import { APPEAL_RATE } from '@/lib/moderation/constants';
@@ -16,11 +16,18 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * unique) so a fail-open rate limiter can't open a second window. All writes
  * are service role: appeals has no client write grant; appellants read their
  * own rows via RLS.
+ *
+ * Auth is requireUserForAppeal, NOT requireUser: a suspended member — the
+ * person most likely to need this route — must be able to submit, matching
+ * the /support/appeal page that already admits them. The guard changes only
+ * the suspended rule; anonymous/deactivated/deleted refusals, the
+ * subject-eligibility check below, the rate limit and the duplicate control
+ * are all unchanged.
  */
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireUserForAppeal();
     const input = appealSubmitSchema.parse(await request.json());
     await enforceRateLimit(`appeal:${ctx.appUser.id}`, APPEAL_RATE);
 

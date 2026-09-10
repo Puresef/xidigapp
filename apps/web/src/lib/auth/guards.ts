@@ -63,6 +63,28 @@ export async function requireUser(): Promise<AuthContext> {
   return ctx;
 }
 
+/**
+ * Appeal-path gate (§19 "appeal any moderation action"). Identical to
+ * requireUser EXCEPT that a suspended account is admitted: suspension is the
+ * sanction most worth appealing, and /support/appeal is the one promised
+ * resolution path — the page already admits suspended members by design, so
+ * the API must too. Every other rule is unchanged (signed-out 401,
+ * deactivated/deleted 403, pending_deletion grace admitted).
+ *
+ * SCOPE: appeal submission/reading only. Everything else keeps requireUser,
+ * so suspension still blocks ordinary application access — do not reach for
+ * this guard outside the appeal path.
+ */
+export async function requireUserForAppeal(): Promise<AuthContext> {
+  const ctx = await getAuthContext();
+  if (!ctx) throw new ApiError('session_expired', 401);
+
+  if (ctx.appUser.status === 'deactivated' || ctx.appUser.status === 'deleted') {
+    throw new ApiError('forbidden', 403);
+  }
+  return ctx;
+}
+
 /** Role gate. `mod` admits mods AND admins; `admin` admits admins only. */
 export async function requireRole(minRole: 'mod' | 'admin'): Promise<AuthContext> {
   const ctx = await requireUser();
