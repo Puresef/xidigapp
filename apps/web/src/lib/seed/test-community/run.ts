@@ -1170,14 +1170,28 @@ async function seedDms(ctx: Ctx, threads: SeedDmThread[]): Promise<void> {
 
     await ctx.admin
       .from('conversations')
-      .update({
-        updated_at: lastAt,
-        // The sender side has always "seen" everything; the recipient side has
-        // read up to just before their first unread message.
-        initiator_last_read_at: recipientIsA ? iso(ctx, readUpTo) : lastAt,
-        recipient_last_read_at: recipientIsA ? lastAt : iso(ctx, readUpTo),
-      })
+      .update({ updated_at: lastAt })
       .eq('id', convo.id);
+
+    // Read state lives in the per-user dm_read_states table (A5a follow-up),
+    // not on the conversations row. The sender side has always "seen"
+    // everything; the recipient side has read up to just before their first
+    // unread message.
+    await ctx.admin.from('dm_read_states').upsert(
+      [
+        {
+          conversation_id: convo.id,
+          user_id: aId,
+          last_read_at: recipientIsA ? iso(ctx, readUpTo) : lastAt,
+        },
+        {
+          conversation_id: convo.id,
+          user_id: bId,
+          last_read_at: recipientIsA ? lastAt : iso(ctx, readUpTo),
+        },
+      ],
+      { onConflict: 'conversation_id,user_id' },
+    );
 
     // Inbox rows for the unread inbound messages (mirrors notify()).
     const recipientId = recipientIsA ? aId : bId;

@@ -361,10 +361,13 @@ describe('dm_unread_count()', () => {
     const bobCount = await db.asUser(bob, (tx) => tx.query(`select public.dm_unread_count() as n`));
     expect(Number(bobCount.rows[0].n)).toBe(0);
 
-    // After Alice reads (last_read_at advanced past the messages), her count drops.
+    // After Alice reads, her count drops. Read state lives in dm_read_states
+    // (A5a follow-up), not on the conversations row.
     await db.admin.query(
-      `update conversations set initiator_last_read_at = now() where id = $1`,
-      [convo],
+      `insert into dm_read_states (conversation_id, user_id, last_read_at)
+       values ($1, $2, now())
+       on conflict (conversation_id, user_id) do update set last_read_at = excluded.last_read_at`,
+      [convo, alice],
     );
     const aliceAfterRead = await db.asUser(alice, (tx) =>
       tx.query(`select public.dm_unread_count() as n`),

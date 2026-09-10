@@ -704,7 +704,7 @@ describe('RLS: audit_logs immutability', () => {
 });
 
 describe('RLS: later-phase tables are locked by default', () => {
-  it.each(['posts', 'labs', 'messages', 'conversations', 'business_listings', 'notifications'])(
+  it.each(['posts', 'labs', 'messages', 'business_listings', 'notifications'])(
     '%s: authenticated reads zero rows',
     async (table) => {
       await issueGrant({ email: `reader-${table}@example.com` });
@@ -713,4 +713,21 @@ describe('RLS: later-phase tables are locked by default', () => {
       expect(r.rowCount).toBe(0);
     },
   );
+
+  // conversations is locked one notch harder since the A5a read-privacy
+  // migration (20260909000000): the default table-wide SELECT grant was
+  // replaced with an explicit column list minus the two *_last_read_at
+  // columns, so a bare `select *` is refused outright — and the columns that
+  // ARE granted still row-gate to zero rows for a non-participant.
+  it('conversations: select * refused; granted columns read zero rows', async () => {
+    await issueGrant({ email: 'reader-conversations@example.com' });
+    const uid = await createAuthUser({ email: 'reader-conversations@example.com' });
+    await expect(
+      h.as('authenticated', uid, (q) => q(`select * from conversations`)),
+    ).rejects.toThrow(/permission denied/);
+    const r = await h.as('authenticated', uid, (q) =>
+      q(`select id, status, accepted_at, created_at, updated_at from conversations`),
+    );
+    expect(r.rowCount).toBe(0);
+  });
 });
