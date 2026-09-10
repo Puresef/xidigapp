@@ -1,13 +1,19 @@
 /**
  * Phase 6 moderation / verification / account-lifecycle constants (§14/§19/§27).
- * Windows that appear in §27 copy live here (not inline) so the enforced timer
- * and the plain-language promise never drift.
+ *
+ * The queue targets below are INTERNAL PLANNING TARGETS, not advertised
+ * guarantees and not contractual SLAs. They are member-invisible: each one
+ * drives exactly one thing — whether an operator queue row renders a red
+ * "Past target" badge — and nothing else (no sorting, filtering, escalation,
+ * notification, sweep or analytics reads them). Member-facing copy must NOT
+ * restate these numbers; the §27 strings describe who reviews, never how fast
+ * (moderation.constants.test.ts pins both halves of that rule).
  */
 
-// §27 / §19 SLAs — surfaced as an "age" badge in the queues (created_at based).
-export const REPORT_SLA_HOURS = 48; // §27 "within 48 hours"
-export const APPEAL_SLA_HOURS = 72; // §27 "within 72 hours"
-export const VERIFICATION_SLA_DAYS = 7; // §14 "7-day queue SLA"
+// Internal first-review targets — operator queue badge only (created_at based).
+export const REPORT_SLA_HOURS = 24; // internal target; NOT promised to members
+export const APPEAL_SLA_HOURS = 72; // internal target; NOT promised to members
+export const VERIFICATION_SLA_DAYS = 7; // internal target; NOT promised to members
 
 // §19 account lifecycle.
 export const DELETION_GRACE_DAYS = 30; // §19/§27 "30-day grace"

@@ -291,7 +291,7 @@ export const en = {
   'error.reportDuplicate':
     "You've already reported this — our team is on it. Thanks for looking out for the community.",
   'error.appealAlreadySubmitted':
-    "You've already appealed this decision. There's one appeal per action, and a senior moderator will respond within 72 hours.",
+    "You've already appealed this decision. There's one appeal per action, and a moderator who was not involved in it will review yours.",
   'error.appealNotEligible':
     "There's nothing to appeal here, or this action isn't yours to appeal.",
   'error.appealSelfReview':
@@ -670,7 +670,7 @@ export const en = {
   // Phase 6 (§19) member appeal form (replaces the mailto stub).
   'settings.appealTitle': 'Appeal a moderation decision',
   'settings.appealIntro':
-    'If you think a decision was wrong, tell us what happened. A different moderator than the one who made the decision will review your appeal within 72 hours.',
+    'If you think a decision was wrong, tell us what happened. A different moderator than the one who made the decision will review your appeal.',
   'settings.appealEmpty': 'You have no moderation decisions to appeal right now.',
   'settings.appealActionLabel': 'Decision',
   'settings.appealReasonLabel': 'Why should we reconsider?',
@@ -743,7 +743,7 @@ export const en = {
   // Phase 2 AI-escalation queue above). Off the launch floor — internal tooling.
   'admin.reportsTitle': 'Member reports',
   'admin.reportsIntro':
-    'Reports members filed, oldest first. Claim one to review, then decide. The 48-hour SLA badge turns red when a report is overdue.',
+    'Reports members filed, oldest first. Claim one to review, then decide. The badge turns red past our internal 24-hour first-review target (a planning target, not a promise made to members).',
   'admin.reportsEmpty': 'No reports in this view.',
   'admin.reportStatusOpen': 'Open',
   'admin.reportStatusInReview': 'In review',
@@ -755,7 +755,7 @@ export const en = {
   'admin.reportReason': 'Reason',
   'admin.reportSnapshot': 'Captured evidence',
   'admin.reportAgeHours': '{hours}h old',
-  'admin.reportSlaBreached': 'SLA overdue',
+  'admin.reportSlaBreached': 'Past target',
   'admin.reportClaim': 'Claim',
   'admin.reportNoViolation': 'No violation',
   'admin.reportDismiss': 'Dismiss report',
@@ -770,7 +770,7 @@ export const en = {
   // Admin — Phase 6 appeals review queue (§19 second-mod review).
   'admin.appealsTitle': 'Appeals',
   'admin.appealsIntro':
-    'Members appealing a moderation action. You cannot review an appeal of your own action — those are hidden. The 72-hour SLA badge turns red when an appeal is overdue.',
+    'Members appealing a moderation action. You cannot review an appeal of your own action — those are hidden. The badge turns red past our internal 72-hour first-review target (a planning target, not a promise made to members).',
   'admin.appealsEmpty': 'No appeals to review.',
   'admin.appealAppellant': 'Appeal from',
   'admin.appealOriginalAction': 'Action under appeal',
@@ -784,7 +784,7 @@ export const en = {
   // Admin — Phase 6 verification queue (§14 verifier tooling).
   'admin.verifyTitle': 'Verification queue',
   'admin.verifyIntro':
-    'Identity and business verification requests, oldest first. The 7-day SLA badge turns red when a request is overdue. Opening a recording is logged.',
+    'Identity and business verification requests, oldest first. The badge turns red past our internal 7-day first-review target. Opening a recording is logged.',
   'admin.verifyEmpty': 'No verification requests waiting.',
   'admin.verifyTypeIdentity': 'Identity',
   'admin.verifyTypeBusiness': 'Business',
@@ -1327,10 +1327,10 @@ export const en = {
   'messages.requestSent':
     'Your message request has been sent. They’ll see it when they next open Xidig.',
   'messages.reportSubmitted':
-    'Thanks for the report. We review all reports within 48 hours and will update you on the outcome.',
+    'Thanks for the report. A person reviews every report, and we will update you on the outcome.',
   // Phase 6 (§27 Moderation + §19 account lifecycle) success notices
   'messages.appealSubmitted':
-    "Your appeal has been sent to a senior moderator. We'll respond within 72 hours.",
+    'Your appeal has been sent to a moderator who was not involved in the original decision. We will come back to you with the outcome.',
   'messages.verificationRequested':
     "Your verification request is in. We'll be in touch to schedule your video call.",
   'messages.accountDeactivated':
@@ -1911,9 +1911,9 @@ export const en = {
   // (Xidig, Somalia) are the ONLY facts the
   // founder must fill; every other statement matches a shipped app capability.
   'marketing.privacyUpdatedNotice':
-    'Last updated 10 July 2026. We may update this policy; members are notified before any material change takes effect.',
+    'Last updated 10 July 2026. We may update this policy; the current version is always the one published here.',
   'marketing.termsUpdatedNotice':
-    'Last updated 10 July 2026. We may update these terms; members are notified before any material change takes effect.',
+    'Last updated 10 July 2026. We may update these terms; the current version is always the one published here.',
   'marketing.legalEntityNote':
     'Xidig is operated from Somalia, and these terms and policies are governed by Somali law.',
 

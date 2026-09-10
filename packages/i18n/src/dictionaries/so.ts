@@ -612,7 +612,7 @@ export const so = {
   // SO needs native review
   'settings.appealTitle': 'Racfaan ka qaado go’aan kormeerid',
   'settings.appealIntro':
-    'Haddii aad u malaynayso in go’aanku qalad ahaa, noo sheeg wixii dhacay. Kormeere ka duwan kii go’aanka gaaray ayaa racfaankaaga dib u eegi doona 72 saacadood gudahood.',
+    'Haddii aad u malaynayso in go’aanku qalad ahaa, noo sheeg wixii dhacay. Kormeere ka duwan kii go’aanka gaaray ayaa racfaankaaga dib u eegi doona.',
   'settings.appealEmpty': 'Ma jiraan go’aanno kormeerid oo aad hadda racfaan ka qaadi karto.',
   'settings.appealActionLabel': 'Go’aanka',
   'settings.appealReasonLabel': 'Maxaan u dib u eegnaa?',
@@ -1143,7 +1143,7 @@ export const so = {
   'error.reportDuplicate':
     'Horay ayaad u soo sheegtay tan — kooxdeennu way eegaysaa. Waad ku mahadsan tahay ilaalinta bulshada.',
   'error.appealAlreadySubmitted':
-    'Horay ayaad uga racfaan qaadatay go’aankan. Hal racfaan ayaa loo oggol yahay ficil kasta, waxaanad jawaab ka heli doontaa habmaamule sare 72 saacadood gudahood.',
+    'Horay ayaad uga racfaan qaadatay go’aankan. Hal racfaan ayaa loo oggol yahay ficil kasta, waxaana dib u eegi doona kormeere aan ku lug lahayn go’aankaas.',
   'error.appealNotEligible':
     'Wax laga racfaan qaato halkan ma jiraan, ama ficilkan adiga kuuma gaar aha.',
   'error.appealSelfReview':
@@ -1249,10 +1249,10 @@ export const so = {
   'messages.requestSent':
     'Codsigaaga fariinta waa la diray. Way arki doonaan marka xigta ee ay furaan Xidig.',
   'messages.reportSubmitted':
-    'Waad ku mahadsan tahay soo-sheegista. Warbixinnada oo dhan waxaan dib u eegnaa 48 saacadood gudahood, waana kula soo socon doonnaa natiijada.',
+    'Waad ku mahadsan tahay soo-sheegista. Qof ayaa dib u eega soo-sheegis kasta, waana kula soo socon doonnaa natiijada.',
   // Habmaamul / akoon (§27 / §19) — SO waxaa loo baahan yahay dib-u-eegis afka hooyo
   'messages.appealSubmitted':
-    'Racfaankaaga waxaa loo diray habmaamule sare. Waxaan kaaga jawaabi doonnaa 72 saacadood gudahood.',
+    'Racfaankaaga waxaa loo diray kormeere aan ku lug lahayn go’aankii hore. Natiijada waanu kuu soo gudbin doonnaa.',
   'messages.verificationRequested':
     'Codsigaaga xaqiijinta waa la helay. Waan kula soo xiriiri doonnaa si aan u qorsheyno wicitaankaaga muuqaalka.',
   'messages.accountDeactivated':
@@ -1826,9 +1826,9 @@ export const so = {
   // xigmadaysan (Xidig, Somalia) ayaa ah wax
   // kaliya oo aasaasuhu buuxiyo.
   'marketing.privacyUpdatedNotice':
-    'Markii ugu dambeysay la cusboonaysiiyay 10 Luulyo 2026. Siyaasaddan waanu cusboonaysiin karnaa; xubnaha waa loo sheegaa ka hor inta uusan isbeddel muhiim ah dhaqan-gelin.',
+    'Markii ugu dambeysay la cusboonaysiiyay 10 Luulyo 2026. Siyaasaddan waanu cusboonaysiin karnaa; nooca hadda socda ayaa had iyo jeer ah kan halkan lagu daabacay.',
   'marketing.termsUpdatedNotice':
-    'Markii ugu dambeysay la cusboonaysiiyay 10 Luulyo 2026. Shuruudahan waanu cusboonaysiin karnaa; xubnaha waa loo sheegaa ka hor inta uusan isbeddel muhiim ah dhaqan-gelin.',
+    'Markii ugu dambeysay la cusboonaysiiyay 10 Luulyo 2026. Shuruudahan waanu cusboonaysiin karnaa; nooca hadda socda ayaa had iyo jeer ah kan halkan lagu daabacay.',
   'marketing.legalEntityNote':
     'Xidig waxaa laga maamulaa Somalia; shuruudahan iyo siyaasadahanna waxaa xukuma sharciga Soomaaliya.',
 
