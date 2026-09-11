@@ -374,6 +374,11 @@ export async function respondToRequest(
     throw new ApiError('invalid_request', 409);
   }
 
+  // Retained content: accepting would make a deleted account a live thread
+  // participant (and notify it). Refused before any write. Declining stays
+  // open — it only tidies the recipient's own inbox, and is silent anyway.
+  if (action === 'accept') await assertSubjectNotDeleted(admin, conversation.initiator_user_id);
+
   if (action === 'decline') {
     const { error } = await admin
       .from('conversation_declines')
@@ -413,7 +418,13 @@ export interface SentMessage {
 /** Send a message (text, voice, or both) in an accepted thread. Enforces the
  * accept gate + live block check (a block after acceptance halts sends).
  * Notifies the recipient (new_dm: in-app + push per §26); a voice-only
- * message carries no preview text — the notification stays neutral. */
+ * message carries no preview text — the notification stays neutral.
+ *
+ * Retained content (owner ruling 12 Sep): a deleted account is not a live
+ * participant. When the other participant has been deleted, the send is
+ * refused with 409 account_deleted BEFORE any message row, notification,
+ * preview or push exists. The accept gate runs first, so the decline-masking
+ * of f5 is unchanged. Reading the thread's history is untouched. */
 export async function sendMessage(
   admin: SupabaseClient<Database>,
   senderId: string,
@@ -432,6 +443,7 @@ export async function sendMessage(
     throw new ApiError(presented === 'pending' ? 'dm_not_accepted' : 'dm_blocked', 409);
   }
   const recipientId = otherParticipant(conversation, senderId);
+  await assertSubjectNotDeleted(admin, recipientId);
   if (await isBlockedBetween(admin, senderId, recipientId)) {
     throw new ApiError('dm_blocked', 403);
   }
