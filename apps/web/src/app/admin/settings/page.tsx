@@ -5,6 +5,7 @@ import { getAuthContext } from '@/lib/auth/guards';
 import { isActiveAdmin } from '@/lib/auth/privilege';
 import { getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
+import { projectWaitlistForAdmin } from '@/lib/waitlist/admin-view';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,10 @@ export default async function AdminSettingsPage() {
       </h1>
       <BetaSettings
         initialMode={mode === 'waitlist' ? 'waitlist' : 'invite_only'}
-        entries={(entries ?? []) as WaitlistEntry[]}
+        entries={await projectWaitlistForAdmin(
+          admin,
+          (entries ?? []) as Omit<WaitlistEntry, 'contactHidden'>[],
+        )}
       />
     </main>
   );

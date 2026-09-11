@@ -71,6 +71,19 @@ vi.mock('./auth-shutdown', () => ({
   },
 }));
 
+// Award redaction has its own suite (lib/awards/redact.test.ts); here the
+// sweep's surfacing and isolation are what get asserted.
+const awards = vi.hoisted(() => ({
+  result: { redacted: 0, failed: 0 } as { redacted: number; failed: number } | Error,
+}));
+vi.mock('@/lib/awards/redact', () => ({
+  redactDeletedWinnerAwardPosts: async () => {
+    auth.order.push('award-redaction');
+    if (awards.result instanceof Error) throw awards.result;
+    return awards.result;
+  },
+}));
+
 type Row = Record<string, unknown>;
 
 class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
@@ -131,6 +144,7 @@ beforeEach(() => {
   auth.recorded.length = 0;
   auth.recordFails.clear();
   auth.order.length = 0;
+  awards.result = { redacted: 0, failed: 0 };
   vi.restoreAllMocks();
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -168,7 +182,32 @@ describe('runLifecycleSweep', () => {
       mediaPurged: 0,
       mediaPending: 0,
       recordingsPurged: 0,
+      awardPostsRedacted: 0,
+      awardPostsPending: 0,
     });
+  });
+
+  it('surfaces award-post redactions and failures (retained content, step e)', async () => {
+    awards.result = { redacted: 2, failed: 1 };
+    const counts = await runLifecycleSweep(
+      new FakeAdmin({ users: [], verifications: [] }) as never,
+      NOW,
+    );
+    expect(counts.awardPostsRedacted).toBe(2);
+    expect(counts.awardPostsPending).toBe(1);
+    expect(auth.order.at(-1)).toBe('award-redaction');
+  });
+
+  it('a failed award redaction scan is owed work, never a stalled sweep', async () => {
+    awards.result = new Error('connection reset');
+    rpc.outcomes.set('a', { outcome: 'anonymised', mediaPending: 0 });
+    const counts = await runLifecycleSweep(
+      new FakeAdmin({ users: [{ id: 'a' }], verifications: [] }) as never,
+      NOW,
+    );
+    expect(counts.anonymised).toBe(1);
+    expect(counts.awardPostsRedacted).toBe(0);
+    expect(counts.awardPostsPending).toBe(1);
   });
 
   it('logs a failure by id and driver message only', async () => {
@@ -216,7 +255,7 @@ describe('runLifecycleSweep', () => {
 
     const counts = await runLifecycleSweep(admin as never, NOW);
 
-    expect(auth.order).toEqual(['anonymise:a', 'auth-scan', 'media-scan']);
+    expect(auth.order).toEqual(['anonymise:a', 'auth-scan', 'media-scan', 'award-redaction']);
     expect(auth.recorded.map((r) => r.id)).toEqual(['a', 'old']);
     expect(counts.authCompleted).toBe(2);
     expect(counts.authPending).toBe(0);

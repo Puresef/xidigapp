@@ -703,6 +703,11 @@ export const en = {
   'admin.modeWaitlist': 'Open waitlist — anyone can queue; you invite in batches.',
   'admin.waitlistTitle': 'Waitlist',
   'admin.waitlistEmpty': 'Nobody is waiting right now.',
+  // Retained content (lib/waitlist/admin-view.ts): a joined entry's stored
+  // contact is withheld when its account was deleted, or — for an entry with
+  // no signup link on record — when no current account holds it any more.
+  'admin.waitlistAccountDeleted': 'Joined · account deleted — contact hidden',
+  'admin.waitlistContactUnmatched': 'Joined · no current account holds this contact — hidden',
   'admin.waitlistInvitedTag': 'Invited',
   'admin.saved': 'Saved.',
   'admin.claimsTitle': 'Listing claims',

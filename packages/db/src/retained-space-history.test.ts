@@ -200,3 +200,25 @@ describe('the predicate itself', () => {
     expect((res.rows[0] as { ok: boolean }).ok).toBe(false);
   });
 });
+
+describe('PUBLIC Space: the member-authorised view the public page must never exceed', () => {
+  it.each([
+    ['active', 1],
+    ['pending_deletion', 1],
+    ['deleted', 1],
+    ['suspended', 0],
+    ['deactivated', 0],
+  ] as const)(
+    'an update by a %s author is visible to a signed-in non-member: %i',
+    async (status, expected) => {
+      const h = await seedHistory(`rpub_${status.slice(0, 4)}`);
+      await db.admin.query(`update labs set visibility = 'public' where id = $1`, [h.lab]);
+      if (status === 'deleted') await anonymise(h.author);
+      else await setStatus(db, h.author, status);
+      // The stranger is not a Space member — for a public Space this is the
+      // widest authorised reader, i.e. exactly what the signed-out page may show
+      // (apps/web/src/lib/labs/public-updates.ts applies the same rule).
+      expect(await sees(h.stranger, 'lab_updates', h.update)).toBe(expected);
+    },
+  );
+});

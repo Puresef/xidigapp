@@ -24,6 +24,8 @@ export interface WaitlistEntry {
   phone: string | null;
   status: 'pending' | 'invited' | 'joined';
   created_at: string;
+  /** Why the contact is withheld (lib/waitlist/admin-view.ts), or null. */
+  contactHidden: 'account_deleted' | 'no_matching_account' | null;
 }
 
 export function BetaSettings({
@@ -94,7 +96,13 @@ export function BetaSettings({
           <ul className="xidig-invite-list">
             {queue.map((entry) => (
               <li key={entry.id} className="xidig-invite-list__item">
-                <span>{entry.email ?? entry.phone}</span>
+                <span>
+                  {entry.contactHidden === 'account_deleted'
+                    ? t('admin.waitlistAccountDeleted')
+                    : entry.contactHidden === 'no_matching_account'
+                      ? t('admin.waitlistContactUnmatched')
+                      : (entry.email ?? entry.phone)}
+                </span>
                 {entry.status === 'pending' ? (
                   <button
                     type="button"

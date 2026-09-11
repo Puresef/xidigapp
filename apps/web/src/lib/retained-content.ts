@@ -36,6 +36,13 @@ import { isLiveStatus, loadAccountFlags, type AccountFlags } from '@/lib/account
  *   link, no host stats). No event row is written.
  */
 
+/**
+ * The tombstone display name anonymise_user() writes to a deleted member's
+ * profile (migration 20260911000100). Pinned against the SQL literal by
+ * packages/db/src/retained-award-redaction.test.ts — change both together.
+ */
+export const TOMBSTONE_DISPLAY_NAME = 'Deleted member';
+
 /** One status map for a set of member ids (service role; unknown ids fail closed). */
 export async function loadStatuses(
   admin: SupabaseClient<Database>,
@@ -44,6 +51,37 @@ export async function loadStatuses(
   return loadAccountFlags(
     admin,
     ids.filter((id): id is string => typeof id === 'string'),
+  );
+}
+
+// --- Space history ----------------------------------------------------------
+
+/**
+ * The TypeScript twin of the SQL author_is_retained() (migration
+ * 20260911001100): Space history stays visible when its author is live OR
+ * deleted (a tombstone); suspended and deactivated authors stay hidden. A
+ * service-role projection of Space history must apply it so that no public
+ * surface ever shows more than the member read path does. Unknown ids fail
+ * closed (not shown).
+ */
+export function isRetainedAuthorStatus(
+  status: Enums<'account_status'> | null | undefined,
+): boolean {
+  return isLiveStatus(status) || status === 'deleted';
+}
+
+/** Keep rows whose author is retained; author-less rows stay (as in the RLS rule). */
+export async function keepRetainedAuthorRows<T extends { author_user_id: string | null }>(
+  admin: SupabaseClient<Database>,
+  rows: readonly T[],
+): Promise<T[]> {
+  const flags = await loadStatuses(
+    admin,
+    rows.map((row) => row.author_user_id),
+  );
+  return rows.filter(
+    (row) =>
+      row.author_user_id === null || isRetainedAuthorStatus(flags.get(row.author_user_id)?.status),
   );
 }
 

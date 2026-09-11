@@ -7,6 +7,7 @@ import { env } from '@/env';
 import { sendEmailChecked } from '@/lib/email/send';
 import { dmRequestEmail } from '@/lib/email/templates';
 import { notify } from '@/lib/notifications/notify';
+import { assertSubjectNotDeleted } from '@/lib/lifecycle/subject';
 import { isChannelEnabled } from '@/lib/notifications/prefs';
 import { isVerifiedProfile } from '@/lib/profile-verified';
 
@@ -204,6 +205,13 @@ export interface StartResult {
  * entry point. Enforces the block + contact-option gates, then walks the
  * conversation state machine. Throws ApiError('dm_blocked') for a blocked or
  * DM-restricted recipient (§27). Throttling is the caller's responsibility.
+ *
+ * Retained content (owner ruling 11 Sep): a deleted account is a tombstone
+ * nobody can reach, so no new request, re-open or message starts here —
+ * 409 account_deleted, read through the service role before anything else.
+ * Suspended and deactivated recipients keep their existing rules. Existing
+ * conversation history is untouched and stays under its participants' own
+ * access, attributed to the tombstone.
  */
 export async function startConversation(
   admin: SupabaseClient<Database>,
@@ -212,6 +220,7 @@ export async function startConversation(
   message: string | undefined,
 ): Promise<StartResult> {
   if (initiatorId === recipientId) throw new ApiError('invalid_request', 400);
+  await assertSubjectNotDeleted(admin, recipientId);
 
   const { data: recipient } = await admin
     .from('profiles')

@@ -29,6 +29,23 @@ type Admin = SupabaseClient<Database>;
  *     post exists (final-review fix 4).
  */
 
+/**
+ * The stored results-post body: `{category} — {period}: {name}` + provenance.
+ * Rendered with a FIXED translator (see publishAwardResults) because it is a
+ * permanent platform artifact.
+ */
+export function renderAwardResultBody(
+  t: Translator,
+  args: { category: Enums<'award_category'>; quarter: string; name: string },
+): string {
+  const title = t('awards.resultTitle', {
+    category: t(AWARD_CATEGORY_KEYS[args.category]),
+    period: args.quarter,
+    name: args.name,
+  });
+  return `${title}\n\n${t('awards.systemProvenance')}`;
+}
+
 export interface AwardWinner {
   category: Enums<'award_category'>;
   targetType: Enums<'entity_type'>;
@@ -227,15 +244,12 @@ export async function publishAwardResults(
       if (count > 0) asksResolved = count;
     }
 
-    const title = t('awards.resultTitle', {
-      category: t(AWARD_CATEGORY_KEYS[winner.category]),
-      period: quarter,
-      name,
-    });
     // The body is a fallback for non-award-aware surfaces (search snippets,
     // digests, push previews) — the Plaza card renders the structured
-    // AwardPostView, never this text.
-    const body = `${title}\n\n${t('awards.systemProvenance')}`;
+    // AwardPostView, never this text. One renderer, shared with the
+    // retained-content redaction (lib/awards/redact.ts), so a redacted body is
+    // this exact text with only the name replaced.
+    const body = renderAwardResultBody(t, { category: winner.category, quarter, name });
 
     const { postId } = await createSystemPost(admin, {
       // winners.length > 0 here, so the actor id resolved above.

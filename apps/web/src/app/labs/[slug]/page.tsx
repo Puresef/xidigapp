@@ -55,6 +55,7 @@ import {
 import { getLitePrefs } from '@/lib/lite/server';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { getT } from '@/lib/locale';
+import { listPublicSpaceUpdates } from '@/lib/labs/public-updates';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { BackLink } from '@/components/back-link';
 
@@ -561,13 +562,9 @@ async function PublicLabView({ slug }: { slug: string }) {
   const { lab } = view;
   const admin = getSupabaseAdmin();
 
-  const { data: updates } = await admin
-    .from('lab_updates')
-    .select('id, title, body, created_at')
-    .eq('lab_id', lab.id as string)
-    .eq('status', 'published')
-    .order('created_at', { ascending: false })
-    .limit(20);
+  // Never more than a member sees: suspended/deactivated authors are hidden
+  // here exactly as under RLS (lib/labs/public-updates.ts).
+  const updates = await listPublicSpaceUpdates(admin, lab.id as string);
 
   return (
     <main className="xidig-section">

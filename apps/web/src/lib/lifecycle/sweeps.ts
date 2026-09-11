@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@xidig/db';
 
 import { writeAudit } from '@/lib/audit';
+import { redactDeletedWinnerAwardPosts } from '@/lib/awards/redact';
 import { DELETION_GRACE_DAYS } from '@/lib/moderation/constants';
 
 import { anonymiseUser } from './anonymise';
@@ -82,6 +83,13 @@ export interface LifecycleSweepCounts {
    */
   mediaPending: number;
   recordingsPurged: number;
+  /**
+   * Award results posts whose stored body named a now-deleted winner and was
+   * rewritten to the tombstone this run (lib/awards/redact.ts).
+   */
+  awardPostsRedacted: number;
+  /** Award redactions still owed (a failed write, or — counted as one — a failed scan). */
+  awardPostsPending: number;
 }
 
 export async function runLifecycleSweep(
@@ -98,6 +106,8 @@ export async function runLifecycleSweep(
     mediaPurged: 0,
     mediaPending: 0,
     recordingsPurged: 0,
+    awardPostsRedacted: 0,
+    awardPostsPending: 0,
   };
 
   // (a) Grace-expiry → anonymise.
@@ -229,6 +239,22 @@ export async function runLifecycleSweep(
       targetType: 'verification',
       targetId: verification.id,
     });
+  }
+
+  // (e) Retained content: award results posts that baked a now-deleted
+  //     winner's name into their stored body. One idempotent scan covers
+  //     accounts finalised just now AND any earlier deletion (including one
+  //     anonymised outside the sweep), so a failure is work the next run finds.
+  try {
+    const redaction = await redactDeletedWinnerAwardPosts(admin);
+    counts.awardPostsRedacted = redaction.redacted;
+    counts.awardPostsPending = redaction.failed;
+  } catch (cause) {
+    console.error(
+      '[lifecycle] award redaction scan failed:',
+      cause instanceof Error ? cause.message : 'unknown',
+    );
+    counts.awardPostsPending = 1;
   }
 
   return counts;
