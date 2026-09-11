@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Enums } from '@xidig/db';
 
 import { detectLink, type LinkKind } from '@/lib/embeds';
-import { isActiveAccount, loadAccountFlags, type AccountFlags } from '@/lib/account-flags';
+import { isLiveAccount, loadAccountFlags, type AccountFlags } from '@/lib/account-flags';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 
 /**
@@ -203,7 +203,9 @@ export async function fetchAuthors(
   if (userIds.length === 0) return authors;
   const { data, error } = await admin
     .from('profiles')
-    .select('user_id, display_name, handle, location_city, avatar_path, avatar_blurhash, verification_status')
+    .select(
+      'user_id, display_name, handle, location_city, avatar_path, avatar_blurhash, verification_status',
+    )
     .in('user_id', userIds);
   if (error) throw new Error(`author hydration failed: ${error.message}`);
   for (const row of data ?? []) {
@@ -213,9 +215,7 @@ export async function fetchAuthors(
       location_city: row.location_city ?? null,
       // Bylines load the tiny thumb (<8KB by the 96px pipeline), not the full
       // avatar; pre-thumb uploads fall back to the full path.
-      avatar_thumb_url: row.avatar_path
-        ? publicMediaUrl(derivedThumbPath(row.avatar_path))
-        : null,
+      avatar_thumb_url: row.avatar_path ? publicMediaUrl(derivedThumbPath(row.avatar_path)) : null,
       avatar_blurhash: row.avatar_blurhash ?? null,
       verification_status: row.verification_status,
     });
@@ -407,7 +407,10 @@ async function fetchAwardViews(
     else if (hit.target_type === 'post') postTargetIds.push(hit.target_id);
   }
 
-  const winnerPosts = new Map<string, { id: string; title: string | null; author_user_id: string }>();
+  const winnerPosts = new Map<
+    string,
+    { id: string; title: string | null; author_user_id: string }
+  >();
   if (postTargetIds.length > 0) {
     const res = await admin
       .from('posts')
@@ -622,7 +625,7 @@ async function fetchCommentAggregates(
     admin,
     rows.map((row) => row.author_user_id),
   );
-  return aggregateComments(keepActiveAuthors(rows, flags));
+  return aggregateComments(keepLiveAuthors(rows, flags));
 }
 
 /**
@@ -630,11 +633,11 @@ async function fetchCommentAggregates(
  * not a live account (unknown ids fail closed). Exported so the rule is
  * testable without the network.
  */
-export function keepActiveAuthors<T extends { author_user_id: string }>(
+export function keepLiveAuthors<T extends { author_user_id: string }>(
   rows: readonly T[],
   flags: Map<string, AccountFlags>,
 ): T[] {
-  return rows.filter((row) => isActiveAccount(flags, row.author_user_id));
+  return rows.filter((row) => isLiveAccount(flags, row.author_user_id));
 }
 
 export interface HydratePostsOptions {
@@ -664,7 +667,9 @@ export async function hydratePosts(
   const authorIds = [
     ...new Set(
       rows.flatMap((row) =>
-        row.ask_helper_user_id ? [row.author_user_id, row.ask_helper_user_id] : [row.author_user_id],
+        row.ask_helper_user_id
+          ? [row.author_user_id, row.ask_helper_user_id]
+          : [row.author_user_id],
       ),
     ),
   ];

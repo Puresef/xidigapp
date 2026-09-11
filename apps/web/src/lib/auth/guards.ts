@@ -87,9 +87,22 @@ export async function requireUserForAppeal(): Promise<AuthContext> {
   return ctx;
 }
 
-/** Role gate. `mod` admits mods AND admins; `admin` admits admins only. */
+/**
+ * Platform privilege (moderation, admin, verification) needs a fully ACTIVE
+ * account. requireUser admits the §19 deletion grace because the grace is
+ * ordinary membership (owner ruling, 11 Sep) — but not continued power over
+ * other members. The admin/mod routes act through the service role, so the
+ * database's active-only is_mod()/is_admin() never see them; this is where
+ * the rule has to hold.
+ */
+function assertActiveForPrivilege(ctx: AuthContext): void {
+  if (ctx.appUser.status !== 'active') throw new ApiError('forbidden', 403);
+}
+
+/** Role gate. `mod` admits mods AND admins; `admin` admits admins only. Active accounts only. */
 export async function requireRole(minRole: 'mod' | 'admin'): Promise<AuthContext> {
   const ctx = await requireUser();
+  assertActiveForPrivilege(ctx);
   const { role } = ctx.appUser;
   const allowed = minRole === 'admin' ? role === 'admin' : role === 'admin' || role === 'mod';
   if (!allowed) throw new ApiError('forbidden', 403);
@@ -106,6 +119,7 @@ export async function requireRole(minRole: 'mod' | 'admin'): Promise<AuthContext
  */
 export async function requireVerifier(): Promise<AuthContext> {
   const ctx = await requireUser();
+  assertActiveForPrivilege(ctx);
   if (ctx.appUser.role === 'admin') return ctx;
   const { data, error } = await ctx.supabase.rpc('is_verifier');
   if (error || data !== true) throw new ApiError('not_a_verifier', 403);

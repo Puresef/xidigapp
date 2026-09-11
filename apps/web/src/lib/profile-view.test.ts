@@ -84,7 +84,7 @@ beforeEach(() => {
 });
 
 describe('getPublicProfileView account-status gate', () => {
-  it.each(['deleted', 'suspended', 'deactivated', 'pending_deletion'])(
+  it.each(['deleted', 'suspended', 'deactivated'])(
     'returns null for a %s account (no public page, no OG card)',
     async (status) => {
       const admin = adminFor(status);
@@ -106,6 +106,12 @@ describe('getPublicProfileView account-status gate', () => {
     const view = await getPublicProfileView('deleted_0123456789ab');
     expect(view?.profile.user_id).toBe('u-1');
     expect(view?.isAi).toBe(false);
+  });
+
+  it('serves an account in the deletion grace like any live one (it is still a member)', async () => {
+    adminHolder.client = adminFor('pending_deletion');
+    const view = await getPublicProfileView('deleted_0123456789ab');
+    expect(view?.profile.user_id).toBe('u-1');
   });
 
   it('still returns null for an unknown handle', async () => {

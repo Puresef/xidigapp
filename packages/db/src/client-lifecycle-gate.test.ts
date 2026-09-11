@@ -440,7 +440,7 @@ const RPC_EXEMPT: Record<string, string> = {
   get_signup_mode: 'public configuration, anon-executable by design',
   has_capability: "privilege predicate; already requires status = 'active'",
   has_password: "the caller's own password-exists boolean; read by the /api/me snapshot",
-  is_active_account: "privilege predicate; already requires status = 'active'",
+  is_active_account: "strict status = 'active' predicate; no policy uses it since 20260911000500",
   is_admin: "privilege predicate; already requires status = 'active'",
   is_advisor: "privilege predicate; already requires status = 'active'",
   is_candidate_lab_member: "RLS predicate about the caller's own membership",

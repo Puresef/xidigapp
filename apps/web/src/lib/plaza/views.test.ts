@@ -5,7 +5,7 @@ import type { AccountFlags } from '@/lib/account-flags';
 import {
   aggregateComments,
   COMMENT_SNIPPET_MAX,
-  keepActiveAuthors,
+  keepLiveAuthors,
   type CommentAggregateRow,
 } from './views';
 
@@ -75,7 +75,7 @@ describe('aggregateComments', () => {
   });
 });
 
-describe('keepActiveAuthors (service-role half of comments_select_visible)', () => {
+describe('keepLiveAuthors (service-role half of comments_select_visible)', () => {
   // fetchCommentAggregates reads under the service role, so the RLS clause
   // that hides a non-active author's comments from the thread does not apply
   // to the feed-card teaser and count. This is the rule it enforces instead.
@@ -83,24 +83,37 @@ describe('keepActiveAuthors (service-role half of comments_select_visible)', () 
     ['live', { status: 'active', isAi: false }],
     ['gone', { status: 'deleted', isAi: false }],
     ['paused', { status: 'suspended', isAi: false }],
+    ['leaving', { status: 'pending_deletion', isAi: false }],
   ]);
 
-  it('drops comments by deleted, suspended and unknown authors', () => {
+  it('drops comments by deleted, suspended and unknown authors; keeps a grace-period author', () => {
     const rows = [
       row({ author_user_id: 'live', body: 'stays' }),
+      row({ author_user_id: 'leaving', body: 'grace author stays' }),
       row({ author_user_id: 'gone', body: 'tombstone author' }),
       row({ author_user_id: 'paused', body: 'suspended author' }),
       row({ author_user_id: 'never-seen', body: 'unknown fails closed' }),
     ];
-    expect(keepActiveAuthors(rows, flags).map((r) => r.body)).toEqual(['stays']);
+    expect(keepLiveAuthors(rows, flags).map((r) => r.body)).toEqual([
+      'stays',
+      'grace author stays',
+    ]);
   });
 
   it('so a deleted author’s comment never becomes the latest-comment snippet', () => {
     const rows = [
-      row({ author_user_id: 'gone', body: 'newest but hidden', created_at: '2026-09-11T00:00:02Z' }),
-      row({ author_user_id: 'live', body: 'older and visible', created_at: '2026-09-11T00:00:01Z' }),
+      row({
+        author_user_id: 'gone',
+        body: 'newest but hidden',
+        created_at: '2026-09-11T00:00:02Z',
+      }),
+      row({
+        author_user_id: 'live',
+        body: 'older and visible',
+        created_at: '2026-09-11T00:00:01Z',
+      }),
     ];
-    const { latest, counts } = aggregateComments(keepActiveAuthors(rows, flags));
+    const { latest, counts } = aggregateComments(keepLiveAuthors(rows, flags));
     expect(latest.get('p1')?.snippet).toBe('older and visible');
     expect(counts.get('p1')).toBe(1);
   });

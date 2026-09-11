@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
-import { isActiveAccount, loadAccountFlags } from '@/lib/account-flags';
+import { isLiveAccount, loadAccountFlags } from '@/lib/account-flags';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -114,9 +114,29 @@ export interface ProfileMediaView {
 
 /** A hydrated profile pin (position 1..3). Unreadable targets are dropped. */
 export type ProfilePinItem =
-  | { entityType: 'post'; entityId: string; position: number; title: string | null; body: string; postType: string }
-  | { entityType: 'lab'; entityId: string; position: number; name: string; slug: string; shortDescription: string | null }
-  | { entityType: 'listing'; entityId: string; position: number; businessName: string; city: string | null };
+  | {
+      entityType: 'post';
+      entityId: string;
+      position: number;
+      title: string | null;
+      body: string;
+      postType: string;
+    }
+  | {
+      entityType: 'lab';
+      entityId: string;
+      position: number;
+      name: string;
+      slug: string;
+      shortDescription: string | null;
+    }
+  | {
+      entityType: 'listing';
+      entityId: string;
+      position: number;
+      businessName: string;
+      city: string | null;
+    };
 
 export interface ProfileView {
   profile: ProfileViewRow;
@@ -161,10 +181,7 @@ async function loadCounts(userId: string): Promise<ProfileCounts> {
       .select('*', { count: 'exact', head: true })
       .eq('target_type', 'user')
       .eq('target_id', userId),
-    admin
-      .from('vouches')
-      .select('*', { count: 'exact', head: true })
-      .eq('vouchee_user_id', userId),
+    admin.from('vouches').select('*', { count: 'exact', head: true }).eq('vouchee_user_id', userId),
   ]);
   return { followers: followers ?? 0, vouches: vouches ?? 0 };
 }
@@ -201,7 +218,11 @@ export async function loadReputation(
  * because users.is_ai is not readable through another member's RLS client.
  */
 export async function loadIsAi(userId: string): Promise<boolean> {
-  const { data } = await getSupabaseAdmin().from('users').select('is_ai').eq('id', userId).maybeSingle();
+  const { data } = await getSupabaseAdmin()
+    .from('users')
+    .select('is_ai')
+    .eq('id', userId)
+    .maybeSingle();
   return data?.is_ai ?? false;
 }
 
@@ -246,15 +267,24 @@ export async function hydrateProfilePins(
   const [posts, labs, listings] = await Promise.all([
     postIds.length > 0
       ? client.from('posts').select('id, title, body, type').in('id', postIds)
-      : Promise.resolve({ data: [] as { id: string; title: string | null; body: string; type: string }[] }),
+      : Promise.resolve({
+          data: [] as { id: string; title: string | null; body: string; type: string }[],
+        }),
     labIds.length > 0
       ? client.from('labs').select('id, name, slug, short_description').in('id', labIds)
       : Promise.resolve({
-          data: [] as { id: string; name: string; slug: string; short_description: string | null }[],
+          data: [] as {
+            id: string;
+            name: string;
+            slug: string;
+            short_description: string | null;
+          }[],
         }),
     listingIds.length > 0
       ? client.from('business_listings').select('id, business_name, city').in('id', listingIds)
-      : Promise.resolve({ data: [] as { id: string; business_name: string; city: string | null }[] }),
+      : Promise.resolve({
+          data: [] as { id: string; business_name: string; city: string | null }[],
+        }),
   ]);
 
   const postById = new Map((posts.data ?? []).map((row) => [row.id, row]));
@@ -351,9 +381,7 @@ export function applyLocationGranularity<T extends LocationFields>(
  * suggested-follows) to fold each row's city/country before it leaves the
  * server.
  */
-export async function loadLocationGranularities(
-  userIds: string[],
-): Promise<Map<string, string>> {
+export async function loadLocationGranularities(userIds: string[]): Promise<Map<string, string>> {
   const result = new Map<string, string>();
   if (userIds.length === 0) return result;
   const { data } = await getSupabaseAdmin()
@@ -389,7 +417,9 @@ export async function isProfileIndexable(userId: string): Promise<boolean> {
 async function loadBadges(client: AnyClient, userId: string): Promise<ProfileBadge[]> {
   const { data: badges } = await client
     .from('user_badges')
-    .select('badge_id, awarded_at, context, tier, badge_definitions(slug, name, description, badge_class)')
+    .select(
+      'badge_id, awarded_at, context, tier, badge_definitions(slug, name, description, badge_class)',
+    )
     .eq('user_id', userId)
     .is('revoked_at', null)
     .order('awarded_at', { ascending: false });
@@ -436,7 +466,16 @@ export async function getMemberProfileView(
   ]);
   const row = isOwner ? rawRow : applyLocationGranularity(rawRow, settings.locationGranularity);
 
-  return { profile: row, badges, counts, reputation, media: profileMediaView(row), openTo, pins, isAi };
+  return {
+    profile: row,
+    badges,
+    counts,
+    reputation,
+    media: profileMediaView(row),
+    openTo,
+    pins,
+    isAi,
+  };
 }
 
 /**
@@ -458,13 +497,13 @@ export async function getPublicProfileView(handle: string): Promise<ProfileView 
   let row = profile as unknown as ProfileViewRow;
 
   // The logged-out projection is service role, so it bypasses the RLS rule
-  // that hides a non-active member's content from members. Apply the same
-  // rule here: only a live account has a public share page, an OG card, or a
-  // crawlable /u/ URL. A tombstoned (deleted) profile 404s to the world, the
+  // that hides a non-live member's content from members. Apply the same
+  // rule here: only a live account (active, or in the cancellable deletion
+  // grace) has a public share page, an OG card, or a crawlable /u/ URL. A tombstoned (deleted) profile 404s to the world, the
   // way search already hides it. Members reading through RLS still get the
   // neutral tombstone on the member surface.
   const flags = await loadAccountFlags(admin, [row.user_id]);
-  if (!isActiveAccount(flags, row.user_id)) return null;
+  if (!isLiveAccount(flags, row.user_id)) return null;
   const isAi = flags.get(row.user_id)?.isAi ?? false;
 
   const [badges, counts, reputation, openTo, settings] = await Promise.all([
@@ -476,5 +515,14 @@ export async function getPublicProfileView(handle: string): Promise<ProfileView 
   ]);
   row = applyLocationGranularity(row, settings.locationGranularity);
 
-  return { profile: row, badges, counts, reputation, media: profileMediaView(row), openTo, pins: [], isAi };
+  return {
+    profile: row,
+    badges,
+    counts,
+    reputation,
+    media: profileMediaView(row),
+    openTo,
+    pins: [],
+    isAi,
+  };
 }

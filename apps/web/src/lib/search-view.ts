@@ -2,13 +2,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
-import { loadAccountFlags } from '@/lib/account-flags';
+import { isLiveStatus, loadAccountFlags } from '@/lib/account-flags';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
-import {
-  aggregateComments,
-  fetchAuthors,
-  type CommentAggregateRow,
-} from '@/lib/plaza/views';
+import { aggregateComments, fetchAuthors, type CommentAggregateRow } from '@/lib/plaza/views';
 import { applyLocationGranularity } from '@/lib/profile-view';
 import { normalizeSearchName } from '@/lib/search-norm';
 
@@ -60,7 +56,10 @@ export interface SearchClients {
 
 /** Strip characters with meaning inside a PostgREST `.or()` pattern. */
 export function sanitizeTerm(raw: string): string {
-  return raw.replace(/[%_,()]/g, ' ').replace(/\s+/g, ' ').trim();
+  return raw
+    .replace(/[%_,()]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 // --- account flags (users.status / users.is_ai) ---------------------------
@@ -168,16 +167,16 @@ export async function searchPeople(clients: SearchClients, q: string): Promise<S
   const { data, error } = await query;
   if (error) throw new Error(`people search failed: ${error.message}`);
 
-  // Account-status gate: only ACTIVE accounts are discoverable (profiles RLS
-  // is `using (true)`, so suspended/deactivated/deleted members would
-  // otherwise resurface here). Anonymous additionally drops badged AI
+  // Account-status gate: only LIVE accounts (active, or in the cancellable
+  // deletion grace) are discoverable (profiles RLS is `using (true)`, so
+  // suspended/deactivated/deleted members would otherwise resurface here). Anonymous additionally drops badged AI
   // assistants (§21 organic-proof invariant on the signed-out surface).
   const rows = (data ?? []) as unknown as PersonRow[];
   const flags = await loadAccountFlags(
     clients.admin,
     rows.map((row) => row.user_id),
   );
-  let visible = rows.filter((row) => flags.get(row.user_id)?.status === 'active');
+  let visible = rows.filter((row) => isLiveStatus(flags.get(row.user_id)?.status));
   if (anon) visible = visible.filter((row) => flags.get(row.user_id)?.isAi !== true);
   visible = visible.slice(0, SEARCH_GROUP_LIMIT);
 
@@ -308,15 +307,14 @@ export async function searchListings(clients: SearchClients, q: string): Promise
     const flags = await loadAccountFlags(clients.admin, ownerIds);
     rows = rows
       .filter(
-        (row) => row.owner_user_id === null || flags.get(row.owner_user_id)?.status === 'active',
+        (row) => row.owner_user_id === null || isLiveStatus(flags.get(row.owner_user_id)?.status),
       )
       .slice(0, SEARCH_GROUP_LIMIT);
   }
 
-  const categories = await loadCategoryNames(
-    client,
-    [...new Set(rows.map((row) => row.category_id).filter((id): id is string => id !== null))],
-  );
+  const categories = await loadCategoryNames(client, [
+    ...new Set(rows.map((row) => row.category_id).filter((id): id is string => id !== null)),
+  ]);
 
   return rows.map((row) => ({
     id: row.id,
@@ -496,10 +494,7 @@ async function loadPostTags(
 }
 
 /** Published-reply rows for the result posts; counted in JS by aggregateComments. */
-async function loadReplyRows(
-  admin: AnyClient,
-  postIds: string[],
-): Promise<CommentAggregateRow[]> {
+async function loadReplyRows(admin: AnyClient, postIds: string[]): Promise<CommentAggregateRow[]> {
   if (postIds.length === 0) return [];
   const { data, error } = await admin
     .from('comments')

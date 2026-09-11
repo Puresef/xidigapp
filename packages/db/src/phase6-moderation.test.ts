@@ -299,7 +299,7 @@ describe('suspended-user write block', () => {
 // 6. Suspended user's already-published content is hidden
 // ---------------------------------------------------------------------------
 describe('suspension content-hiding', () => {
-  it('hides a non-active author’s post from readers; the author keeps sight only in the grace, mods always', async () => {
+  it('hides a suspended/deactivated/deleted author’s post from readers; a grace author stays visible', async () => {
     const author = await seedMember('ch_author');
     const reader = await seedMember('ch_reader');
     const mod = await seedMod('ch_mod');
@@ -310,14 +310,14 @@ describe('suspension content-hiding', () => {
 
     for (const status of ['suspended', 'deactivated', 'pending_deletion', 'deleted']) {
       await setStatus(author, status);
-      expect(await countVisible(reader, 'posts', postId)).toBe(0); // hidden from readers
-      // The author keeps sight of their own post only during the §19 grace
-      // (pending_deletion). A suspended / deactivated / deleted account has no
-      // client database access at all — client-API lifecycle gate,
-      // 20260911000400 — and reaches its content only through server routes.
-      expect(await countVisible(author, 'posts', postId)).toBe(
-        status === 'pending_deletion' ? 1 : 0,
-      );
+      // The §19 grace (pending_deletion) is ordinary membership until the
+      // final transition (20260911000500): its content stays visible exactly
+      // like an active member's. Suspended / deactivated / deleted content is
+      // hidden from readers, and those accounts have no client database
+      // access at all (client-API lifecycle gate, 20260911000400).
+      const grace = status === 'pending_deletion';
+      expect(await countVisible(reader, 'posts', postId)).toBe(grace ? 1 : 0);
+      expect(await countVisible(author, 'posts', postId)).toBe(grace ? 1 : 0);
       expect(await countVisible(mod, 'posts', postId)).toBe(1); // mod sees for adjudication
     }
 

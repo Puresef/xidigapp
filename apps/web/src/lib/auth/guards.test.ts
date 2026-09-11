@@ -37,13 +37,13 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }));
 
-import { requireUser, requireUserForAppeal } from './guards';
+import { requireRole, requireUser, requireUserForAppeal, requireVerifier } from './guards';
 
 const USER_ID = '11111111-1111-4111-8111-111111111111';
 
-function signIn(status: string) {
+function signIn(status: string, role = 'member') {
   serverHolder.authUser = { id: USER_ID };
-  serverHolder.appUser = { id: USER_ID, role: 'member', status };
+  serverHolder.appUser = { id: USER_ID, role, status };
 }
 
 async function statusOf(fn: () => Promise<unknown>): Promise<number | 'ok'> {
@@ -88,5 +88,40 @@ describe('requireUser vs requireUserForAppeal account states', () => {
       expect(await statusOf(requireUser)).toBe('ok');
       expect(await statusOf(requireUserForAppeal)).toBe('ok');
     }
+  });
+});
+
+/**
+ * Platform privilege requires a fully ACTIVE account (owner ruling, 11 Sep):
+ * the §19 deletion grace is ordinary membership, NOT continued moderation,
+ * admin or verification power. The admin/mod API routes act through the
+ * service role, so the database's active-only is_mod()/is_admin() never see
+ * them — the guard is the only place this can hold.
+ */
+describe('privileged guards and the deletion grace', () => {
+  it.each([
+    ['mod', 'mod'],
+    ['admin', 'admin'],
+  ] as const)('requireRole(%s) refuses a %s in pending_deletion with 403', async (min, role) => {
+    signIn('pending_deletion', role);
+    await expect(requireRole(min)).rejects.toMatchObject({ code: 'forbidden', status: 403 });
+  });
+
+  it('an admin in pending_deletion cannot act as a verifier either', async () => {
+    signIn('pending_deletion', 'admin');
+    await expect(requireVerifier()).rejects.toMatchObject({ code: 'forbidden', status: 403 });
+  });
+
+  it('active mods and admins keep their powers (control)', async () => {
+    signIn('active', 'mod');
+    expect(await statusOf(() => requireRole('mod'))).toBe('ok');
+    signIn('active', 'admin');
+    expect(await statusOf(() => requireRole('admin'))).toBe('ok');
+    expect(await statusOf(requireVerifier)).toBe('ok');
+  });
+
+  it('the grace member is still an ordinary member (requireUser admits)', async () => {
+    signIn('pending_deletion', 'admin');
+    expect(await statusOf(requireUser)).toBe('ok');
   });
 });

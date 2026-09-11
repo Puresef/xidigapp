@@ -154,7 +154,7 @@ describe('GET /api/profiles account-status gate', () => {
     }
   }
 
-  it('drops deleted, suspended and deactivated members from the page', async () => {
+  it('drops deleted, suspended and deactivated members from the page; keeps a grace-period member', async () => {
     userClient = new FakeClient();
     const seeded = new FakeQuery([
       { user_id: 'a', display_name: 'Live', handle: 'live', created_at: '2026-09-01T00:00:00Z' },
@@ -170,17 +170,28 @@ describe('GET /api/profiles account-status gate', () => {
         handle: 'paused',
         created_at: '2026-07-01T00:00:00Z',
       },
+      {
+        user_id: 'd',
+        display_name: 'Leaving',
+        handle: 'leaving',
+        created_at: '2026-06-01T00:00:00Z',
+      },
     ]);
     userClient.from = (table: string) => {
       userClient.calls.push({ table, query: seeded });
       return seeded;
     };
     authHolder.ctx = { supabase: userClient };
-    adminHolder.client = new StatusAdmin({ a: 'active', b: 'deleted', c: 'suspended' });
+    adminHolder.client = new StatusAdmin({
+      a: 'active',
+      b: 'deleted',
+      c: 'suspended',
+      d: 'pending_deletion',
+    });
 
     const response = await GET(request('limit=20'));
     expect(response.status).toBe(200);
     const body = (await response.json()) as { data: { profiles: Array<{ user_id: string }> } };
-    expect(body.data.profiles.map((p) => p.user_id)).toEqual(['a']);
+    expect(body.data.profiles.map((p) => p.user_id)).toEqual(['a', 'd']);
   });
 });

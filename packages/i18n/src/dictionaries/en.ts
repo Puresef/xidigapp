@@ -660,7 +660,8 @@ export const en = {
   'settings.requestDeletionConfirm':
     'Request account deletion? You have 30 days to cancel before everything is permanently removed.',
   'settings.cancelDeletionButton': 'Cancel deletion',
-  'settings.deletionPending': 'Your account is scheduled for deletion. {days} days left to cancel.',
+  'settings.deletionPending':
+    'Your account is scheduled for deletion. Until then it stays active and works as normal. You have {days} days to cancel and keep it; after that, it is deleted.',
   // Phase 6 (§14) member verification request.
   'settings.verifyTitle': 'Get verified',
   'settings.verifyBody':

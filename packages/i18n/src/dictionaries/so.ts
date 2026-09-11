@@ -599,7 +599,7 @@ export const so = {
   'settings.requestDeletionConfirm':
     'Ma codsanaysaa in akoonka la tirtiro? Waxaad haysataa 30 maalmood aad joojin karto ka hor inta aan wax walba si joogto ah loo tirtirin.',
   'settings.deletionPending':
-    'Akoonkaaga waxaa loo qorsheeyay in la tirtiro. {days} maalmood ayaa haray oo aad joojin karto.',
+    'Akoonkaaga waxaa loo qorsheeyay in la tirtiro. Ilaa waqtigaas wuu shaqeynayaa sidii caadiga ahayd. Waxaad haysataa {days} maalmood oo aad ku joojin karto si aad u haysato; kadib waa la tirtiraa.',
   // Phase 6 (§14) codsiga xaqiijinta xsubinta.
   // SO needs native review
   'settings.verifyTitle': 'Isxaqiiji',

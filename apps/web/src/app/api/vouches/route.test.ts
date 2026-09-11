@@ -100,7 +100,7 @@ beforeEach(() => {
 });
 
 describe('POST /api/vouches target account state', () => {
-  it.each(['deleted', 'suspended', 'deactivated', 'pending_deletion'])(
+  it.each(['deleted', 'suspended', 'deactivated'])(
     'refuses a %s target with 404 before inserting anything',
     async (status) => {
       admin = new FakeAdmin({
@@ -122,6 +122,21 @@ describe('POST /api/vouches target account state', () => {
     adminHolder.client = admin;
     expect((await POST(post())).status).toBe(404);
     expect(admin.wrote('vouches')).toBe(false);
+  });
+
+  it('records a vouch for a target in the deletion grace (still a member)', async () => {
+    admin = new FakeAdmin({
+      profiles: [
+        { row: { verification_status: 'identity_verified' } },
+        { row: { verification_status: 'unverified' } },
+      ],
+      users: [{ row: { status: 'pending_deletion' } }],
+      vouches: [{ row: null }, { row: null, count: 1 }],
+    });
+    adminHolder.client = admin;
+    const res = await POST(post());
+    expect(res.status).toBe(200);
+    expect(admin.wrote('vouches')).toBe(true);
   });
 
   it('records a vouch for a live target', async () => {

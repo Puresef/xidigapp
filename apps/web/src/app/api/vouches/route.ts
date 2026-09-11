@@ -1,3 +1,4 @@
+import { isLiveStatus } from '@/lib/account-flags';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
@@ -38,7 +39,8 @@ export async function POST(request: Request): Promise<Response> {
       throw new ApiError('forbidden', 403);
     }
 
-    // The target must be a live account. Vouching for an anonymised member
+    // The target must be a live account (active, or in the cancellable
+    // deletion grace — still a member). Vouching for an anonymised member
     // would re-verify a tombstone (the auto-upgrade below writes
     // verification_status) — and the profile freeze trigger would refuse it
     // with a 500. Refuse up front with the same 404 an unknown id gets.
@@ -48,7 +50,7 @@ export async function POST(request: Request): Promise<Response> {
       .eq('id', voucheeUserId)
       .maybeSingle();
     if (targetError) throw new Error(`vouchee account lookup failed: ${targetError.message}`);
-    if (!target || target.status !== 'active') throw new ApiError('not_found', 404);
+    if (!target || !isLiveStatus(target.status)) throw new ApiError('not_found', 404);
 
     // Insert the vouch; a duplicate (23505) is an idempotent success — we still
     // report the current count so a client always gets a truthful tally.
@@ -56,7 +58,11 @@ export async function POST(request: Request): Promise<Response> {
       voucher_user_id: ctx.appUser.id,
       vouchee_user_id: voucheeUserId,
     });
-    if (vouchError && vouchError.code !== '23505' && !/duplicate|unique/i.test(vouchError.message)) {
+    if (
+      vouchError &&
+      vouchError.code !== '23505' &&
+      !/duplicate|unique/i.test(vouchError.message)
+    ) {
       throw new Error(`vouch insert failed: ${vouchError.message}`);
     }
 
@@ -87,8 +93,7 @@ export async function POST(request: Request): Promise<Response> {
 
       if (
         vouchee &&
-        (vouchee.verification_status === 'unverified' ||
-          vouchee.verification_status === 'pending')
+        (vouchee.verification_status === 'unverified' || vouchee.verification_status === 'pending')
       ) {
         const { error: upgradeError } = await admin
           .from('profiles')

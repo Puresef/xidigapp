@@ -82,7 +82,8 @@ class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
   }
 
   then<TResult1, TResult2>(
-    onfulfilled?: ((value: { data: Row[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
+    onfulfilled?:
+      ((value: { data: Row[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
     return Promise.resolve({ data: this.rows, error: null }).then(onfulfilled, onrejected);
@@ -209,7 +210,7 @@ describe('searchPeople — anonymous (service-role projection)', () => {
     expect(admin.queryFor('profiles').has('not', ['user_id', 'in', '(u-optout)'])).toBe(true);
   });
 
-  it('drops suspended, deactivated, pending-deletion and deleted accounts', async () => {
+  it('drops suspended, deactivated and deleted accounts; keeps a grace-period member', async () => {
     const admin = new FakeClient({
       profiles: [
         [
@@ -231,7 +232,7 @@ describe('searchPeople — anonymous (service-role projection)', () => {
       ],
     });
     const results = await searchPeople(clientsOf(null, admin), 'person');
-    expect(results.map((row) => row.userId)).toEqual(['u-active']);
+    expect(results.map((row) => row.userId)).toEqual(['u-active', 'u-pend']);
   });
 
   it('drops badged AI-assistant accounts (organic-proof invariant, signed-out surface)', async () => {
@@ -351,6 +352,15 @@ describe('searchListings — anonymous (service-role projection)', () => {
     expect(results.map((row) => row.id)).toEqual(['l-ok']);
   });
 
+  it("keeps a grace-period owner's listing, matching author_is_active", async () => {
+    const admin = new FakeClient({
+      business_listings: [[listing('l-grace', 'u-grace')]],
+      users: [[account('u-grace', 'pending_deletion')]],
+    });
+    const results = await searchListings(clientsOf(null, admin), 'biz');
+    expect(results.map((row) => row.id)).toEqual(['l-grace']);
+  });
+
   it('keeps ownerless (imported) listings, matching the RLS null-owner branch', async () => {
     const admin = new FakeClient({
       business_listings: [[listing('l-imported', null)]],
@@ -465,8 +475,18 @@ describe('searchPosts', () => {
       post_tags: [[{ post_id: 'p1', tags: { id: 't1', name: 'warbixin' } }]],
       comments: [
         [
-          { post_id: 'p1', author_user_id: 'u2', body: 'first', created_at: '2026-07-02T00:00:00Z' },
-          { post_id: 'p1', author_user_id: 'u3', body: 'second', created_at: '2026-07-03T00:00:00Z' },
+          {
+            post_id: 'p1',
+            author_user_id: 'u2',
+            body: 'first',
+            created_at: '2026-07-02T00:00:00Z',
+          },
+          {
+            post_id: 'p1',
+            author_user_id: 'u3',
+            body: 'second',
+            created_at: '2026-07-03T00:00:00Z',
+          },
         ],
       ],
     });
