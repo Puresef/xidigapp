@@ -1807,7 +1807,7 @@ export const en = {
     'Start a casual Club; promote it to a Lab when it gets serious. Updates, decisions, links, and members stay in one place.',
   'marketing.blockCapitalTitle': 'Back what’s being built',
   'marketing.blockCapitalBody':
-    'Co-sign promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
+    'Show support for promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
   'marketing.blockLiteTitle': 'Built for our internet',
   'marketing.blockLiteBody':
     'Somali and English from day one. Lite mode for slow connections — images, maps, and embeds load only when you tap.',
@@ -1866,7 +1866,7 @@ export const en = {
     'Every public Lab already has a shareable page. The full Lab directory opens here soon.',
   'marketing.capitalTeaserTitle': 'Capital — community-backed ventures',
   'marketing.capitalTeaserBody':
-    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Investing is not offered on Xidig and there are no financial flows — what you can do is offer help or co-sign the work.',
+    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Investing is not offered on Xidig and there are no financial flows — what you can do is offer help or show support for the work.',
 
   // /about
   'marketing.aboutTitle': 'About Xidig',

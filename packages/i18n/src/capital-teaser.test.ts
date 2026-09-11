@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-
 import { describe, expect, it } from 'vitest';
 
 import { en } from './dictionaries/en';
@@ -16,7 +13,17 @@ import { so } from './dictionaries/so';
  * Xidig does not offer investment, does not capture investment intent, and
  * makes no promise about activating it later. The only member actions the
  * copy may point at are the ones that exist on a candidate: "I can help" and
- * co-sign (Garab).
+ * the support signal — whose locked ENGLISH label is "Show support" (G1), and
+ * whose locked SOMALI label stays the bare "Garab". The control itself still
+ * renders the retired "Co-sign" (term.garab / action.garab are pinned by
+ * vocabulary.test.ts and migrate under Packet B); this copy uses the locked
+ * label, so the assertion below is what stops the retired one coming back.
+ *
+ * The route-coupling half of this pin — that /capital/candidates still reads
+ * this ONE key for both its hero and its <meta description>, so a dictionary
+ * assertion keeps covering the metadata surface — lives in
+ * apps/web/src/app/capital/candidates/teaser-copy.test.ts: it reads the page
+ * source, and node builtins are not typed in this package.
  */
 
 const KEY = 'marketing.capitalTeaserBody';
@@ -26,7 +33,8 @@ describe('capital teaser says investing is not offered', () => {
     const text = String(en[KEY]);
     expect(text).toContain('Investing is not offered on Xidig');
     expect(text).toContain('offer help');
-    expect(text).toContain('co-sign');
+    expect(text).toContain('show support');
+    expect(text).not.toContain('co-sign');
   });
 
   it('SO twin carries the same statement (provisional pending native review)', () => {
@@ -48,19 +56,5 @@ describe('capital teaser says investing is not offered', () => {
       /\b(soon|later|coming|will (open|launch|activate)|eligib|return|due diligence|vetted)\b/,
     );
     expect(text).not.toMatch(/dhawaan|hadhow|mustaqbal/);
-  });
-
-  it('the route reads this one key for both the hero and the page description', () => {
-    // If someone hard-codes a separate description, the pin above stops
-    // covering the metadata surface — fail loudly.
-    const page = readFileSync(
-      fileURLToPath(
-        new URL('../../../apps/web/src/app/capital/candidates/page.tsx', import.meta.url),
-      ),
-      'utf8',
-    );
-    const uses = page.match(/t\('marketing\.capitalTeaserBody'\)/g) ?? [];
-    expect(uses.length).toBe(2);
-    expect(page).toMatch(/description:\s*t\('marketing\.capitalTeaserBody'\)/);
   });
 });
