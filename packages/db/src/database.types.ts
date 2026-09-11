@@ -2375,6 +2375,7 @@ export type Database = {
           mime_type: string
           owner_user_id: string
           post_id: string | null
+          purged_at: string | null
           scan_status: Database["public"]["Enums"]["media_scan_status"]
           scan_verdict: Json
           storage_path: string
@@ -2394,6 +2395,7 @@ export type Database = {
           mime_type?: string
           owner_user_id: string
           post_id?: string | null
+          purged_at?: string | null
           scan_status: Database["public"]["Enums"]["media_scan_status"]
           scan_verdict?: Json
           storage_path: string
@@ -2413,6 +2415,7 @@ export type Database = {
           mime_type?: string
           owner_user_id?: string
           post_id?: string | null
+          purged_at?: string | null
           scan_status?: Database["public"]["Enums"]["media_scan_status"]
           scan_verdict?: Json
           storage_path?: string

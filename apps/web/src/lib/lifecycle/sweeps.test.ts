@@ -26,6 +26,21 @@ vi.mock('./anonymise', () => ({
 
 vi.mock('@/lib/audit', () => ({ writeAudit: async () => {} }));
 
+// Storage cleanup has its own suite; here it is stubbed so the sweep's own
+// bookkeeping is what gets asserted.
+const media = vi.hoisted(() => ({
+  owing: [] as string[],
+  results: new Map<string, unknown>(),
+}));
+vi.mock('./media-cleanup', () => ({
+  findAccountsOwingMediaPurge: async () => media.owing,
+  purgeIdentityMedia: async (_a: unknown, id: string) => {
+    const r = media.results.get(id);
+    if (r instanceof Error) throw r;
+    return r ?? { purged: 0, pending: 0 };
+  },
+}));
+
 type Row = Record<string, unknown>;
 
 class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
@@ -79,6 +94,8 @@ const NOW = new Date('2026-09-11T03:30:00.000Z');
 beforeEach(() => {
   rpc.outcomes.clear();
   rpc.calls.length = 0;
+  media.owing = [];
+  media.results.clear();
   vi.restoreAllMocks();
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -111,7 +128,8 @@ describe('runLifecycleSweep', () => {
       skipped: 1,
       alreadyDeleted: 1,
       failed: 1,
-      mediaPending: 2,
+      mediaPurged: 0,
+      mediaPending: 0,
       recordingsPurged: 0,
     });
   });
@@ -123,5 +141,33 @@ describe('runLifecycleSweep', () => {
     const logged = (console.error as unknown as { mock: { calls: unknown[][] } }).mock.calls[0]!;
     expect(String(logged[0])).toContain('anonymise failed for a');
     expect(logged.join(' ')).not.toMatch(/@|display_name|handle/);
+  });
+  it('reports media cleanup from the reconciliation scan, including old failures', async () => {
+    // u-old was finalised by an EARLIER run whose cleanup failed; the scan
+    // finds it again even though no account transitions this run.
+    media.owing = ['u-new', 'u-old'];
+    media.results.set('u-new', { purged: 2, pending: 0 });
+    media.results.set('u-old', { purged: 0, pending: 1 });
+    const admin = new FakeAdmin({ users: [], verifications: [] });
+
+    const counts = await runLifecycleSweep(admin as never, NOW);
+
+    expect(counts.mediaPurged).toBe(2);
+    expect(counts.mediaPending).toBe(1);
+    expect(counts.anonymised).toBe(0);
+  });
+
+  it('a thrown purge still counts as media owed, so the run cannot read as complete', async () => {
+    media.owing = ['u-boom'];
+    media.results.set('u-boom', new Error('storage unreachable'));
+    const admin = new FakeAdmin({ users: [], verifications: [] });
+    const counts = await runLifecycleSweep(admin as never, NOW);
+    expect(counts.mediaPending).toBeGreaterThan(0);
+  });
+
+  it('a failed media scan does not abort the sweep', async () => {
+    const admin = new FakeAdmin({ users: [], verifications: [] });
+    const counts = await runLifecycleSweep(admin as never, NOW);
+    expect(counts.recordingsPurged).toBe(0);
   });
 });

@@ -39,6 +39,17 @@ const RATE_LIMIT = { max: 30, windowSeconds: 3600 };
 
 const ALT_TEXT_MAX = 300;
 
+/**
+ * Browser cache TTL for the media kinds the §19 lifecycle deletes. Provisional
+ * 300s: long enough to be useful, short enough that a deleted member's face
+ * stops being served from a warm browser cache soon after the objects go.
+ * A kind absent from this map keeps the platform default.
+ */
+const IDENTITY_MEDIA_CACHE_CONTROL: Partial<Record<string, string>> = {
+  avatar: '300',
+  cover: '300',
+};
+
 export async function POST(request: Request): Promise<Response> {
   try {
     const ctx = await requireUser();
@@ -110,14 +121,25 @@ export async function POST(request: Request): Promise<Response> {
     const path = `${ctx.appUser.id}/${objectId}.webp`;
     const thumbPath = `${ctx.appUser.id}/${objectId}_thumb.webp`;
 
+    // Identity media (avatar/cover) is the one class we later DELETE, when the
+    // owner's account is anonymised. Deleting an object does not reach copies
+    // already cached in a browser, and those honour the cacheControl set at
+    // upload time — so identity objects get a short TTL to bound that window.
+    // Everything else keeps the platform default: post images are never
+    // deleted by the lifecycle and a short TTL would only cost egress.
+    const cacheControl = IDENTITY_MEDIA_CACHE_CONTROL[kind];
+    const uploadOptions = cacheControl
+      ? { contentType: 'image/webp', cacheControl }
+      : { contentType: 'image/webp' };
+
     const { error: uploadError } = await admin.storage
       .from(MEDIA_BUCKET)
-      .upload(path, webp.buffer, { contentType: 'image/webp' });
+      .upload(path, webp.buffer, uploadOptions);
     if (uploadError) throw new Error(`media upload failed: ${uploadError.message}`);
 
     const { error: thumbError } = await admin.storage
       .from(MEDIA_BUCKET)
-      .upload(thumbPath, webp.thumbBuffer, { contentType: 'image/webp' });
+      .upload(thumbPath, webp.thumbBuffer, uploadOptions);
     if (thumbError) throw new Error(`media thumb upload failed: ${thumbError.message}`);
 
     const { data: media, error: insertError } = await admin

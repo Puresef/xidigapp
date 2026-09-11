@@ -6,6 +6,7 @@ import { writeAudit } from '@/lib/audit';
 import { DELETION_GRACE_DAYS } from '@/lib/moderation/constants';
 
 import { anonymiseUser } from './anonymise';
+import { findAccountsOwingMediaPurge, purgeIdentityMedia } from './media-cleanup';
 
 /**
  * §19 time-based lifecycle sweep, invoked by /api/cron/lifecycle. Two jobs:
@@ -17,16 +18,25 @@ import { anonymiseUser } from './anonymise';
  *      overlapping invocation already finished — Vercel documents both
  *      duplicate and overlapping cron runs, so the sweep is reconciliation-
  *      based rather than lock-based. One failing account never blocks the rest.
- *  (b) §14 recording retention: null out expired verification recordings.
+ *  (b) Identity-media cleanup: the avatar/cover objects of an account that
+ *      reached 'deleted'. This is a SECOND system (Storage) and can fail on
+ *      its own, so it is reconciliation-based: the scan finds every deleted
+ *      account whose identity media is not yet confirmed gone, including ones
+ *      finalised by an earlier run whose cleanup failed. A database
+ *      transition is never reported as a finished deletion while
+ *      mediaPending > 0.
+ *  (c) §14 recording retention: null out expired verification recordings.
  *
  * All writes are service role. The recording purge only audits (no
  * verification_access_log row): access-log requires a NOT-NULL actor and a
  * retention purge is system-initiated, so the immutable audit trail is the
  * correct record of the wipe.
  *
- * Counts are honest: `mediaPending` is the number of avatar/cover uploads
- * whose storage objects still sit in the public bucket after anonymisation.
- * It is not zero until a storage mechanism is approved and built.
+ * Counts are honest. `mediaPurged` / `mediaPending` come from the
+ * reconciliation scan, not from the transition — the RPC's own media_pending
+ * describes the moment it committed, which is already stale by the time the
+ * objects are removed. mediaPending > 0 means some member's avatar or cover is
+ * still fetchable at its public URL; the deletion is not finished.
  */
 
 type Admin = SupabaseClient<Database>;
@@ -39,7 +49,13 @@ export interface LifecycleSweepCounts {
   alreadyDeleted: number;
   /** RPC threw; logged by id only, retried on the next run (row stays pending). */
   failed: number;
-  /** Avatar/cover uploads still holding public storage objects. */
+  /** Avatar/cover rows whose objects were confirmed gone this run. */
+  mediaPurged: number;
+  /**
+   * Avatar/cover rows still holding public storage objects. Non-zero means
+   * deletion is NOT complete for those accounts, however clean the database
+   * looks — the next run retries them.
+   */
   mediaPending: number;
   recordingsPurged: number;
 }
@@ -53,6 +69,7 @@ export async function runLifecycleSweep(
     skipped: 0,
     alreadyDeleted: 0,
     failed: 0,
+    mediaPurged: 0,
     mediaPending: 0,
     recordingsPurged: 0,
   };
@@ -73,7 +90,6 @@ export async function runLifecycleSweep(
       switch (outcome.outcome) {
         case 'anonymised':
           counts.anonymised += 1;
-          counts.mediaPending += outcome.mediaPending;
           break;
         case 'skipped':
           counts.skipped += 1;
@@ -97,7 +113,35 @@ export async function runLifecycleSweep(
     }
   }
 
-  // (b) §14 recording retention → null the URL once expired.
+  // (b) Identity media. Covers accounts finalised just now AND any earlier
+  //     account whose cleanup did not complete — one scan, so a failure is
+  //     simply work the next run finds again.
+  let owing: string[] = [];
+  try {
+    owing = await findAccountsOwingMediaPurge(admin);
+  } catch (error) {
+    console.error(
+      '[lifecycle] identity media scan failed:',
+      error instanceof Error ? error.message : error,
+    );
+  }
+  for (const ownerId of owing) {
+    try {
+      const result = await purgeIdentityMedia(admin, ownerId);
+      counts.mediaPurged += result.purged;
+      counts.mediaPending += result.pending;
+    } catch (error) {
+      // Unknown row count still owed; count it as at least one so the run
+      // cannot read as "media complete".
+      counts.mediaPending += 1;
+      console.error(
+        `[lifecycle] identity media purge failed for ${ownerId}:`,
+        error instanceof Error ? error.message : error,
+      );
+    }
+  }
+
+  // (c) §14 recording retention → null the URL once expired.
   const nowIso = now.toISOString();
   const { data: expiredRecordings, error: recordingError } = await admin
     .from('verifications')
