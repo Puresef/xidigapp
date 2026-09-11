@@ -15,7 +15,7 @@ import {
 } from '@/lib/plaza/constants';
 import { feedQuerySchema, postCreateSchema } from '@/lib/plaza/schemas';
 import { hydratePosts, POST_COLUMNS } from '@/lib/plaza/views';
-import { hasCapability } from '@/lib/membership';
+import { hasEntitlement } from '@/lib/membership';
 import { hydrateOnePost, postScanText } from '@/lib/posts-api';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { awardReputation } from '@/lib/reputation/service';
@@ -102,7 +102,8 @@ export async function POST(request: Request): Promise<Response> {
 
     // §26/§27 daily post cap by tier; the copy is post_limit's, not the
     // generic rate_limited, so check-then-throw instead of enforceRateLimit.
-    const elevated = await hasCapability(ctx, 'elevated_limits');
+    // An ordinary entitlement: it continues through the deletion grace.
+    const elevated = await hasEntitlement(ctx, 'elevated_limits');
     const allowed = await checkRateLimit(`posts:${ctx.appUser.id}`, {
       max: elevated ? POST_LIMIT_SUPPORTER : POST_LIMIT_FREE,
       windowSeconds: RATE_WINDOW_DAY_SECONDS,

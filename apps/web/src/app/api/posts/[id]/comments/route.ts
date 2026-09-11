@@ -5,7 +5,7 @@ import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser, type AuthContext } from '@/lib/auth/guards';
-import { hasCapability } from '@/lib/membership';
+import { hasEntitlement } from '@/lib/membership';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { awardReputation } from '@/lib/reputation/service';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -128,7 +128,7 @@ export async function POST(
     const post = await loadVisiblePost(ctx, postId);
     if (!post || post.status !== 'published') throw new ApiError('not_found', 404);
 
-    const elevated = await hasCapability(ctx, 'elevated_limits');
+    const elevated = await hasEntitlement(ctx, 'elevated_limits');
     const withinLimit = await checkRateLimit(`comments:${ctx.appUser.id}`, {
       max: elevated ? COMMENT_LIMIT_SUPPORTER : COMMENT_LIMIT_FREE,
       windowSeconds: RATE_WINDOW_DAY_SECONDS,

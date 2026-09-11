@@ -6,3 +6,9 @@
 // (Seq 49.5 service-role containment hardening.)
 export { createBrowserClient } from './browser';
 export type { Database, Json, Tables, TablesInsert, TablesUpdate, Enums } from './database.types';
+export {
+  ACTIVE_ONLY_CAPABILITIES,
+  ORDINARY_ENTITLEMENTS,
+  type ActiveOnlyCapability,
+  type OrdinaryEntitlement,
+} from './entitlements';

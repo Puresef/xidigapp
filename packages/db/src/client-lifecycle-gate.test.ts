@@ -439,6 +439,8 @@ const RPC_EXEMPT: Record<string, string> = {
   current_user_role: "the caller's own role, nothing else",
   get_signup_mode: 'public configuration, anon-executable by design',
   has_capability: "privilege predicate; already requires status = 'active'",
+  has_entitlement:
+    "ordinary paid-entitlement predicate about the caller; admits only the gate's own set (active, pending_deletion)",
   has_password: "the caller's own password-exists boolean; read by the /api/me snapshot",
   is_active_account: "strict status = 'active' predicate; no policy uses it since 20260911000500",
   is_admin: "privilege predicate; already requires status = 'active'",
@@ -447,8 +449,10 @@ const RPC_EXEMPT: Record<string, string> = {
   is_feature_enabled: 'public configuration, anon-executable by design',
   is_lab_member: "RLS predicate about the caller's own membership",
   is_mod: "privilege predicate; already requires status = 'active'",
-  is_supporter: "privilege predicate; already requires status = 'active'",
-  is_venture_lead: "privilege predicate; already requires status = 'active'",
+  is_supporter:
+    "has_entitlement('supporter_spaces'): admits only the gate's own set (active, pending_deletion)",
+  is_venture_lead:
+    "RLS predicate about the caller's own Lab lead/core role. NO account-status check (its 'active' is the lab membership): blocked accounts are stopped by the gated venture tables; the grace keeps it (grace-entitlements.test.ts)",
   is_verifier: "privilege predicate; already requires status = 'active'",
   list_visible_tiers: 'public configuration, anon-executable by design',
   verify_work_chain:

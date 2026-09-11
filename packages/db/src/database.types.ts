@@ -5442,6 +5442,10 @@ export type Database = {
         Args: { cap: Database["public"]["Enums"]["membership_capability"] }
         Returns: boolean
       }
+      has_entitlement: {
+        Args: { cap: Database["public"]["Enums"]["membership_capability"] }
+        Returns: boolean
+      }
       has_password: { Args: never; Returns: boolean }
       is_active_account: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }

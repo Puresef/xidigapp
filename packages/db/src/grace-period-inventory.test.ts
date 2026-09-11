@@ -19,8 +19,9 @@ import { createTestDatabase, type TestDatabase } from './testing/harness';
  *     and the older rules both still say no);
  *   content visibility — a grace author's content is seen exactly like an
  *     active author's;
- *   privilege — mod / admin / verifier / advisor / supporter capabilities
- *     stay ACTIVE-ONLY during the grace;
+ *   privilege — mod / admin / verifier / advisor and the governance/capital
+ *     supporter capabilities stay ACTIVE-ONLY during the grace; the ordinary
+ *     paid entitlements continue (20260911000600, grace-entitlements.test.ts);
  *   one rule — every ordinary-member predicate agrees with the gate.
  */
 
@@ -274,12 +275,20 @@ describe('privileged reach stays ACTIVE-ONLY during the grace', () => {
     expect(await fn(graceAdvisor, `select public.is_advisor() as v`)).toBe(false);
   });
 
-  it('supporter capabilities (governance and paid tier) stay active-only — pending an owner ruling', async () => {
-    expect(await fn(graceSupporter, `select public.is_supporter() as v`)).toBe(false);
+  it('supporter: governance/capital capabilities stay active-only; paid entitlements continue (20260911000600)', async () => {
     expect(await fn(graceSupporter, `select public.has_capability('vote_candidate') as v`)).toBe(
       false,
     );
-    expect(await rows(graceSupporter, `select 1 from labs where id = $1`, [supporterLab])).toBe(0);
+    expect(await fn(graceSupporter, `select public.has_capability('builder_path') as v`)).toBe(
+      false,
+    );
+    // Ordinary paid entitlements follow ordinary membership (owner ruling;
+    // the full matrix lives in grace-entitlements.test.ts).
+    expect(await fn(graceSupporter, `select public.is_supporter() as v`)).toBe(true);
+    expect(
+      await fn(graceSupporter, `select public.has_entitlement('elevated_limits') as v`),
+    ).toBe(true);
+    expect(await rows(graceSupporter, `select 1 from labs where id = $1`, [supporterLab])).toBe(1);
   });
 
   it('is_active_account() keeps its strict meaning, and no policy relies on it any more', async () => {

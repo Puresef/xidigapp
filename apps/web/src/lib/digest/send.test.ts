@@ -176,6 +176,31 @@ describe('selectDigestRecipients', () => {
       { userId: 'u7', email: 'u7@example.so' },
     ]);
   });
+
+  it('includes members in the deletion grace on the same opt-in rules; other non-live statuses never', async () => {
+    // The §19 grace is ordinary membership until final deletion (owner
+    // ruling, 11 Sep), so a grace member who is otherwise eligible keeps the
+    // digest; their own opt-outs still apply.
+    const { admin } = makeFakeAdmin({
+      users: [
+        user('g1', { status: 'pending_deletion' }), // grace, default prefs — included
+        user('g2', { status: 'pending_deletion' }), // grace, digest_frequency off
+        user('g3', { status: 'pending_deletion' }), // grace, weekly_digest/email off
+        user('g4', { status: 'pending_deletion', is_ai: true }), // AI — never
+        user('x1', { status: 'suspended' }),
+        user('x2', { status: 'deactivated' }),
+        user('x3', { status: 'deleted' }),
+      ],
+      user_settings: [{ user_id: 'g2', digest_frequency: 'off' }],
+      notification_prefs: [
+        { user_id: 'g3', notification_type: 'weekly_digest', channel: 'email', enabled: false },
+      ],
+    });
+
+    expect(await selectDigestRecipients(admin)).toEqual([
+      { userId: 'g1', email: 'g1@example.so' },
+    ]);
+  });
 });
 
 describe('sendDigestEmails', () => {

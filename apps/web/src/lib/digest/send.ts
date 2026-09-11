@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database, Tables } from '@xidig/db';
 
+import { LIVE_ACCOUNT_STATUSES } from '@/lib/account-flags';
 import { ApiError } from '@/lib/api';
 import { sendEmailChecked } from '@/lib/email/send';
 import type { OutgoingEmail } from '@/lib/email/provider';
@@ -13,8 +14,11 @@ import { renderDigestEmail } from './render';
 /**
  * Weekly digest BULK email channel (extras plan item 6).
  *
- * Recipients = active human members who are opted into the digest:
- *   * users.status = 'active', users.is_ai = false, email on file;
+ * Recipients = live human members who are opted into the digest:
+ *   * users.status live (active, or the §19 deletion grace — the grace is
+ *     ordinary membership until final deletion, owner ruling 11 Sep; the
+ *     grace keeps its email on file by constraint), users.is_ai = false,
+ *     email on file;
  *   * user_settings.digest_frequency ≠ 'off' (absent row = the 'weekly'
  *     default — the §26 cadence switch);
  *   * no notification_prefs override turning weekly_digest/email off
@@ -52,7 +56,7 @@ export interface DigestRecipient {
 export interface DigestSendSummary {
   editionId: string;
   periodKey: string;
-  /** Opted-in active members found this run. */
+  /** Opted-in live members found this run. */
   recipients: number;
   /** Newly claimed in the ledger by this run. */
   claimed: number;
@@ -84,7 +88,7 @@ export async function selectDigestRecipients(
     const page = await admin
       .from('users')
       .select('id, email')
-      .eq('status', 'active')
+      .in('status', [...LIVE_ACCOUNT_STATUSES])
       .eq('is_ai', false)
       .not('email', 'is', null)
       .order('id', { ascending: true })
