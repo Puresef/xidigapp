@@ -29,7 +29,9 @@ export async function GET(): Promise<Response> {
   try {
     const ctx = await requireUser();
     const keys = await listApiKeys(getSupabaseAdmin(), ctx.appUser.id);
-    return apiOk({ keys });
+    // What this caller may mint TODAY (the same rule the POST enforces), so a
+    // client never offers a scope the server will refuse.
+    return apiOk({ keys, mintableScopes: allowedScopesFor(ctx.appUser) });
   } catch (error) {
     return handleApiError(error);
   }

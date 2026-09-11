@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { generateApiKey, hashApiKey, toApiKeyView, verifyApiKey, type ApiKeyRow } from './keys';
+import {
+  generateApiKey,
+  hashApiKey,
+  listApiKeys,
+  toApiKeyView,
+  verifyApiKey,
+  type ApiKeyRow,
+} from './keys';
 import {
   ALL_SCOPES,
   MEMBER_MINTABLE_SCOPES,
@@ -59,6 +66,37 @@ describe('key generation + hashing', () => {
     expect(hashApiKey(raw)).toBe(hashApiKey(raw));
     expect(hashApiKey(raw)).not.toBe(raw);
     expect(hashApiKey(raw)).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('the safe view states whether the key is usable at all', () => {
+    expect(toApiKeyView(baseRow({})).status).toBe('active');
+    expect(toApiKeyView(baseRow({ revoked_at: '2026-09-11T00:00:00Z' })).status).toBe('revoked');
+    expect(toApiKeyView(baseRow({ expires_at: '2000-01-01T00:00:00Z' })).status).toBe('expired');
+    // Revocation wins over expiry: a revoked key never reads as merely expired.
+    expect(
+      toApiKeyView(baseRow({ revoked_at: '2026-09-11T00:00:00Z', expires_at: '2000-01-01T00:00:00Z' }))
+        .status,
+    ).toBe('revoked');
+  });
+
+  it('the listing reports each key’s real status (expired, revoked, active)', async () => {
+    const rows = [
+      baseRow({ id: 'a' }),
+      baseRow({ id: 'b', expires_at: '2000-01-01T00:00:00Z' }),
+      baseRow({ id: 'c', revoked_at: '2026-09-11T00:00:00Z' }),
+    ];
+    const chain = {
+      from: () => chain,
+      select: () => chain,
+      eq: () => chain,
+      order: async () => ({ data: rows, error: null }),
+    };
+    const views = await listApiKeys(chain as unknown as Parameters<typeof listApiKeys>[0], 'u');
+    expect(views.map((v) => [v.id, v.status])).toEqual([
+      ['a', 'active'],
+      ['b', 'expired'],
+      ['c', 'revoked'],
+    ]);
   });
 
   it('the safe view never exposes key_hash', () => {

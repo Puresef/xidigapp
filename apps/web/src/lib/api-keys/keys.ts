@@ -61,9 +61,21 @@ export interface ApiKeyView {
   expiresAt: string | null;
   revokedAt: string | null;
   createdAt: string;
+  /**
+   * Whether the key authenticates at all: 'revoked' (never again — e.g. the
+   * 20260911000800 legacy unsafe-scope cleanup), 'expired', or 'active'. An
+   * active key is still narrowed to its owner's current standing on use.
+   */
+  status: 'active' | 'revoked' | 'expired';
 }
 
-export function toApiKeyView(row: ApiKeyRow): ApiKeyView {
+export function toApiKeyView(row: ApiKeyRow, now: number = Date.now()): ApiKeyView {
+  const status =
+    row.revoked_at !== null
+      ? 'revoked'
+      : row.expires_at !== null && new Date(row.expires_at).getTime() <= now
+        ? 'expired'
+        : 'active';
   return {
     id: row.id,
     name: row.name,
@@ -74,6 +86,7 @@ export function toApiKeyView(row: ApiKeyRow): ApiKeyView {
     expiresAt: row.expires_at,
     revokedAt: row.revoked_at,
     createdAt: row.created_at,
+    status,
   };
 }
 
@@ -188,5 +201,5 @@ export async function listApiKeys(
     .eq('owner_user_id', ownerUserId)
     .order('created_at', { ascending: false });
   if (error) throw new Error(`api key list failed: ${error.message}`);
-  return (data ?? []).map(toApiKeyView);
+  return (data ?? []).map((row) => toApiKeyView(row));
 }

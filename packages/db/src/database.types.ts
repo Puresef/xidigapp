@@ -5489,6 +5489,10 @@ export type Database = {
         Args: { p_user_id?: string }
         Returns: undefined
       }
+      revoke_unsafe_api_keys: {
+        Args: { p_owner?: string; p_reason?: string }
+        Returns: number
+      }
       set_profile_modules: {
         Args: { p_modules: Json; p_user_id: string }
         Returns: undefined

@@ -25,7 +25,7 @@ account standing** (see *Key owner standing*).
 | Method | Route | Auth | Notes |
 | ------ | ----- | ---- | ----- |
 | `POST` | `/api/me/api-keys` | signed-in account | `{ name, scopes[], expiresInDays? }` → `{ key, secret }`. `secret` is the plaintext key (shown once). Members, mods and accounts in the deletion grace may mint `read` only; only an **active admin** may mint the write scopes or `admin`. Asking for a scope your standing does not allow → `403`. 10 keys/day. |
-| `GET`  | `/api/me/api-keys` | member | list own keys (safe projection — never the hash) |
+| `GET`  | `/api/me/api-keys` | member | list own keys (safe projection — never the hash; each key carries `status`: `active` \| `revoked` \| `expired`) plus `mintableScopes` — exactly the scopes this caller may request today |
 | `DELETE` | `/api/me/api-keys/{id}` | member | revoke (idempotent; an active admin may revoke any key) |
 
 ## Scopes
@@ -52,7 +52,21 @@ admin may mint or use them, and every write is audited. A member- or mod-held
 key minted with a write scope before this rule still exists but is narrowed to
 `read` on every request — its writes are refused with `403
 insufficient_scope`. There is no provenance-preserving (member-attributed)
-write route today.
+write route today, and none is planned in this layer: a future member-authored
+write API would have to preserve real member/integration provenance and would
+need its own approval.
+
+**Legacy keys are revoked, not just narrowed.** Migration
+`20260911000800_revoke_legacy_unsafe_api_keys` revoked every live key that
+lists `plaza:write`, `listings:write`, `labs:write` or `admin` and whose owner
+is active or in the deletion grace but not an active admin. From then on, a
+trigger revokes such keys whenever an owner stops being an active admin while
+still live (demotion, entering the grace, reinstatement as a non-admin).
+Each revocation writes an immutable `audit_logs` row (`api_key.revoked`,
+reason `legacy_non_admin_write_scope_revoked` or
+`owner_no_longer_active_admin`; no key material). Suspended and deactivated
+owners' keys are not revoked — they are refused on use and work again only if
+the account is reinstated in a standing that allows them.
 
 ### Key owner standing
 

@@ -30,7 +30,7 @@ vi.mock('@/lib/analytics/emit', () => ({ emitServer: () => {} }));
 vi.mock('@/lib/locale', () => ({ getT: async () => (key: string) => key }));
 vi.mock('@sentry/nextjs', () => ({ captureException: () => {} }));
 
-import { POST } from './route';
+import { GET, POST } from './route';
 
 const USER_ID = '11111111-1111-4111-8111-111111111111';
 
@@ -85,5 +85,19 @@ describe('POST /api/me/api-keys minting follows the account standing', () => {
     expect(await mint(['read'])).toBe(201);
     expect(await mint(['read', 'listings:write'])).toBe(403);
     expect(h.minted).toEqual([['read']]);
+  });
+});
+
+describe('GET /api/me/api-keys tells the caller what they may mint', () => {
+  it.each([
+    ['active', 'admin', ['read', 'plaza:write', 'listings:write', 'labs:write', 'admin']],
+    ['active', 'mod', ['read']],
+    ['active', 'member', ['read']],
+    ['pending_deletion', 'admin', ['read']],
+    ['pending_deletion', 'member', ['read']],
+  ])('%s %s', async (status, role, expected) => {
+    as(status, role);
+    const body = (await (await GET()).json()) as { data: { mintableScopes: string[] } };
+    expect(body.data.mintableScopes).toEqual(expected);
   });
 });
