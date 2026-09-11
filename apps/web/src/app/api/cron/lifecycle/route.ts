@@ -9,7 +9,16 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * recording purge. Machine endpoint — auth is the shared CRON_SECRET as
  * `Authorization: Bearer <CRON_SECRET>`; unset = disabled (503), mirroring
  * /api/cron/labs.
+ *
+ * The response carries every count the sweep produces, including the ones
+ * that mean "nothing happened" (skipped / alreadyDeleted — a duplicate or
+ * overlapping invocation, which Vercel documents as possible) and
+ * mediaPending — avatar/cover objects still in the public bucket after the
+ * database scrub. A 200 with mediaPending > 0 is NOT a completed deletion.
  */
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request): Promise<Response> {
   try {
     const secret = typeof env.CRON_SECRET === 'string' ? env.CRON_SECRET : '';

@@ -2,68 +2,54 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
-import { writeAudit } from '@/lib/audit';
-
 /**
- * §19 anonymise-not-delete: irreversibly strip a member's identity while
- * preserving the legal / counterparty record. We NEVER touch audit_logs,
- * mod_actions, governance entries, vouches, or the counterparty side of DM
- * threads — those carry a separate retention obligation.
+ * §19 anonymise-not-delete: the final lifecycle transition for an account
+ * whose 30-day grace has expired.
  *
- * The users row is the critical step (it flips status to 'deleted' and drops
- * the contact identifiers in ONE update — the users_contact_method CHECK only
- * permits null email + null phone when status='deleted', so they cannot be
- * split across statements). The profile scrub is best-effort on top: a failure
- * there still leaves the account deactivated + audited rather than aborting the
- * whole run.
+ * The whole transition is ONE database transaction — public.anonymise_user()
+ * (migration 20260911000100), service-role only. It locks the users row,
+ * refuses anything but pending_deletion (a cancel that committed first wins),
+ * is idempotent on an already-deleted row, scrubs every identifying profile
+ * column plus the presentation satellites and the avatar/cover alt text, flips
+ * the users row, and writes the audit row — so a failure anywhere leaves NO
+ * partial state and NO audit row claiming otherwise. Before this it was two
+ * PostgREST statements and a best-effort scrub, and a profile failure was
+ * silently permanent.
+ *
+ * Deliberately untouched, by design (separate retention obligations): posts,
+ * comments, messages (incl. the counterparty's copy), listings, events, Space
+ * membership, work evidence, audit/mod/governance records, vouches. Retained
+ * content renders under the neutral "Deleted member" tombstone.
+ *
+ * NOT done: removing the avatar/cover objects from the public bucket. The DB
+ * paths are cleared, but the files remain fetchable at their raw URLs until the
+ * owner approves a storage mechanism — `mediaPending` reports how many remain
+ * so nothing upstream can claim media cleanup is complete.
  */
 
 type Admin = SupabaseClient<Database>;
 
-export async function anonymiseUser(admin: Admin, userId: string): Promise<void> {
-  // Critical step: flip to 'deleted' and null the contact identifiers together
-  // (the CHECK constraint forbids null email/phone unless status='deleted').
-  const { error: userError } = await admin
-    .from('users')
-    .update({
-      status: 'deleted',
-      email: null,
-      phone: null,
-      anonymised_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-  if (userError) throw new Error(`user anonymise failed: ${userError.message}`);
+export type AnonymiseOutcome =
+  | { outcome: 'anonymised'; mediaPending: number }
+  | { outcome: 'already_deleted' }
+  | { outcome: 'skipped'; status: string }
+  | { outcome: 'not_found' };
 
-  // Best-effort profile scrub — the handle stays unique + regex-valid
-  // (^[a-z0-9_]{3,30}$) by deriving it from the id.
-  const scrubbedHandle = `deleted_${userId.replace(/-/g, '').slice(0, 12)}`;
-  const { error: profileError } = await admin
-    .from('profiles')
-    .update({
-      display_name: 'Deleted member',
-      handle: scrubbedHandle,
-      bio: null,
-      location_city: null,
-      location_country: null,
-      latitude: null,
-      longitude: null,
-      timezone: null,
-      skills: [],
-      lanes: [],
-      links: [] as never,
-      contact_options: {} as never,
-    })
-    .eq('user_id', userId);
-  if (profileError) {
-    // Non-fatal: the identity-bearing users row is already scrubbed + will be
-    // audited below; a leftover profile field is a cleanup chore, not a breach.
-    console.error(`[lifecycle] profile scrub failed for ${userId}:`, profileError.message);
+export async function anonymiseUser(admin: Admin, userId: string): Promise<AnonymiseOutcome> {
+  const { data, error } = await admin.rpc('anonymise_user', { p_user_id: userId });
+  if (error) throw new Error(`user anonymise failed: ${error.message}`);
+
+  const result = (data ?? {}) as { outcome?: string; media_pending?: number; status?: string };
+  switch (result.outcome) {
+    case 'anonymised':
+      return { outcome: 'anonymised', mediaPending: result.media_pending ?? 0 };
+    case 'already_deleted':
+      return { outcome: 'already_deleted' };
+    case 'skipped':
+      return { outcome: 'skipped', status: result.status ?? 'unknown' };
+    case 'not_found':
+      return { outcome: 'not_found' };
+    default:
+      throw new Error(`user anonymise returned an unknown outcome: ${String(result.outcome)}`);
   }
-
-  await writeAudit(admin, {
-    actorUserId: null,
-    action: 'user.anonymised',
-    targetType: 'user',
-    targetId: userId,
-  });
 }

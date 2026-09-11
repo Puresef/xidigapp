@@ -38,6 +38,18 @@ export async function POST(request: Request): Promise<Response> {
       throw new ApiError('forbidden', 403);
     }
 
+    // The target must be a live account. Vouching for an anonymised member
+    // would re-verify a tombstone (the auto-upgrade below writes
+    // verification_status) — and the profile freeze trigger would refuse it
+    // with a 500. Refuse up front with the same 404 an unknown id gets.
+    const { data: target, error: targetError } = await admin
+      .from('users')
+      .select('status')
+      .eq('id', voucheeUserId)
+      .maybeSingle();
+    if (targetError) throw new Error(`vouchee account lookup failed: ${targetError.message}`);
+    if (!target || target.status !== 'active') throw new ApiError('not_found', 404);
+
     // Insert the vouch; a duplicate (23505) is an idempotent success — we still
     // report the current count so a client always gets a truthful tally.
     const { error: vouchError } = await admin.from('vouches').insert({

@@ -64,15 +64,21 @@ async function mutateTarget(admin: Admin, input: ModActionInput): Promise<string
 
   // --- user-state actions ---------------------------------------------------
   if (action === 'suspend_user') {
-    const { error } = await admin
+    // Never suspend an anonymised account: suspend → unsuspend would walk it
+    // back to 'active', a hidden reactivation that bypasses the lifecycle.
+    const { data, error } = await admin
       .from('users')
       .update({
         status: 'suspended',
         suspended_at: new Date().toISOString(),
         suspension_reason: input.reason ?? null,
       })
-      .eq('id', targetId);
+      .eq('id', targetId)
+      .neq('status', 'deleted')
+      .select('id')
+      .maybeSingle();
     if (error) throw new Error(`suspend failed: ${error.message}`);
+    if (!data) throw new Error('suspend failed: account is anonymised or does not exist');
     return targetId;
   }
   if (action === 'unsuspend_user') {

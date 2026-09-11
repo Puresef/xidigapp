@@ -26,6 +26,8 @@ export async function POST(request: Request): Promise<Response> {
 
     const admin = getSupabaseAdmin();
     const me = ctx.appUser.id;
+    // Snapshot for the §27 code choice only — every UPDATE below re-checks the
+    // state in its WHERE clause, so a concurrent transition cannot be undone.
     const status = ctx.appUser.status;
     const now = new Date().toISOString();
 
@@ -39,11 +41,15 @@ export async function POST(request: Request): Promise<Response> {
           status === 'deactivated' ? 409 : 403,
         );
       }
-      const { error } = await admin
+      const { data, error } = await admin
         .from('users')
         .update({ status: 'deactivated', deactivated_at: now })
-        .eq('id', me);
+        .eq('id', me)
+        .eq('status', 'active')
+        .select('id')
+        .maybeSingle();
       if (error) throw new Error(`account deactivate failed: ${error.message}`);
+      if (!data) throw new ApiError('forbidden', 403);
 
       await writeAudit(admin, { actorUserId: me, action: 'user.deactivate' });
       return await apiNotice('account_deactivated');
@@ -51,11 +57,15 @@ export async function POST(request: Request): Promise<Response> {
 
     if (action === 'reactivate') {
       if (status !== 'deactivated') throw new ApiError('invalid_request', 400);
-      const { error } = await admin
+      const { data, error } = await admin
         .from('users')
         .update({ status: 'active', deactivated_at: null })
-        .eq('id', me);
+        .eq('id', me)
+        .eq('status', 'deactivated')
+        .select('id')
+        .maybeSingle();
       if (error) throw new Error(`account reactivate failed: ${error.message}`);
+      if (!data) throw new ApiError('invalid_request', 400);
 
       await writeAudit(admin, { actorUserId: me, action: 'user.reactivate' });
       return apiOk({ status: 'active' });
@@ -69,11 +79,15 @@ export async function POST(request: Request): Promise<Response> {
       if (status !== 'active' && status !== 'deactivated') {
         throw new ApiError('deletion_already_requested', 409);
       }
-      const { error } = await admin
+      const { data, error } = await admin
         .from('users')
         .update({ status: 'pending_deletion', deletion_requested_at: now })
-        .eq('id', me);
+        .eq('id', me)
+        .in('status', ['active', 'deactivated'])
+        .select('id')
+        .maybeSingle();
       if (error) throw new Error(`account deletion request failed: ${error.message}`);
+      if (!data) throw new ApiError('deletion_already_requested', 409);
 
       await writeAudit(admin, {
         actorUserId: me,
@@ -85,11 +99,19 @@ export async function POST(request: Request): Promise<Response> {
 
     // action === 'cancel_deletion'
     if (status !== 'pending_deletion') throw new ApiError('invalid_request', 400);
-    const { error } = await admin
+    // The status predicate is the race guard: if the grace sweep already
+    // flipped this row to 'deleted' (or anything else moved it), zero rows
+    // match and the member gets a precise refusal instead of a hidden
+    // 'deleted' → 'active' reactivation or a CHECK-constraint 500.
+    const { data, error } = await admin
       .from('users')
       .update({ status: 'active', deletion_requested_at: null })
-      .eq('id', me);
+      .eq('id', me)
+      .eq('status', 'pending_deletion')
+      .select('id')
+      .maybeSingle();
     if (error) throw new Error(`account deletion cancel failed: ${error.message}`);
+    if (!data) throw new ApiError('invalid_request', 400);
 
     await writeAudit(admin, { actorUserId: me, action: 'user.deletion.cancel' });
     return await apiNotice('deletion_cancelled');

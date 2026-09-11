@@ -42,8 +42,10 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     .eq('id', user.id)
     .maybeSingle();
 
-  // No shadow row = the account is mid-provisioning or was anonymised;
-  // treat as signed out rather than half-authenticated.
+  // No shadow row = the account is mid-provisioning (the auth trigger has not
+  // mirrored it yet); treat as signed out rather than half-authenticated.
+  // Anonymisation never removes the row — it sets status='deleted', which
+  // requireUser refuses below.
   if (!appUser) return null;
 
   return { user, appUser, supabase };

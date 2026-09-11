@@ -2325,25 +2325,18 @@ export async function resetTestCommunity(admin: Admin): Promise<TestCommunityRes
       usersDeleted++;
       continue;
     }
-    // FK-blocked (reports / mod_actions / audit attribution) → anonymise (§19).
+    // FK-blocked (reports / mod_actions / audit attribution) → anonymise (§19)
+    // through the SAME transactional routine production uses, so there is
+    // exactly one scrub column list. The routine only accepts pending_deletion
+    // (a live account can never be anonymised by accident), so park the seed
+    // account there first.
     usersAnonymised++;
     await admin
       .from('users')
-      .update({ status: 'deleted', email: null, phone: null })
+      .update({ status: 'pending_deletion', deletion_requested_at: new Date().toISOString() })
       .eq('id', id);
-    await admin
-      .from('profiles')
-      .update({
-        display_name: 'Deleted member',
-        bio: null,
-        avatar_path: null,
-        avatar_blurhash: null,
-        cover_path: null,
-        cover_blurhash: null,
-        skills: [],
-        lanes: [],
-      })
-      .eq('user_id', id);
+    const { error: anonError } = await admin.rpc('anonymise_user', { p_user_id: id });
+    if (anonError) errors.push(`anonymise ${id}: ${anonError.message}`);
   }
 
   await tryDelete('markers', () => admin.from('seed_runs').delete().like('label', 'test-community-%'));
