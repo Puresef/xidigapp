@@ -373,6 +373,13 @@ opens the app). It is dependency-free (Node crypto signs the VAPID JWT — no
 3. **Fail-safe:** unset keys ⇒ push disabled with one server warning; in-app
    notifications keep working and the opt-in toggle explains the state. Dead
    endpoints (404/410 from the push service) are auto-pruned (`revoked_at`).
+4. **Recipient lifecycle:** a device push goes only to a live recipient —
+   `active` or in the deletion grace (`pending_deletion`). Suspended,
+   deactivated and deleted recipients get no device push (the in-app row is a
+   separate channel). When an account becomes `deleted`, its live
+   subscriptions are revoked (migration `20260911000900`); suspended and
+   deactivated subscriptions are kept for reinstatement. Only `reply`,
+   `mention`, `new_dm` and `dm_request` push — no lifecycle/appeal notice does.
 
 iOS supports web push only for **installed** PWAs on 16.4+; Android/desktop
 Chrome work in-browser. The toggle lives on `/notifications`.

@@ -21,8 +21,9 @@ import type { Database, Enums } from '@xidig/db';
  * deleted and can still cancel keeps their profile, directory row and content
  * exactly like an active member. This is the same set as the database's
  * current_account_can_use_client_api() and author_is_active()
- * (20260911000400 / 20260911000500) and of has_entitlement() (20260911000600)
- * — change them together. Privilege checks (mod, admin, verifier, and the
+ * (20260911000400 / 20260911000500), of has_entitlement() (20260911000600)
+ * and of the device-push recipient check (lib/push/send.ts) — change them
+ * together. Privilege checks (mod, admin, verifier, and the
  * governance/capital supporter capabilities) stay active-only and do not use
  * this.
  */

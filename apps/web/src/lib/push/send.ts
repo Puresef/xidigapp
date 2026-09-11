@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@xidig/db';
 
 import { env } from '@/env';
+import { isLiveStatus } from '@/lib/account-flags';
 
 import { audienceFromEndpoint, buildVapidJwt, type VapidKeys } from './vapid';
 
@@ -57,6 +58,16 @@ async function sendOne(keys: VapidKeys, endpoint: string): Promise<SendResult> {
  * Fan a payload-less push out to every active subscription a user has (they
  * may have installed the PWA on several devices). Prunes endpoints the push
  * service reports as gone (404/410) by flipping `revoked_at`.
+ *
+ * Recipient must be LIVE (owner ruling, 11 Sep): active or in the §19
+ * deletion grace. A suspended, deactivated or deleted recipient — or a
+ * missing account row — gets no device push: no subscription is read and no
+ * request leaves the server. This is the one device-push boundary (notify()
+ * is its only caller, and only reply / mention / new_dm / dm_request push —
+ * no lifecycle, appeal or security notice uses push), so the check lives here
+ * rather than at each call site. In-app notification rows are unaffected.
+ * Deleted accounts' subscriptions are also revoked in the data
+ * (20260911000900); suspended/deactivated ones are kept for reinstatement.
  */
 export async function sendPushToUser(
   admin: SupabaseClient<Database>,
@@ -75,6 +86,13 @@ export async function sendPushToUser(
   }
 
   try {
+    const { data: recipient, error: recipientError } = await admin
+      .from('users')
+      .select('status')
+      .eq('id', userId)
+      .maybeSingle();
+    if (recipientError || !recipient || !isLiveStatus(recipient.status)) return;
+
     const { data, error } = await admin
       .from('push_subscriptions')
       .select('id, endpoint')
