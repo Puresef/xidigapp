@@ -218,7 +218,9 @@ describe('append-only immutability', () => {
     const id = (res.rows[0] as { id: string }).id;
 
     await expect(
-      db.withRole('service_role', null, (tx) => tx.query(`delete from reports where id = $1`, [id])),
+      db.withRole('service_role', null, (tx) =>
+        tx.query(`delete from reports where id = $1`, [id]),
+      ),
     ).rejects.toThrow(/permission denied/);
   });
 });
@@ -253,11 +255,17 @@ describe('suspended-user write block', () => {
       ),
     ).rejects.toThrow(/row-level security/);
 
-    await expect(
-      db.asUser(suspended, (tx) =>
-        tx.query(`update profiles set display_name = 'evasion' where user_id = $1`, [suspended]),
-      ),
-    ).rejects.toThrow(/row-level security/);
+    // The profile edit is refused too. Since the client-API lifecycle gate
+    // (20260911000400) a suspended account cannot even see its profile row, so
+    // the UPDATE matches nothing instead of failing its WITH CHECK.
+    const edited = await db.asUser(suspended, (tx) =>
+      tx.query(`update profiles set display_name = 'evasion' where user_id = $1`, [suspended]),
+    );
+    expect(edited.rowCount).toBe(0);
+    const name = await db.admin.query(`select display_name from profiles where user_id = $1`, [
+      suspended,
+    ]);
+    expect(name.rows[0].display_name).not.toBe('evasion');
   });
 
   it('an ACTIVE member can still react (control — the guard is status-scoped)', async () => {
@@ -291,7 +299,7 @@ describe('suspended-user write block', () => {
 // 6. Suspended user's already-published content is hidden
 // ---------------------------------------------------------------------------
 describe('suspension content-hiding', () => {
-  it('hides a suspended/deactivated/deleted author post from readers, not from self/mods', async () => {
+  it('hides a non-active author’s post from readers; the author keeps sight only in the grace, mods always', async () => {
     const author = await seedMember('ch_author');
     const reader = await seedMember('ch_reader');
     const mod = await seedMod('ch_mod');
@@ -303,7 +311,13 @@ describe('suspension content-hiding', () => {
     for (const status of ['suspended', 'deactivated', 'pending_deletion', 'deleted']) {
       await setStatus(author, status);
       expect(await countVisible(reader, 'posts', postId)).toBe(0); // hidden from readers
-      expect(await countVisible(author, 'posts', postId)).toBe(1); // author still sees own
+      // The author keeps sight of their own post only during the §19 grace
+      // (pending_deletion). A suspended / deactivated / deleted account has no
+      // client database access at all — client-API lifecycle gate,
+      // 20260911000400 — and reaches its content only through server routes.
+      expect(await countVisible(author, 'posts', postId)).toBe(
+        status === 'pending_deletion' ? 1 : 0,
+      );
       expect(await countVisible(mod, 'posts', postId)).toBe(1); // mod sees for adjudication
     }
 

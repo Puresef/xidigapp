@@ -5399,6 +5399,7 @@ export type Database = {
           total: number
         }[]
       }
+      current_account_can_use_client_api: { Args: never; Returns: boolean }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]

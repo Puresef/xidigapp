@@ -15,12 +15,13 @@ import { createTestDatabase, type TestDatabase } from './testing/harness';
  * token's claims), so this suite is the database half of the Dev runtime
  * matrix in the reconciliation record (Addendum L).
  *
- *   it(...)        — a guarantee that holds today; must keep holding.
- *   it.fails(...)  — a CONFIRMED residual. The body asserts the secure
- *                    outcome, which currently does not happen. These are
- *                    tripwires, not approvals: when the owner-approved
- *                    authorization slice lands they start passing, vitest
- *                    reports them, and they must be flipped to it(...).
+ * History: the second block began life as 12 `it.fails` tripwires — each a
+ * residual confirmed on Dev at 49f3dc4. The client-API lifecycle gate
+ * (migration 20260911000400: a restrictive policy on every signed-in-
+ * reachable table + guards in the RLS-bypassing RPCs) closed them, and they
+ * were flipped to plain it(...). The suspended / deactivated matrix, the
+ * active and grace-period positive controls and the coverage contracts live
+ * in client-lifecycle-gate.test.ts.
  */
 
 let db: TestDatabase;
@@ -146,12 +147,16 @@ describe('deleted account + pre-ban token: guarantees that hold', () => {
     expect(await rows(target, `select 1 from users where id <> $1`, [target])).toBe(0);
   });
 
-  it('cannot change its profile (freeze trigger)', async () => {
-    await expect(
-      db.asUser(target, (tx) =>
-        tx.query(`update profiles set bio = 'back' where user_id = $1`, [target]),
-      ),
-    ).rejects.toThrow(/profile_frozen/);
+  it('cannot change its profile — the gate refuses before the freeze trigger is reached', async () => {
+    // The lifecycle gate hides the row from the UPDATE (0 rows), so a client
+    // token never reaches the profile_frozen trigger any more. The trigger is
+    // still the invariant for every writer the gate does not cover — the
+    // service role — pinned in account-deletion-privacy.test.ts.
+    expect(
+      await rows(target, `update profiles set bio = 'back' where user_id = $1`, [target]),
+    ).toBe(0);
+    const bio = await db.admin.query(`select bio from profiles where user_id = $1`, [target]);
+    expect(bio.rows[0].bio).toBeNull();
   });
 
   it('cannot react, endorse or suggest terms (is_active_account() in the policy)', async () => {
@@ -193,30 +198,30 @@ describe('deleted account + pre-ban token: guarantees that hold', () => {
   });
 });
 
-describe('deleted account + pre-ban token: CONFIRMED residuals (tripwires)', () => {
-  it.fails('cannot read the private messages of its conversations', async () => {
+describe('deleted account + pre-ban token: residuals closed by the lifecycle gate', () => {
+  it('cannot read the private messages of its conversations', async () => {
     expect(
       await rows(target, `select 1 from messages where conversation_id = $1`, [conversation]),
     ).toBe(0);
   });
 
-  it.fails('cannot pull DM previews through dm_inbox()', async () => {
+  it('cannot pull DM previews through dm_inbox()', async () => {
     expect(await rows(target, `select * from public.dm_inbox()`)).toBe(0);
   });
 
-  it.fails('cannot read its notifications', async () => {
+  it('cannot read its notifications', async () => {
     expect(await rows(target, `select 1 from notifications where user_id = $1`, [target])).toBe(0);
   });
 
-  it.fails('cannot read a private Space it belonged to', async () => {
+  it('cannot read a private Space it belonged to', async () => {
     expect(await rows(target, `select 1 from lab_updates where lab_id = $1`, [lab])).toBe(0);
   });
 
-  it.fails("cannot read other members' profiles", async () => {
+  it("cannot read other members' profiles", async () => {
     expect(await rows(target, `select 1 from profiles where user_id = $1`, [peer])).toBe(0);
   });
 
-  it.fails('cannot publish a new business listing', async () => {
+  it('cannot publish a new business listing', async () => {
     await expect(
       db.asUser(target, (tx) =>
         tx.query(
@@ -227,7 +232,7 @@ describe('deleted account + pre-ban token: CONFIRMED residuals (tripwires)', () 
     ).rejects.toThrow();
   });
 
-  it.fails('cannot rewrite its retained listing', async () => {
+  it('cannot rewrite its retained listing', async () => {
     expect(
       await rows(
         target,
@@ -237,7 +242,7 @@ describe('deleted account + pre-ban token: CONFIRMED residuals (tripwires)', () 
     ).toBe(0);
   });
 
-  it.fails("cannot add support to another member's ask", async () => {
+  it("cannot add support to another member's ask", async () => {
     await expect(
       db.asUser(target, (tx) =>
         tx.query(`insert into post_cosigns (post_id, user_id) values ($1, $2)`, [peerAsk, target]),
@@ -245,7 +250,7 @@ describe('deleted account + pre-ban token: CONFIRMED residuals (tripwires)', () 
     ).rejects.toThrow();
   });
 
-  it.fails('cannot follow', async () => {
+  it('cannot follow', async () => {
     await expect(
       db.asUser(target, (tx) =>
         tx.query(
@@ -256,7 +261,7 @@ describe('deleted account + pre-ban token: CONFIRMED residuals (tripwires)', () 
     ).rejects.toThrow();
   });
 
-  it.fails('cannot claim an unowned listing', async () => {
+  it('cannot claim an unowned listing', async () => {
     await expect(
       db.asUser(target, (tx) =>
         tx.query(
@@ -267,7 +272,7 @@ describe('deleted account + pre-ban token: CONFIRMED residuals (tripwires)', () 
     ).rejects.toThrow();
   });
 
-  it.fails('cannot record new consent', async () => {
+  it('cannot record new consent', async () => {
     await expect(
       db.asUser(target, (tx) =>
         tx.query(
@@ -278,7 +283,7 @@ describe('deleted account + pre-ban token: CONFIRMED residuals (tripwires)', () 
     ).rejects.toThrow();
   });
 
-  it.fails('cannot change its own account settings', async () => {
+  it('cannot change its own account settings', async () => {
     expect(
       await rows(target, `update users set preferred_language = 'so' where id = $1`, [target]),
     ).toBe(0);
