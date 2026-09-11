@@ -4449,6 +4449,9 @@ export type Database = {
       users: {
         Row: {
           anonymised_at: string | null
+          auth_cleaned_at: string | null
+          auth_cleanup_attempted_at: string | null
+          auth_cleanup_failure: string | null
           created_at: string
           deactivated_at: string | null
           deletion_requested_at: string | null
@@ -4467,6 +4470,9 @@ export type Database = {
         }
         Insert: {
           anonymised_at?: string | null
+          auth_cleaned_at?: string | null
+          auth_cleanup_attempted_at?: string | null
+          auth_cleanup_failure?: string | null
           created_at?: string
           deactivated_at?: string | null
           deletion_requested_at?: string | null
@@ -4485,6 +4491,9 @@ export type Database = {
         }
         Update: {
           anonymised_at?: string | null
+          auth_cleaned_at?: string | null
+          auth_cleanup_attempted_at?: string | null
+          auth_cleanup_failure?: string | null
           created_at?: string
           deactivated_at?: string | null
           deletion_requested_at?: string | null

@@ -102,6 +102,12 @@ const USER_CONTRACT: Record<string, Disposition> = {
   deletion_requested_at: { kind: 'keep' },
   created_at: { kind: 'keep' },
   updated_at: { kind: 'derived' },
+  // Auth-shutdown bookkeeping (20260911000300): written by the lifecycle
+  // sweep AFTER the transaction commits, never by anonymise_user itself.
+  // Timestamps + a coarse category; no identifier. Reviewed, kept.
+  auth_cleaned_at: { kind: 'keep' },
+  auth_cleanup_attempted_at: { kind: 'keep' },
+  auth_cleanup_failure: { kind: 'keep' },
 };
 
 function isEmpty(value: unknown): boolean {

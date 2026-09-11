@@ -18,6 +18,7 @@ const rpc = vi.hoisted(() => ({ outcomes: new Map<string, unknown>(), calls: [] 
 vi.mock('./anonymise', () => ({
   anonymiseUser: async (_admin: unknown, userId: string) => {
     rpc.calls.push(userId);
+    auth.order.push(`anonymise:${userId}`);
     const outcome = rpc.outcomes.get(userId);
     if (outcome instanceof Error) throw outcome;
     return outcome;
@@ -33,11 +34,40 @@ const media = vi.hoisted(() => ({
   results: new Map<string, unknown>(),
 }));
 vi.mock('./media-cleanup', () => ({
-  findAccountsOwingMediaPurge: async () => media.owing,
+  findAccountsOwingMediaPurge: async () => {
+    auth.order.push('media-scan');
+    return media.owing;
+  },
   purgeIdentityMedia: async (_a: unknown, id: string) => {
     const r = media.results.get(id);
     if (r instanceof Error) throw r;
     return r ?? { purged: 0, pending: 0 };
+  },
+}));
+
+// Auth shutdown has its own suite too; here the sweep's reconciliation,
+// isolation and counting are what get asserted.
+const auth = vi.hoisted(() => ({
+  owing: [] as string[] | Error,
+  results: new Map<string, unknown>(),
+  recorded: [] as Array<{ id: string; result: unknown }>,
+  recordFails: new Set<string>(),
+  order: [] as string[],
+}));
+vi.mock('./auth-shutdown', () => ({
+  findAccountsOwingAuthCleanup: async () => {
+    auth.order.push('auth-scan');
+    if (auth.owing instanceof Error) throw auth.owing;
+    return auth.owing;
+  },
+  shutDownAuthIdentity: async (_a: unknown, id: string) => {
+    const r = auth.results.get(id);
+    if (r instanceof Error) throw r;
+    return r ?? { outcome: 'completed', changed: true };
+  },
+  recordAuthCleanup: async (_a: unknown, id: string, result: unknown) => {
+    auth.recorded.push({ id, result });
+    return !auth.recordFails.has(id);
   },
 }));
 
@@ -96,6 +126,11 @@ beforeEach(() => {
   rpc.calls.length = 0;
   media.owing = [];
   media.results.clear();
+  auth.owing = [];
+  auth.results.clear();
+  auth.recorded.length = 0;
+  auth.recordFails.clear();
+  auth.order.length = 0;
   vi.restoreAllMocks();
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -128,6 +163,8 @@ describe('runLifecycleSweep', () => {
       skipped: 1,
       alreadyDeleted: 1,
       failed: 1,
+      authCompleted: 0,
+      authPending: 0,
       mediaPurged: 0,
       mediaPending: 0,
       recordingsPurged: 0,
@@ -169,5 +206,85 @@ describe('runLifecycleSweep', () => {
     const admin = new FakeAdmin({ users: [], verifications: [] });
     const counts = await runLifecycleSweep(admin as never, NOW);
     expect(counts.recordingsPurged).toBe(0);
+  });
+
+  it('shuts auth down after the transition and before media, from its own reconciliation scan', async () => {
+    rpc.outcomes.set('a', { outcome: 'anonymised', mediaPending: 0 });
+    // 'a' was finalised just now; 'old' by an earlier run whose auth step failed.
+    auth.owing = ['a', 'old'];
+    const admin = new FakeAdmin({ users: [{ id: 'a' }], verifications: [] });
+
+    const counts = await runLifecycleSweep(admin as never, NOW);
+
+    expect(auth.order).toEqual(['anonymise:a', 'auth-scan', 'media-scan']);
+    expect(auth.recorded.map((r) => r.id)).toEqual(['a', 'old']);
+    expect(counts.authCompleted).toBe(2);
+    expect(counts.authPending).toBe(0);
+  });
+
+  it('one account failing at the provider does not block another', async () => {
+    auth.owing = ['bad', 'good'];
+    auth.results.set('bad', { outcome: 'failed', failure: 'provider_unavailable' });
+    auth.results.set('good', { outcome: 'completed', changed: true });
+    const admin = new FakeAdmin({ users: [], verifications: [] });
+
+    const counts = await runLifecycleSweep(admin as never, NOW);
+
+    expect(counts.authCompleted).toBe(1);
+    expect(counts.authPending).toBe(1);
+    expect(auth.recorded).toEqual([
+      { id: 'bad', result: { outcome: 'failed', failure: 'provider_unavailable' } },
+      { id: 'good', result: { outcome: 'completed', changed: true } },
+    ]);
+  });
+
+  it('a thrown shutdown is still owed, and the next account still runs', async () => {
+    auth.owing = ['boom', 'next'];
+    auth.results.set('boom', new Error('unexpected'));
+    const admin = new FakeAdmin({ users: [], verifications: [] });
+
+    const counts = await runLifecycleSweep(admin as never, NOW);
+
+    expect(counts.authPending).toBe(1);
+    expect(counts.authCompleted).toBe(1);
+  });
+
+  it('provider done but bookkeeping not written → still pending, never "complete"', async () => {
+    auth.owing = ['a'];
+    auth.recordFails.add('a');
+    const admin = new FakeAdmin({ users: [], verifications: [] });
+
+    const counts = await runLifecycleSweep(admin as never, NOW);
+
+    expect(counts.authCompleted).toBe(0);
+    expect(counts.authPending).toBe(1);
+  });
+
+  it('a failed auth scan cannot read as complete, and does not abort the sweep', async () => {
+    auth.owing = new Error('scan boom');
+    const admin = new FakeAdmin({ users: [], verifications: [] });
+
+    const counts = await runLifecycleSweep(admin as never, NOW);
+
+    expect(counts.authPending).toBeGreaterThan(0);
+    expect(auth.order).toContain('media-scan');
+  });
+
+  it('auth logs carry a category only — no account id, address or provider text', async () => {
+    auth.owing = ['0b5c1e4e-6d0a-4a39-9d51-2d6f3c7e9a10'];
+    auth.results.set('0b5c1e4e-6d0a-4a39-9d51-2d6f3c7e9a10', {
+      outcome: 'failed',
+      failure: 'verification_failed',
+    });
+    const admin = new FakeAdmin({ users: [], verifications: [] });
+
+    await runLifecycleSweep(admin as never, NOW);
+
+    const logged = (console.error as unknown as { mock: { calls: unknown[][] } }).mock.calls
+      .map((c) => c.join(' '))
+      .join('\n');
+    expect(logged).toContain('verification_failed');
+    expect(logged).not.toContain('0b5c1e4e');
+    expect(logged).not.toMatch(/@/);
   });
 });

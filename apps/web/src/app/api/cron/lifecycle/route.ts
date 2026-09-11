@@ -12,9 +12,11 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  *
  * The response carries every count the sweep produces, including the ones
  * that mean "nothing happened" (skipped / alreadyDeleted — a duplicate or
- * overlapping invocation, which Vercel documents as possible) and
- * mediaPending — avatar/cover objects still in the public bucket after the
- * database scrub. A 200 with mediaPending > 0 is NOT a completed deletion.
+ * overlapping invocation, which Vercel documents as possible), authPending —
+ * deleted accounts whose GoTrue identity is not yet confirmed banned and
+ * pseudonymised — and mediaPending — avatar/cover objects still in the public
+ * bucket after the database scrub. A 200 with authPending > 0 or
+ * mediaPending > 0 is NOT a completed deletion.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

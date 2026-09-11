@@ -21,10 +21,11 @@ import type { Database } from '@xidig/db';
  * membership, work evidence, audit/mod/governance records, vouches. Retained
  * content renders under the neutral "Deleted member" tombstone.
  *
- * NOT done: removing the avatar/cover objects from the public bucket. The DB
- * paths are cleared, but the files remain fetchable at their raw URLs until the
- * owner approves a storage mechanism — `mediaPending` reports how many remain
- * so nothing upstream can claim media cleanup is complete.
+ * NOT done here — both live in other systems and are separate, retryable
+ * sweep steps (sweeps.ts): shutting down the GoTrue identity (auth-shutdown.ts;
+ * auth.users is never touched by this transaction) and removing the
+ * avatar/cover objects from the public bucket (media-cleanup.ts). A committed
+ * transaction is therefore not a finished deletion.
  */
 
 type Admin = SupabaseClient<Database>;
