@@ -1,3 +1,5 @@
+'use client';
+
 import { useT } from '@xidig/i18n/react';
 
 import type { RubricAggregate, ReviewRow } from '@/lib/capital/views';

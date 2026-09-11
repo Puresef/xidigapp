@@ -1,3 +1,5 @@
+'use client';
+
 import type { Enums } from '@xidig/db';
 import type { MessageKey } from '@xidig/i18n';
 import { useT } from '@xidig/i18n/react';
