@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
+import { loadAccountFlags } from '@/lib/account-flags';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import {
   aggregateComments,
@@ -63,28 +64,9 @@ export function sanitizeTerm(raw: string): string {
 }
 
 // --- account flags (users.status / users.is_ai) ---------------------------
-
-interface AccountFlags {
-  status: string;
-  isAi: boolean;
-}
-
-/**
- * users.status/is_ai for a candidate set — service role (another member's
- * users row is unreadable under RLS; the flags never leave the server).
- * Missing row = fail closed (not discoverable).
- */
-async function loadAccountFlags(
-  admin: AnyClient,
-  userIds: string[],
-): Promise<Map<string, AccountFlags>> {
-  const flags = new Map<string, AccountFlags>();
-  if (userIds.length === 0) return flags;
-  const { data, error } = await admin.from('users').select('id, status, is_ai').in('id', userIds);
-  if (error) throw new Error(`account flags lookup failed: ${error.message}`);
-  for (const row of data ?? []) flags.set(row.id, { status: row.status, isAi: row.is_ai });
-  return flags;
-}
+// The status primitive lives in lib/account-flags (shared with the directory,
+// the public profile projection and the feed comment teaser) so every
+// service-role surface applies the one rule.
 
 // --- People ------------------------------------------------------------
 

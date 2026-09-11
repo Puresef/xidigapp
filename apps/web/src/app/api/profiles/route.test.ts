@@ -59,7 +59,8 @@ class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
   }
 
   then<TResult1, TResult2>(
-    onfulfilled?: ((value: { data: Row[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
+    onfulfilled?:
+      ((value: { data: Row[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
     return Promise.resolve({ data: this.rows, error: null }).then(onfulfilled, onrejected);
@@ -129,5 +130,57 @@ describe('GET /api/profiles filter canonicalization', () => {
       'skills',
       ['graphic design'],
     ]);
+  });
+});
+
+describe('GET /api/profiles account-status gate', () => {
+  // profiles RLS is `using (true)`, so without this gate a deleted member's
+  // tombstone ("Deleted member" + avatar) sat in the people directory while
+  // search already hid it. Same rule, same primitive.
+  class StatusAdmin extends FakeClient {
+    constructor(private readonly statuses: Record<string, string>) {
+      super();
+    }
+    override from(table: string): FakeQuery {
+      if (table !== 'users') return super.from(table);
+      const rows = Object.entries(this.statuses).map(([id, status]) => ({
+        id,
+        status,
+        is_ai: false,
+      }));
+      const query = new FakeQuery(rows);
+      this.calls.push({ table, query });
+      return query;
+    }
+  }
+
+  it('drops deleted, suspended and deactivated members from the page', async () => {
+    userClient = new FakeClient();
+    const seeded = new FakeQuery([
+      { user_id: 'a', display_name: 'Live', handle: 'live', created_at: '2026-09-01T00:00:00Z' },
+      {
+        user_id: 'b',
+        display_name: 'Deleted member',
+        handle: 'deleted_b',
+        created_at: '2026-08-01T00:00:00Z',
+      },
+      {
+        user_id: 'c',
+        display_name: 'Paused',
+        handle: 'paused',
+        created_at: '2026-07-01T00:00:00Z',
+      },
+    ]);
+    userClient.from = (table: string) => {
+      userClient.calls.push({ table, query: seeded });
+      return seeded;
+    };
+    authHolder.ctx = { supabase: userClient };
+    adminHolder.client = new StatusAdmin({ a: 'active', b: 'deleted', c: 'suspended' });
+
+    const response = await GET(request('limit=20'));
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { data: { profiles: Array<{ user_id: string }> } };
+    expect(body.data.profiles.map((p) => p.user_id)).toEqual(['a']);
   });
 });

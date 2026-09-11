@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
+import { isActiveAccount, loadAccountFlags } from '@/lib/account-flags';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -455,13 +456,23 @@ export async function getPublicProfileView(handle: string): Promise<ProfileView 
   if (!profile) return null;
 
   let row = profile as unknown as ProfileViewRow;
-  const [badges, counts, reputation, openTo, settings, isAi] = await Promise.all([
+
+  // The logged-out projection is service role, so it bypasses the RLS rule
+  // that hides a non-active member's content from members. Apply the same
+  // rule here: only a live account has a public share page, an OG card, or a
+  // crawlable /u/ URL. A tombstoned (deleted) profile 404s to the world, the
+  // way search already hides it. Members reading through RLS still get the
+  // neutral tombstone on the member surface.
+  const flags = await loadAccountFlags(admin, [row.user_id]);
+  if (!isActiveAccount(flags, row.user_id)) return null;
+  const isAi = flags.get(row.user_id)?.isAi ?? false;
+
+  const [badges, counts, reputation, openTo, settings] = await Promise.all([
     loadBadges(admin, row.user_id),
     loadCounts(row.user_id),
     loadReputation(admin, row.user_id),
     loadOpenTo(admin, row.user_id),
     loadPublicSettings(row.user_id),
-    loadIsAi(row.user_id),
   ]);
   row = applyLocationGranularity(row, settings.locationGranularity);
 

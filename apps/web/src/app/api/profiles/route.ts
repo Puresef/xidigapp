@@ -7,6 +7,7 @@ import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/
 import { VERIFIED_PROFILE_STATUSES } from '@/lib/profile-verified';
 import { applyLocationGranularity, loadLocationGranularities } from '@/lib/profile-view';
 import { normalizeSearchName } from '@/lib/search-norm';
+import { isActiveAccount, loadAccountFlags } from '@/lib/account-flags';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -132,10 +133,20 @@ export async function GET(request: Request): Promise<Response> {
 
     const rows = data ?? [];
     const hasMore = rows.length > params.limit;
-    const page = hasMore ? rows.slice(0, params.limit) : rows;
-    const last = page.at(-1);
+    const window = hasMore ? rows.slice(0, params.limit) : rows;
+    const last = window.at(-1);
     const nextCursor =
       hasMore && last ? encodeCursor({ createdAt: last.created_at, id: last.user_id }) : null;
+
+    // Account-status gate, the same rule search applies: profiles RLS is
+    // `using (true)`, so a deleted (tombstoned), suspended or deactivated
+    // member would otherwise be listed. The cursor advances over the raw
+    // window so a page of tombstones cannot stall pagination.
+    const flags = await loadAccountFlags(
+      getSupabaseAdmin(),
+      window.map((row) => row.user_id),
+    );
+    const page = window.filter((row) => isActiveAccount(flags, row.user_id));
 
     // Honor each member's location_granularity before their city/country
     // leaves the server — 'region'/'hidden' rounds it for the whole member

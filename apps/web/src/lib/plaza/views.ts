@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Enums } from '@xidig/db';
 
 import { detectLink, type LinkKind } from '@/lib/embeds';
+import { isActiveAccount, loadAccountFlags, type AccountFlags } from '@/lib/account-flags';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 
 /**
@@ -613,7 +614,27 @@ async function fetchCommentAggregates(
     .order('created_at', { ascending: false })
     .limit(AGGREGATE_ROW_CAP);
   if (error) throw new Error(`comment counts failed: ${error.message}`);
-  return aggregateComments((data ?? []) as CommentAggregateRow[]);
+  // This is a service-role read, so comments_select_visible's author_is_active
+  // clause does not apply; enforce it here so the card teaser and count never
+  // surface a comment the thread itself hides (deleted/suspended author).
+  const rows = (data ?? []) as CommentAggregateRow[];
+  const flags = await loadAccountFlags(
+    admin,
+    rows.map((row) => row.author_user_id),
+  );
+  return aggregateComments(keepActiveAuthors(rows, flags));
+}
+
+/**
+ * The service-role half of comments_select_visible: drop rows whose author is
+ * not a live account (unknown ids fail closed). Exported so the rule is
+ * testable without the network.
+ */
+export function keepActiveAuthors<T extends { author_user_id: string }>(
+  rows: readonly T[],
+  flags: Map<string, AccountFlags>,
+): T[] {
+  return rows.filter((row) => isActiveAccount(flags, row.author_user_id));
 }
 
 export interface HydratePostsOptions {
