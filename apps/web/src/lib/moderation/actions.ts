@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Enums } from '@xidig/db';
 
 import { writeAudit } from '@/lib/audit';
+import { assertSubjectNotDeleted } from '@/lib/lifecycle/subject';
 import { insertNotification } from '@/lib/notifications/notify';
 import type { NotificationType } from '@/lib/notifications/types';
 
@@ -268,10 +269,30 @@ export interface ModActionResult {
  * write grant). Audit/notify are best-effort (they log, never throw) so the
  * action itself is the source of truth.
  */
+/**
+ * Actions whose subject is a member account. Each is refused for an
+ * anonymised account BEFORE anything is written (409 account_deleted): a
+ * suspension, warning, reversal or verification ledger entry on a tombstone
+ * means nothing, would write an immutable mod_actions row, and would notify
+ * it. Content actions are deliberately not gated — moderators still moderate
+ * retained content by deleted authors.
+ */
+const USER_STATE_ACTIONS: ReadonlySet<ModActionType> = new Set([
+  'suspend_user',
+  'unsuspend_user',
+  'warn_user',
+  'verify_user',
+  'revoke_verification',
+]);
+
 export async function applyModAction(
   admin: Admin,
   input: ModActionInput,
 ): Promise<ModActionResult> {
+  if (input.targetType === 'user' && USER_STATE_ACTIONS.has(input.action)) {
+    await assertSubjectNotDeleted(admin, input.targetId);
+  }
+
   const affectedUserId = await mutateTarget(admin, input);
 
   const { error: actionError } = await admin.from('mod_actions').insert({

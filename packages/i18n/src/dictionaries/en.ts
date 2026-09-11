@@ -301,6 +301,7 @@ export const en = {
   'error.notAVerifier': 'Only verifiers can do this.',
   'error.accountAlreadyDeactivated':
     'Your account is already deactivated. Sign in again anytime to reactivate it.',
+  'error.accountDeleted': "This account has been deleted, so this can't be done.",
   'error.deletionAlreadyRequested':
     'Your account is already scheduled for deletion. You can cancel it from account settings during the grace period.',
   'error.awardNoOpenCycle':
@@ -1530,8 +1531,7 @@ export const en = {
     'Your request to join has been sent. The Lab lead will review it — you’ll get a notification when they respond.',
   'lab.dormantBanner':
     'This Lab has been quiet for 4 weeks and is marked Dormant. Are you still working on this? Revive it with a quick update.',
-  'lab.ipBanner':
-    'Reminder: what you publish here stays yours. Publish artifacts thoughtfully.',
+  'lab.ipBanner': 'Reminder: what you publish here stays yours. Publish artifacts thoughtfully.',
   'lab.skillGapBannerLead':
     'You’ve been looking for {skill} for over a week. Want to widen the net or refresh the ask?',
   'lab.crossPostedFrom': 'Cross-posted from {name}',

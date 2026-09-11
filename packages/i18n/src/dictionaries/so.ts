@@ -1153,6 +1153,7 @@ export const so = {
   'error.notAVerifier': 'Kaliya xaqiijiyayaasha ayaa tan samayn kara.',
   'error.accountAlreadyDeactivated':
     'Akoonkaagu horay ayuu u damay. Mar kasta ku soo gal si aad dib ugu dhaqaajiso.',
+  'error.accountDeleted': 'Akoonkan waa la tirtiray, sidaas darteed tan lama samayn karo.',
   'error.deletionAlreadyRequested':
     'Akoonkaaga horay ayaa loo qorsheeyay in la tirtiro. Waad ka joojin kartaa goobaha akoonka inta lagu jiro muddada nasiinta.',
   'error.awardNoOpenCycle':
@@ -1540,7 +1541,8 @@ export const so = {
   'social.postOptions': 'Doorashooyinka qoraalka',
   'social.muteUser': 'Aamusi {name}',
   'social.muteTag': 'Aamusi #{tag}',
-  'social.mutedNotice': 'Waa la aamusiyay. Kuma arki doontid profile-kaaga. Ka fur Dejinta → Sirta.',
+  'social.mutedNotice':
+    'Waa la aamusiyay. Kuma arki doontid profile-kaaga. Ka fur Dejinta → Sirta.',
   'social.mutedListTitle': 'Aamusan',
   'social.mutedEmpty': 'Weli waxba ma aamusin.',
   'social.mutedTypeUser': 'Xubin',

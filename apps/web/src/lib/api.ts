@@ -33,7 +33,10 @@ export interface ApiErrorBody {
   error: PlainError;
 }
 
-export async function apiError(code: ErrorCode, status: number): Promise<NextResponse<ApiErrorBody>> {
+export async function apiError(
+  code: ErrorCode,
+  status: number,
+): Promise<NextResponse<ApiErrorBody>> {
   const t = await getT();
   return NextResponse.json({ error: resolveError(code, t) }, { status });
 }
@@ -52,9 +55,28 @@ export async function apiNotice(
 }
 
 /**
+ * The profile freeze trigger (tg_profiles_freeze_deleted, 20260911000100)
+ * refuses any write to an anonymised account's profile with P0001
+ * `profile_frozen: …`. Routes usually re-throw a PostgREST failure wrapped in
+ * an Error whose message embeds the original, so both shapes are recognised.
+ * The trigger stays a hard invariant; this only turns its refusal — which a
+ * writer racing an anonymisation can legitimately hit — into an explicit
+ * conflict instead of an accidental 500.
+ */
+function isProfileFrozen(error: unknown): boolean {
+  if (error instanceof Error) return error.message.includes('profile_frozen:');
+  if (typeof error === 'object' && error !== null) {
+    const { code, message } = error as { code?: unknown; message?: unknown };
+    return code === 'P0001' && typeof message === 'string' && message.startsWith('profile_frozen:');
+  }
+  return false;
+}
+
+/**
  * Uniform catch-all for route handlers: expected failures (ApiError) map to
- * their §27 copy, validation noise maps to invalid_request, everything else
- * is a 500 that pages us (Sentry) and tells the user we already know.
+ * their §27 copy, validation noise maps to invalid_request, a lifecycle freeze
+ * conflict maps to account_deleted, everything else is a 500 that pages us
+ * (Sentry) and tells the user we already know.
  */
 export async function handleApiError(error: unknown): Promise<NextResponse<ApiErrorBody>> {
   if (error instanceof ApiError) {
@@ -62,6 +84,11 @@ export async function handleApiError(error: unknown): Promise<NextResponse<ApiEr
   }
   if (error instanceof ZodError) {
     return apiError('invalid_request', 400);
+  }
+  if (isProfileFrozen(error)) {
+    // Expected, not a fault: no Sentry page, and never the message — it
+    // names the anonymised account.
+    return apiError('account_deleted', 409);
   }
   console.error('[api] unhandled error:', error);
   Sentry.captureException(error);

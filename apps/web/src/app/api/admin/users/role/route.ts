@@ -26,16 +26,16 @@ export async function PATCH(request: Request): Promise<Response> {
     const admin = getSupabaseAdmin();
     const { data: target } = await admin
       .from('users')
-      .select('id, role')
+      .select('id, role, status')
       .eq('id', body.userId)
       .maybeSingle();
     if (!target) throw new ApiError('not_found', 404);
+    // A role on an anonymised account means nothing; refuse rather than
+    // write it (and audit a change that isn't one).
+    if (target.status === 'deleted') throw new ApiError('account_deleted', 409);
 
     if (target.role !== body.role) {
-      const { error } = await admin
-        .from('users')
-        .update({ role: body.role })
-        .eq('id', body.userId);
+      const { error } = await admin.from('users').update({ role: body.role }).eq('id', body.userId);
       if (error) throw new Error(`role update failed: ${error.message}`);
 
       await writeAudit(admin, {

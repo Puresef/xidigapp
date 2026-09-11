@@ -4,10 +4,8 @@ import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireVerifier } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
 import { applyModAction } from '@/lib/moderation/actions';
-import {
-  verificationDecisionSchema,
-  verificationScheduleSchema,
-} from '@/lib/moderation/schemas';
+import { verificationDecisionSchema, verificationScheduleSchema } from '@/lib/moderation/schemas';
+import { loadSubjectStatus } from '@/lib/lifecycle/subject';
 import { insertNotification } from '@/lib/notifications/notify';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -18,9 +16,57 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * listing, plus the matching badge — and records a `verify_user` mod_action for
  * the §19 ledger. Every branch notifies the member in plain language and writes
  * an immutable audit row. Verifier-gated; all writes are service role.
+ *
+ * Deleted members. A request can sit in the queue while its member is
+ * anonymised. Before ANY write, the subject's status is read (service role);
+ * a deleted subject gets 409 `account_deleted` and nothing is approved,
+ * declined, scheduled, awarded or notified. An OPEN request is closed as
+ * 'cancelled' — guarded on its status, so a final decision is never
+ * overwritten — with an audit row carrying who closed it, why, and what was
+ * attempted. The input is validated first, so a malformed request never
+ * closes anything.
  */
 
 const idSchema = z.string().uuid();
+
+const OPEN_STATUSES = ['pending', 'scheduled'] as const;
+
+type Admin = ReturnType<typeof getSupabaseAdmin>;
+
+async function closeForDeletedSubject(
+  admin: Admin,
+  input: {
+    verifierId: string;
+    verification: { id: string; status: string };
+    attempted: 'schedule' | 'approved' | 'declined' | 'more_info';
+  },
+): Promise<void> {
+  const { verification } = input;
+  if (!(OPEN_STATUSES as readonly string[]).includes(verification.status)) return;
+
+  const { data, error } = await admin
+    .from('verifications')
+    .update({ status: 'cancelled', decided_at: new Date().toISOString() })
+    .eq('id', verification.id)
+    .in('status', [...OPEN_STATUSES])
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(`verification close failed: ${error.message}`);
+  // Someone else finalised it between our read and this write: leave it be.
+  if (!data) return;
+
+  await writeAudit(admin, {
+    actorUserId: input.verifierId,
+    action: 'verification.closed_subject_deleted',
+    targetType: 'verification',
+    targetId: verification.id,
+    metadata: {
+      reason: 'subject_deleted',
+      priorStatus: verification.status,
+      attempted: input.attempted,
+    },
+  });
+}
 
 // Resolve a seeded badge slug → its UUID (user_badges.badge_id FKs
 // badge_definitions.id, not the slug), tolerating a re-award race.
@@ -72,9 +118,25 @@ export async function PATCH(
 
     const now = new Date().toISOString();
 
+    // Validate first: a malformed request must not reach the lifecycle step.
+    const scheduleInput = 'bookingUrl' in body ? verificationScheduleSchema.parse(body) : null;
+    const decisionInput = scheduleInput ? null : verificationDecisionSchema.parse(body);
+
+    // Subject lifecycle, before any write.
+    const subjectStatus = await loadSubjectStatus(admin, verification.user_id);
+    if (subjectStatus === null) throw new ApiError('not_found', 404);
+    if (subjectStatus === 'deleted') {
+      await closeForDeletedSubject(admin, {
+        verifierId: verifier.appUser.id,
+        verification,
+        attempted: scheduleInput ? 'schedule' : decisionInput!.decision,
+      });
+      throw new ApiError('account_deleted', 409);
+    }
+
     // --- SCHEDULE (booking link) ---------------------------------------------
-    if ('bookingUrl' in body) {
-      const input = verificationScheduleSchema.parse(body);
+    if (scheduleInput) {
+      const input = scheduleInput;
       const { error } = await admin
         .from('verifications')
         .update({
@@ -105,7 +167,7 @@ export async function PATCH(
     }
 
     // --- DECISION (approve / decline / more_info) ----------------------------
-    const input = verificationDecisionSchema.parse(body);
+    const input = decisionInput!;
 
     if (input.decision === 'approved') {
       // Exhaustiveness guard BEFORE any state is written. The award effects
@@ -115,6 +177,34 @@ export async function PATCH(
       // status + mod action + notification with zero credential effect.
       if (verification.type !== 'identity' && verification.type !== 'business') {
         throw new Error(`unhandled verification type: ${String(verification.type)}`);
+      }
+
+      // Credential effect FIRST, then the request's status. The profile write
+      // is the one the freeze trigger guards, so a member anonymised after the
+      // lifecycle check above is refused THERE (→ 409 account_deleted via
+      // handleApiError) before this request ever reads 'approved'. A later
+      // failure leaves the credential awarded and the request open; retrying
+      // completes it (both writes are idempotent).
+      if (verification.type === 'identity') {
+        // Never downgrade an already-identity_verified member.
+        const { error: profileError } = await admin
+          .from('profiles')
+          .update({ verification_status: 'identity_verified' })
+          .eq('user_id', verification.user_id)
+          .neq('verification_status', 'identity_verified');
+        if (profileError) throw new Error(`profile award failed: ${profileError.message}`);
+      } else if (verification.type === 'business' && verification.listing_id) {
+        // verified_at is the denormalized "Checked: {date}" the §18 explainer
+        // shows — stamped with the same decision timestamp written to
+        // verifications.decided_at below. The DB-side sync trigger
+        // (20260731000000) is the backstop: any OTHER transition out of
+        // 'verified' (a future revoke flow, moderation, manual correction)
+        // nulls it, and a transition in that forgot to stamp gets now().
+        const { error: listingError } = await admin
+          .from('business_listings')
+          .update({ verification_status: 'verified', verified_at: now })
+          .eq('id', verification.listing_id);
+        if (listingError) throw new Error(`listing award failed: ${listingError.message}`);
       }
 
       const { error } = await admin
@@ -129,32 +219,12 @@ export async function PATCH(
       if (error) throw new Error(`verification approve failed: ${error.message}`);
 
       if (verification.type === 'identity') {
-        // Never downgrade an already-identity_verified member.
-        const { error: profileError } = await admin
-          .from('profiles')
-          .update({ verification_status: 'identity_verified' })
-          .eq('user_id', verification.user_id)
-          .neq('verification_status', 'identity_verified');
-        if (profileError) throw new Error(`profile award failed: ${profileError.message}`);
-
         await awardBadge(admin, {
           userId: verification.user_id,
           slug: 'identity-verified',
           awardedBy: verifier.appUser.id,
         });
       } else if (verification.type === 'business' && verification.listing_id) {
-        // verified_at is the denormalized "Checked: {date}" the §18 explainer
-        // shows — stamped with the same decision timestamp written to
-        // verifications.decided_at above. The DB-side sync trigger
-        // (20260731000000) is the backstop: any OTHER transition out of
-        // 'verified' (a future revoke flow, moderation, manual correction)
-        // nulls it, and a transition in that forgot to stamp gets now().
-        const { error: listingError } = await admin
-          .from('business_listings')
-          .update({ verification_status: 'verified', verified_at: now })
-          .eq('id', verification.listing_id);
-        if (listingError) throw new Error(`listing award failed: ${listingError.message}`);
-
         await awardBadge(admin, {
           userId: verification.user_id,
           slug: 'verified-business',

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { apiOk, handleApiError } from '@/lib/api';
 import { requireRole } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
+import { assertSubjectNotDeleted } from '@/lib/lifecycle/subject';
 import { getT } from '@/lib/locale';
 import { BADGE_SLUGS } from '@/lib/reputation/constants';
 import { awardBadge } from '@/lib/reputation/service';
@@ -56,6 +57,10 @@ export async function POST(request: Request): Promise<Response> {
     const ctx = await requireRole('admin');
     const input = bodySchema.parse(await request.json());
     const admin = getSupabaseAdmin();
+
+    // Never appoint an anonymised account: it would surface a "Deleted
+    // member" as the public mentor, hold the advisor grant and get a badge.
+    await assertSubjectNotDeleted(admin, input.advisorUserId);
 
     const { data: residency, error: insertError } = await admin
       .from('mentor_residencies')

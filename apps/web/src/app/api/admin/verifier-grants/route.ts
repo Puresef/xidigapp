@@ -1,6 +1,7 @@
 import { apiOk, handleApiError } from '@/lib/api';
 import { requireRole } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
+import { assertSubjectNotDeleted } from '@/lib/lifecycle/subject';
 import { verifierGrantSchema } from '@/lib/moderation/schemas';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -20,17 +21,18 @@ export async function POST(request: Request): Promise<Response> {
     const service = getSupabaseAdmin();
 
     if (input.action === 'grant') {
-      const { error } = await service
-        .from('verifier_grants')
-        .upsert(
-          {
-            user_id: input.userId,
-            granted_by_user_id: admin.appUser.id,
-            note: input.note ?? null,
-            revoked_at: null,
-          },
-          { onConflict: 'user_id' },
-        );
+      // Granting to an anonymised account is refused; revoking stays allowed
+      // (cleaning up a departed verifier's grant is exactly right).
+      await assertSubjectNotDeleted(service, input.userId);
+      const { error } = await service.from('verifier_grants').upsert(
+        {
+          user_id: input.userId,
+          granted_by_user_id: admin.appUser.id,
+          note: input.note ?? null,
+          revoked_at: null,
+        },
+        { onConflict: 'user_id' },
+      );
       if (error) throw new Error(`verifier grant failed: ${error.message}`);
     } else {
       const { error } = await service
@@ -68,7 +70,10 @@ export async function GET(): Promise<Response> {
     const rows = grants ?? [];
     const userIds = [...new Set(rows.map((g) => g.user_id))];
     const { data: profiles } = userIds.length
-      ? await service.from('profiles').select('user_id, display_name, handle').in('user_id', userIds)
+      ? await service
+          .from('profiles')
+          .select('user_id, display_name, handle')
+          .in('user_id', userIds)
       : {
           data: [] as { user_id: string; display_name: string; handle: string }[],
         };

@@ -241,6 +241,10 @@ export const ERROR_DEFS = {
   not_a_verifier: { messageKey: 'error.notAVerifier' },
   // Self-service lifecycle guards.
   account_already_deactivated: { messageKey: 'error.accountAlreadyDeactivated' },
+  // The account this action is about has been deleted (anonymised). Returned
+  // to admins/verifiers acting on a stale queue item, and to any writer that
+  // races an anonymisation (the profile freeze trigger → 409, not a 500).
+  account_deleted: { messageKey: 'error.accountDeleted' },
   deletion_already_requested: {
     messageKey: 'error.deletionAlreadyRequested',
     cta: { labelKey: 'action.manageAccount', href: '/settings/account' },

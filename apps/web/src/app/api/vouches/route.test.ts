@@ -15,9 +15,10 @@ type Row = Record<string, unknown>;
 interface Seed {
   row?: Row | null;
   count?: number;
+  error?: { code: string; message: string };
 }
 
-class FakeQuery implements PromiseLike<{ data: unknown; error: null; count: number | null }> {
+class FakeQuery implements PromiseLike<{ data: unknown; error: unknown; count: number | null }> {
   readonly ops: string[] = [];
   constructor(private readonly seed: Seed) {}
   private chain(op: string): this {
@@ -44,12 +45,12 @@ class FakeQuery implements PromiseLike<{ data: unknown; error: null; count: numb
   }
   then<T1, T2>(
     onfulfilled?:
-      ((v: { data: unknown; error: null; count: number | null }) => T1 | PromiseLike<T1>) | null,
+      ((v: { data: unknown; error: unknown; count: number | null }) => T1 | PromiseLike<T1>) | null,
     onrejected?: ((r: unknown) => T2 | PromiseLike<T2>) | null,
   ): PromiseLike<T1 | T2> {
     return Promise.resolve({
       data: this.seed.row ?? null,
-      error: null,
+      error: this.seed.error ?? null,
       count: this.seed.count ?? null,
     }).then(onfulfilled, onrejected);
   }
@@ -136,5 +137,27 @@ describe('POST /api/vouches target account state', () => {
     const res = await POST(post());
     expect(res.status).toBe(200);
     expect(admin.wrote('vouches')).toBe(true);
+  });
+
+  it('a vouchee anonymised mid-request (freeze trigger at the upgrade) → 409 account_deleted, not a 500', async () => {
+    admin = new FakeAdmin({
+      profiles: [
+        { row: { verification_status: 'identity_verified' } },
+        { row: { verification_status: 'unverified' } },
+        {
+          error: {
+            code: 'P0001',
+            message: `profile_frozen: account ${TARGET} is anonymised; its profile cannot be updated`,
+          },
+        },
+      ],
+      users: [{ row: { status: 'active' } }],
+      vouches: [{ row: null }, { row: null, count: 3 }],
+    });
+    adminHolder.client = admin;
+    const res = await POST(post());
+    expect(res.status).toBe(409);
+    expect(((await res.json()) as { error: { code: string } }).error.code).toBe('account_deleted');
+    expect(admin.wrote('user_badges')).toBe(false);
   });
 });
