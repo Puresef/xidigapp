@@ -3,7 +3,7 @@ import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { apiKeyCreateSchema } from '@/lib/api-keys/schemas';
 import { listApiKeys, mintApiKey } from '@/lib/api-keys/keys';
-import { ALL_SCOPES, MEMBER_MINTABLE_SCOPES, type ApiScope } from '@/lib/api-keys/scopes';
+import { allowedScopesFor, type ApiScope } from '@/lib/api-keys/scopes';
 import { requireUser } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -13,7 +13,8 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * Self-service API-key management (PRD §21).
  *
  * A member mints keys for external agents/integrations they run. The scope
- * allowlist depends on role: a plain member may attach the non-privileged
+ * allowlist follows the caller's role AND account status (allowedScopesFor):
+ * the deletion grace mints `read` only; a plain member may attach the non-privileged
  * scopes only — the `admin` (system) scope is admin-mintable ONLY, so a member
  * can never create an admin-equivalent key. Keys are stored hashed; the
  * plaintext value is returned exactly once here and never again.
@@ -39,8 +40,9 @@ export async function POST(request: Request): Promise<Response> {
     const ctx = await requireUser();
     const input = apiKeyCreateSchema.parse(await request.json());
 
-    const isAdmin = ctx.appUser.role === 'admin';
-    const allowed: ApiScope[] = isAdmin ? ALL_SCOPES : MEMBER_MINTABLE_SCOPES;
+    // What the caller's standing allows TODAY (owner ruling, 11 Sep): an
+    // active admin may attach `admin`; the deletion grace mints `read` only.
+    const allowed: ApiScope[] = allowedScopesFor(ctx.appUser);
     const scopes = [...new Set(input.scopes)] as ApiScope[];
     // A member requesting `admin` (or any non-allowed scope) is forbidden — the
     // guard that a member cannot mint an admin-equivalent key.

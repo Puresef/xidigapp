@@ -1,7 +1,7 @@
 import type { TablesUpdate } from '@xidig/db';
 
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireActiveUser, requireUser } from '@/lib/auth/guards';
 import {
   loadCandidateForViewer,
   parseCandidateId,
@@ -53,7 +53,7 @@ export async function GET(_request: Request, context: Ctx): Promise<Response> {
 
 export async function PATCH(request: Request, context: Ctx): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const id = parseCandidateId((await context.params).id);
     const input = candidateUpdateSchema.parse(await request.json());
     const admin = getSupabaseAdmin();

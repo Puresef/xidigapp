@@ -19,6 +19,7 @@ import { OwnerControls } from '@/components/plaza/codsi/owner-controls';
 import { CommentThread } from '@/components/plaza/comment-thread';
 import { PostCard } from '@/components/plaza/post-card';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { getHeaderViewer } from '@/lib/auth/header-viewer';
 import { getLowBandwidth } from '@/lib/bandwidth-server';
 import { getLitePrefs } from '@/lib/lite/server';
@@ -124,7 +125,7 @@ export default async function PostPermalinkPage({ params }: { params: Promise<{ 
   // re-checks, this just decides whether to render the affordance.
   const isAuthor = post.author_user_id === ctx.appUser.id;
   const canSeeHistory =
-    isAuthor || ctx.appUser.role === 'mod' || ctx.appUser.role === 'admin';
+    isAuthor || isActiveModOrAdmin(ctx.appUser);
   let revisionCount = 0;
   if (canSeeHistory && post.edited_at !== null) {
     const { count, error: revisionError } = await admin

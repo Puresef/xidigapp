@@ -5,6 +5,7 @@ import type { Database } from '@xidig/db';
 
 import { ApiError } from '@/lib/api';
 import type { AuthContext } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { hydratePosts, POST_COLUMNS, type PostRow, type PostView } from '@/lib/plaza/views';
 
 /**
@@ -47,9 +48,9 @@ export async function hydrateOnePost(
   return view;
 }
 
-/** §26 RBAC: admins inherit mod powers (mirrors requireRole('mod')). */
+/** §26 RBAC: admins inherit mod powers (mirrors requireRole('mod')). Active accounts only. */
 export function isModOrAdmin(ctx: AuthContext): boolean {
-  return ctx.appUser.role === 'mod' || ctx.appUser.role === 'admin';
+  return isActiveModOrAdmin(ctx.appUser);
 }
 
 /** The text blob the AI pre-scan judges (§15): title + body when both exist. */

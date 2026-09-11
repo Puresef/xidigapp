@@ -61,6 +61,7 @@ const serviceHolder = vi.hoisted(() => ({ transitions: [] as unknown[] }));
 
 vi.mock('@/lib/auth/guards', () => ({
   requireUser: async () => authHolder.ctx,
+  requireActiveUser: async () => authHolder.ctx,
 }));
 vi.mock('@/lib/supabase/server', () => ({
   getSupabaseAdmin: () => adminHolder.client,

@@ -4,6 +4,7 @@ import type { Database } from '@xidig/db';
 
 import { ApiError } from '@/lib/api';
 import type { AuthContext } from '@/lib/auth/guards';
+import { effectivePlatformRole, isActiveModOrAdmin, isModRole } from '@/lib/auth/privilege';
 
 /**
  * Event creation rights (locked, alpha-conservative — extras item 8):
@@ -28,7 +29,10 @@ export type EventContainer =
   | { kind: 'candidate'; candidateId: string };
 
 export interface CreationFacts {
-  /** App role of the caller. */
+  /**
+   * The caller's EFFECTIVE platform role (effectivePlatformRole): a mod or
+   * admin who is not active counts as a member.
+   */
   role: 'member' | 'mod' | 'admin';
   container: EventContainer['kind'];
   /** For lab containers: the caller's ACTIVE lab role, or null. */
@@ -40,7 +44,7 @@ export interface CreationFacts {
 
 /** Pure decision — unit-tested creation-authorization matrix. */
 export function resolveCreationRight(facts: CreationFacts): boolean {
-  if (facts.role === 'admin' || facts.role === 'mod') return true;
+  if (isModRole(facts.role)) return true;
   switch (facts.container) {
     case 'lab':
       return facts.labRole === 'lead' || facts.labRole === 'core';
@@ -73,8 +77,10 @@ export async function assertCanCreateEvent(
   admin: SupabaseClient<Database>,
   container: EventContainer,
 ): Promise<void> {
-  const role = ctx.appUser.role as CreationFacts['role'];
-  const facts: CreationFacts = { role, container: container.kind };
+  const facts: CreationFacts = {
+    role: effectivePlatformRole(ctx.appUser),
+    container: container.kind,
+  };
 
   if (container.kind === 'lab') {
     const { data, error } = await admin
@@ -123,7 +129,7 @@ export async function loadCreationOptions(
   ctx: AuthContext,
   admin: SupabaseClient<Database>,
 ): Promise<CreationOptions> {
-  const isModOrAdmin = ctx.appUser.role === 'admin' || ctx.appUser.role === 'mod';
+  const isModOrAdmin = isActiveModOrAdmin(ctx.appUser);
 
   const [labRows, listingRows] = await Promise.all([
     admin

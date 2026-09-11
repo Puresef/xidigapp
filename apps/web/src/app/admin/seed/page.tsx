@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import { getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -28,7 +29,7 @@ async function countSeeded(
 export default async function AdminSeedPage() {
   const ctx = await getAuthContext();
   if (!ctx) redirect('/signin?next=/admin/seed');
-  if (ctx.appUser.role !== 'admin') redirect('/');
+  if (!isActiveAdmin(ctx.appUser)) redirect('/');
 
   const t = await getT();
   const admin = getSupabaseAdmin();

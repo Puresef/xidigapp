@@ -4,6 +4,7 @@ import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { EVENT_SLUG_REGEX } from '@/lib/events/constants';
 import { getMemberEventView } from '@/lib/events/views';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -39,7 +40,7 @@ export async function POST(request: Request, { params }: Ctx): Promise<Response>
 
     const view = await getMemberEventView(ctx, slug);
     if (!view) throw new ApiError('not_found', 404);
-    const isMod = ctx.appUser.role === 'admin' || ctx.appUser.role === 'mod';
+    const isMod = isActiveModOrAdmin(ctx.appUser);
     if (!view.viewer.isHost && !isMod) throw new ApiError('forbidden', 403);
 
     if (Date.parse(view.event.starts_at) > Date.now()) {

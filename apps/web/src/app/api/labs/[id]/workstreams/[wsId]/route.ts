@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireActiveUser } from '@/lib/auth/guards';
 import { getLabMembership, parseLabId } from '@/lib/labs-api';
 import { workstreamUpdateSchema } from '@/lib/maal/schemas';
 import { deleteWorkstream, updateWorkstream } from '@/lib/maal/service';
@@ -35,7 +35,7 @@ function parseWorkstreamId(raw: string): string {
 
 export async function PATCH(request: Request, context: Ctx): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const params = await context.params;
     const id = parseLabId(params.id);
     const workstreamId = parseWorkstreamId(params.wsId);
@@ -62,7 +62,7 @@ export async function PATCH(request: Request, context: Ctx): Promise<Response> {
 
 export async function DELETE(_request: Request, context: Ctx): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const params = await context.params;
     const id = parseLabId(params.id);
     const workstreamId = parseWorkstreamId(params.wsId);

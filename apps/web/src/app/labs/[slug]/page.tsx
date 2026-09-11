@@ -25,6 +25,7 @@ import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import { getPublicLabView, hydrateOneLab } from '@/lib/labs-api';
 import {
   ARTIFACT_COLUMNS,
@@ -139,7 +140,7 @@ export default async function LabDetailPage({
   const tabKeys = isVenture ? VENTURE_TAB_KEYS : SPACE_TAB_KEYS;
 
   const isContributor = ['lead', 'core', 'member'].includes(view.viewerRelation);
-  const isManager = view.viewerRelation === 'lead' || ctx.appUser.role === 'admin';
+  const isManager = view.viewerRelation === 'lead' || isActiveAdmin(ctx.appUser);
 
   const { data: pin } = await admin
     .from('profile_pinned_labs')

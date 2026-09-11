@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { ListingForm, type ListingFormInitial } from '@/components/suuq/listing-form';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { getLowBandwidth } from '@/lib/bandwidth-server';
 import { getCategories } from '@/lib/categories';
 import { getMemberListingView } from '@/lib/listing-view';
@@ -32,7 +33,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
   const view = await getMemberListingView(ctx.supabase, id);
   if (!view) notFound();
 
-  const isMod = ctx.appUser.role === 'mod' || ctx.appUser.role === 'admin';
+  const isMod = isActiveModOrAdmin(ctx.appUser);
   if (view.listing.owner_user_id !== ctx.appUser.id && !isMod) redirect(`/l/${id}`);
 
   const t = await getT();

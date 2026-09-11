@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireActiveUser } from '@/lib/auth/guards';
 import { hydrateOneLab, loadLabForViewer, parseLabId, requireLabManager } from '@/lib/labs-api';
 import { promoteSchema } from '@/lib/labs/schemas';
 import { promoteToCandidate, promoteToLab } from '@/lib/labs/service';
@@ -51,7 +51,7 @@ const targetSchema = z.object({ target: z.enum(['lab', 'candidate', 'venture']) 
 
 export async function POST(request: Request, context: Ctx): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const id = parseLabId((await context.params).id);
     const body: unknown = await request.json();
     const { target } = targetSchema.parse(body);

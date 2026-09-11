@@ -5,6 +5,7 @@ import { LOCALE_NAMES } from '@xidig/i18n';
 
 import { ModerationQueue, type ReviewItem } from '@/components/admin/moderation-queue';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { getT } from '@/lib/locale';
 import { publicMediaUrl } from '@/lib/media/storage';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -148,7 +149,7 @@ export default async function AdminModerationPage({
 }) {
   const ctx = await getAuthContext();
   if (!ctx) redirect('/signin?reason=session_expired&next=/admin/moderation');
-  if (ctx.appUser.status !== 'active' || (ctx.appUser.role !== 'mod' && ctx.appUser.role !== 'admin')) {
+  if (!isActiveModOrAdmin(ctx.appUser)) {
     redirect('/');
   }
 

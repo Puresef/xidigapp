@@ -3,6 +3,7 @@ import type { SupabaseClient, User } from '@supabase/supabase-js';
 import type { Database, Tables } from '@xidig/db';
 
 import { ApiError } from '@/lib/api';
+import { hasActiveRole, isActiveAccount, isActiveAdmin } from '@/lib/auth/privilege';
 import { getSupabaseServer } from '@/lib/supabase/server';
 
 /**
@@ -93,19 +94,30 @@ export async function requireUserForAppeal(): Promise<AuthContext> {
  * ordinary membership (owner ruling, 11 Sep) — but not continued power over
  * other members. The admin/mod routes act through the service role, so the
  * database's active-only is_mod()/is_admin() never see them; this is where
- * the rule has to hold.
+ * the rule has to hold. Role comparisons live in lib/auth/privilege.ts.
  */
 function assertActiveForPrivilege(ctx: AuthContext): void {
-  if (ctx.appUser.status !== 'active') throw new ApiError('forbidden', 403);
+  if (!isActiveAccount(ctx.appUser)) throw new ApiError('forbidden', 403);
+}
+
+/**
+ * Ordinary access that is NOT extended to the deletion grace: escalations and
+ * capital/governance-sensitive writes (Lab→Candidate handoff, candidate
+ * submit/edit, Venture promotion, every venture ledger/board/capital write).
+ * Owner ruling, 11 Sep. Same refusals as requireUser for every other state,
+ * plus 403 forbidden for pending_deletion.
+ */
+export async function requireActiveUser(): Promise<AuthContext> {
+  const ctx = await requireUser();
+  assertActiveForPrivilege(ctx);
+  return ctx;
 }
 
 /** Role gate. `mod` admits mods AND admins; `admin` admits admins only. Active accounts only. */
 export async function requireRole(minRole: 'mod' | 'admin'): Promise<AuthContext> {
   const ctx = await requireUser();
   assertActiveForPrivilege(ctx);
-  const { role } = ctx.appUser;
-  const allowed = minRole === 'admin' ? role === 'admin' : role === 'admin' || role === 'mod';
-  if (!allowed) throw new ApiError('forbidden', 403);
+  if (!hasActiveRole(ctx.appUser, minRole)) throw new ApiError('forbidden', 403);
   return ctx;
 }
 
@@ -120,7 +132,7 @@ export async function requireRole(minRole: 'mod' | 'admin'): Promise<AuthContext
 export async function requireVerifier(): Promise<AuthContext> {
   const ctx = await requireUser();
   assertActiveForPrivilege(ctx);
-  if (ctx.appUser.role === 'admin') return ctx;
+  if (isActiveAdmin(ctx.appUser)) return ctx;
   const { data, error } = await ctx.supabase.rpc('is_verifier');
   if (error || data !== true) throw new ApiError('not_a_verifier', 403);
   return ctx;

@@ -5,6 +5,12 @@ import type { Database, Enums, Json } from '@xidig/db';
 import { ApiError } from '@/lib/api';
 import type { AuthContext } from '@/lib/auth/guards';
 import {
+  isActiveAccount,
+  isActiveAdmin,
+  isActiveModOrAdmin,
+  type AccountStanding,
+} from '@/lib/auth/privilege';
+import {
   hydrateLabs,
   MEMBER_PREVIEW_LIMIT,
   type AuthorRef,
@@ -250,22 +256,32 @@ export interface VentureViewer {
   /** Lead, core member, or platform mod/admin — the "hoggaamiye" of 7b/7d. */
   isLead: boolean;
   isMod: boolean;
-  /** Lead or platform admin: may change settings, promote, resolve applications. */
+  /** Lead or platform admin, ACTIVE account: may change settings, promote, resolve applications. */
   canManage: boolean;
-  /** Active non-observer: may claim tasks and log contributions. */
+  /** Active non-observer on an ACTIVE account: may claim tasks and log contributions. */
   canContribute: boolean;
   canReadLedger: boolean;
   /** False = per-member hours fold to a venture total (the 7b toggle). */
   canReadHours: boolean;
 }
 
+/**
+ * `account` is the viewer's PLATFORM standing (role + account status). Owner
+ * ruling, 11 Sep: platform oversight (isMod, admin management) needs an active
+ * account, and in the deletion grace a lead or member keeps READ reach
+ * (ledger, hours, export) but every venture WRITE needs an active account —
+ * so canManage / canContribute are false for any non-active account. The
+ * write routes enforce the same with requireActiveUser; this keeps the
+ * surfaces from offering controls the server will refuse.
+ */
 export function resolveVentureViewer(
   lab: VentureRow,
   viewerId: string,
-  role: Enums<'user_role'>,
+  account: AccountStanding,
   membership: { role: Enums<'lab_member_role'>; status: Enums<'lab_member_status'> } | null,
 ): VentureViewer {
-  const isMod = role === 'mod' || role === 'admin';
+  const isMod = isActiveModOrAdmin(account);
+  const accountActive = isActiveAccount(account);
   const isActive = membership?.status === 'active';
   const isOwner = lab.lead_user_id === viewerId;
 
@@ -284,8 +300,8 @@ export function resolveVentureViewer(
     isMember,
     isLead,
     isMod,
-    canManage: isOwner || role === 'admin',
-    canContribute: isOwner || (isActive && membership.role !== 'observer'),
+    canManage: (accountActive && isOwner) || isActiveAdmin(account),
+    canContribute: accountActive && (isOwner || (isActive && membership.role !== 'observer')),
     canReadLedger: (isMember || isMod) && (lab.ledger_visibility === 'members' || isLead || isMod),
     canReadHours: lab.hours_visibility === 'members' || isLead || isMod,
   };
@@ -427,7 +443,7 @@ export async function getVentureViewer(
   admin: Admin = getSupabaseAdmin(),
 ): Promise<VentureViewer> {
   const membership = await loadVentureMembership(admin, lab.id, ctx.appUser.id);
-  return resolveVentureViewer(lab, ctx.appUser.id, ctx.appUser.role, membership);
+  return resolveVentureViewer(lab, ctx.appUser.id, ctx.appUser, membership);
 }
 
 /** The venture's current weight scheme (latest effective row, or the seed). */

@@ -6,6 +6,7 @@ import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser, type AuthContext } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { autopostEventPublished } from '@/lib/events/autopost';
 import { EVENT_SLUG_REGEX } from '@/lib/events/constants';
 import { eventUpdateSchema } from '@/lib/events/schemas';
@@ -37,7 +38,7 @@ interface Ctx {
 async function requireManageableEvent(ctx: AuthContext, slug: string): Promise<EventView> {
   const view = await getMemberEventView(ctx, slug);
   if (!view) throw new ApiError('not_found', 404);
-  const isMod = ctx.appUser.role === 'admin' || ctx.appUser.role === 'mod';
+  const isMod = isActiveModOrAdmin(ctx.appUser);
   if (!view.viewer.isHost && !isMod) throw new ApiError('forbidden', 403);
   return view;
 }

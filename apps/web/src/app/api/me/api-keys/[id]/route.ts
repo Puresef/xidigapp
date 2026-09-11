@@ -5,6 +5,7 @@ import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { revokeApiKey } from '@/lib/api-keys/keys';
 import { requireUser } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import { writeAudit } from '@/lib/audit';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -28,7 +29,7 @@ export async function DELETE(
     const admin = getSupabaseAdmin();
 
     // Members are scoped to their own keys; admins may revoke any.
-    const ownerScope = ctx.appUser.role === 'admin' ? undefined : ctx.appUser.id;
+    const ownerScope = isActiveAdmin(ctx.appUser) ? undefined : ctx.appUser.id;
     const revoked = await revokeApiKey(admin, { keyId: id, ownerUserId: ownerScope });
     if (!revoked) throw new ApiError('not_found', 404);
 

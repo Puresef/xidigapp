@@ -1,3 +1,5 @@
+import { isActiveAccount, isActiveAdmin, type AccountStanding } from '@/lib/auth/privilege';
+
 /**
  * Scoped API-key permissions for the external REST + MCP layer (PRD §21).
  *
@@ -38,4 +40,28 @@ export function isApiScope(value: string): value is ApiScope {
  */
 export function scopeSatisfies(granted: readonly string[], required: ApiScope): boolean {
   return granted.includes('admin') || granted.includes(required);
+}
+
+/** The only scope a key owner in the §19 deletion grace may use or mint. */
+export const GRACE_SCOPES: ApiScope[] = ['read'];
+
+/**
+ * The scopes an owner's CURRENT standing allows — for minting a key and, at
+ * every request, for using one (owner ruling, 11 Sep: keys never bypass the
+ * account lifecycle). Active admin: all; active member: the member scopes;
+ * the grace: read only (the write scopes publish under the platform's seed/AI
+ * account and `admin` is platform power — neither is an ordinary member
+ * action); suspended / deactivated / deleted: nothing.
+ */
+export function allowedScopesFor(owner: AccountStanding): ApiScope[] {
+  if (isActiveAdmin(owner)) return [...ALL_SCOPES];
+  if (isActiveAccount(owner)) return [...MEMBER_MINTABLE_SCOPES];
+  if (owner.status === 'pending_deletion') return [...GRACE_SCOPES];
+  return [];
+}
+
+/** A key's granted scopes narrowed to what its owner's standing allows today. */
+export function effectiveScopes(granted: readonly string[], owner: AccountStanding): string[] {
+  const allowed: readonly string[] = allowedScopesFor(owner);
+  return granted.filter((scope) => allowed.includes(scope));
 }

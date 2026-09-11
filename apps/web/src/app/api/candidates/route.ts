@@ -1,5 +1,6 @@
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireActiveUser, requireUser } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import { hasCapability } from '@/lib/capital/candidates-api';
 import { candidateCreateSchema, candidateListQuerySchema } from '@/lib/capital/schemas';
 import { listCandidates } from '@/lib/capital/views';
@@ -44,7 +45,7 @@ export async function GET(request: Request): Promise<Response> {
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const input = candidateCreateSchema.parse(await request.json());
     const admin = getSupabaseAdmin();
 
@@ -63,7 +64,7 @@ export async function POST(request: Request): Promise<Response> {
     if (labError) throw new Error(`lab lookup failed: ${labError.message}`);
     if (!lab) throw new ApiError('not_found', 404);
 
-    const isLead = lab.lead_user_id === ctx.appUser.id || ctx.appUser.role === 'admin';
+    const isLead = lab.lead_user_id === ctx.appUser.id || isActiveAdmin(ctx.appUser);
     if (!isLead) {
       const membership = await getLabMembership(admin, lab.id, ctx.appUser.id);
       if (!membership || membership.status !== 'active' || membership.role === 'observer') {

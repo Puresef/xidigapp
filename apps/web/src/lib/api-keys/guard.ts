@@ -10,7 +10,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 import { touchLastUsed, verifyApiKey, type ApiKeyRow } from './keys';
-import { scopeSatisfies, type ApiScope } from './scopes';
+import { effectiveScopes, scopeSatisfies, type ApiScope } from './scopes';
 
 /**
  * Scoped API-key authentication for the external REST + MCP layer (PRD §21).
@@ -18,9 +18,16 @@ import { scopeSatisfies, type ApiScope } from './scopes';
  * `requireApiKey` is the ONE gate every external write/read passes through. It:
  *   1. extracts the key (Authorization: Bearer <key>, or `x-api-key`),
  *   2. verifies it (invalid / revoked / expired → plain-language 401),
- *   3. checks the required scope (insufficient → 403),
- *   4. enforces a per-key rate limit (over → 429),
- *   5. stamps last_used_at (best-effort),
+ *   3. re-reads the key OWNER's standing: a suspended, deactivated, deleted or
+ *      missing owner → 401 (the key no longer authenticates); otherwise the
+ *      granted scopes are narrowed to what that standing allows today
+ *      (effectiveScopes — the grace keeps `read` only; `admin` needs an
+ *      active admin). Keys never bypass the account lifecycle (owner ruling,
+ *      11 Sep),
+ *   4. checks the required scope against the EFFECTIVE scopes (insufficient
+ *      → 403),
+ *   5. enforces a per-key rate limit (over → 429),
+ *   6. stamps last_used_at (best-effort),
  * and returns a context the route uses to attribute + audit writes. Every
  * outcome — accept or reject — is analytics-tagged (PII-free) so abuse shows up.
  *
@@ -34,6 +41,7 @@ const DEFAULT_KEY_RATE_PER_MINUTE = 120;
 export interface ApiKeyContext {
   keyId: string;
   ownerUserId: string;
+  /** EFFECTIVE scopes: the grant narrowed to the owner's current standing. */
   scopes: string[];
   /** Service-role client — external routes never have a user session. */
   admin: SupabaseClient<Database>;
@@ -79,14 +87,39 @@ export async function requireApiKey(
     throw new ApiError('invalid_api_key', 401);
   }
 
-  if (!scopeSatisfies(key.scopes, requiredScope)) {
-    rejectEvent('insufficient_scope');
-    // Attribute the denied attempt (this key is real, just under-scoped).
+  // The owner's standing is read on EVERY request (service role; users rows
+  // are never client-readable across accounts). A deleted owner's tombstone
+  // row still exists, so absence is treated the same as a blocked account.
+  const { data: owner, error: ownerError } = await admin
+    .from('users')
+    .select('status, role')
+    .eq('id', key.owner_user_id)
+    .maybeSingle();
+  if (ownerError) throw new Error(`api key owner lookup failed: ${ownerError.message}`);
+  const scopes = owner ? effectiveScopes(key.scopes, owner) : [];
+  if (!owner || (owner.status !== 'active' && owner.status !== 'pending_deletion')) {
+    rejectEvent('invalid_key');
     await writeAudit(admin, {
       actorUserId: key.owner_user_id,
       apiKeyId: key.id,
       action: `external.denied.${requiredScope}`,
-      metadata: { route, reason: 'insufficient_scope' },
+      metadata: { route, reason: 'owner_not_live' },
+    });
+    throw new ApiError('invalid_api_key', 401);
+  }
+
+  if (!scopeSatisfies(scopes, requiredScope)) {
+    rejectEvent('insufficient_scope');
+    // Attribute the denied attempt (this key is real, just under-scoped — by
+    // its grant, or by its owner's current standing).
+    await writeAudit(admin, {
+      actorUserId: key.owner_user_id,
+      apiKeyId: key.id,
+      action: `external.denied.${requiredScope}`,
+      metadata: {
+        route,
+        reason: scopeSatisfies(key.scopes, requiredScope) ? 'owner_not_active' : 'insufficient_scope',
+      },
     });
     throw new ApiError('insufficient_scope', 403);
   }
@@ -104,7 +137,7 @@ export async function requireApiKey(
     userId: key.owner_user_id,
   });
 
-  return { keyId: key.id, ownerUserId: key.owner_user_id, scopes: key.scopes, admin };
+  return { keyId: key.id, ownerUserId: key.owner_user_id, scopes, admin };
 }
 
 /** Re-export for callers that already hold a verified key row. */

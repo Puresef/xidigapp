@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { ReportsQueue, type ReportItem } from '@/components/admin/reports-queue';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { getT } from '@/lib/locale';
 import { REPORT_SLA_HOURS } from '@/lib/moderation/constants';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -87,7 +88,7 @@ export default async function AdminReportsPage({
 }) {
   const ctx = await getAuthContext();
   if (!ctx) redirect('/signin?reason=session_expired&next=/admin/reports');
-  if (ctx.appUser.status !== 'active' || (ctx.appUser.role !== 'mod' && ctx.appUser.role !== 'admin')) {
+  if (!isActiveModOrAdmin(ctx.appUser)) {
     redirect('/');
   }
 

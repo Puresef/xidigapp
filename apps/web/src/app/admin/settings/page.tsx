@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { BetaSettings, type WaitlistEntry } from '@/components/admin/beta-settings';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import { getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -15,7 +16,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminSettingsPage() {
   const ctx = await getAuthContext();
   if (!ctx) redirect('/signin?reason=session_expired&next=/admin/settings');
-  if (ctx.appUser.role !== 'admin' || ctx.appUser.status !== 'active') redirect('/');
+  if (!isActiveAdmin(ctx.appUser)) redirect('/');
 
   const t = await getT();
   const admin = getSupabaseAdmin();

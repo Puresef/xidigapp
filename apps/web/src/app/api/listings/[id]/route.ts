@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { ApiError, apiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { listingUpdateSchema } from '@/lib/listings';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -79,7 +80,7 @@ export async function PATCH(
         .eq('id', id.data)
         .maybeSingle();
       if (error) throw new Error(`listing lookup failed: ${error.message}`);
-      const isMod = ctx.appUser.role === 'mod' || ctx.appUser.role === 'admin';
+      const isMod = isActiveModOrAdmin(ctx.appUser);
       if (!row || (row.owner_user_id !== ctx.appUser.id && !isMod)) {
         throw new ApiError('not_found', 404);
       }

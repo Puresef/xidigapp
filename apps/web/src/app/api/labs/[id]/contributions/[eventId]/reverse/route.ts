@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireActiveUser } from '@/lib/auth/guards';
 import { parseLabId } from '@/lib/labs-api';
 import { CONTRIBUTION_LOG_LIMIT, RATE_WINDOW_DAY_SECONDS } from '@/lib/maal/constants';
 import { contributionReversalSchema } from '@/lib/maal/schemas';
@@ -43,7 +43,7 @@ function parseEventId(raw: string): string {
 
 export async function POST(request: Request, context: Ctx): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const params = await context.params;
     const id = parseLabId(params.id);
     const eventId = parseEventId(params.eventId);

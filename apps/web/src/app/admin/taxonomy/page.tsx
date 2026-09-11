@@ -5,6 +5,7 @@ import {
   type Suggestion,
 } from '@/components/admin/taxonomy-suggestions';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import { getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -18,7 +19,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminTaxonomyPage() {
   const ctx = await getAuthContext();
   if (!ctx) redirect('/signin?reason=session_expired&next=/admin/taxonomy');
-  if (ctx.appUser.role !== 'admin' || ctx.appUser.status !== 'active') redirect('/');
+  if (!isActiveAdmin(ctx.appUser)) redirect('/');
 
   const t = await getT();
   const admin = getSupabaseAdmin();

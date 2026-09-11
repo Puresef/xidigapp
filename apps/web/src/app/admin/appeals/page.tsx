@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { AppealsQueue, type AppealItem } from '@/components/admin/appeals-queue';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { getT } from '@/lib/locale';
 import { APPEAL_SLA_HOURS } from '@/lib/moderation/constants';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -92,7 +93,7 @@ async function loadAppeals(admin: Admin, reviewerId: string): Promise<AppealItem
 export default async function AdminAppealsPage() {
   const ctx = await getAuthContext();
   if (!ctx) redirect('/signin?reason=session_expired&next=/admin/appeals');
-  if (ctx.appUser.status !== 'active' || (ctx.appUser.role !== 'mod' && ctx.appUser.role !== 'admin')) {
+  if (!isActiveModOrAdmin(ctx.appUser)) {
     redirect('/');
   }
 

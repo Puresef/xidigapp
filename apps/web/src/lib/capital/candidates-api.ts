@@ -5,6 +5,7 @@ import type { Database } from '@xidig/db';
 
 import { ApiError } from '@/lib/api';
 import type { AuthContext } from '@/lib/auth/guards';
+import { isActiveAdmin, isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { CANDIDATE_COLUMNS, type CandidateRow } from '@/lib/capital/views';
 import { getLabMembership } from '@/lib/labs-api';
 
@@ -46,7 +47,7 @@ export async function loadCandidateForViewer(
 
 /**
  * True when the caller may edit/submit/manage the candidate: its creator, a
- * lead/core of the owning Lab (or co-Lab), or a platform admin. Membership is
+ * lead/core of the owning Lab (or co-Lab), or an ACTIVE platform admin. Membership is
  * read authoritatively via the service role (RLS-independent).
  */
 export async function isCandidateManager(
@@ -54,7 +55,7 @@ export async function isCandidateManager(
   ctx: AuthContext,
   cand: CandidateRow,
 ): Promise<boolean> {
-  if (ctx.appUser.role === 'admin') return true;
+  if (isActiveAdmin(ctx.appUser)) return true;
   if (cand.created_by_user_id === ctx.appUser.id) return true;
 
   const labIds = [cand.lab_id, cand.co_lab_id].filter((v): v is string => typeof v === 'string');
@@ -100,8 +101,9 @@ export async function requireCandidateManager(
  * `reviewer_conflict` (403) when they ARE a reviewer but are recused.
  */
 export async function requireReviewer(ctx: AuthContext, candidateId: string): Promise<void> {
-  const isModOrAdmin = ctx.appUser.role === 'mod' || ctx.appUser.role === 'admin';
-  if (!isModOrAdmin) throw new ApiError('not_a_reviewer', 403);
+  // Active accounts only: a mod/admin in the deletion grace (or blocked) is
+  // not a reviewer — never a misleading reviewer_conflict.
+  if (!isActiveModOrAdmin(ctx.appUser)) throw new ApiError('not_a_reviewer', 403);
 
   const { data, error } = await ctx.supabase.rpc('can_review_candidate', { cand: candidateId });
   if (error) throw new Error(`reviewer check failed: ${error.message}`);

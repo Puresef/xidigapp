@@ -5,6 +5,7 @@ import {
   type VerificationItem,
 } from '@/components/admin/verifications-queue';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import { getT } from '@/lib/locale';
 import { VERIFICATION_SLA_DAYS } from '@/lib/moderation/constants';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -81,7 +82,7 @@ export default async function AdminVerificationsPage() {
 
   // Verifiers + admins. Admins inherit; everyone else must hold the verifier
   // capability (checked via the is_verifier RPC — see requireVerifier()).
-  if (ctx.appUser.role !== 'admin') {
+  if (!isActiveAdmin(ctx.appUser)) {
     const { data: isVerifier } = await ctx.supabase.rpc('is_verifier');
     if (isVerifier !== true) redirect('/');
   }

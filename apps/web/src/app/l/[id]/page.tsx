@@ -19,6 +19,7 @@ import { TrackListingView } from '@/components/suuq/track-listing-view';
 import { VerifiedExplainer } from '@/components/suuq/verified-explainer';
 import { WhatsAppCta } from '@/components/suuq/whatsapp-cta';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveModOrAdmin } from '@/lib/auth/privilege';
 import {
   getMemberListingView,
   getPublicListingView,
@@ -101,7 +102,7 @@ async function loadView(id: string): Promise<LoadResult> {
     bookmarked = bookmark !== null;
   }
 
-  const isMod = ctx.appUser.role === 'mod' || ctx.appUser.role === 'admin';
+  const isMod = isActiveModOrAdmin(ctx.appUser);
   const canEdit =
     view !== null && (view.listing.owner_user_id === ctx.appUser.id || isMod);
 

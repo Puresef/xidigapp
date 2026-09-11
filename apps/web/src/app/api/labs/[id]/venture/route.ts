@@ -1,5 +1,5 @@
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireActiveUser, requireUser } from '@/lib/auth/guards';
 import { hydrateOneLab, parseLabId, requireLabManager } from '@/lib/labs-api';
 import { ventureGoalSchema, ventureVisibilitySchema } from '@/lib/maal/schemas';
 import { updateVentureGoal, updateVentureVisibility } from '@/lib/maal/service';
@@ -44,7 +44,7 @@ export async function GET(_request: Request, context: Ctx): Promise<Response> {
 
 export async function PATCH(request: Request, context: Ctx): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const id = parseLabId((await context.params).id);
 
     const raw: unknown = await request.json();

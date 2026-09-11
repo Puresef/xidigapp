@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import { CandidateEditor } from '@/components/capital/candidate-editor';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import { getCandidateView } from '@/lib/capital/views';
 import { getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -49,7 +50,7 @@ export default async function CandidateEditPage({
   // else is bounced. (labs.lead_user_id is covered because that lead also
   // carries a 'lead' member row.)
   const isCreator = candidate.created_by_user_id === ctx.appUser.id;
-  const isAdmin = ctx.appUser.role === 'admin';
+  const isAdmin = isActiveAdmin(ctx.appUser);
   const isManager = view.lab
     ? await (async () => {
         const { data } = await admin

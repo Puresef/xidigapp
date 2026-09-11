@@ -4,7 +4,7 @@ import { z } from 'zod';
 import type { Database } from '@xidig/db';
 
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireActiveUser } from '@/lib/auth/guards';
 import { parseLabId } from '@/lib/labs-api';
 import type { TaskTransitionInput } from '@/lib/maal/schemas';
 import { taskTransitionSchema, taskUpdateSchema } from '@/lib/maal/schemas';
@@ -115,7 +115,7 @@ async function requireClaimHolder(
 
 export async function PATCH(request: Request, context: Ctx): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const params = await context.params;
     const id = parseLabId(params.id);
     const taskId = parseTaskId(params.taskId);

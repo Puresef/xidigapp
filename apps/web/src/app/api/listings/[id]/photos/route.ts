@@ -4,6 +4,7 @@ import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { requireUser } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import { LISTING_MAX_PHOTOS } from '@/lib/listings';
 import { publicMediaUrl } from '@/lib/media/storage';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -66,7 +67,7 @@ export async function PUT(
     if (listingError) throw new Error(`listing lookup failed: ${listingError.message}`);
     if (!listing) throw new ApiError('not_found', 404);
     const isOwner = listing.owner_user_id !== null && listing.owner_user_id === ctx.appUser.id;
-    if (!isOwner && ctx.appUser.role !== 'admin') throw new ApiError('forbidden', 403);
+    if (!isOwner && !isActiveAdmin(ctx.appUser)) throw new ApiError('forbidden', 403);
 
     const admin = getSupabaseAdmin();
 

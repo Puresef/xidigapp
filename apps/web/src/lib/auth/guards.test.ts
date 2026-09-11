@@ -37,7 +37,13 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }));
 
-import { requireRole, requireUser, requireUserForAppeal, requireVerifier } from './guards';
+import {
+  requireActiveUser,
+  requireRole,
+  requireUser,
+  requireUserForAppeal,
+  requireVerifier,
+} from './guards';
 
 const USER_ID = '11111111-1111-4111-8111-111111111111';
 
@@ -123,5 +129,38 @@ describe('privileged guards and the deletion grace', () => {
   it('the grace member is still an ordinary member (requireUser admits)', async () => {
     signIn('pending_deletion', 'admin');
     expect(await statusOf(requireUser)).toBe('ok');
+  });
+});
+
+/**
+ * requireActiveUser — for escalations and capital/governance-sensitive writes
+ * (Lab→Candidate handoff, candidate submit, Venture promotion, every venture
+ * ledger/board/capital write). Owner ruling, 11 Sep: those require an ACTIVE
+ * account; the grace keeps ordinary member access (requireUser) but not these.
+ */
+describe('requireActiveUser', () => {
+  it('admits an active member of any role', async () => {
+    for (const role of ['member', 'mod', 'admin']) {
+      signIn('active', role);
+      expect(await statusOf(requireActiveUser)).toBe('ok');
+    }
+  });
+
+  it('refuses the grace with 403 forbidden', async () => {
+    signIn('pending_deletion');
+    await expect(requireActiveUser()).rejects.toMatchObject({ code: 'forbidden', status: 403 });
+  });
+
+  it('keeps requireUser semantics for every other state', async () => {
+    expect(await statusOf(requireActiveUser)).toBe(401);
+    signIn('suspended');
+    await expect(requireActiveUser()).rejects.toMatchObject({
+      code: 'account_suspended',
+      status: 403,
+    });
+    for (const status of ['deactivated', 'deleted']) {
+      signIn(status);
+      expect(await statusOf(requireActiveUser)).toBe(403);
+    }
   });
 });

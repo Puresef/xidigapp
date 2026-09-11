@@ -5,6 +5,7 @@ import type { Database, Enums } from '@xidig/db';
 
 import { ApiError } from '@/lib/api';
 import type { AuthContext } from '@/lib/auth/guards';
+import { isActiveAdmin } from '@/lib/auth/privilege';
 import {
   hydrateLabs,
   LAB_COLUMNS,
@@ -83,9 +84,14 @@ export async function getLabMembership(
   return data ?? null;
 }
 
-/** True for the Space lead or a platform admin — who may change settings/promote. */
+/**
+ * True for the Space lead or an ACTIVE platform admin — who may change
+ * settings/promote. (A lead in the deletion grace still manages an ordinary
+ * Space; escalations such as promotion additionally require an active
+ * account at the route — requireActiveUser.)
+ */
 export function isLabManager(ctx: AuthContext, lab: LabRow): boolean {
-  return lab.lead_user_id === ctx.appUser.id || ctx.appUser.role === 'admin';
+  return lab.lead_user_id === ctx.appUser.id || isActiveAdmin(ctx.appUser);
 }
 
 /** 403 unless the caller manages this Space (lead or platform admin). */
@@ -102,7 +108,7 @@ export async function requireLabContributor(
   admin: SupabaseClient<Database>,
   lab: LabRow,
 ): Promise<void> {
-  if (lab.lead_user_id === ctx.appUser.id || ctx.appUser.role === 'admin') return;
+  if (lab.lead_user_id === ctx.appUser.id || isActiveAdmin(ctx.appUser)) return;
   const membership = await getLabMembership(admin, lab.id, ctx.appUser.id);
   if (!membership || membership.status !== 'active' || membership.role === 'observer') {
     throw new ApiError('forbidden', 403);

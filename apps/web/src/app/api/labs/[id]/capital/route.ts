@@ -1,5 +1,5 @@
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireActiveUser, requireUser } from '@/lib/auth/guards';
 import { parseLabId } from '@/lib/labs-api';
 import { LAB_WRITE_LIMIT, RATE_WINDOW_DAY_SECONDS } from '@/lib/labs/constants';
 import { capitalNeedSchema } from '@/lib/maal/schemas';
@@ -42,7 +42,7 @@ export async function GET(_request: Request, context: Ctx): Promise<Response> {
 
 export async function POST(request: Request, context: Ctx): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const id = parseLabId((await context.params).id);
     const input = capitalNeedSchema.parse(await request.json());
 

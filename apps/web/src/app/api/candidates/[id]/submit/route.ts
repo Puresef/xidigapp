@@ -1,7 +1,7 @@
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
-import { requireUser } from '@/lib/auth/guards';
+import { requireActiveUser } from '@/lib/auth/guards';
 import {
   loadCandidateForViewer,
   parseCandidateId,
@@ -26,7 +26,7 @@ interface Ctx {
 
 export async function POST(_request: Request, context: Ctx): Promise<Response> {
   try {
-    const ctx = await requireUser();
+    const ctx = await requireActiveUser();
     const id = parseCandidateId((await context.params).id);
     const admin = getSupabaseAdmin();
 

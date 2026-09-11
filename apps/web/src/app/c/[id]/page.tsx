@@ -20,6 +20,7 @@ import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveAdmin, isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { voteWindow } from '@/lib/capital/tally';
 import {
   getCandidateView,
@@ -91,7 +92,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
   const { candidate } = view;
 
   // Reviewer eligibility (v1.0 reviewer set = mod/admin, recused if a Lab member).
-  const isModOrAdmin = ctx.appUser.role === 'mod' || ctx.appUser.role === 'admin';
+  const isModOrAdmin = isActiveModOrAdmin(ctx.appUser);
   let isLabMember = false;
   if (isModOrAdmin) {
     const labIds = [candidate.lab_id, candidate.co_lab_id].filter(
@@ -119,7 +120,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
   const showVotePanel = supporter && windowOpen;
 
   const isEditor =
-    candidate.created_by_user_id === ctx.appUser.id || ctx.appUser.role === 'admin';
+    candidate.created_by_user_id === ctx.appUser.id || isActiveAdmin(ctx.appUser);
 
   return (
     <main className="xidig-section">
