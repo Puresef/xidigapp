@@ -6,6 +6,8 @@ import type { MessageKey } from '@xidig/i18n';
 import { AwardVoteControl, type VoteTargetOption } from '@/components/awards/award-vote-control';
 import { EmptyState } from '@/components/empty-state';
 import { getAuthContext } from '@/lib/auth/guards';
+import { loadAccountFlags } from '@/lib/account-flags';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { getT } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
@@ -138,7 +140,15 @@ export default async function AwardsPage() {
       .from('profiles')
       .select('user_id, display_name, handle')
       .in('user_id', followedIds);
-    memberOptions = (profileRows ?? []).map((p) => ({
+    // A deleted member is not a candidate for a current award (retained
+    // content): the tombstone survives, so filter on account status.
+    const ballotFlags = await loadAccountFlags(
+      getSupabaseAdmin(),
+      (profileRows ?? []).map((p) => p.user_id),
+    );
+    memberOptions = (profileRows ?? [])
+      .filter((p) => ballotFlags.get(p.user_id)?.status !== 'deleted')
+      .map((p) => ({
       targetType: 'user',
       targetId: p.user_id,
       label: p.display_name || `@${p.handle}`,

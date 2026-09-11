@@ -426,6 +426,8 @@ const GUARDED_RPCS = [
 const RPC_EXEMPT: Record<string, string> = {
   current_account_can_use_client_api: 'the gate itself — a boolean about the caller',
   author_is_active: 'RLS predicate: a boolean about an author, no rows',
+  author_is_retained:
+    'RLS predicate (Space history, 20260911001100): a boolean about an author, no rows',
   award_cycle_is_open: 'public calendar fact',
   can_read_candidate:
     "RLS visibility predicate about the caller's reach; gated tables bound its use",

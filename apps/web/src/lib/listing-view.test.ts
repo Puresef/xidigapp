@@ -4,11 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
-import {
-  LISTING_COLUMNS,
-  getMemberListingView,
-  getPublicListingView,
-} from './listing-view';
+import { LISTING_COLUMNS, getMemberListingView, getPublicListingView } from './listing-view';
 
 /**
  * Listing projection safety (extras item 5 acceptance). getPublicListingView
@@ -43,6 +39,9 @@ class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
   eq(column: string, value: unknown) {
     return this.chain('eq', [column, value]);
   }
+  in(column: string, values: unknown[]) {
+    return this.chain('in', [column, values]);
+  }
   order(column: string, options?: unknown) {
     return this.chain('order', [column, options]);
   }
@@ -61,7 +60,8 @@ class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
   }
 
   then<TResult1, TResult2>(
-    onfulfilled?: ((value: { data: Row[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
+    onfulfilled?:
+      ((value: { data: Row[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
     return Promise.resolve({ data: this.rows, error: null }).then(onfulfilled, onrejected);
@@ -131,6 +131,10 @@ function publishedListing(overrides: Row = {}): Row {
   };
 }
 
+function liveOwner(status = 'active'): Row {
+  return { id: OWNER_ID, status, is_ai: false };
+}
+
 beforeEach(() => {
   adminHolder.client = null;
 });
@@ -150,10 +154,74 @@ describe('LISTING_COLUMNS (the anonymous projection)', () => {
   });
 });
 
+describe('getPublicListingView — retained content: an owner who is no longer live', () => {
+  /**
+   * Owner ruling (11 Sep): a deleted member's listing must not keep exposing
+   * their ownership or member-derived contact. Nothing distinguishes business
+   * data from the member's own (contact_links is one owner-editable field),
+   * so the listing is suppressed pending claim/review — the page, its
+   * metadata and its OG card all read this function. The row is untouched.
+   */
+  it.each(['deleted', 'suspended', 'deactivated'])(
+    'suppresses a listing whose owner is %s — and fetches no photos, services or byline',
+    async (status) => {
+      const admin = new FakeClient({
+        business_listings: [
+          [
+            publishedListing({
+              address: '12 Road',
+              contact_links: [{ type: 'whatsapp', label: 'WhatsApp', value: '+252600000000' }],
+            }),
+          ],
+        ],
+        users: [[liveOwner(status)]],
+      });
+      adminHolder.client = admin;
+
+      expect(await getPublicListingView(LISTING_ID)).toBeNull();
+      expect(admin.queryFor('users').has('in', ['id', [OWNER_ID]])).toBe(true);
+      expect(admin.queryCount('listing_photos')).toBe(0);
+      expect(admin.queryCount('listing_services')).toBe(0);
+      expect(admin.queryCount('profiles')).toBe(0);
+    },
+  );
+
+  it('fails closed when the owner row cannot be found', async () => {
+    const admin = new FakeClient({ business_listings: [[publishedListing()]], users: [[]] });
+    adminHolder.client = admin;
+    expect(await getPublicListingView(LISTING_ID)).toBeNull();
+  });
+
+  it('a live owner (active or in the deletion grace) is unchanged', async () => {
+    for (const status of ['active', 'pending_deletion']) {
+      const admin = new FakeClient({
+        business_listings: [[publishedListing()]],
+        users: [[liveOwner(status)]],
+        profiles: [[{ display_name: 'Hodan', handle: 'hodan' }]],
+      });
+      adminHolder.client = admin;
+      const view = await getPublicListingView(LISTING_ID);
+      expect(view?.listing.id, status).toBe(LISTING_ID);
+      expect(view?.owner).toEqual({ display_name: 'Hodan', handle: 'hodan' });
+    }
+  });
+
+  it('an owner-less (seeded, unclaimed) listing is unaffected and reads no account row', async () => {
+    const admin = new FakeClient({
+      business_listings: [[publishedListing({ owner_user_id: null })]],
+    });
+    adminHolder.client = admin;
+    const view = await getPublicListingView(LISTING_ID);
+    expect(view?.listing.id).toBe(LISTING_ID);
+    expect(admin.queryCount('users')).toBe(0);
+  });
+});
+
 describe('getPublicListingView — anonymous (service-role projection)', () => {
   it('requests the published gate and the narrow column list on the admin client', async () => {
     const admin = new FakeClient({
       business_listings: [[publishedListing()]],
+      users: [[liveOwner()]],
     });
     adminHolder.client = admin;
 
@@ -200,6 +268,7 @@ describe('getPublicListingView — anonymous (service-role projection)', () => {
       ],
       listing_services: [[{ name: 'Espresso', price_label: '1 USD' }]],
       profiles: [[{ display_name: 'Hodan', handle: 'hodan' }]],
+      users: [[liveOwner()]],
     });
     adminHolder.client = admin;
 

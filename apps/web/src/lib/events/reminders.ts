@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@xidig/db';
 
 import { insertNotification } from '@/lib/notifications/notify';
+import { loadStatuses } from '@/lib/retained-content';
 
 /**
  * T-3d event reminders (extras item 8, window widened by Task 4) on the
@@ -48,11 +49,22 @@ export async function sendEventReminders(
     .eq('moderation_status', 'published')
     .gt('starts_at', nowIso)
     .lte('starts_at', windowEndIso)
-    .select('id, slug, title, starts_at, timezone, capacity, host_user_id');
+    .select('id, slug, title, starts_at, timezone, capacity, host_user_id, lab_id');
   if (error) throw new Error(`event reminder claim failed: ${error.message}`);
+
+  // Retained content: a claimed event whose host's account was deleted is no
+  // longer running, so it sends no "starts soon" reminder (the claim stamp
+  // stays — there is no handover that could revive it). Deleted accounts are
+  // never reminder recipients.
+  const hostFlags = await loadStatuses(
+    admin,
+    (claimed ?? []).map((event) => event.host_user_id),
+  );
 
   let remindersSent = 0;
   for (const event of claimed ?? []) {
+    // Member-hosted only: a Space-hosted event belongs to the Space and runs on.
+    if (event.lab_id === null && hostFlags.get(event.host_user_id)?.status === 'deleted') continue;
     const { data: rsvps, error: rsvpError } = await admin
       .from('event_rsvps')
       .select('user_id, status')
@@ -63,8 +75,13 @@ export async function sendEventReminders(
     }
     const rows = rsvps ?? [];
     const going = rows.filter((row) => row.status === 'going').length;
+    const recipientFlags = await loadStatuses(
+      admin,
+      rows.map((row) => row.user_id),
+    );
     for (const rsvp of rows) {
       if (rsvp.user_id === event.host_user_id) continue; // hosts know their own event
+      if (recipientFlags.get(rsvp.user_id)?.status === 'deleted') continue;
       await insertNotification(admin, {
         userId: rsvp.user_id,
         type: 'event_reminder',

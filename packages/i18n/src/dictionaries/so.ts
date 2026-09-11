@@ -770,6 +770,10 @@ export const so = {
     'Bishii hore xubintii ugu caawinta badnayd ee la xaqiijiyay. Codbixin xubneed, xubin kasta hal cod.',
   'profile.badgeFoundingMemberTooltip':
     'Waxay ka mid ahayd 500-tii xubnood ee ugu horreeyay ee bulshada dhisay.',
+  // PROVISIONAL wording pending the native SO review (G34) — retained content.
+  'profile.deletedMemberTitle': 'Xubin la tirtiray',
+  'profile.deletedMemberBody':
+    'Akoonkan waa la tirtiray. Waxyaalihii uu ku darsaday ee dadka kale weli arki karaan waxay u muuqdaan “Xubin la tirtiray”. Ma laha profile, calaamado ama xaqiijin hadda.',
   'profile.verifStatusUnverified': 'Aan la xaqiijin',
   'profile.verifStatusPending': 'Xaqiijin socota',
   'profile.verifStatusCommunity': 'Bulsho la xaqiijiyay',
@@ -1961,6 +1965,10 @@ export const so = {
   'events.modeInPerson': 'Fool-ka-fool',
   'events.modeHybrid': 'Isku-dhaf',
   'events.statusCancelled': 'La baajiyay',
+  // PROVISIONAL wording pending the native SO review (G34) — retained content.
+  'events.statusNotListed': 'Liiska kama jirto',
+  'events.hostDeletedNotice':
+    'Munaasabaddan liiska kama jirto: akoonka martigeliyaha waa la tirtiray. Ka-qaybgalka, xusuusinta iyo ku-darka jadwalka waa la joojiyay.',
   'events.statusDraft': 'Qabyo — adiga kaliya ayaa arki kara.',
   'events.awaitingReview': 'Munaasabaddan dib-u-eegis ayay sugaysaa.',
   'events.venueLabel': 'Goobta',

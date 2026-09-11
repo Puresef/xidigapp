@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@xidig/db';
 
 import { publicMediaUrl } from '@/lib/media/storage';
+import { listingIsPubliclyProjectable, loadStatuses } from '@/lib/retained-content';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -139,7 +140,14 @@ export async function getMemberListingView(
   return decorate(supabase, listing as unknown as ListingViewRow);
 }
 
-/** Login-free view (§28): published listings only, service role. */
+/**
+ * Login-free view (§28): published listings only, service role. Also the data
+ * behind the page's metadata and OG card. A listing whose owner is no longer
+ * live is suppressed pending claim/review (lib/retained-content.ts): the
+ * member path already hides it under RLS, and nothing distinguishes business
+ * contact data from the member's own — so the public path must not keep
+ * serving the address, contacts, photos, verified mark and owner byline.
+ */
 export async function getPublicListingView(id: string): Promise<ListingView | null> {
   const admin = getSupabaseAdmin();
   const { data: listing, error } = await admin
@@ -150,5 +158,11 @@ export async function getPublicListingView(id: string): Promise<ListingView | nu
     .maybeSingle();
   if (error) throw new Error(`public listing lookup failed: ${error.message}`);
   if (!listing) return null;
-  return decorate(admin, listing as unknown as ListingViewRow);
+  const row = listing as unknown as ListingViewRow;
+  if (row.owner_user_id) {
+    const flags = await loadStatuses(admin, [row.owner_user_id]);
+    const ownerStatus = flags.get(row.owner_user_id)?.status;
+    if (!listingIsPubliclyProjectable(row.owner_user_id, ownerStatus)) return null;
+  }
+  return decorate(admin, row);
 }

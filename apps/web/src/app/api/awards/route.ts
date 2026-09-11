@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
+import { loadAccountFlags } from '@/lib/account-flags';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -70,7 +71,11 @@ async function targetIsValid(
     .select('user_id')
     .eq('user_id', targetId)
     .maybeSingle();
-  return Boolean(data);
+  if (!data) return false;
+  // The tombstone profile of a deleted account survives; a vote for it is not
+  // a vote for a current member (retained content).
+  const flags = await loadAccountFlags(getSupabaseAdmin(), [targetId]);
+  return flags.get(targetId)?.status !== 'deleted';
 }
 
 /** The open cycle right now (newest window if several ever overlap), or null. */

@@ -5,6 +5,7 @@ import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { requireRole } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
+import { assertSubjectNotDeleted } from '@/lib/lifecycle/subject';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -40,6 +41,12 @@ export async function PATCH(
     if (loadError) throw new Error(`claim lookup failed: ${loadError.message}`);
     if (!claim) throw new ApiError('not_found', 404);
     if (claim.status !== 'pending') throw new ApiError('invalid_request', 400);
+    // Retained content: approving would hand the listing to a tombstone (a
+    // deleted claimant's pending claim outlives the account), which would read
+    // as an owned — and possibly verified — business with nobody behind it.
+    // Refused BEFORE any write (409 account_deleted); REJECTING it stays open
+    // so the queue can be cleared.
+    if (body.status === 'approved') await assertSubjectNotDeleted(admin, claim.claimant_user_id);
 
     const decidedAt = new Date().toISOString();
 

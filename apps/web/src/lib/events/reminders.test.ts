@@ -10,9 +10,7 @@ import { REMINDER_WINDOW_MS, sendEventReminders } from './reminders';
  * The atomic reminded_at claim and the skip-the-host rule stay locked.
  */
 
-const notifications = vi.hoisted(
-  () => ({ sent: [] as Array<Record<string, unknown>> }),
-);
+const notifications = vi.hoisted(() => ({ sent: [] as Array<Record<string, unknown>> }));
 
 vi.mock('@/lib/notifications/notify', () => ({
   insertNotification: async (_admin: unknown, input: Record<string, unknown>) => {
@@ -42,6 +40,7 @@ function makeFakeAdmin(resultsByTable: Record<string, Array<{ data: unknown; err
       select: rec('select'),
       is: rec('is'),
       eq: rec('eq'),
+      in: rec('in'),
       gt: rec('gt'),
       lte: rec('lte'),
       then: (onFulfilled: (v: unknown) => unknown, onRejected?: (e: unknown) => unknown) =>
@@ -134,6 +133,83 @@ describe('sendEventReminders (72h window, snapshot payload)', () => {
     expect(notifications.sent[1]).toMatchObject({
       userId: 'member-2',
       payload: expect.objectContaining({ status: 'interested', going: 2, capacity: 40 }),
+    });
+  });
+
+  describe('retained content — a deleted host', () => {
+    const claimedEvent = (labId: string | null) => ({
+      id: 'e2',
+      slug: 'garden-day',
+      title: 'Garden day',
+      starts_at: '2026-08-12T09:00:00Z',
+      timezone: 'Africa/Mogadishu',
+      capacity: null,
+      host_user_id: 'host-gone',
+      lab_id: labId,
+    });
+
+    it('a member-hosted event whose host was deleted sends NO reminder (it is no longer running)', async () => {
+      const { admin } = makeFakeAdmin({
+        events: [{ data: [claimedEvent(null)], error: null }],
+        users: [{ data: [{ id: 'host-gone', status: 'deleted', is_ai: false }], error: null }],
+        event_rsvps: [{ data: [{ user_id: 'member-1', status: 'going' }], error: null }],
+      });
+
+      const result = await sendEventReminders(admin, NOW);
+
+      expect(result).toEqual({ eventsClaimed: 1, remindersSent: 0 });
+      expect(notifications.sent).toHaveLength(0);
+    });
+
+    it('a Space-hosted event keeps running — its reminders still go out', async () => {
+      const { admin } = makeFakeAdmin({
+        events: [{ data: [claimedEvent('lab-1')], error: null }],
+        users: [
+          { data: [{ id: 'host-gone', status: 'deleted', is_ai: false }], error: null },
+          { data: [], error: null },
+        ],
+        event_rsvps: [{ data: [{ user_id: 'member-1', status: 'going' }], error: null }],
+      });
+
+      const result = await sendEventReminders(admin, NOW);
+
+      expect(result.remindersSent).toBe(1);
+      expect(notifications.sent[0]).toMatchObject({ userId: 'member-1' });
+    });
+
+    it('a deleted account is never a reminder recipient', async () => {
+      const { admin } = makeFakeAdmin({
+        events: [
+          {
+            data: [{ ...claimedEvent(null), host_user_id: 'host-live' }],
+            error: null,
+          },
+        ],
+        users: [
+          { data: [{ id: 'host-live', status: 'active', is_ai: false }], error: null },
+          {
+            data: [
+              { id: 'member-1', status: 'active', is_ai: false },
+              { id: 'member-gone', status: 'deleted', is_ai: false },
+            ],
+            error: null,
+          },
+        ],
+        event_rsvps: [
+          {
+            data: [
+              { user_id: 'member-1', status: 'going' },
+              { user_id: 'member-gone', status: 'going' },
+            ],
+            error: null,
+          },
+        ],
+      });
+
+      const result = await sendEventReminders(admin, NOW);
+
+      expect(result.remindersSent).toBe(1);
+      expect(notifications.sent.map((n) => n.userId)).toEqual(['member-1']);
     });
   });
 });

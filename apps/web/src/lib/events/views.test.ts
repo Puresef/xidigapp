@@ -153,6 +153,52 @@ describe('getFeaturedUpcomingPublicEvent (merged featured-else-soonest)', () => 
     expect(item?.slug).toBe('organic');
   });
 
+  it('retained content: skips a deleted host’s upcoming member-hosted event, falls through to the next', async () => {
+    const { admin } = makeFakeAdmin({
+      events: [
+        {
+          data: [
+            eventRow({ slug: 'orphaned', host_user_id: 'gone-1', lab_id: null }),
+            eventRow({ slug: 'organic', host_user_id: 'human-1', lab_id: null }),
+          ],
+          error: null,
+        },
+      ],
+      users: [
+        { data: [], error: null }, // is_ai lookup
+        {
+          data: [
+            { id: 'gone-1', status: 'deleted', is_ai: false },
+            { id: 'human-1', status: 'active', is_ai: false },
+          ],
+          error: null,
+        },
+      ],
+    });
+    holder.admin = admin;
+
+    const item = await getFeaturedUpcomingPublicEvent(NOW);
+    expect(item?.slug).toBe('organic');
+  });
+
+  it('retained content: a Space-hosted event keeps its slot even if the member who created it was deleted', async () => {
+    const { admin } = makeFakeAdmin({
+      events: [
+        {
+          data: [eventRow({ slug: 'space-hosted', host_user_id: 'gone-1', lab_id: 'lab-1' })],
+          error: null,
+        },
+      ],
+      users: [
+        { data: [], error: null },
+        { data: [{ id: 'gone-1', status: 'deleted', is_ai: false }], error: null },
+      ],
+    });
+    holder.admin = admin;
+
+    expect((await getFeaturedUpcomingPublicEvent(NOW))?.slug).toBe('space-hosted');
+  });
+
   it('throws on a query error (the caller degrades, not this helper)', async () => {
     const { admin } = makeFakeAdmin({
       events: [{ data: null, error: { message: 'boom' } }],

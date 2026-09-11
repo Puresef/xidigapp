@@ -39,7 +39,9 @@ export async function GET(_request: Request, { params }: Ctx): Promise<Response>
 
   const view =
     !ctx || blocked ? await getPublicEventView(slug) : await getMemberEventView(ctx, slug);
-  if (!view || view.event.status !== 'published') {
+  // A deleted host's upcoming event is no longer running: no calendar entry
+  // (retained-content). A past one never needed one.
+  if (!view || view.event.status !== 'published' || view.hostState !== 'host_present') {
     return new Response('Not found', { status: 404 });
   }
 

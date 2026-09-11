@@ -922,6 +922,11 @@ export const en = {
   'profile.badgeTopHelperTooltip':
     'Last month’s most-verified helper. Chosen by member vote — one vote per member.',
   'profile.badgeFoundingMemberTooltip': 'One of the first 500 members who built this community.',
+  // Retained content (11 Sep): what a member sees at a deleted account's
+  // tombstone URL. Says what is true; claims nothing about erasure.
+  'profile.deletedMemberTitle': 'Deleted member',
+  'profile.deletedMemberBody':
+    'This account has been deleted. Things it contributed that others can still see are shown as “Deleted member”. It has no current profile, badges or verification.',
   'profile.verifStatusUnverified': 'Unverified',
   'profile.verifStatusPending': 'Verification pending',
   'profile.verifStatusCommunity': 'Community Verified',
@@ -2051,6 +2056,12 @@ export const en = {
   // new usage; the current banner at app/events/[slug]/page.tsx will read
   // this shorter string until that lands.
   'events.statusCancelled': 'Cancelled',
+  // Retained content (11 Sep): a member-hosted upcoming event whose host's
+  // account was deleted. No handover exists, so it is no longer running —
+  // stated plainly, without claiming anything about what happens off Xidig.
+  'events.statusNotListed': 'No longer listed',
+  'events.hostDeletedNotice':
+    'This event is no longer listed: its host’s account was deleted. RSVPs, reminders and calendar links are switched off.',
   'events.statusDraft': 'Draft — only you can see this event.',
   'events.awaitingReview': 'This event is awaiting review.',
   'events.venueLabel': 'Venue',

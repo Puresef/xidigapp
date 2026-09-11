@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 
 import { BackLink } from '@/components/back-link';
@@ -103,6 +104,11 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
 
   const cancelled = e.status === 'cancelled';
   const past = isEnded(e, new Date());
+  // Retained content: the host's account was deleted. Upcoming = no longer
+  // running (no RSVP / calendar / wall / reveal); past = a record whose host
+  // renders as the tombstone, unlinked and without host stats.
+  const notListed = view.hostState === 'host_deleted_upcoming';
+  const hostGone = view.hostState !== 'host_present';
   const isModeratedAway = e.moderation_status !== undefined && e.moderation_status !== 'published';
   const parts = eventDateParts(t, e.starts_at, e.ends_at, e.timezone);
   // The e6 notice is member-only (it states the exact RSVP count, which the
@@ -144,9 +150,11 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
   // record, nothing on a finished event — pastness is the date's job.
   const statusTag = cancelled
     ? t('events.statusCancelled')
-    : e.status === 'published' && !past && !isModeratedAway
-      ? t('events.statusOpen')
-      : null;
+    : notListed
+      ? t('events.statusNotListed')
+      : e.status === 'published' && !past && !isModeratedAway
+        ? t('events.statusOpen')
+        : null;
 
   // The named wall: opted-in 'going' rows. The loader already folds per
   // audience (host sees every RSVP), so narrow to the going names here; the
@@ -155,7 +163,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
   const wallRemainder = Math.max(0, view.goingTotal - wall.length);
   const showWall = member && (wall.length > 0 || view.goingTotal > 0);
 
-  const rsvpOpen = member && e.status === 'published' && !isModeratedAway && !past;
+  const rsvpOpen = member && e.status === 'published' && !isModeratedAway && !past && !notListed;
   const factWhen = `${parts.weekday} ${parts.day} ${parts.monthShort} · ${parts.time}`;
   const seatsLine =
     view.counts.going === null
@@ -170,15 +178,22 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
     view.container?.kind === 'lab'
       ? { kind: 'lab' as const, name: view.container.name, href: view.container.href }
       : view.host
-        ? { kind: 'member' as const, name: view.host.displayName, href: `/u/${view.host.handle}` }
+        ? {
+            kind: 'member' as const,
+            name: view.host.displayName,
+            // The tombstone profile is not a destination (signed-out it is a 404).
+            href: hostGone ? null : `/u/${view.host.handle}`,
+          }
         : null;
 
-  const detailClass = cancelled
-    ? 'xidig-event-detail xidig-event-detail--cancelled'
-    : 'xidig-event-detail';
-  const coverClass = cancelled
-    ? 'xidig-event-detail__cover xidig-event-detail__cover--cancelled'
-    : 'xidig-event-detail__cover';
+  const detailClass =
+    cancelled || notListed
+      ? 'xidig-event-detail xidig-event-detail--cancelled'
+      : 'xidig-event-detail';
+  const coverClass =
+    cancelled || notListed
+      ? 'xidig-event-detail__cover xidig-event-detail__cover--cancelled'
+      : 'xidig-event-detail__cover';
 
   return (
     <main className="xidig-section xidig-event-page">
@@ -204,6 +219,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
       ) : null}
       {isModeratedAway ? (
         <p className="xidig-banner xidig-banner--notice">{t('events.awaitingReview')}</p>
+      ) : null}
+      {notListed ? (
+        <p className="xidig-banner xidig-banner--notice">{t('events.hostDeletedNotice')}</p>
       ) : null}
 
       {/* e6 — system voice in chrome, above the dimmed record, never inside
@@ -377,7 +395,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
               />
             ) : null}
 
-            {e.status === 'published' ? (
+            {e.status === 'published' && !notListed ? (
               <div className="xidig-event-detail__actions">
                 <a
                   className="xidig-button xidig-button--secondary"
@@ -408,7 +426,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
           {hostCard ? (
             <div className="xidig-event-detail__card">
               <h2 className="xidig-event-detail__label">{t('events.hostCardTitle')}</h2>
-              <Link href={hostCard.href} className="xidig-event-host">
+              <HostCardLink href={hostCard.href}>
                 {hostCard.kind === 'lab' ? (
                   <span aria-hidden="true" className="xidig-event-host__glyph">
                     <svg
@@ -429,23 +447,25 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
                 ) : (
                   <Avatar
                     name={hostCard.name}
-                    handle={hostCard.href.split('/').pop() ?? hostCard.name}
+                    handle={hostCard.href?.split('/').pop() ?? hostCard.name}
                     size={36}
                     prefs={prefs}
                   />
                 )}
                 <span className="xidig-event-host__lines">
                   <span className="xidig-event-host__name">{hostCard.name}</span>
-                  <span className="num xidig-event-host__stat">
-                    {t(
-                      hostCard.kind === 'lab'
-                        ? 'events.hostPastEventsLab'
-                        : 'events.hostPastEventsMember',
-                      { count: view.hostStats.pastEventsCount },
-                    )}
-                  </span>
+                  {hostCard.href !== null ? (
+                    <span className="num xidig-event-host__stat">
+                      {t(
+                        hostCard.kind === 'lab'
+                          ? 'events.hostPastEventsLab'
+                          : 'events.hostPastEventsMember',
+                        { count: view.hostStats.pastEventsCount },
+                      )}
+                    </span>
+                  ) : null}
                 </span>
-              </Link>
+              </HostCardLink>
             </div>
           ) : null}
 
@@ -463,5 +483,18 @@ export default async function EventDetailPage({ params }: { params: Promise<{ sl
         </aside>
       </div>
     </main>
+  );
+}
+
+/**
+ * The host card's wrapper: a link to the host, or — for a deleted host's
+ * tombstone, which is not a destination — the same box without a link.
+ */
+function HostCardLink({ href, children }: { href: string | null; children: ReactNode }) {
+  if (href === null) return <div className="xidig-event-host">{children}</div>;
+  return (
+    <Link href={href} className="xidig-event-host">
+      {children}
+    </Link>
   );
 }

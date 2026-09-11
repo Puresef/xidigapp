@@ -5,6 +5,13 @@ import type { Translator } from '@xidig/i18n';
 
 import type { AuthContext } from '@/lib/auth/guards';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
+import {
+  dropDeletedHostUpcoming,
+  eventHostState,
+  keepProjectableListings,
+  loadStatuses,
+  type EventHostState,
+} from '@/lib/retained-content';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 import {
@@ -123,6 +130,13 @@ export interface EventCheckinRow {
 export interface EventView {
   event: EventViewRow;
   host: { displayName: string; handle: string } | null;
+  /**
+   * Retained-content state of the host (lib/retained-content.ts). Anything but
+   * 'host_present' means the host's account was deleted: an upcoming event is
+   * no longer running (no RSVP, reveal, wall, calendar), a past one keeps its
+   * record with the tombstone host (no profile link, no host stats).
+   */
+  hostState: EventHostState;
   category: { slug: string; nameEn: string; nameSo: string | null } | null;
   container:
     | { kind: 'lab'; name: string; href: string }
@@ -381,12 +395,17 @@ async function loadContainer(
     return data ? { kind: 'lab', name: data.name, href: `/labs/${data.slug}` } : null;
   }
   if (row.listing_id) {
+    // Same rule as the listing page itself: published, and not a listing whose
+    // owner is no longer live (suppressed pending review — retained-content).
     const { data } = await admin
       .from('business_listings')
-      .select('id, business_name')
+      .select('id, business_name, owner_user_id')
       .eq('id', row.listing_id)
+      .eq('status', 'published')
       .maybeSingle();
-    return data ? { kind: 'listing', name: data.business_name, href: `/l/${data.id}` } : null;
+    if (!data) return null;
+    const [kept] = await keepProjectableListings(admin, [data]);
+    return kept ? { kind: 'listing', name: kept.business_name, href: `/l/${kept.id}` } : null;
   }
   if (row.candidate_id) {
     const { data } = await admin
@@ -457,11 +476,21 @@ async function loadRoster(
       rows.map((row) => row.user_id),
     );
   const byId = new Map((profiles ?? []).map((p) => [p.user_id, p]));
+  // The members' named wall never lists a deleted account as "going" — it
+  // cannot attend. The host's own list keeps every RSVP (their record).
+  const flags =
+    audience === 'member'
+      ? await loadStatuses(
+          admin,
+          rows.map((row) => row.user_id),
+        )
+      : null;
 
   const roster: EventCheckinRow[] = [];
   for (const row of rows) {
     const profile = byId.get(row.user_id);
     if (!profile) continue;
+    if (flags?.get(row.user_id)?.status === 'deleted') continue;
     roster.push({
       userId: row.user_id,
       displayName: profile.display_name,
@@ -520,26 +549,34 @@ export async function getMemberEventView(
   const isHost = event.host_user_id === ctx.appUser.id;
   const now = new Date();
 
-  const [host, category, container, aggregates, hostStats, rsvpRow, revealRow] = await Promise.all([
-    loadHost(admin, event.host_user_id),
-    loadCategory(admin, event.category_id),
-    loadContainer(admin, event),
-    loadRsvpAggregates(admin, event.id),
-    loadHostStats(admin, event, now.toISOString(), { publicOnly: false }),
-    ctx.supabase
-      .from('event_rsvps')
-      .select('status, show_publicly')
-      .eq('event_id', event.id)
-      .eq('user_id', ctx.appUser.id)
-      .maybeSingle(),
-    // The two reveal-gated columns are not member-selectable (column grant);
-    // fetch via service role, then fold per the locked rules below.
-    admin
-      .from('events')
-      .select('venue_address, online_url, address_visibility')
-      .eq('id', event.id)
-      .maybeSingle(),
-  ]);
+  const [host, category, container, aggregates, hostStats, rsvpRow, revealRow, hostFlags] =
+    await Promise.all([
+      loadHost(admin, event.host_user_id),
+      loadCategory(admin, event.category_id),
+      loadContainer(admin, event),
+      loadRsvpAggregates(admin, event.id),
+      loadHostStats(admin, event, now.toISOString(), { publicOnly: false }),
+      ctx.supabase
+        .from('event_rsvps')
+        .select('status, show_publicly')
+        .eq('event_id', event.id)
+        .eq('user_id', ctx.appUser.id)
+        .maybeSingle(),
+      // The two reveal-gated columns are not member-selectable (column grant);
+      // fetch via service role, then fold per the locked rules below.
+      admin
+        .from('events')
+        .select('venue_address, online_url, address_visibility')
+        .eq('id', event.id)
+        .maybeSingle(),
+      loadStatuses(admin, [event.host_user_id]),
+    ]);
+  const past = isEnded(event, now);
+  const hostState = eventHostState(
+    hostFlags.get(event.host_user_id)?.status,
+    past,
+    event.lab_id !== null,
+  );
 
   const viewerRsvp = rsvpRow.data
     ? {
@@ -554,11 +591,14 @@ export async function getMemberEventView(
     handle,
     status,
   }));
-  const past = isEnded(event, now);
+
+  if (hostState === 'host_deleted_upcoming')
+    return notRunningView(event, host, category, container);
 
   return {
     event,
     host,
+    hostState,
     category,
     container,
     counts: foldRsvpCounts(aggregates.going, aggregates.interested, isHost),
@@ -585,6 +625,39 @@ export async function getMemberEventView(
 }
 
 /**
+ * An upcoming event whose host's account was deleted, with no handover in the
+ * product: kept as a record the viewer can still open, but nothing that runs
+ * it — no counts, no reveal (address / online link), no named wall, no
+ * capacity, no door list. The page states it plainly and shows no RSVP or
+ * calendar action; the RSVP and ICS routes refuse on the same rule.
+ */
+function notRunningView(
+  event: EventViewRow,
+  host: EventView['host'],
+  category: EventView['category'],
+  container: EventView['container'],
+): EventView {
+  return {
+    event,
+    host,
+    hostState: 'host_deleted_upcoming',
+    category,
+    container,
+    counts: { going: null, interested: null },
+    goingExact: null,
+    goingTotal: 0,
+    viewer: { isHost: false, rsvp: null },
+    reveal: { venueAddress: null, onlineUrl: null },
+    attendees: [],
+    isFull: false,
+    cover: eventCoverView(event),
+    hostStats: { pastEventsCount: 0 },
+    checkin: null,
+    attendedCount: null,
+  };
+}
+
+/**
  * Login-free view: PUBLIC events only, service-role with the narrow
  * projection + organic-proof filters. No address, no online link, no
  * attendee identities, floor-gated counts — by construction.
@@ -607,13 +680,21 @@ export async function getPublicEventView(slug: string): Promise<EventView | null
   if (!event) return null;
 
   const now = new Date();
-  const [host, category, container, aggregates, hostStats] = await Promise.all([
+  const [host, category, container, aggregates, hostStats, hostFlags] = await Promise.all([
     loadHost(admin, event.host_user_id),
     loadCategory(admin, event.category_id),
     loadContainer(admin, event),
     loadRsvpAggregates(admin, event.id),
     loadHostStats(admin, event, now.toISOString(), { publicOnly: true }),
+    loadStatuses(admin, [event.host_user_id]),
   ]);
+  const hostState = eventHostState(
+    hostFlags.get(event.host_user_id)?.status,
+    isEnded(event, now),
+    event.lab_id !== null,
+  );
+  if (hostState === 'host_deleted_upcoming')
+    return notRunningView(event, host, category, container);
 
   // Attendance is an RSVP aggregate too — the signed-out floor applies.
   const rawAttended = resolveAttendedCount(
@@ -625,6 +706,7 @@ export async function getPublicEventView(slug: string): Promise<EventView | null
   return {
     event,
     host,
+    hostState,
     category,
     container,
     counts: foldPublicRsvpCounts(aggregates.going, aggregates.interested),
@@ -662,7 +744,11 @@ export async function listMemberEvents(
   if (options.category) query = query.eq('category_id', options.category);
   const { data, error } = await query;
   if (error) throw new Error(`events index query failed: ${error.message}`);
-  return (data ?? []) as unknown as EventViewRow[];
+  return dropDeletedHostUpcoming(
+    getSupabaseAdmin(),
+    (data ?? []) as unknown as EventViewRow[],
+    options.now,
+  );
 }
 
 /** Signed-out /events index: public + organic, narrow projection. */
@@ -684,7 +770,11 @@ export async function listPublicEvents(
   if (options.category) query = query.eq('category_id', options.category);
   const { data, error } = await query;
   if (error) throw new Error(`public events query failed: ${error.message}`);
-  return dropAiHosted(admin, (data ?? []) as unknown as EventViewRow[]);
+  return dropDeletedHostUpcoming(
+    admin,
+    await dropAiHosted(admin, (data ?? []) as unknown as EventViewRow[]),
+    options.now,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -843,11 +933,14 @@ export async function listEventCards(
     pastRows = split.past;
   }
 
+  const admin = getSupabaseAdmin();
+  // An upcoming event whose host was deleted is no longer running — it leaves
+  // every list, "mine" included. Past ones stay (history).
+  upcomingRows = await dropDeletedHostUpcoming(admin, upcomingRows, now);
   const ordered = [...upcomingRows, ...pastRows];
   if (ordered.length === 0) return { items: [], upcomingCount: 0 };
 
   const ids = ordered.map((r) => r.id);
-  const admin = getSupabaseAdmin();
 
   const [aggRes, sampleRes, viewerRes] = await Promise.all([
     admin.from('event_rsvps').select('event_id, status, checked_in_at').in('event_id', ids),
@@ -895,9 +988,10 @@ export async function listEventCards(
   const hostUserIds = ordered.filter((r) => r.lab_id === null).map((r) => r.host_user_id);
   const profileIds = [...new Set([...hostUserIds, ...sampleUserIds])];
 
-  const [labsById, profilesById] = await Promise.all([
+  const [labsById, profilesById, sampleFlags] = await Promise.all([
     loadLabsById(admin, labIds),
     loadProfilesById(admin, profileIds),
+    loadStatuses(admin, [...sampleUserIds]),
   ]);
 
   const items = ordered.map((row): EventCardItem => {
@@ -928,6 +1022,8 @@ export async function listEventCards(
       goingCount: counts.going,
       attendedCount: resolveAttendedCount(past, counts.checkedIn, counts.going),
       attendeeSample: (samplesById.get(row.id) ?? [])
+        // A deleted account is never shown as "going".
+        .filter((userId) => sampleFlags.get(userId)?.status !== 'deleted')
         .map((userId) => profilesById.get(userId))
         .filter((p): p is { displayName: string; handle: string } => p !== undefined)
         .map((p) => ({ displayName: p.displayName, handle: p.handle })),
@@ -957,7 +1053,9 @@ export async function listUpcomingEventsFor(
   const nowIso = (options.now ?? new Date()).toISOString();
   let query = admin
     .from('events')
-    .select('slug, title, category_id, starts_at, timezone, mode, status, host_user_id, source')
+    .select(
+      'slug, title, category_id, starts_at, ends_at, timezone, mode, status, host_user_id, lab_id, source',
+    )
     .eq('status', 'published')
     .eq('moderation_status', 'published')
     .or(upcomingPredicate(nowIso))
@@ -978,6 +1076,7 @@ export async function listUpcomingEventsFor(
   if (error) throw new Error(`upcoming events query failed: ${error.message}`);
   let rows = (data ?? []) as unknown as (EventViewRow & { source: string })[];
   if (options.publicOnly) rows = await dropAiHosted(admin, rows);
+  rows = await dropDeletedHostUpcoming(admin, rows, options.now);
   return rows.map((row) => ({
     slug: row.slug,
     title: row.title,
@@ -1006,7 +1105,9 @@ export async function getFeaturedUpcomingPublicEvent(
   const nowIso = now.toISOString();
   const result = await admin
     .from('events')
-    .select('slug, title, category_id, starts_at, timezone, mode, status, host_user_id')
+    .select(
+      'slug, title, category_id, starts_at, ends_at, timezone, mode, status, host_user_id, lab_id',
+    )
     .eq('visibility', 'public')
     .eq('status', 'published')
     .eq('moderation_status', 'published')
@@ -1016,7 +1117,11 @@ export async function getFeaturedUpcomingPublicEvent(
     .order('starts_at', { ascending: true })
     .limit(12);
   if (result.error) throw new Error(`upcoming event query failed: ${result.error.message}`);
-  const rows = await dropAiHosted(admin, (result.data ?? []) as unknown as EventViewRow[]);
+  const rows = await dropDeletedHostUpcoming(
+    admin,
+    await dropAiHosted(admin, (result.data ?? []) as unknown as EventViewRow[]),
+    now,
+  );
 
   const row = rows[0];
   if (!row) return null;

@@ -16,6 +16,7 @@ import { CompletionMeter } from '@/components/profile/completion-meter';
 import { ModuleManager } from '@/components/profile/module-manager';
 import { ReportControl } from '@/components/report-control';
 import { ShareActions } from '@/components/share-actions';
+import { loadAccountFlags } from '@/lib/account-flags';
 import { getAnigaView, getPublicAnigaView, type AnigaView } from '@/lib/aniga/view';
 import { getAuthContext, type AuthContext } from '@/lib/auth/guards';
 import { canReceiveDms } from '@/lib/dm/service';
@@ -23,6 +24,7 @@ import { getLitePrefs } from '@/lib/lite/server';
 import { getLocale, getT } from '@/lib/locale';
 import { getPublicProfileView, isProfileIndexable } from '@/lib/profile-view';
 import { HANDLE_REGEX } from '@/lib/profiles';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { BackLink } from '@/components/back-link';
 
 export const dynamic = 'force-dynamic';
@@ -109,6 +111,24 @@ export default async function ProfilePermalinkPage({
 
   const litePrefs = await getLitePrefs();
   const profile = view.base.profile;
+
+  // Retained content: a deleted account keeps a scrubbed tombstone row so its
+  // past contributions can be attributed ("Deleted member"), and members reach
+  // this page from those bylines. It must not render as a profile — no badge
+  // or verification chips (the badge rows survive anonymisation), no follow /
+  // message / report controls, no hosted events or shared Spaces. Signed-out
+  // visitors already get a 404 (the public projection is live-only).
+  if (viewer === 'member') {
+    const flags = await loadAccountFlags(getSupabaseAdmin(), [profile.user_id]);
+    if (flags.get(profile.user_id)?.status === 'deleted') {
+      return (
+        <main className="xidig-section">
+          <h1 className="xidig-auth__title">{t('profile.deletedMemberTitle')}</h1>
+          <p className="xidig-card__meta">{t('profile.deletedMemberBody')}</p>
+        </main>
+      );
+    }
+  }
 
   // Own-edge check under RLS (follows_select_own) — only meaningful for
   // signed-in non-owners.

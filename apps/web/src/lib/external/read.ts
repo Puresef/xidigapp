@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@xidig/db';
 
 import { decodeCursor, encodeCursor, keysetBefore } from '@/lib/pagination';
+import { keepProjectableListings } from '@/lib/retained-content';
 
 /**
  * Public-safe reads for the external REST + MCP layer (PRD §21).
@@ -12,7 +13,9 @@ import { decodeCursor, encodeCursor, keysetBefore } from '@/lib/pagination';
  * link to businesses but cannot bulk-harvest contact details — the app's own
  * listing detail page is where a signed-in member sees contacts. Only
  * `status = 'published'` rows are ever returned (hidden/removed stay invisible),
- * which mirrors the member RLS read.
+ * which mirrors the member RLS read — including its owner rule: a listing
+ * whose owner is no longer live is not returned (lib/retained-content.ts).
+ * owner_user_id is read only to apply that rule and never leaves this module.
  */
 
 export const EXTERNAL_LISTING_COLUMNS =
@@ -45,7 +48,7 @@ export async function queryExternalListings(
 ): Promise<ExternalListingsPage> {
   let query = admin
     .from('business_listings')
-    .select(EXTERNAL_LISTING_COLUMNS)
+    .select(`${EXTERNAL_LISTING_COLUMNS}, owner_user_id`)
     .eq('status', 'published')
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
@@ -87,12 +90,21 @@ export async function queryExternalListings(
   const { data, error } = await query;
   if (error) throw new Error(`external listings query failed: ${error.message}`);
 
-  const rows = (data ?? []) as Array<{ created_at: string; id: string }>;
+  const rows = (data ?? []) as unknown as Array<{
+    created_at: string;
+    id: string;
+    owner_user_id: string | null;
+  }>;
   const hasMore = rows.length > filters.limit;
   const page = hasMore ? rows.slice(0, filters.limit) : rows;
+  // Keyset from the RAW page so pagination stays stable; the owner rule may
+  // leave a page shorter than `limit`, never out of order.
   const last = page.at(-1);
   const nextCursor =
     hasMore && last ? encodeCursor({ createdAt: last.created_at, id: last.id }) : null;
+  const items = (await keepProjectableListings(admin, page)).map(
+    ({ owner_user_id: _owner, ...item }) => item,
+  );
 
-  return { items: page, nextCursor };
+  return { items, nextCursor };
 }

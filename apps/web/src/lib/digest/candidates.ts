@@ -2,6 +2,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
+import { isLiveStatus } from '@/lib/account-flags';
+import {
+  dropDeletedHostUpcoming,
+  keepProjectableListings,
+  loadStatuses,
+} from '@/lib/retained-content';
+
 import type { DigestWindow } from './period';
 
 /**
@@ -72,7 +79,7 @@ export async function collectDigestCandidates(
   // Top Wins this week — published, global (not lab-scoped), member content.
   const winsQuery = admin
     .from('posts')
-    .select('id, title')
+    .select('id, title, author_user_id')
     .eq('type', 'win')
     .eq('status', 'published')
     .is('lab_id', null)
@@ -84,7 +91,7 @@ export async function collectDigestCandidates(
   // Currently OPEN Asks (help still wanted) — most recent first.
   const asksQuery = admin
     .from('posts')
-    .select('id, title')
+    .select('id, title, author_user_id')
     .eq('type', 'ask')
     .eq('ask_status', 'open')
     .eq('status', 'published')
@@ -106,7 +113,7 @@ export async function collectDigestCandidates(
   // New listings — published only.
   const listingsQuery = admin
     .from('business_listings')
-    .select('id, business_name, city')
+    .select('id, business_name, city, owner_user_id')
     .eq('status', 'published')
     .gte('created_at', since)
     .lt('created_at', until)
@@ -129,7 +136,7 @@ export async function collectDigestCandidates(
   // rule; the event page does its own reveal folding).
   const eventsQuery = admin
     .from('events')
-    .select('slug, title, starts_at')
+    .select('slug, title, starts_at, ends_at, host_user_id, lab_id')
     .eq('visibility', 'public')
     .eq('status', 'published')
     .eq('moderation_status', 'published')
@@ -151,16 +158,27 @@ export async function collectDigestCandidates(
     if (r.error) throw new Error(`digest candidate query failed: ${r.error.message}`);
   }
 
-  const winRows = (wins.data ?? []).map((p) => ({ id: p.id, title: p.title }));
-  const askRows = (asks.data ?? []).map((p) => ({ id: p.id, title: p.title }));
+  // Service-role reads bypass RLS, so the digest re-applies the member rules:
+  // a non-live author's post is hidden from members (author_is_active), a
+  // non-live owner's listing is suppressed, and an upcoming event whose host
+  // was deleted is no longer running (lib/retained-content.ts). A filtered
+  // candidate is simply dropped, not replaced.
+  const authorFlags = await loadStatuses(admin, [
+    ...(wins.data ?? []).map((p) => p.author_user_id),
+    ...(asks.data ?? []).map((p) => p.author_user_id),
+  ]);
+  const liveAuthor = (p: { author_user_id: string }) =>
+    isLiveStatus(authorFlags.get(p.author_user_id)?.status);
+  const winRows = (wins.data ?? []).filter(liveAuthor).map((p) => ({ id: p.id, title: p.title }));
+  const askRows = (asks.data ?? []).filter(liveAuthor).map((p) => ({ id: p.id, title: p.title }));
   const labRows = (labs.data ?? []).map((l) => ({ id: l.id, name: l.name, slug: l.slug }));
-  const listingRows = (listings.data ?? []).map((l) => ({
+  const listingRows = (await keepProjectableListings(admin, listings.data ?? [])).map((l) => ({
     id: l.id,
     name: l.business_name,
     city: l.city,
   }));
   const mentorRow = (mentor.data ?? [])[0] ?? null;
-  const eventRows = (events.data ?? []).map((e) => ({
+  const eventRows = (await dropDeletedHostUpcoming(admin, events.data ?? [])).map((e) => ({
     slug: e.slug,
     title: e.title,
     startsAt: e.starts_at,

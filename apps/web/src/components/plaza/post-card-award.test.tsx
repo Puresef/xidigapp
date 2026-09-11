@@ -87,6 +87,7 @@ function awardView(): PostView {
         avatarBlurhash: null,
       },
       evidence: { asksResolved: 7 },
+      winnerDeleted: false,
     },
   });
 }

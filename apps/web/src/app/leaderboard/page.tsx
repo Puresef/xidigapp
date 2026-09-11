@@ -6,6 +6,8 @@ import { formatNumber } from '@xidig/i18n';
 import { EmptyState } from '@/components/empty-state';
 import { Avatar } from '@/components/media/avatar';
 import { getAuthContext } from '@/lib/auth/guards';
+import { loadAccountFlags } from '@/lib/account-flags';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { getLocale, getT } from '@/lib/locale';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +44,16 @@ export default async function LeaderboardPage() {
     .order('helper_score', { ascending: false })
     .limit(LIMIT);
 
-  const scoreRows = scores ?? [];
+  // A deleted account holds no current rank: its tombstone profile row
+  // survives anonymisation, so the "absent profile drops the row" rule below
+  // never fired for it (retained content — awards/reputation must not imply a
+  // current standing after deletion). Suspended members are unchanged here.
+  const rawRows = scores ?? [];
+  const rankFlags = await loadAccountFlags(
+    getSupabaseAdmin(),
+    rawRows.map((row) => row.user_id),
+  );
+  const scoreRows = rawRows.filter((row) => rankFlags.get(row.user_id)?.status !== 'deleted');
   const userIds = scoreRows.map((row) => row.user_id);
 
   // Join display fields under the same RLS client (profiles carry a member

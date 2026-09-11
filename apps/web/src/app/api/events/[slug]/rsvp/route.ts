@@ -38,6 +38,10 @@ export async function PUT(request: Request, { params }: Ctx): Promise<Response> 
     const row = view.event;
 
     if (row.status !== 'published') throw new ApiError('event_not_open', 409);
+    // Retained content: an upcoming event whose host's account was deleted is
+    // no longer running (no handover exists) — it takes no new RSVPs.
+    // Withdrawing an existing RSVP (DELETE) stays open: it is the member's own row.
+    if (view.hostState !== 'host_present') throw new ApiError('event_not_open', 409);
     const endBoundary = row.ends_at ?? row.starts_at;
     if (Date.parse(endBoundary) < Date.now()) throw new ApiError('event_not_open', 409);
 

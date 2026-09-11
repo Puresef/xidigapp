@@ -154,6 +154,14 @@ export interface AwardPostView {
   } | null;
   /** most_helpful only: asker-confirmed fulfilled Asks inside the window. */
   evidence: { asksResolved?: number };
+  /**
+   * Retained content: the winning member (or the winning post's author) has
+   * since deleted their account. The winner then resolves to the tombstone and
+   * the stored post body — which baked the winner's name in at publish time —
+   * is not shipped (hydratePosts blanks it). The award_results evidence row is
+   * untouched.
+   */
+  winnerDeleted: boolean;
 }
 
 export interface PostView {
@@ -436,8 +444,19 @@ async function fetchAwardViews(
     for (const row of res.data ?? []) winnerLabs.set(row.id, row);
   }
 
-  const profiles =
-    profileIds.size > 0 ? await fetchAuthors(admin, [...profileIds]) : new Map<string, AuthorRef>();
+  const [profiles, winnerFlags] = await Promise.all([
+    profileIds.size > 0 ? fetchAuthors(admin, [...profileIds]) : new Map<string, AuthorRef>(),
+    loadAccountFlags(admin, [...profileIds]),
+  ]);
+  const isDeleted = (userId: string) => winnerFlags.get(userId)?.status === 'deleted';
+  const winnerDeleted = (hit: (typeof hits)[number]): boolean => {
+    if (hit.target_type === 'user') return isDeleted(hit.target_id);
+    if (hit.target_type === 'post') {
+      const target = winnerPosts.get(hit.target_id);
+      return target ? isDeleted(target.author_user_id) : false;
+    }
+    return false;
+  };
 
   const winnerFor = (hit: (typeof hits)[number]): AwardPostView['winner'] => {
     if (hit.target_type === 'user') {
@@ -466,6 +485,19 @@ async function fetchAwardViews(
       const target = winnerPosts.get(hit.target_id);
       if (!target) return null;
       const author = profiles.get(target.author_user_id) ?? null;
+      // A deleted author's Win is hidden from members (posts RLS); the card
+      // must not resurface its title or link. It resolves to the tombstone.
+      if (isDeleted(target.author_user_id)) {
+        return author
+          ? {
+              displayName: author.display_name,
+              handle: author.handle,
+              href: `/u/${author.handle}`,
+              avatarThumbUrl: null,
+              avatarBlurhash: null,
+            }
+          : null;
+      }
       return {
         displayName: target.title ?? author?.display_name ?? '—',
         handle: author?.handle ?? null,
@@ -487,6 +519,7 @@ async function fetchAwardViews(
       votes: hit.votes,
       winner: winnerFor(hit),
       evidence: asksResolved === undefined ? {} : { asksResolved },
+      winnerDeleted: winnerDeleted(hit),
     });
   }
   return byPost;
@@ -699,7 +732,10 @@ export async function hydratePosts(
   }
 
   const views = rows.map((post) => ({
-    post,
+    // A system award post whose winner has since been deleted baked the real
+    // name into its body at publish time; the card renders from the award
+    // view (tombstone), so the body is not shipped to the browser at all.
+    post: awards.get(post.id)?.winnerDeleted ? { ...post, body: '' } : post,
     author: authors.get(post.author_user_id) ?? null,
     imageUrls: post.image_urls.map(publicMediaUrl),
     // posts.image_urls stays the attachment order of record; meta joins by
