@@ -5,15 +5,17 @@ import { ApiError } from '@/lib/api';
 import { allowedScopesFor, effectiveScopes } from './scopes';
 
 /**
- * API keys never bypass account lifecycle (owner ruling, 11 Sep).
+ * API keys never bypass account lifecycle, and write scopes never simulate
+ * organic activity (owner rulings, 11 Sep).
  *
  * Every external request re-reads the key OWNER's standing and narrows the
  * key's granted scopes to what that standing allows TODAY:
- *   active admin  — every scope (incl. `admin`);
- *   active member — the member scopes (read + the seeded-content writes);
- *   pending_deletion (grace) — `read` only: the write scopes publish content
- *     under the platform's seed/AI account and `admin` is platform power, so
- *     none of them are ordinary member actions;
+ *   active admin  — every scope (incl. `admin`): the write scopes are
+ *     OPERATIONAL (they publish labelled content under the platform's seed/AI
+ *     account — never a member's own voice) and stay admin-only, audited;
+ *   active member / mod — `read` only (member write keys minted earlier stop
+ *     working on use);
+ *   pending_deletion (grace) — `read` only;
  *   suspended / deactivated / deleted / missing — nothing: the key does not
  *     authenticate at all.
  * The same function decides what a caller may MINT. Keys are compared by hash
@@ -36,9 +38,7 @@ describe('allowedScopesFor (mint + use)', () => {
     const allowed = allowedScopesFor({ status, role });
     if (status === 'active' && role === 'admin') {
       expect(allowed).toEqual(['read', 'plaza:write', 'listings:write', 'labs:write', 'admin']);
-    } else if (status === 'active') {
-      expect(allowed).toEqual(['read', 'plaza:write', 'listings:write', 'labs:write']);
-    } else if (status === 'pending_deletion') {
+    } else if (status === 'active' || status === 'pending_deletion') {
       expect(allowed).toEqual(['read']);
     } else {
       expect(allowed).toEqual([]);
@@ -47,6 +47,13 @@ describe('allowedScopesFor (mint + use)', () => {
 });
 
 describe('effectiveScopes', () => {
+  it('a member or mod write key minted before the freeze is read-only on use', () => {
+    const granted = ['read', 'plaza:write', 'listings:write', 'labs:write'];
+    for (const role of ['member', 'mod'] as const) {
+      expect(effectiveScopes(granted, { status: 'active', role })).toEqual(['read']);
+    }
+  });
+
   it('an admin key minted while active is read-only once its owner is in the grace', () => {
     const granted = ['admin', 'plaza:write', 'read'];
     expect(effectiveScopes(granted, { status: 'active', role: 'admin' })).toEqual(granted);
@@ -137,11 +144,26 @@ beforeEach(() => {
 });
 
 describe('requireApiKey owner lifecycle', () => {
-  it('active member key works for its allowed scope (control)', async () => {
+  it('active member key reads (control); its write scope is refused as admin-only', async () => {
     withKey(['read', 'plaza:write']);
     ownerIs('active');
-    expect(await outcome('read')).toBe('ok:read,plaza:write');
-    expect(await outcome('plaza:write')).toBe('ok:read,plaza:write');
+    expect(await outcome('read')).toBe('ok:read');
+    expect(await outcome('plaza:write')).toBe('403 insufficient_scope');
+    expect(h.audits.at(-1)).toMatchObject({
+      metadata: expect.objectContaining({ reason: 'scope_admin_only' }),
+    });
+  });
+
+  it('active mod key: same — mods do not publish as the platform either', async () => {
+    withKey(['plaza:write']);
+    ownerIs('active', 'mod');
+    expect(await outcome('plaza:write')).toBe('403 insufficient_scope');
+  });
+
+  it('active admin write key works (operational exception, control)', async () => {
+    withKey(['plaza:write']);
+    ownerIs('active', 'admin');
+    expect(await outcome('plaza:write')).toBe('ok:plaza:write');
   });
 
   it('active admin key keeps the admin superset (control)', async () => {
@@ -183,6 +205,33 @@ describe('requireApiKey owner lifecycle', () => {
     expect(h.audits.at(-1)).toMatchObject({
       metadata: expect.objectContaining({ reason: 'insufficient_scope' }),
     });
+  });
+
+  it('no key material reaches the audit log, analytics or the console', async () => {
+    const logs = vi.spyOn(console, 'log');
+    const warns = vi.spyOn(console, 'warn');
+    const errors = vi.spyOn(console, 'error');
+    for (const [scopes, status, role, scope] of [
+      [['read', 'plaza:write'], 'active', 'member', 'plaza:write'],
+      [['admin'], 'pending_deletion', 'admin', 'admin'],
+      [['read'], 'deleted', 'member', 'read'],
+    ] as const) {
+      withKey([...scopes]);
+      ownerIs(status, role);
+      await outcome(scope);
+    }
+    const seen = JSON.stringify([
+      h.audits,
+      h.rejects,
+      logs.mock.calls,
+      warns.mock.calls,
+      errors.mock.calls,
+    ]);
+    expect(h.audits.length).toBeGreaterThan(0);
+    expect(seen).not.toContain('xdg_');
+    logs.mockRestore();
+    warns.mockRestore();
+    errors.mockRestore();
   });
 
   it('revoked / expired keys are refused before any owner lookup', async () => {

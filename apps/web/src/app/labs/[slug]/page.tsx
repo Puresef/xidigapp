@@ -25,7 +25,8 @@ import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
-import { isActiveAdmin } from '@/lib/auth/privilege';
+import { isActiveAccount, isActiveAdmin } from '@/lib/auth/privilege';
+import { spaceControls } from '@/lib/labs/standing-controls';
 import { getPublicLabView, hydrateOneLab } from '@/lib/labs-api';
 import {
   ARTIFACT_COLUMNS,
@@ -140,7 +141,17 @@ export default async function LabDetailPage({
   const tabKeys = isVenture ? VENTURE_TAB_KEYS : SPACE_TAB_KEYS;
 
   const isContributor = ['lead', 'core', 'member'].includes(view.viewerRelation);
-  const isManager = view.viewerRelation === 'lead' || isActiveAdmin(ctx.appUser);
+  // What this viewer is OFFERED, from mode + role + account standing: a lead
+  // in the deletion grace keeps an ordinary Space's settings, but a Venture's
+  // settings and decision log are refused to them, so neither is offered.
+  const controls = spaceControls({
+    spaceMode: lab.space_mode,
+    isLead: view.viewerRelation === 'lead',
+    isContributor,
+    activeAdmin: isActiveAdmin(ctx.appUser),
+    accountActive: isActiveAccount(ctx.appUser),
+  });
+  const isManager = controls.showSettingsLink;
 
   const { data: pin } = await admin
     .from('profile_pinned_labs')
@@ -286,7 +297,7 @@ export default async function LabDetailPage({
           <TabArtifacts labId={lab.id} isContributor={isContributor} />
         ) : null}
         {tab === 'decisions' ? (
-          <TabDecisions labId={lab.id} isContributor={isContributor} />
+          <TabDecisions labId={lab.id} isContributor={controls.canRecordDecision} />
         ) : null}
         {tab === 'members' ? <TabMembers labId={lab.id} /> : null}
         {tab === 'history' ? <TabHistory labId={lab.id} /> : null}

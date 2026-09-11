@@ -5,7 +5,7 @@ import type { Database, Enums } from '@xidig/db';
 
 import { ApiError } from '@/lib/api';
 import type { AuthContext } from '@/lib/auth/guards';
-import { isActiveAdmin } from '@/lib/auth/privilege';
+import { isActiveAccount, isActiveAdmin } from '@/lib/auth/privilege';
 import {
   hydrateLabs,
   LAB_COLUMNS,
@@ -92,6 +92,20 @@ export async function getLabMembership(
  */
 export function isLabManager(ctx: AuthContext, lab: LabRow): boolean {
   return lab.lead_user_id === ctx.appUser.id || isActiveAdmin(ctx.appUser);
+}
+
+/**
+ * Venture state needs an ACTIVE account (owner ruling, 11 Sep). On a
+ * Venture-mode Space, a caller in the deletion grace may not change who is in
+ * the venture (approve/decline requests, invite, set roles, remove, join),
+ * what it has decided, its collaborations or its settings — even through the
+ * general Space routes. Ordinary Spaces are unaffected: a grace lead still
+ * manages a Club or Lab. Leaving stays open (own-data control).
+ */
+export function requireActiveForVenture(ctx: AuthContext, lab: Pick<LabRow, 'space_mode'>): void {
+  if (lab.space_mode === 'venture' && !isActiveAccount(ctx.appUser)) {
+    throw new ApiError('forbidden', 403);
+  }
 }
 
 /** 403 unless the caller manages this Space (lead or platform admin). */

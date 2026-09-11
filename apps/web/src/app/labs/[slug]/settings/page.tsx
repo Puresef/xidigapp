@@ -2,7 +2,9 @@ import { notFound, redirect } from 'next/navigation';
 
 import { SpaceSettingsForm } from '@/components/labs/space-settings-form';
 import { getAuthContext } from '@/lib/auth/guards';
+import { isActiveAccount, isActiveAdmin } from '@/lib/auth/privilege';
 import { isLabManager, loadLabBySlugForViewer } from '@/lib/labs-api';
+import { spaceControls } from '@/lib/labs/standing-controls';
 import { LAB_SLUG_REGEX } from '@/lib/labs/schemas';
 import { labMediaView } from '@/lib/labs/views';
 import { getT } from '@/lib/locale';
@@ -29,6 +31,16 @@ export default async function LabSettingsPage({
 
   const lab = await loadLabBySlugForViewer(ctx, slug);
   if (!isLabManager(ctx, lab)) redirect(`/labs/${slug}`);
+  const controls = spaceControls({
+    spaceMode: lab.space_mode,
+    isLead: lab.lead_user_id === ctx.appUser.id,
+    isContributor: true,
+    activeAdmin: isActiveAdmin(ctx.appUser),
+    accountActive: isActiveAccount(ctx.appUser),
+  });
+  // Every save on a Venture's settings is refused to an account in the
+  // deletion grace (requireActiveForVenture) — do not render a page of them.
+  if (!controls.showSettingsLink) redirect(`/labs/${slug}`);
 
   const admin = getSupabaseAdmin();
   const { data: skillNeeds } = await admin
@@ -60,6 +72,7 @@ export default async function LabSettingsPage({
         }}
         media={labMediaView(lab)}
         skillNeeds={skillNeeds ?? []}
+        canEscalate={controls.canEscalate}
       />
     </main>
   );

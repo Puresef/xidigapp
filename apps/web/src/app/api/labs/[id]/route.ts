@@ -3,10 +3,15 @@ import { z } from 'zod';
 
 import type { Database, TablesUpdate } from '@xidig/db';
 
-import { ApiError, apiOk, handleApiError } from '@/lib/api';
+import { apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
-import { isActiveAccount } from '@/lib/auth/privilege';
-import { hydrateOneLab, loadLabForViewer, parseLabId, requireLabManager } from '@/lib/labs-api';
+import {
+  hydrateOneLab,
+  loadLabForViewer,
+  parseLabId,
+  requireActiveForVenture,
+  requireLabManager,
+} from '@/lib/labs-api';
 import { labSettingsSchema } from '@/lib/labs/schemas';
 import { logLabEvent, updateLabSettings } from '@/lib/labs/service';
 import { loadAttachableMedia } from '@/lib/media/attach';
@@ -123,11 +128,8 @@ export async function PATCH(request: Request, context: Ctx): Promise<Response> {
     const lab = await loadLabForViewer(ctx, id);
     requireLabManager(ctx, lab);
     // A Venture Space's settings (visibility, join mode — who sees and joins
-    // the ledger) are venture settings: active accounts only (owner ruling,
-    // 11 Sep). A lead in the deletion grace still manages an ordinary Space.
-    if (lab.space_mode === 'venture' && !isActiveAccount(ctx.appUser)) {
-      throw new ApiError('forbidden', 403);
-    }
+    // the ledger) are venture settings: active accounts only.
+    requireActiveForVenture(ctx, lab);
 
     const admin = getSupabaseAdmin();
     let updated = lab;

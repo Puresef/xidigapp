@@ -3,8 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 /**
  * POST /api/me/api-keys — what a caller may MINT follows their standing
  * (allowedScopesFor; owner ruling, 11 Sep): active admin → any scope incl.
- * `admin`; active member → the member scopes; the deletion grace → `read`
- * only; a demoted or grace admin never mints `admin`. The refusal happens
+ * `admin` and the operational write scopes; active member or mod → `read`
+ * only (the write scopes publish under the platform's seed/AI account, so they
+ * are admin-only); the deletion grace → `read` only; a demoted or grace admin
+ * never mints `admin`. The refusal happens
  * before any key is generated (mintApiKey is never reached).
  */
 
@@ -57,11 +59,18 @@ describe('POST /api/me/api-keys minting follows the account standing', () => {
     expect(h.minted).toEqual([['admin']]);
   });
 
-  it('active member may mint member scopes, never admin (control)', async () => {
-    as('active', 'member');
-    expect(await mint(['read', 'plaza:write'])).toBe(201);
-    expect(await mint(['admin'])).toBe(403);
-    expect(h.minted).toEqual([['read', 'plaza:write']]);
+  it('active admin may mint the operational write scopes (control)', async () => {
+    as('active', 'admin');
+    expect(await mint(['plaza:write', 'listings:write', 'labs:write'])).toBe(201);
+  });
+
+  it.each(['member', 'mod'])('active %s may mint read, never a write scope or admin', async (role) => {
+    as('active', role);
+    expect(await mint(['read'])).toBe(201);
+    for (const scope of ['plaza:write', 'listings:write', 'labs:write', 'admin']) {
+      expect(await mint(['read', scope]), scope).toBe(403);
+    }
+    expect(h.minted).toEqual([['read']]);
   });
 
   it('an admin in the grace cannot mint admin or any write scope', async () => {

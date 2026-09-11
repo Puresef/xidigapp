@@ -14,29 +14,63 @@ Authorization: Bearer xdg_live_xxxxxxxx…
 x-api-key: xdg_live_xxxxxxxx…
 ```
 
-Keys are minted by a member at **`POST /api/me/api-keys`** (see below). The
-plaintext key is shown **once** at creation and never again — only a SHA-256
-hash is stored (`api_keys.key_hash`). Losing it means minting a new one.
+Keys are minted by a signed-in account at **`POST /api/me/api-keys`** (see
+below). The plaintext key is shown **once** at creation and never again — only
+a SHA-256 hash is stored (`api_keys.key_hash`). Losing it means minting a new
+one. What a key can do is bounded by its scopes **and by its owner's current
+account standing** (see *Key owner standing*).
 
 ### Managing keys
 
 | Method | Route | Auth | Notes |
 | ------ | ----- | ---- | ----- |
-| `POST` | `/api/me/api-keys` | member | `{ name, scopes[], expiresInDays? }` → `{ key, secret }`. `secret` is the plaintext key (shown once). Members may mint the non-admin scopes only; 10 keys/day. |
+| `POST` | `/api/me/api-keys` | signed-in account | `{ name, scopes[], expiresInDays? }` → `{ key, secret }`. `secret` is the plaintext key (shown once). Members, mods and accounts in the deletion grace may mint `read` only; only an **active admin** may mint the write scopes or `admin`. Asking for a scope your standing does not allow → `403`. 10 keys/day. |
 | `GET`  | `/api/me/api-keys` | member | list own keys (safe projection — never the hash) |
-| `DELETE` | `/api/me/api-keys/{id}` | member | revoke (idempotent; admins may revoke any key) |
+| `DELETE` | `/api/me/api-keys/{id}` | member | revoke (idempotent; an active admin may revoke any key) |
 
 ## Scopes
 
-| Scope | Grants |
-| ----- | ------ |
-| `read` | read member/public-visible directory, listings, Labs, Plaza + digest candidates |
-| `plaza:write` | create labelled seeded Plaza posts |
-| `listings:write` | create/update labelled seeded listings |
-| `labs:write` | create/update labelled seeded **Lab templates** (playbooks) |
-| `admin` | system superset (satisfies every scope) — trigger digest/seed jobs. **Members can never mint an `admin` key** — admin-only. |
+| Scope | Grants | Provenance of writes | Who may mint / use |
+| ----- | ------ | -------------------- | ------------------ |
+| `read` | read member/public-visible directory, listings, Labs, Plaza + digest candidates | no writes | any live account (active or in the deletion grace) |
+| `plaza:write` | create labelled seeded Plaza posts | published as the **platform** — authored by the badged AI account | active admin only (operational) |
+| `listings:write` | create/update labelled seeded listings | published as the **platform** — no owner; claimable | active admin only (operational) |
+| `labs:write` | create/update labelled seeded **Lab templates** (playbooks) | published as the **platform** — no creator; upserts by template slug | active admin only (operational) |
+| `admin` | system superset (satisfies every scope) | — | active admin only |
 
-`admin` is a superset: an `admin` key satisfies any required scope.
+`admin` is a superset: an `admin` key satisfies any required scope. No route
+currently requires `admin` specifically.
+
+### Provenance rule for write scopes
+
+External writes must not simulate or obscure organic member activity. **No
+write scope preserves the key owner's own provenance**: every write publishes
+as the platform (the AI account, or no owner/creator), carries a non-`member`
+`source` (`seed` | `ai`) that the UI labels, and records the owner and key only
+in `audit_logs`. The write scopes are therefore **operational**: only an active
+admin may mint or use them, and every write is audited. A member- or mod-held
+key minted with a write scope before this rule still exists but is narrowed to
+`read` on every request — its writes are refused with `403
+insufficient_scope`. There is no provenance-preserving (member-attributed)
+write route today.
+
+### Key owner standing
+
+Every request re-reads the key owner's account and narrows the key's granted
+scopes to what that standing allows **at that moment**:
+
+| Owner standing | Key authenticates? | Usable scopes |
+| -------------- | ------------------ | ------------- |
+| active admin | yes | everything the key was granted |
+| active member or mod | yes | `read` (if granted) |
+| deletion grace (`pending_deletion`) | yes | `read` (if granted) — no write or `admin` scope |
+| suspended or deactivated | **no** — `401 invalid_api_key` | none (the key is not revoked; it works again if the account is reinstated) |
+| deleted | **no** — `401 invalid_api_key` | none; the key is also **revoked** in the data when the account becomes deleted |
+
+An admin whose role is removed loses `admin` and the write scopes on their
+existing keys at once. Denials are audited with the reason
+(`owner_not_live`, `owner_not_active`, `scope_admin_only`,
+`insufficient_scope`) — never with key material.
 
 ## Endpoints
 
@@ -108,9 +142,9 @@ All errors use the app envelope with plain-language, locale-resolved copy:
 
 | Code | HTTP | Meaning |
 | ---- | ---- | ------- |
-| `invalid_api_key` | 401 | missing / unknown / revoked key |
+| `invalid_api_key` | 401 | missing / unknown / revoked key, or the owner is suspended / deactivated / deleted |
 | `api_key_expired` | 401 | key past its `expires_at` |
-| `insufficient_scope` | 403 | valid key, wrong scope |
+| `insufficient_scope` | 403 | valid key, wrong scope — or a scope the owner's current standing does not allow |
 | `rate_limited` | 429 | over the per-key limit |
 | `invalid_request` | 400 | body/params failed validation |
 
@@ -132,11 +166,14 @@ Rejected under-scoped attempts are audited too.
   are admin-select-only with client writes revoked. `api_keys` is RLS-locked to
   every client role (the hash is never client-readable).
 - **What agents CAN do:** read published directory/Plaza/Lab/digest data
-  (discovery fields), and create/update **labelled seeded** posts, listings, and
-  Lab templates. **What they CANNOT do:** read private DMs, admin notes,
-  moderation internals, hidden/removed content, member contact details in bulk;
-  impersonate a member (seeded posts are authored by the badged AI account);
-  mutate a real member's content; mint admin keys; or earn reputation.
+  (discovery fields); and, **with an active admin's operational key only**,
+  create/update **labelled seeded** posts, listings, and Lab templates. **What
+  they CANNOT do:** read private DMs, admin notes, moderation internals,
+  hidden/removed content, member contact details in bulk; impersonate a member
+  (seeded posts are authored by the badged AI account); publish as the platform
+  on a member's or mod's key; mutate a real member's content; outlive their
+  owner's suspension, deactivation or deletion; mint admin keys; or earn
+  reputation.
 
 ## Deferred (documented, not built)
 

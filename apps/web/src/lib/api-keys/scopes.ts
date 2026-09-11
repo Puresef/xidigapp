@@ -4,8 +4,14 @@ import { isActiveAccount, isActiveAdmin, type AccountStanding } from '@/lib/auth
  * Scoped API-key permissions for the external REST + MCP layer (PRD §21).
  *
  * Scopes are least-privilege and additive. A key carries an explicit list; the
- * `admin` scope is a system/service superset (digest + seed jobs) that a member
- * can NEVER mint — only an admin may attach it (enforced in the mint route).
+ * `admin` scope is a system/service superset that a member can NEVER mint.
+ *
+ * Provenance (owner ruling, 11 Sep — external writes never simulate or obscure
+ * organic member activity): every write scope publishes as the PLATFORM, not
+ * as the key's owner (see SCOPE_PROVENANCE). They are therefore OPERATIONAL
+ * scopes — admin-only, audited, and labelled in the UI by the content's
+ * non-member `source`. Members and mods mint and use `read` only; a write key
+ * minted before this rule narrows to `read` on use (effectiveScopes).
  *
  * These slugs are the contract shared by the REST routes, the MCP tools, the
  * key-management UI, and the docs — never rename a shipped one.
@@ -27,8 +33,29 @@ export type ApiScope = keyof typeof API_SCOPES;
 
 export const ALL_SCOPES = Object.keys(API_SCOPES) as ApiScope[];
 
-/** Scopes a plain member may attach to a self-service key. Excludes `admin`. */
-export const MEMBER_MINTABLE_SCOPES: ApiScope[] = ['read', 'plaza:write', 'listings:write', 'labs:write'];
+/**
+ * How each scope's writes are attributed:
+ *   read_only            — no writes;
+ *   platform_seed_actor  — writes publish as the platform (Plaza posts by the
+ *                          badged AI account; seeded listings with no owner;
+ *                          Lab templates with no creator). The key owner is
+ *                          recorded only in audit_logs;
+ *   system_superset      — `admin`: satisfies every scope.
+ * No scope today preserves a member's own provenance.
+ */
+export const SCOPE_PROVENANCE: Record<
+  ApiScope,
+  'read_only' | 'platform_seed_actor' | 'system_superset'
+> = {
+  read: 'read_only',
+  'plaza:write': 'platform_seed_actor',
+  'listings:write': 'platform_seed_actor',
+  'labs:write': 'platform_seed_actor',
+  admin: 'system_superset',
+};
+
+/** Scopes a member or mod may attach to a self-service key: read-only ones. */
+export const MEMBER_MINTABLE_SCOPES: ApiScope[] = ['read'];
 
 export function isApiScope(value: string): value is ApiScope {
   return value in API_SCOPES;
@@ -47,11 +74,10 @@ export const GRACE_SCOPES: ApiScope[] = ['read'];
 
 /**
  * The scopes an owner's CURRENT standing allows — for minting a key and, at
- * every request, for using one (owner ruling, 11 Sep: keys never bypass the
- * account lifecycle). Active admin: all; active member: the member scopes;
- * the grace: read only (the write scopes publish under the platform's seed/AI
- * account and `admin` is platform power — neither is an ordinary member
- * action); suspended / deactivated / deleted: nothing.
+ * every request, for using one (owner rulings, 11 Sep: keys never bypass the
+ * account lifecycle, and write scopes are operational). Active admin: all
+ * (the operational write scopes + `admin`); active member or mod: `read`; the
+ * grace: `read`; suspended / deactivated / deleted: nothing.
  */
 export function allowedScopesFor(owner: AccountStanding): ApiScope[] {
   if (isActiveAdmin(owner)) return [...ALL_SCOPES];

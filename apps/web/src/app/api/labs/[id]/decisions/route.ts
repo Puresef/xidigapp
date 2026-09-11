@@ -1,6 +1,11 @@
 import { apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
-import { loadLabForViewer, parseLabId, requireLabContributor } from '@/lib/labs-api';
+import {
+  loadLabForViewer,
+  parseLabId,
+  requireActiveForVenture,
+  requireLabContributor,
+} from '@/lib/labs-api';
 import { decisionCreateSchema } from '@/lib/labs/schemas';
 import { addDecision } from '@/lib/labs/service';
 import { attachAuthors, DECISION_COLUMNS, type DecisionRow } from '@/lib/labs/views';
@@ -42,6 +47,9 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
     const input = decisionCreateSchema.parse(await request.json());
 
     const lab = await loadLabForViewer(ctx, id);
+    // A Venture's decision log is what its weight schemes and capital needs
+    // cite: active accounts only.
+    requireActiveForVenture(ctx, lab);
     const admin = getSupabaseAdmin();
     await requireLabContributor(ctx, admin, lab);
 

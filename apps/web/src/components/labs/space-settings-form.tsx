@@ -59,12 +59,18 @@ export function SpaceSettingsForm({
   initial,
   media,
   skillNeeds,
+  canEscalate = true,
 }: {
   labId: string;
   slug: string;
   initial: SettingsInitial;
   media: LabMediaView;
   skillNeeds: { id: string; skill: string }[];
+  /**
+   * Offer the promotion ladder (Club→Lab, Lab→Candidate). False for an
+   * account in the deletion grace — the server refuses both (spaceControls).
+   */
+  canEscalate?: boolean;
 }) {
   const t = useT();
   const router = useRouter();
@@ -403,58 +409,61 @@ export function SpaceSettingsForm({
         </div>
       </section>
 
-      {/* Promotion ladder (§16) — members promote only; demotion is system-driven. */}
-      <section className="xidig-section">
-        <h2 className="xidig-section__title">{t('lab.tabSettings')}</h2>
-        <p className="xidig-field__hint">{t('lab.settingsPromoteHint')}</p>
-        {form.spaceMode === 'club' ? (
-          <button
-            type="button"
-            className="xidig-button xidig-button--primary"
-            disabled={pending}
-            onClick={() =>
-              void run(() =>
-                apiPost(`/api/labs/${labId}/promote`, {
-                  target: 'lab',
-                  problemStatement: form.problemStatement.trim() || undefined,
-                  hypothesis: form.hypothesis.trim() || undefined,
-                  successDefinition: form.successDefinition.trim() || undefined,
-                }).then(() => undefined),
-              )
-            }
-          >
-            {t('lab.actionPromoteLab')}
-          </button>
-        ) : (
-          <div className="xidig-form">
-            <p className="xidig-field__hint">{t('lab.candidateHandoffNote')}</p>
-            <label className="xidig-field">
-              <span className="xidig-field__label">{t('lab.actionPromoteCandidate')}</span>
-              <input
-                className="xidig-field__input"
-                value={candidateName}
-                onChange={(e) => setCandidateName(e.target.value)}
-                maxLength={80}
-              />
-            </label>
+      {/* Promotion ladder (§16) — members promote only; demotion is system-driven.
+          Absent (not disabled) when the account may not escalate. */}
+      {canEscalate ? (
+        <section className="xidig-section">
+          <h2 className="xidig-section__title">{t('lab.tabSettings')}</h2>
+          <p className="xidig-field__hint">{t('lab.settingsPromoteHint')}</p>
+          {form.spaceMode === 'club' ? (
             <button
               type="button"
               className="xidig-button xidig-button--primary"
-              disabled={pending || !candidateName.trim()}
+              disabled={pending}
               onClick={() =>
                 void run(() =>
                   apiPost(`/api/labs/${labId}/promote`, {
-                    target: 'candidate',
-                    name: candidateName.trim(),
+                    target: 'lab',
+                    problemStatement: form.problemStatement.trim() || undefined,
+                    hypothesis: form.hypothesis.trim() || undefined,
+                    successDefinition: form.successDefinition.trim() || undefined,
                   }).then(() => undefined),
                 )
               }
             >
-              {t('lab.actionPromoteCandidate')}
+              {t('lab.actionPromoteLab')}
             </button>
-          </div>
-        )}
-      </section>
+          ) : (
+            <div className="xidig-form">
+              <p className="xidig-field__hint">{t('lab.candidateHandoffNote')}</p>
+              <label className="xidig-field">
+                <span className="xidig-field__label">{t('lab.actionPromoteCandidate')}</span>
+                <input
+                  className="xidig-field__input"
+                  value={candidateName}
+                  onChange={(e) => setCandidateName(e.target.value)}
+                  maxLength={80}
+                />
+              </label>
+              <button
+                type="button"
+                className="xidig-button xidig-button--primary"
+                disabled={pending || !candidateName.trim()}
+                onClick={() =>
+                  void run(() =>
+                    apiPost(`/api/labs/${labId}/promote`, {
+                      target: 'candidate',
+                      name: candidateName.trim(),
+                    }).then(() => undefined),
+                  )
+                }
+              >
+                {t('lab.actionPromoteCandidate')}
+              </button>
+            </div>
+          )}
+        </section>
+      ) : null}
 
       {/* "Looking for" skills (§16/§20) */}
       <section className="xidig-section">

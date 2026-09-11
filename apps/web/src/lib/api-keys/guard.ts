@@ -21,9 +21,10 @@ import { effectiveScopes, scopeSatisfies, type ApiScope } from './scopes';
  *   3. re-reads the key OWNER's standing: a suspended, deactivated, deleted or
  *      missing owner → 401 (the key no longer authenticates); otherwise the
  *      granted scopes are narrowed to what that standing allows today
- *      (effectiveScopes — the grace keeps `read` only; `admin` needs an
- *      active admin). Keys never bypass the account lifecycle (owner ruling,
- *      11 Sep),
+ *      (effectiveScopes — members, mods and the grace keep `read` only; the
+ *      operational write scopes and `admin` need an active admin). Keys never
+ *      bypass the account lifecycle and never publish as the platform on a
+ *      member's behalf (owner rulings, 11 Sep),
  *   4. checks the required scope against the EFFECTIVE scopes (insufficient
  *      → 403),
  *   5. enforces a per-key rate limit (over → 429),
@@ -118,7 +119,11 @@ export async function requireApiKey(
       action: `external.denied.${requiredScope}`,
       metadata: {
         route,
-        reason: scopeSatisfies(key.scopes, requiredScope) ? 'owner_not_active' : 'insufficient_scope',
+        reason: !scopeSatisfies(key.scopes, requiredScope)
+          ? 'insufficient_scope'
+          : owner.status === 'active'
+            ? 'scope_admin_only'
+            : 'owner_not_active',
       },
     });
     throw new ApiError('insufficient_scope', 403);

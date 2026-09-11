@@ -20,7 +20,8 @@ import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
-import { isActiveAdmin, isActiveModOrAdmin } from '@/lib/auth/privilege';
+import { isActiveAccount, isActiveAdmin, isActiveModOrAdmin } from '@/lib/auth/privilege';
+import { candidateControls } from '@/lib/labs/standing-controls';
 import { voteWindow } from '@/lib/capital/tally';
 import {
   getCandidateView,
@@ -121,6 +122,8 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
 
   const isEditor =
     candidate.created_by_user_id === ctx.appUser.id || isActiveAdmin(ctx.appUser);
+  // Editing and submitting are refused to an account in the deletion grace.
+  const { canEdit } = candidateControls({ isEditor, accountActive: isActiveAccount(ctx.appUser) });
 
   return (
     <main className="xidig-section">
@@ -141,7 +144,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
           <ReportControl targetType="candidate" targetId={id} targetName={candidate.name} />
         ) : null}
 
-        {isEditor && ['draft', 'submitted'].includes(candidate.status) ? (
+        {canEdit && ['draft', 'submitted'].includes(candidate.status) ? (
           <p className="xidig-profile__actions">
             <Link className="xidig-button xidig-button--secondary" href={`/c/${id}/edit`}>
               {t('action.edit')}

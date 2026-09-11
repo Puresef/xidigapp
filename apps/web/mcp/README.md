@@ -9,8 +9,11 @@ layer never forks security logic.
 ## Setup
 
 ```bash
-# 1. Mint a scoped API key (as a signed-in member) via POST /api/me/api-keys,
-#    e.g. scopes ["read","plaza:write","listings:write","labs:write"].
+# 1. Mint a scoped API key via POST /api/me/api-keys. Members and mods may
+#    mint ["read"] only; the write tools need a key minted by an ACTIVE admin
+#    (operational scopes — they publish as the platform AI account). A key
+#    stops working if its owner is suspended, deactivated or deleted, and is
+#    read-only while the owner is in the deletion grace (docs/external-api.md).
 # 2. Run the server (stdio transport):
 XIDIG_API_URL=https://app.xidig.net \
 XIDIG_API_KEY=xdg_live_xxxxx \

@@ -2,7 +2,12 @@ import { apiNotice, apiOk, handleApiError } from '@/lib/api';
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { requireUser } from '@/lib/auth/guards';
-import { loadLabForViewer, parseLabId, requireLabManager } from '@/lib/labs-api';
+import {
+  loadLabForViewer,
+  parseLabId,
+  requireActiveForVenture,
+  requireLabManager,
+} from '@/lib/labs-api';
 import { memberActionSchema } from '@/lib/labs/schemas';
 import {
   inviteMember,
@@ -20,7 +25,9 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * the roster the caller may see (RLS applies member_list_visibility); POST is
  * the membership state machine — join / leave (any member) and respond /
  * invite / set_role / remove (lead or platform admin). Every transition logs a
- * Space History event and notifies the affected member.
+ * Space History event and notifies the affected member. On a Venture-mode
+ * Space every transition except leaving needs an active account
+ * (requireActiveForVenture).
  */
 
 interface Ctx {
@@ -55,6 +62,7 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
 
     const lab = await loadLabForViewer(ctx, id);
     const admin = getSupabaseAdmin();
+    if (input.action !== 'leave') requireActiveForVenture(ctx, lab);
 
     switch (input.action) {
       case 'join': {

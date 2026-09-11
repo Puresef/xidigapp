@@ -20,7 +20,8 @@ export default async function NewSpacePage() {
   return (
     <main className="xidig-auth">
       <h1 className="xidig-auth__title">{t('lab.createTitle')}</h1>
-      <SpaceForm />
+      {/* Lab creation is refused to an account in the deletion grace. */}
+      <SpaceForm allowLab={ctx.appUser.status === 'active'} />
     </main>
   );
 }

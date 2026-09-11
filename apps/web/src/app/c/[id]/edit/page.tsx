@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { CandidateEditor } from '@/components/capital/candidate-editor';
 import { getAuthContext } from '@/lib/auth/guards';
-import { isActiveAdmin } from '@/lib/auth/privilege';
+import { isActiveAccount, isActiveAdmin } from '@/lib/auth/privilege';
 import { getCandidateView } from '@/lib/capital/views';
 import { getT } from '@/lib/locale';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
@@ -31,6 +31,9 @@ export default async function CandidateEditPage({
   const ctx = await getAuthContext();
   if (!ctx) redirect(`/signin?next=/c/${id}/edit`);
   if (ctx.appUser.status === 'suspended') redirect('/auth/error?reason=account_suspended');
+  // Candidate edit and submit need an active account (the deletion grace is
+  // refused server-side), so the editor is not offered.
+  if (!isActiveAccount(ctx.appUser)) redirect(`/c/${id}`);
 
   const admin = getSupabaseAdmin();
   const view = await getCandidateView(ctx.supabase, admin, id, ctx.appUser.id);

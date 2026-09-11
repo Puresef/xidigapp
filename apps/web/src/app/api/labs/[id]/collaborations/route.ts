@@ -2,7 +2,12 @@ import { apiOk, handleApiError } from '@/lib/api';
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { requireUser } from '@/lib/auth/guards';
-import { loadLabForViewer, parseLabId, requireLabManager } from '@/lib/labs-api';
+import {
+  loadLabForViewer,
+  parseLabId,
+  requireActiveForVenture,
+  requireLabManager,
+} from '@/lib/labs-api';
 import { collaborationActionSchema } from '@/lib/labs/schemas';
 import {
   endCollaboration,
@@ -50,6 +55,7 @@ export async function POST(request: Request, context: Ctx): Promise<Response> {
 
     const lab = await loadLabForViewer(ctx, id);
     requireLabManager(ctx, lab);
+    requireActiveForVenture(ctx, lab);
     const admin = getSupabaseAdmin();
 
     switch (input.action) {
