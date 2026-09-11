@@ -64,7 +64,7 @@ the exact `poll_results()` precedent (Seq 14 anonymous ballots):
 | Function | Returns | Readability |
 |---|---|---|
 | `candidate_vote_tally(cand)` | `(approve int, reject int, total int)` | enforced by the **caller** (see below), not re-checked internally |
-| `candidate_interest_counts(cand)` | `(help int, cosign int, invest int)` | enforced by the caller; per-candidate only — fund-level (candidate_id null) intent is tallied server-side |
+| `candidate_interest_counts(cand)` | `(help int, cosign int, invest int)` | enforced by the caller; per-candidate only — fund-level (candidate_id null) intent is tallied server-side. The app calls it with the service role and projects `{help, cosign}` only (`lib/capital/interest-counts.ts`); EXECUTE is still granted to `authenticated` with no visibility check — open owner question (Packet B follow-up, Addendum V) |
 
 Both are `revoke all ... from public, anon` then `grant execute to authenticated,
 service_role`, matching every other Phase 1–4 helper.

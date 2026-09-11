@@ -428,7 +428,7 @@ export const en = {
 
   // Home screen
   'home.welcome': 'Welcome to Xidig.',
-  'home.communityProof': 'Builders back each other here:',
+  'home.communityProof': 'Builders support each other here:',
 
   // Auth flows (Phase 1: three co-equal sign-in methods, §9/§26)
   'auth.signInTitle': 'Sign in to Xidig',
@@ -922,12 +922,10 @@ export const en = {
   'profile.badgeIdentityVerified': 'Identity Verified',
   'profile.badgeCommunityVerified': 'Community Verified',
   'profile.badgeVerifiedBusiness': 'Verified Business',
-  // Aniga v3 Badge Canon (ruling 10). Garab rides one definition with the
-  // threshold as a param — ×5/×25/×100 are the same badge, never a ladder.
-  // Tooltips carry the full earning criterion the short chip label cannot.
-  'profile.badgeGarabMilestone': 'Co-sign ×{count}',
-  'profile.badgeGarabTooltip':
-    '{count} verified thanks, given by the askers whose Asks this member resolved. It cannot be bought and cannot be removed.',
+  // Aniga v3 Badge Canon (ruling 10): tooltips carry the full earning
+  // criterion the short chip label cannot. (The Garab milestone badge and its
+  // two keys were retired in the Packet B follow-up — see lib/aniga/badges.ts
+  // RETIRED_BADGE_SLUGS.)
   'profile.badgeTopHelperTooltip':
     'Last month’s most-verified helper. Chosen by member vote — one vote per member.',
   'profile.badgeFoundingMemberTooltip': 'One of the first 500 members who built this community.',
@@ -1682,9 +1680,12 @@ export const en = {
   // Capital / Maal (§6/§17/§27). New launch-floor namespace — a trust surface.
   // Canonical terms Maalgeli (Invest) / Garab (Show support) are NOT redefined
   // here; reuse term.maalgeli / term.garab / action.garab*.
+  // "Back/backing/community-backed" is reserved for a future, legally reviewed
+  // capital context. Encouragement says "support"; the Candidate process (open
+  // review + member vote) says "review" — never "support", which is not a vote.
   // Index + entry
   'capital.indexTitle': 'Capital',
-  'capital.indexSubtitle': 'Ventures the community is building and backing.',
+  'capital.indexSubtitle': 'Ventures the community is building and supporting.',
   'capital.labsEntryLink': 'Explore Capital',
   // The Phase-5 candidate board's own name. /capital is the Maal index (D1),
   // so the board moved to /capital/candidates and needs a title that is not
@@ -1694,7 +1695,7 @@ export const en = {
   'capital.fromLab': 'From',
   'capital.emptyTitle': 'No Candidates yet',
   'capital.emptyBody':
-    'A Candidate is a venture a Lab has put forward for backing. When Labs submit theirs, they show up here.',
+    'A Candidate is a venture a Lab has put forward for open review. When Labs submit theirs, they show up here.',
   'capital.emptyLabsLink': 'Browse Labs',
   // Status badges
   'capital.statusDraft': 'Draft',
@@ -1769,7 +1770,7 @@ export const en = {
   // Venture timeline
   'capital.timelineHeading': 'Venture timeline',
   'capital.timelineCreated': 'Created',
-  'capital.timelineSubmitted': 'Submitted for backing',
+  'capital.timelineSubmitted': 'Submitted for review',
   'capital.timelineDecided': 'Reviewed',
   'capital.timelineFunded': 'Funded',
   // Open member comments (§12)
@@ -1792,7 +1793,7 @@ export const en = {
   // the casual visitor comes for the social home; Labs/Capital reveal deeper.
   'marketing.heroTitle': 'The Somali social app for connection, discovery, and building.',
   'marketing.heroSub':
-    'Post wins, ask for help, find people and businesses, follow Labs, message members, and back what the community is building — in one bilingual, low-data app.',
+    'Post wins, ask for help, find people and businesses, follow Labs, message members, and support what the community is building — in one bilingual, low-data app.',
   'marketing.seeProduct': 'Explore what’s inside',
   'marketing.groupsTitle': 'Everything your groups are missing',
   'marketing.groupsBody':
@@ -1814,7 +1815,7 @@ export const en = {
   'marketing.blockLabsTitle': 'Turn ideas into rooms',
   'marketing.blockLabsBody':
     'Start a casual Club; promote it to a Lab when it gets serious. Updates, decisions, links, and members stay in one place.',
-  'marketing.blockCapitalTitle': 'Back what’s being built',
+  'marketing.blockCapitalTitle': 'Support what’s being built',
   'marketing.blockCapitalBody':
     'Show support for promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
   'marketing.blockLiteTitle': 'Built for our internet',
@@ -1859,7 +1860,7 @@ export const en = {
   // Meta description for /product (search snippet + share card) — standalone
   // copy; productIntro's "Everything below" is deictic and reads wrong there.
   'marketing.productDescription':
-    'The live product tour: a purposeful feed, member profiles, a searchable directory of people and businesses, DMs with boundaries, Labs, and community-backed ventures.',
+    'The live product tour: a purposeful feed, member profiles, a searchable directory of people and businesses, DMs with boundaries, Labs, and community-supported ventures.',
   'marketing.productTrustTitle': 'Trust & verification',
   'marketing.productTrustBody':
     'Identity, community, and business verification badges; human moderation with appeals; and a low-bandwidth Lite mode that respects every connection.',
@@ -1873,7 +1874,7 @@ export const en = {
     'A Lab is a small team building openly: a charter, weekly updates, milestones, and an honest dormant flag when life happens. Strong Labs can put a venture candidate before the community.',
   'marketing.labsTeaserNote':
     'Every public Lab already has a shareable page. The full Lab directory opens here soon.',
-  'marketing.capitalTeaserTitle': 'Capital — community-backed ventures',
+  'marketing.capitalTeaserTitle': 'Capital — community-supported ventures',
   'marketing.capitalTeaserBody':
     'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Investing is not offered on Xidig and there are no financial flows — what you can do is offer help or show support for the work.',
 
@@ -1882,7 +1883,7 @@ export const en = {
   'marketing.aboutStory1':
     'Xidig means star. We are building the place where the Somali nation’s builders — at home and across the diaspora — find each other and build together.',
   'marketing.aboutStory2':
-    'Talent is everywhere in our community; trust and discovery are not. Xidig is community-led infrastructure for both: a public square, build-in-public workshops, a business directory, and a community that backs its own.',
+    'Talent is everywhere in our community; trust and discovery are not. Xidig is community-led infrastructure for both: a public square, build-in-public workshops, a business directory, and a community that supports its own.',
   'marketing.aboutStory3':
     'We build in public, we don’t fake numbers, and we design for a 2G connection in Mogadishu first.',
   'marketing.aboutCapitalTitle': 'How Capital works',

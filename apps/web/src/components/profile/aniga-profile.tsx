@@ -106,7 +106,7 @@ function badgeClassOf(definition: ProfileBadge['badge_definitions']): BadgeClass
   return typeof raw === 'string' && BADGE_CLASSES.has(raw) ? (raw as BadgeClass) : 'role';
 }
 
-/** `user_badges.tier` — Garab's ×N and nothing else. */
+/** `user_badges.tier`, passed through (no displayed badge uses it today). */
 function badgeTier(badge: ProfileBadge): string | null {
   return badge.tier !== null && badge.tier !== '' ? badge.tier : null;
 }

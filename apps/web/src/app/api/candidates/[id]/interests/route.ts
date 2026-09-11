@@ -4,7 +4,7 @@ import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { loadCandidateForViewer, parseCandidateId } from '@/lib/capital/candidates-api';
 import { candidateInterestSchema, interestTypeSchema } from '@/lib/capital/schemas';
-import type { InterestCounts } from '@/lib/capital/views';
+import { toInterestCounts, type InterestCounts } from '@/lib/capital/interest-counts';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -32,7 +32,8 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  *
  * Reading a candidate is required for help/cosign (a hidden candidate is a
  * 404). Writes go through the service role; counts return via
- * candidate_interest_counts.
+ * candidate_interest_counts, projected to help + cosign only — the legacy
+ * invest tally never leaves the server (lib/capital/interest-counts.ts).
  */
 
 interface Ctx {
@@ -45,10 +46,7 @@ async function readCounts(
 ): Promise<InterestCounts> {
   const { data, error } = await admin.rpc('candidate_interest_counts', { cand: candidateId });
   if (error) throw new Error(`interest counts failed: ${error.message}`);
-  const row = (Array.isArray(data) ? data[0] : data) as
-    | { help: number; cosign: number; invest: number }
-    | undefined;
-  return { help: row?.help ?? 0, cosign: row?.cosign ?? 0, invest: row?.invest ?? 0 };
+  return toInterestCounts(data);
 }
 
 export async function POST(request: Request, context: Ctx): Promise<Response> {

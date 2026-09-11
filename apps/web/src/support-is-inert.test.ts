@@ -43,9 +43,10 @@ const SUPPORT_READ =
 /** file (relative to src) → why it may touch support rows. */
 const ALLOWED: Record<string, string> = {
   'app/api/posts/[id]/cosign/route.ts': 'the fulfilled-Ask toggle (write own row, echo count)',
-  'app/api/candidates/[id]/interests/route.ts': 'the candidate toggle (write own row, echo counts)',
   'lib/plaza/cosigns.ts': 'count + own-row view for the Ask control',
-  'lib/capital/views.ts': 'aggregate count for the candidate control',
+  // The interests route and the candidate view both read counts through this
+  // one projection (help + support only; the legacy invest tally is dropped).
+  'lib/capital/interest-counts.ts': 'client-bound projection of the candidate counts',
   'lib/capital/schemas.ts': 'interest_type enum validation',
   'app/p/[id]/page.tsx': 'hands the count to GarabButton',
   'components/capital/interest-bar.tsx': 'the /c/[id] control itself',
@@ -82,6 +83,14 @@ describe('Show support is read only where it is displayed or toggled', () => {
       expect(existsSync(file), `${rel} moved — update this gate`).toBe(true);
       expect(SUPPORT_READ.test(stripComments(readFileSync(file, 'utf8'))), rel).toBe(false);
     }
+  });
+
+  it('no code path grants the retired Garab milestone badge', () => {
+    // Only the display layer may name the slug, and only to retire it.
+    const namers = walk(SRC)
+      .filter((file) => /garab-milestone/.test(stripComments(readFileSync(file, 'utf8'))))
+      .map((file) => path.relative(SRC, file).split(path.sep).join('/'));
+    expect(namers).toEqual(['lib/aniga/badges.ts']);
   });
 
   it('every allowlisted reader carries a stated reason', () => {

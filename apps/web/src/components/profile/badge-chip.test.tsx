@@ -4,7 +4,15 @@ import { describe, expect, it } from 'vitest';
 
 import { LocaleProvider } from '@xidig/i18n/react';
 
-import { badgePrefix, badgeVariant, toAnigaBadge, type AnigaBadge } from '@/lib/aniga/badges';
+import {
+  ANIGA_BADGE_LABEL_KEYS,
+  ANIGA_BADGE_TOOLTIP_KEYS,
+  RETIRED_BADGE_SLUGS,
+  badgePrefix,
+  badgeVariant,
+  toAnigaBadge,
+  type AnigaBadge,
+} from '@/lib/aniga/badges';
 
 import { BadgeChip } from './badge-chip';
 
@@ -17,8 +25,9 @@ import { BadgeChip } from './badge-chip';
  *  b) inline (≤20px) surfaces render the Xaqiiqeysan check or nothing, so a
  *     milestone chip in a feed byline is impossible to build, not just
  *     discouraged;
- *  c) Garab ×5/×25/×100 are ONE badge — no bronze/silver/gold, no rank, no
- *     progress-to-next. Tiers describe what happened; they never rank members.
+ *  c) a retired badge renders nothing: the Garab milestone ("Co-sign ×N",
+ *     "verified thanks") mixed the support signal with verified helper credit
+ *     and was never granted, so it is retired (Packet B follow-up).
  */
 
 function render(props: Parameters<typeof BadgeChip>[0]): string {
@@ -101,36 +110,27 @@ describe('inline law: ≤20px surfaces are check-only (ruling 10b / A10)', () =>
   });
 
   it('returns null for every non-identity class — a milestone byline cannot be built', () => {
-    for (const b of [EARNED, TENURE, ROLE, badge('garab-milestone', 'earned', '100')]) {
+    for (const b of [EARNED, TENURE, ROLE]) {
       expect(render({ badge: b, size: 'inline' }), b.slug).toBe('');
     }
   });
 });
 
-describe('Garab tiers are one badge (ruling 10c / A11)', () => {
-  const TIERS = ['5', '25', '100'] as const;
-  const rendered = TIERS.map((tier) => render({ badge: badge('garab-milestone', 'earned', tier) }));
-
-  it('every tier renders the identical element structure and className', () => {
-    // Digits are the ONLY permitted difference: blank them and the three
-    // markups must be byte-identical. This catches a tier-specific class, an
-    // extra rank element, or a progress node in one shot.
-    const [first, ...rest] = rendered.map((html) => html.replace(/\d+/g, 'N'));
-    for (const html of rest) expect(html).toBe(first);
-  });
-
-  it('shows the threshold as a bare number, with no ladder vocabulary', () => {
-    TIERS.forEach((tier, i) => {
-      expect(rendered[i]).toContain(`Garab ×${tier}`);
-    });
-    for (const html of rendered) {
-      expect(html.toLowerCase()).not.toMatch(/bronze|silver|gold|rank|next|level|progress/);
+describe('the Garab milestone badge is retired (Packet B follow-up)', () => {
+  it('builds no badge at any tier, so a stray user_badges row renders nothing', () => {
+    for (const tier of ['5', '25', '100', null]) {
+      expect(toAnigaBadge('garab-milestone', 'earned', tier)).toBeNull();
     }
   });
 
-  it('refuses to build a tier badge without its threshold', () => {
-    // Otherwise the `{count}` placeholder would reach the DOM.
-    expect(toAnigaBadge('garab-milestone', 'earned', null)).toBeNull();
+  it('is listed as retired with a stated reason, and has no label or tooltip key', () => {
+    expect(RETIRED_BADGE_SLUGS['garab-milestone']?.length).toBeGreaterThan(10);
+    expect(ANIGA_BADGE_LABEL_KEYS['garab-milestone']).toBeUndefined();
+    expect(ANIGA_BADGE_TOOLTIP_KEYS['garab-milestone']).toBeUndefined();
+  });
+
+  it('retiring it does not touch the live helper-credit badge', () => {
+    expect(render({ badge: EARNED })).toContain('xidig-tag');
   });
 });
 

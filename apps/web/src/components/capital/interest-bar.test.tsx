@@ -61,7 +61,7 @@ afterEach(() => {
 });
 
 function counts(cosign: number, help = 2): InterestCounts {
-  return { help, cosign, invest: 0 };
+  return { help, cosign };
 }
 
 function mount(props: { cosign: number; mine?: ('cosign' | 'help')[]; locale?: Locale }) {

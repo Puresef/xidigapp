@@ -772,9 +772,6 @@ export const so = {
   'profile.badgeIdentityVerified': 'Xaqiiqeysan',
   'profile.badgeCommunityVerified': 'Bulsho La Xaqiijiyay',
   'profile.badgeVerifiedBusiness': 'Ganacsi Xaqiiqeysan',
-  'profile.badgeGarabMilestone': 'Garab ×{count}',
-  'profile.badgeGarabTooltip':
-    '{count} mahadnaq oo la xaqiijiyay, oo ay bixiyeen qorayaasha codsiyada uu caawiyay. Lama iibsan karo, lama tirtiri karo.',
   'profile.badgeTopHelperTooltip':
     'Bishii hore xubintii ugu caawinta badnayd ee la xaqiijiyay. Codbixin xubneed, xubin kasta hal cod.',
   'profile.badgeFoundingMemberTooltip':
@@ -1612,8 +1609,10 @@ export const so = {
   'capital.filterAll': 'Dhammaan',
   'capital.fromLab': 'Ka timid',
   'capital.emptyTitle': 'Weli ma jiraan Musharaxiin',
+  // PROVISIONAL (G34), Packet B follow-up: a Candidate is put forward for open
+  // review (+ member vote), not "to be supported" — support is not a vote.
   'capital.emptyBody':
-    'Musharaxu waa mashruuc Warshad soo bandhigtay si loo taageero. Marka Warshadaha ay soo gudbiyaan, halkan ayay ka muuqan doonaan.',
+    'Musharaxu waa mashruuc Warshad u soo bandhigtay dib-u-eegis furan. Marka Warshadaha ay soo gudbiyaan, halkan ayay ka muuqan doonaan.',
   'capital.emptyLabsLink': 'Fiiri Warshadaha',
   // Status badges
   'capital.statusDraft': 'Qabyo',
@@ -1685,7 +1684,8 @@ export const so = {
   // Venture timeline
   'capital.timelineHeading': 'Jadwalka mashruuca',
   'capital.timelineCreated': 'La abuuray',
-  'capital.timelineSubmitted': 'Loo gudbiyay taageero',
+  // PROVISIONAL (G34): submission opens review + vote; it is not support.
+  'capital.timelineSubmitted': 'Loo gudbiyay dib-u-eegis',
   'capital.timelineDecided': 'Dib loo eegay',
   'capital.timelineFunded': 'La maalgeliyay',
   // Open member comments (§12)

@@ -70,10 +70,6 @@ describe('canonical product terms', () => {
       // scope ruling: attestations are distinct mechanisms, left unchanged).
       'maal.weightsBody': 'Maal witness attestation (marag), not support',
       'error.attestationRecusal': 'Maal witness attestation (marag), not support',
-      // Never granted in production; label + "verified thanks" tooltip describe
-      // helper credit, not support. Held for an owner ruling (grant-or-retire
-      // and naming) rather than relabelled into the support vocabulary.
-      'profile.badgeGarabMilestone': 'ungranted Garab milestone badge — owner ruling pending',
     };
     const hits: string[] = [];
     for (const [key, value] of Object.entries(en)) {
@@ -81,6 +77,38 @@ describe('canonical product terms', () => {
       if (texts.some((text) => typeof text === 'string' && /co-?sign/i.test(text))) hits.push(key);
     }
     expect(hits.sort()).toEqual(Object.keys(DISTINCT_CONCEPTS).sort());
+  });
+
+  it('"backing" is reserved for a future capital context — current-product copy says support or review', () => {
+    /**
+     * Packet B follow-up ruling: encouragement says "support"; the Candidate
+     * process (open review + member vote) says "review"; "back / backing /
+     * community-backed" waits for a legally reviewed capital context. key →
+     * why the word legitimately remains.
+     */
+    const RESERVED_OR_UNRELATED: Record<string, string> = {
+      'profile.badgeEarlyBacker':
+        'capital-era badge; awards stopped (A2), history retained — renaming it is a capital/legal ruling',
+      'lab.modeLabHint': '"charter-backed" = grounded in a written charter, not funding',
+      'events.cancelReleaseNote': 'phrasal verb "back out" = cancel an RSVP',
+      'events.fullReleaseNote': 'phrasal verb "back out" = cancel an RSVP',
+    };
+    const backing =
+      /\b(backs|backing|backed|backers?|back (what|this|each other|the|a|ventures?))\b|community-backed/i;
+    const hits: string[] = [];
+    for (const [key, value] of Object.entries(en)) {
+      const texts = typeof value === 'string' ? [value] : Object.values(value as object);
+      if (texts.some((text) => typeof text === 'string' && backing.test(text))) hits.push(key);
+    }
+    expect(hits.sort()).toEqual(Object.keys(RESERVED_OR_UNRELATED).sort());
+  });
+
+  it('the Candidate process reads as review, not as support (support is not a vote)', () => {
+    expect(en['capital.timelineSubmitted']).toBe('Submitted for review');
+    expect(en['capital.emptyBody']).toContain('put forward for open review');
+    expect(en['capital.indexSubtitle']).toBe('Ventures the community is building and supporting.');
+    expect(en['marketing.blockCapitalTitle']).toBe('Support what’s being built');
+    expect(en['marketing.capitalTeaserTitle']).toBe('Capital — community-supported ventures');
   });
 
   it('distinct attestation copy keeps its own verb (Maal witness co-sign is untouched)', () => {
@@ -127,12 +155,20 @@ describe('canonical product terms', () => {
   it('Garab ships bare — the long forms were retired, tooltips carry the meaning', () => {
     // Naming review 23 Aug: "Garab istaag" / "Waad garab taagan tahay" are NOT
     // shipped. The word stays one syllable and the explanation lives in the
-    // support note and the badge tooltip.
+    // support note.
     expect(so['action.garab']).toBe('Garab');
     expect(so['action.garab']).not.toContain('istaag');
-    for (const key of ['action.garabNote', 'profile.badgeGarabTooltip'] as const) {
-      expect(en[key], `${key} must explain Show support`).toBeTruthy();
-      expect(so[key], `${key} must explain Garab`).toBeTruthy();
+    expect(en['action.garabNote'], 'the note must explain Show support').toBeTruthy();
+    expect(so['action.garabNote'], 'the note must explain Garab').toBeTruthy();
+  });
+
+  it('the Garab milestone badge copy is retired in both locales (Packet B follow-up)', () => {
+    // "Co-sign ×N" / "verified thanks" mixed the support signal with verified
+    // helper credit; the badge was never granted. Its display is retired in
+    // lib/aniga/badges.ts and the copy must not return.
+    for (const key of ['profile.badgeGarabMilestone', 'profile.badgeGarabTooltip']) {
+      expect(key in en, key).toBe(false);
+      expect(key in so, key).toBe(false);
     }
   });
 
