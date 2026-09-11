@@ -39,7 +39,11 @@ export const en = {
   // Canonical product terms used inside sentences and on buttons
   'term.lab': 'Lab',
   'term.club': 'Club',
-  'term.garab': 'Co-sign',
+  // Garab = the non-financial support signal. EN display label "Show support"
+  // (PRD Relook §24 / D-10, owner ruling Packet B). It is encouragement only:
+  // never an investment, a vote, a verification, a review or a ranking, and
+  // it unlocks nothing — counts are visible to everyone either way.
+  'term.garab': 'Show support',
   'term.maalgeli': 'Invest',
 
   // Seeded / AI content labels (§21) — shown on cards for non-member content.
@@ -73,8 +77,15 @@ export const en = {
 
   // Core actions
   'action.getStarted': 'Get started',
-  'action.garab': 'Co-sign',
-  'action.garabCount': { one: '{count} co-sign', other: '{count} co-signs' },
+  // One support vocabulary for every surface that carries the control (the
+  // fulfilled-Ask GarabButton and the candidate InterestBar):
+  // Show support → Supporting → Remove support · "{count} people support this".
+  'action.garab': 'Show support',
+  'action.garabActive': 'Supporting',
+  'action.garabRemove': 'Remove support',
+  'action.garabCount': { one: '{count} person supports this', other: '{count} people support this' },
+  'action.garabNote':
+    'Support is encouragement only — not an investment, a vote, a rating, or a check of anyone’s work.',
   'action.canHelp': 'I can help',
   'action.save': 'Save',
   'action.cancel': 'Cancel',
@@ -1165,7 +1176,6 @@ export const en = {
   'plaza.guulPromptCta': 'Write the Win',
   'plaza.guulPromptDismiss': 'No, thanks',
   'plaza.guulPromptClose': 'Dismiss this suggestion',
-  'plaza.garabHelperNote': 'You stood with them. The count shows only after you take part.',
   'plaza.timelineTitle': 'Ask timeline',
   'plaza.detailsTitle': 'Details',
   'plaza.detailsCategory': 'Category',
@@ -1670,8 +1680,8 @@ export const en = {
   'search.crossTabCta': 'See {count} in {label}',
 
   // Capital / Maal (§6/§17/§27). New launch-floor namespace — a trust surface.
-  // Canonical terms Maalgeli (Invest) / Garab (Co-sign) are NOT redefined here;
-  // reuse term.maalgeli / term.garab / action.garab*.
+  // Canonical terms Maalgeli (Invest) / Garab (Show support) are NOT redefined
+  // here; reuse term.maalgeli / term.garab / action.garab*.
   // Index + entry
   'capital.indexTitle': 'Capital',
   'capital.indexSubtitle': 'Ventures the community is building and backing.',
@@ -1744,11 +1754,10 @@ export const en = {
   'capital.voteRejectDesc': 'Signal that this one isn’t ready yet.',
   'capital.voteRetract': 'Retract vote',
   'capital.voteTally': '{approve} approve · {reject} reject · {total} total',
-  // Interests bar (Garab / help / Maalgeli)
-  'capital.interestHeading': 'Back this venture',
-  'capital.signInToEngage': 'Sign in to back this venture',
-  'capital.cosignCount': { one: '{count} co-sign', other: '{count} co-signs' },
-  'capital.cosignDone': 'Co-signed',
+  // Interests bar (Show support / help). "Back" read as financial backing on
+  // a surface where investing is not offered — the control says support.
+  'capital.interestHeading': 'Support this venture',
+  'capital.signInToEngage': 'Sign in to show support or offer help',
   'capital.canHelp': 'I can help',
   'capital.canHelpDone': 'Offered to help',
   // A2 containment: invest/fund promotional keys removed with their surfaces —

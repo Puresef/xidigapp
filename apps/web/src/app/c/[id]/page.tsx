@@ -43,8 +43,9 @@ export const dynamic = 'force-dynamic';
  * language. Reviewer console (rubric form + decision controls) shows for a
  * mod/admin who is NOT a member of the candidate's Lab (recusal §17). There is
  * no invest surface: investing is not currently offered on Xidig (A2
- * containment) — InterestBar carries only the non-financial help/cosign
- * signals, and the API refuses invest intents server-side.
+ * containment) — InterestBar carries only the non-financial help and
+ * Show support (Garab, interest_type 'cosign') signals, and the API refuses
+ * invest intents server-side.
  */
 
 const idSchema = z.string().uuid();

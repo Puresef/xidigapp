@@ -25,7 +25,8 @@ vi.mock('next/navigation', () => ({
  * Codsi detail family (P1 frames 1a–3b + DESIGN.md §4). The acceptance rules
  * these lock: asker-only lifecycle controls, offer = private DM (privacy note
  * always beside the CTA), the helper strip as the only public offer artifact,
- * Garab existing only post-fulfilled with its count hidden pre-interaction,
+ * Garab (Show support) existing only post-fulfilled with its count visible to
+ * everyone,
  * and zero trust-orange before fulfilment.
  */
 
@@ -106,7 +107,7 @@ describe('HelperStrip (in progress — system chrome, cold accent)', () => {
   });
 });
 
-describe('GarabButton — exists only post-fulfilled, count hidden pre-interaction', () => {
+describe('GarabButton — exists only post-fulfilled; Show support unlocks nothing', () => {
   const base: ComponentProps<typeof GarabButton> = {
     postId: 'p1',
     fulfilled: true,
@@ -118,17 +119,26 @@ describe('GarabButton — exists only post-fulfilled, count hidden pre-interacti
     expect(render(createElement(GarabButton, { ...base, fulfilled: false }))).toBe('');
   });
 
-  it('shows no number to a viewer who has not taken part', () => {
+  it('shows the count to a viewer who has not taken part (no reveal reward)', () => {
     const html = render(createElement(GarabButton, base));
-    expect(html).toContain('Co-sign');
-    expect(html).not.toContain('9 co-signs');
+    expect(html).toContain('Show support');
+    expect(html).toContain('9 people support this');
     expect(html).toContain('aria-pressed="false"');
+    expect(html).not.toMatch(/co-?sign/i);
   });
 
-  it('lights up (lit dabqaad, Somali Blue) and reveals the count once the viewer took part', () => {
+  it('explains what support is NOT before the first tap', () => {
+    const html = render(createElement(GarabButton, base));
+    expect(html).toContain('not an investment, a vote, a rating, or a check of anyone’s work');
+  });
+
+  it('lights up as "Supporting", described by "Remove support", with the same count', () => {
     const html = render(createElement(GarabButton, { ...base, initialMine: true }));
     expect(html).toContain('aria-pressed="true"');
-    expect(html).toContain('9 co-signs');
+    expect(html).toContain('Supporting');
+    expect(html).toContain('Remove support');
+    expect(html).toContain('9 people support this');
+    expect(html).not.toMatch(/co-?sign/i);
   });
 });
 
@@ -147,7 +157,8 @@ describe('HelperCard (fulfilled rail)', () => {
     );
     expect(html).toContain('Helper');
     expect(html).toContain('Deeqa Axmed helped');
-    expect(html).toContain('You stood with them');
+    expect(html).toContain('Supporting');
+    expect(html).toContain('Support is encouragement only');
   });
 });
 

@@ -11,7 +11,8 @@ any Capital table.
 
 Locked scope (§17 + Warya 7 Jul): Capital v1 is a **listing/intro service +
 manual ops**. NO money movement, NO pledge ledger, NO payout states, NO tokens.
-Garab/Co-sign + "I can help" are non-financial and **never gated**.
+Garab (EN label "Show support"; interest type `cosign`) + "I can help" are
+non-financial and **never gated**.
 
 > **Superseded 10 Sep 2026 (A2 containment).** Intent capture is gone:
 > **investing is not offered on Xidig, in any region.** Every invest submission
@@ -76,7 +77,7 @@ blocked), and always **after** the candidate has been loaded under RLS
 `lib/capital/views.ts`). An internal `and can_read_candidate(cand)` guard would
 be actively wrong here: under the admin client `auth.uid()` is NULL, so that
 predicate is FALSE for every candidate and would permanently zero every tally
-(vote panel, "142 co-signs", the vote/interests API responses). The guard was
+(vote panel, "142 people support this", the vote/interests API responses). The guard was
 therefore dropped — access control lives at the caller's RLS candidate load.
 
 ## Per-table SELECT policies (all `to authenticated`)

@@ -14,10 +14,10 @@ import { so } from './dictionaries/so';
  * makes no promise about activating it later. The only member actions the
  * copy may point at are the ones that exist on a candidate: "I can help" and
  * the support signal — whose locked ENGLISH label is "Show support" (G1), and
- * whose locked SOMALI label stays the bare "Garab". The control itself still
- * renders the retired "Co-sign" (term.garab / action.garab are pinned by
- * vocabulary.test.ts and migrate under Packet B); this copy uses the locked
- * label, so the assertion below is what stops the retired one coming back.
+ * whose locked SOMALI label stays the bare "Garab". Since Packet B the
+ * control itself says "Show support" too (term.garab / action.garab, pinned by
+ * vocabulary.test.ts), so prose and button agree; the assertion below is what
+ * stops the retired "co-sign" coming back into this copy.
  *
  * The route-coupling half of this pin — that /capital/candidates still reads
  * this ONE key for both its hero and its <meta description>, so a dictionary

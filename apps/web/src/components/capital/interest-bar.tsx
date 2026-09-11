@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import type { Enums } from '@xidig/db';
 import { useT } from '@xidig/i18n/react';
@@ -15,7 +15,12 @@ import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
  * Interest bar. Two signals, both non-financial and NEVER gated:
- *  - Garab / Co-sign: social-proof count ("142 co-signs") + a toggle.
+ *  - Garab / Show support: a visible count ("142 people support this") + a
+ *    toggle. Show support is encouragement only — it is not an investment,
+ *    a vote, a review, a readiness check or a verification of the venture,
+ *    and it unlocks nothing: the count is the same for every viewer whether
+ *    or not they support, and the note under the actions says so.
+ *    States: "Show support" → "Supporting" (described by "Remove support").
  *  - "I can help": a concrete non-financial offer toggle.
  *
  * The invest slot (Maalgeli CTA → fund modal) was removed under A2
@@ -42,11 +47,12 @@ export function InterestBar({
   initialInterests: InterestType[];
 }) {
   const t = useT();
+  const removeHintId = useId();
   const [counts, setCounts] = useState<InterestCounts>(initialCounts);
   const [mine, setMine] = useState<Set<InterestType>>(new Set(initialInterests));
   const [pending, setPending] = useState<InterestType | null>(null);
   const [error, setError] = useState<PlainError | null>(null);
-  // Ceremony on ACTIVATING a co-sign (spec §4) — never on un-toggling.
+  // Ceremony on ACTIVATING support (spec §4) — never on un-toggling.
   const [celebrated, setCelebrated] = useState(0);
 
   function toggle(type: 'help' | 'cosign') {
@@ -84,9 +90,10 @@ export function InterestBar({
       <h2 className="xidig-section__title">{t('capital.interestHeading')}</h2>
       {error ? <PlainErrorBanner error={error} /> : null}
 
-      {/* Social proof — Garab / Co-sign count */}
+      {/* Garab / Show support count — visible to every viewer, supported or not.
+          The interest_type slug stays 'cosign' (schema + analytics identity). */}
       <p className="xidig-card__body">
-        {t('capital.cosignCount', { count: counts.cosign })}
+        {t('action.garabCount', { count: counts.cosign })}
         {/* Finance surface: the G3 motion doctrine locks Maal/capital marks
             to the static rest frame — provenance is shown by a static trust
             ring on the card, never by an animated mark. `surface="capital"`
@@ -108,10 +115,11 @@ export function InterestBar({
           className={`xidig-button ${mine.has('cosign') ? 'xidig-button--primary' : 'xidig-button--secondary'}`}
           disabled={pending !== null}
           aria-pressed={mine.has('cosign')}
+          aria-describedby={mine.has('cosign') ? removeHintId : undefined}
           onClick={() => toggle('cosign')}
         >
           {/* D3 dabqaad — Garab is never a like/heart/thumb. Outline = unlit;
-              co-signed = lit (filled) with the smoke wisps (CSS double-gated).
+              supporting = lit (filled) with the smoke wisps (CSS double-gated).
               Decorative: the visible button text carries the meaning. */}
           <XidigIcon
             name="garab"
@@ -121,8 +129,13 @@ export function InterestBar({
             animateSmoke={mine.has('cosign')}
             className="x-ic--lead"
           />
-          {mine.has('cosign') ? t('capital.cosignDone') : t('action.garab')}
+          {mine.has('cosign') ? t('action.garabActive') : t('action.garab')}
         </button>
+        {mine.has('cosign') ? (
+          <span id={removeHintId} className="xidig-visually-hidden">
+            {t('action.garabRemove')}
+          </span>
+        ) : null}
         <button
           type="button"
           className={`xidig-button ${mine.has('help') ? 'xidig-button--primary' : 'xidig-button--secondary'}`}
@@ -133,6 +146,7 @@ export function InterestBar({
           {mine.has('help') ? t('capital.canHelpDone') : t('capital.canHelp')}
         </button>
       </div>
+      <p className="xidig-capital-interest__note">{t('action.garabNote')}</p>
     </section>
   );
 }

@@ -46,7 +46,7 @@ there). Reseed / refresh with
 - **Login:** `ayaan_dev`.
 - **URL:** `/plaza` → open **"Xawilaad Sandbox v0.1 is live"** (Ayaan's win).
 - **Shot:** the thread with its long comment chain, reactions, and mentions.
-- **Shows:** replies/co-signs (garab), an elder's story-comment, a sceptic's
+- **Shows:** replies/Show support (garab), an elder's story-comment, a sceptic's
   civil challenge — real social texture. (Also try the Somali Ask **"Sidee ku
   bartaa React?"** for a credited-answer + AI-helper reply.)
 
@@ -100,7 +100,7 @@ there). Reseed / refresh with
 - **Login:** `ifrah_invest` (Supporter).
 - **URL:** `/capital`, then open **Xawilaad Sandbox** (submitted candidate).
 - **Shot:** the candidate page — pitch, rubric scores, the **Supporter vote
-  panel** (live 7-day window), interest bar (help / co-sign only).
+  panel** (live 7-day window), interest bar (help / Show support only).
 - **Shows:** §17 governance, and that the candidate pipeline carries **no invest
   surface for any member in any region** — investing is not offered on Xidig
   (A2 containment). Draft candidate **Hooyo Made** is visible only to Iskaashato

@@ -4808,6 +4808,13 @@ a.xidig-capital-entry:active {
 .xidig-capital-review__scores {
   align-items: flex-end;
 }
+/* Show support says what it is NOT, under the actions (Packet B). */
+.xidig-capital-interest__note {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--x-muted);
+  text-wrap: pretty;
+}
 .xidig-capital-timeline__list {
   list-style: none;
   padding-left: 0;
@@ -5894,6 +5901,12 @@ button.xidig-poll__option:disabled,
   color: var(--x-accent-text);
   background: var(--x-accent-soft);
   border-color: color-mix(in srgb, var(--x-accent) 45%, transparent);
+}
+
+.xidig-codsi-garab__count {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--x-fg);
 }
 
 .xidig-codsi-garab__note {

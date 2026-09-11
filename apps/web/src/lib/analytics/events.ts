@@ -50,7 +50,9 @@ export interface AnalyticsEventMap {
   ask_offer_sent: Record<string, never>;
   ask_offer_accepted: Record<string, never>;
   ask_reopened: Record<string, never>;
-  // Garab on a resolved ask (post-scoped; candidate co-signs stay interest_expressed).
+  // Garab / Show support on a resolved ask (post-scoped; candidate support stays
+  // interest_expressed type 'cosign'). Stable analytics identity — the event
+  // name did not move with the EN display label.
   post_cosigned: Record<string, never>;
   report_submitted: { target_type: Enums<'entity_type'>; reason: Enums<'report_reason'> };
   report_resolved: { action: string };

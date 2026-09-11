@@ -12,8 +12,10 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * product law (Garab exists only post-fulfilled, on a published ask the
  * viewer can read), so the database is the authz here.
  *
- * The response echoes {cosigned, count}: by definition the caller has just
- * taken part, so returning the count honours the hidden-pre-interaction rule.
+ * The response echoes {cosigned, count} so the control can update in place.
+ * The count is not a reward for taking part — every viewer already sees it
+ * (Packet B: Show support unlocks nothing). Route, field and event names keep
+ * the original `cosign` identifiers; only the display label changed.
  */
 
 export async function PUT(
@@ -29,7 +31,7 @@ export async function PUT(
       user_id: ctx.appUser.id,
     });
     if (error) {
-      // 23505 = already co-signed → idempotent success.
+      // 23505 = already supporting → idempotent success.
       // 42501 = RLS with-check: not an ask, not fulfilled, or not visible —
       //         the ask isn't in a garab-able state.
       if (error.code === '42501') throw new ApiError('ask_not_open', 409);

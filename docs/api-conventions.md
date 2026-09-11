@@ -212,8 +212,8 @@ capital functionality available, and no region unlocks it. Reactivation would
 require the PRD §15/D-08 legal gates plus an explicit code change in these
 routes; there is no flag, header, or configuration that turns it back on.
 
-Garab (Co-sign) + "I can help" are non-financial member signals and are
-unaffected. **Retraction is deliberately preserved**: a member who recorded an
+Garab (EN label "Show support") + "I can help" are non-financial member
+signals and are unaffected. **Retraction is deliberately preserved**: a member who recorded an
 invest intent while the old funnel was live can still delete their own record.
 Existing `interests` rows and the historical `capital_gate_evaluations` log are
 retained untouched pending a separately approved retention policy — they are
@@ -247,8 +247,9 @@ Phase 5 conventions worth knowing:
   **error**, not a notice.
 - **The invest UI is gone, not hidden** — the Maalgeli CTA, region-attestation
   modal and fund modal components were deleted; `InterestBar` renders only the
-  co-sign and help halves. A client cannot reach an invest surface, and a client
-  bypassing the UI hits the server refusals above.
+  Show support (interest type `cosign`) and help halves. A client cannot reach
+  an invest surface, and a client bypassing the UI hits the server refusals
+  above.
 - **Reviewer set for v1.0 = mod/admin, with recusal** — no dedicated reviewer
   role exists pre-Phase-6, so `can_review_candidate` = `is_mod() OR is_admin()`
   AND NOT a member of the Candidate's Lab (§17 fairness). `not_a_reviewer` (403)

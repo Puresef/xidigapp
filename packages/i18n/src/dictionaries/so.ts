@@ -78,7 +78,16 @@ export const so = {
   // Core actions
   'action.getStarted': 'Bilow',
   'action.garab': 'Garab',
+  'action.garabActive': 'La garbeeyay',
+  // PROVISIONAL wording pending the native SO review (G34) — mirrors
+  // capital.voteRetract ("Ka noqo codka"). Garab itself stays bare.
+  'action.garabRemove': 'Ka noqo garabka',
   'action.garabCount': { one: '{count} garab', other: '{count} garab' },
+  // PROVISIONAL wording pending the native SO review (G34): what Garab is NOT
+  // (investment / vote / rating / check of work). Replaces the retired
+  // count-after-you-take-part note — counts are now visible to everyone.
+  'action.garabNote':
+    'Garabku waa dhiirrigelin keliya — maaha maalgashi, cod, qiimayn, ama hubinta shaqada qofna.',
   'action.canHelp': 'Waan caawin karaa',
   'action.save': 'Kaydi',
   'action.cancel': 'Ka noqo',
@@ -1021,8 +1030,6 @@ export const so = {
   'plaza.guulPromptCta': 'Qor Guul',
   'plaza.guulPromptDismiss': 'Maya, mahadsanid',
   'plaza.guulPromptClose': 'Xir talooyinka',
-  'plaza.garabHelperNote':
-    'Waad garab istaagtay. Tiradu waxay muuqataa oo keliya markaad ka qaybqaadato.',
   'plaza.timelineTitle': 'Socodka codsiga',
   'plaza.detailsTitle': 'Faahfaahin',
   'plaza.detailsCategory': 'Qaybta',
@@ -1593,7 +1600,7 @@ export const so = {
   'search.crossTabCta': 'Fiiri {count} ee {label}',
 
   // Capital / Maal (§6/§17/§27). Launch-floor — trust surface, full SO.
-  // Maalgeli (Invest) / Garab (Co-sign) reuse term.maalgeli / term.garab /
+  // Maalgeli (Invest) / Garab (Show support) reuse term.maalgeli / term.garab /
   // action.garab* — NOT redefined here (vocabulary lock).
   // Index + entry
   'capital.indexTitle': 'Maal',
@@ -1666,11 +1673,9 @@ export const so = {
   'capital.voteRejectDesc': 'Calaamadee in kani aanu weli diyaar ahayn.',
   'capital.voteRetract': 'Ka noqo codka',
   'capital.voteTally': '{approve} ansixi · {reject} diid · {total} wadar',
-  // Interests bar (Garab / help / Maalgeli)
+  // Interests bar (Garab / help)
   'capital.interestHeading': 'Taageer mashruucan',
   'capital.signInToEngage': 'Soo gal si aad u taageerto mashruucan',
-  'capital.cosignCount': { one: '{count} garab', other: '{count} garab' },
-  'capital.cosignDone': 'La garbeeyay',
   'capital.canHelp': 'Waan caawin karaa',
   'capital.canHelpDone': 'Caawimo la bixiyay',
   // A2 containment: invest/fund promotional keys removed with their surfaces

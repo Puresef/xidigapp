@@ -28,16 +28,66 @@ describe('canonical navigation names', () => {
 });
 
 describe('canonical product terms', () => {
-  it('Garab backs things with the EN label "Co-sign" (PRD decision log, Tracker Seq 51)', () => {
-    expect(en['term.garab']).toBe('Co-sign');
+  it('Garab is "Show support" in English (PRD Relook §24 / D-10 — supersedes Tracker Seq 51 "Co-sign")', () => {
+    expect(en['term.garab']).toBe('Show support');
     expect(so['term.garab']).toBe('Garab');
-    expect(en['action.garab']).toBe('Co-sign');
+    expect(en['action.garab']).toBe('Show support');
     expect(so['action.garab']).toBe('Garab');
   });
 
-  it('social proof counts stay in the canonical noun per locale ("142 garab / 142 co-signs")', () => {
-    expect(en['action.garabCount'].other).toBe('{count} co-signs');
+  it('the support control has one three-state vocabulary: Show support → Supporting → Remove support', () => {
+    expect(en['action.garab']).toBe('Show support');
+    expect(en['action.garabActive']).toBe('Supporting');
+    expect(en['action.garabRemove']).toBe('Remove support');
+    // SO: "La garbeeyay" moved over from the retired capital.cosignDone; the
+    // remove phrase is PROVISIONAL pending the native review (G34).
+    expect(so['action.garabActive']).toBe('La garbeeyay');
+    expect(so['action.garabRemove']).toBeTruthy();
+  });
+
+  it('support counts read as people, not a score ("12 people support this" / "12 garab")', () => {
+    expect(en['action.garabCount'].one).toBe('{count} person supports this');
+    expect(en['action.garabCount'].other).toBe('{count} people support this');
     expect(so['action.garabCount']?.other).toBe('{count} garab');
+  });
+
+  it('the support note says what support is NOT — never an investment, vote, rating or check of work', () => {
+    const note = en['action.garabNote'];
+    for (const word of ['investment', 'vote', 'rating', 'check']) expect(note).toContain(word);
+    // The retired count-after-you-take-part promise must not come back.
+    expect(note).not.toMatch(/take part|shows only|unlock/i);
+  });
+
+  it('no English UI string calls the support control "Co-sign"', () => {
+    /**
+     * key → why "co-sign" legitimately remains. Anything else naming the
+     * support control "co-sign" in English is a regression to the retired
+     * Tracker Seq 51 label.
+     */
+    const DISTINCT_CONCEPTS: Record<string, string> = {
+      // Maal "marag": witnessing a logged contribution in the venture ledger —
+      // a work-record attestation, not the social support signal (Packet B
+      // scope ruling: attestations are distinct mechanisms, left unchanged).
+      'maal.weightsBody': 'Maal witness attestation (marag), not support',
+      'error.attestationRecusal': 'Maal witness attestation (marag), not support',
+      // Never granted in production; label + "verified thanks" tooltip describe
+      // helper credit, not support. Held for an owner ruling (grant-or-retire
+      // and naming) rather than relabelled into the support vocabulary.
+      'profile.badgeGarabMilestone': 'ungranted Garab milestone badge — owner ruling pending',
+    };
+    const hits: string[] = [];
+    for (const [key, value] of Object.entries(en)) {
+      const texts = typeof value === 'string' ? [value] : Object.values(value as object);
+      if (texts.some((text) => typeof text === 'string' && /co-?sign/i.test(text))) hits.push(key);
+    }
+    expect(hits.sort()).toEqual(Object.keys(DISTINCT_CONCEPTS).sort());
+  });
+
+  it('distinct attestation copy keeps its own verb (Maal witness co-sign is untouched)', () => {
+    expect(en['maal.weightsBody']).toContain('a co-sign from members or a lead');
+    expect(en['error.attestationRecusal']).toBe(
+      'You cannot witness your own contribution. Ask a member or a lead to co-sign it.',
+    );
   });
 
   it('Space modes: Lab (Warshad) ⇄ Club (Koox) — naming review of 27 Jun (PRD §16)', () => {
@@ -77,11 +127,11 @@ describe('canonical product terms', () => {
   it('Garab ships bare — the long forms were retired, tooltips carry the meaning', () => {
     // Naming review 23 Aug: "Garab istaag" / "Waad garab taagan tahay" are NOT
     // shipped. The word stays one syllable and the explanation lives in the
-    // helper note and the badge tooltip.
+    // support note and the badge tooltip.
     expect(so['action.garab']).toBe('Garab');
     expect(so['action.garab']).not.toContain('istaag');
-    for (const key of ['plaza.garabHelperNote', 'profile.badgeGarabTooltip'] as const) {
-      expect(en[key], `${key} must explain Co-sign`).toBeTruthy();
+    for (const key of ['action.garabNote', 'profile.badgeGarabTooltip'] as const) {
+      expect(en[key], `${key} must explain Show support`).toBeTruthy();
       expect(so[key], `${key} must explain Garab`).toBeTruthy();
     }
   });
@@ -116,7 +166,7 @@ describe('the two label sets stay separate (naming review 23 Aug)', () => {
    * over only if it has no equivalent, is a brand in its own right, or simply
    * suits the copy — and then it goes on ALLOWED below, with a reason.
    * Everything else uses its own set's word: EN says Lab / Plaza / Directory /
-   * Capital / Messages / Ask / Win / Co-sign / Verified, SO says Warshad /
+   * Capital / Messages / Ask / Win / Show support / Verified, SO says Warshad /
    * Madal / Suuq / Maal / Fariimo / Codsi / Guul / Garab / Xaqiiq.
    */
   const SOMALI_NOUNS =

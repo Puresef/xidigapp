@@ -44,7 +44,7 @@ export interface VignetteLabels {
   readonly club: string; // term.club (Koox)
   readonly lab: string; // term.lab (Warshad)
   readonly rooms: readonly [string, string, string]; // lab.tabUpdates/Decisions/Members
-  readonly garab: string; // term.garab (Co-sign)
+  readonly garab: string; // term.garab (Show support)
   readonly show: string; // lite.show (Muuji)
   readonly off: string; // settings.toggleOff
   readonly bait: string; // marketing.vigBaitLabel
@@ -263,7 +263,7 @@ function LabsVignette({ labels }: { labels: VignetteLabels }) {
 }
 
 /* 6 ── Capital: a build-in-public timeline drawing left→right, milestones
-       lighting up, a Garab (co-sign) counter incrementing. */
+       lighting up, a Garab (Show support) counter incrementing. */
 function CapitalVignette({ labels }: { labels: VignetteLabels }) {
   return (
     <div className="xf-vg-scene xf-vg-scene--capital">

@@ -10,8 +10,8 @@ import { SOMALIA_ISO } from '@/lib/capital/constants';
  * Investment features are shown ONLY when ALL THREE inputs agree that the member
  * is Somalia-based: their profile country is SO, the request's geo-IP-derived
  * country is SO, and they have ticked the self-attestation checkbox. Garab
- * (co-sign) and "I can help" are non-financial and NEVER gated — they don't go
- * through this path.
+ * (Show support) and "I can help" are non-financial and NEVER gated — they
+ * don't go through this path.
  *
  * `decideGate` is a PURE decision function (unit-tested exhaustively).
  * `evaluateCapitalGate` wraps it with an ALWAYS-on compliance write to

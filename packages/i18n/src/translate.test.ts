@@ -11,7 +11,7 @@ describe('createTranslator', () => {
   it('resolves English strings', () => {
     const t = createTranslator('en');
     expect(t('nav.home')).toBe('Home');
-    expect(t('action.garab')).toBe('Co-sign');
+    expect(t('action.garab')).toBe('Show support');
   });
 
   it('resolves Somali strings', () => {
@@ -22,8 +22,8 @@ describe('createTranslator', () => {
 
   it('selects plural forms from the count param', () => {
     const t = createTranslator('en');
-    expect(t('action.garabCount', { count: 1 })).toBe('1 co-sign');
-    expect(t('action.garabCount', { count: 142 })).toBe('142 co-signs');
+    expect(t('action.garabCount', { count: 1 })).toBe('1 person supports this');
+    expect(t('action.garabCount', { count: 142 })).toBe('142 people support this');
   });
 
   it('keeps the invariant Somali plural for garab', () => {
