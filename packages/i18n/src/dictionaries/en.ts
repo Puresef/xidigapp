@@ -1866,7 +1866,7 @@ export const en = {
     'Every public Lab already has a shareable page. The full Lab directory opens here soon.',
   'marketing.capitalTeaserTitle': 'Capital — community-backed ventures',
   'marketing.capitalTeaserBody':
-    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Today Xidig captures intent only — there are no live financial flows.',
+    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Investing is not offered on Xidig and there are no financial flows — what you can do is offer help or co-sign the work.',
 
   // /about
   'marketing.aboutTitle': 'About Xidig',

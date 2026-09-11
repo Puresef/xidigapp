@@ -1781,7 +1781,7 @@ export const so = {
     'Warshad kasta oo dadweyne horeba waxay u leedahay bog la wadaagi karo. Buugga Warshadaha oo dhammaystiran ayaa halkan ku furmaya dhawaan.',
   'marketing.capitalTeaserTitle': 'Maal — mashaariic ay bulshadu taageerto',
   'marketing.capitalTeaserBody':
-    'Musharaxiinta mashaariicdu waxay ka soo baxaan Warshadaha, si furan ayaa dib loogu eegaa, xubnuhuna way u codeeyaan. Maanta Xidig wuxuu diiwaangeliyaa ujeeddo keliya — ma jiraan lacago socda.',
+    'Musharaxiinta mashaariicdu waxay ka soo baxaan Warshadaha, si furan ayaa dib loogu eegaa, xubnuhuna way u codeeyaan. Maalgashi laguma bixiyo Xidig, lacagna kuma socoto — waxaad caawin kartaa ama garab u noqon kartaa shaqada.',
 
   // /about
   'marketing.aboutTitle': 'Ku saabsan Xidig',
