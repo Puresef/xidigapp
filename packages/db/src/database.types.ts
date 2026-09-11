@@ -5332,6 +5332,7 @@ export type Database = {
       }
     }
     Functions: {
+      anonymise_user: { Args: { p_user_id: string }; Returns: Json }
       author_is_active: { Args: { author_id: string }; Returns: boolean }
       award_badge: {
         Args: {
