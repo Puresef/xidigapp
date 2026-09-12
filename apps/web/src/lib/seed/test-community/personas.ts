@@ -1,5 +1,5 @@
 /**
- * TEST-COMMUNITY personas (pre-launch test phase — NEVER production).
+ * TEST-COMMUNITY personas (pre-launch test phase — NEVER the production DB).
  *
  * A curated miniature society of 60 fake members + 2 extra AI helper accounts
  * (beside the standard `xidig_ai`), used to exercise UX, onboarding, Plaza,
@@ -9,8 +9,12 @@
  * This dataset is deliberately OUT-OF-BAND from the launch-density seed
  * (`../data.ts`): that seed is governed by the locked "no fake people" rule and
  * the `seed_runs`/`seed_entities` registry. Test-community accounts are fake
- * people BY DESIGN, for a test database only — the runner refuses to run when
- * `NODE_ENV === 'production'`.
+ * people BY DESIGN, for a non-production database only. The runner refuses any
+ * database that is not verified non-production (lib/seed/target-guard.ts),
+ * whatever NODE_ENV says. History: the old NODE_ENV-only guard let this dataset
+ * reach the live production DB (the Supabase project labelled "Dev Xidig App",
+ * tbdryvhxxiqadseuxclm), found by the 12 Sep 2026 audit. Every account it
+ * creates is marked users.is_test (quarantined from organic proof).
  *
  * Login convention (documented in the generated seed README):
  *   email    = `${handle}@example.com`
@@ -2199,6 +2203,24 @@ export const TEST_PERSONAS: TestPersona[] = [
 export function testEmail(handle: string): string {
   return `${handle}@example.com`;
 }
+
+/**
+ * Every account handle this seeder owns: the personas plus the test AI
+ * helpers (NOT the shared `xidig_ai` actor, which belongs to the launch seed).
+ * Fixture identity is this handle AND its testEmail() AND users.is_test —
+ * never the example.com domain alone. The quarantine migration's backfill list
+ * (20260912050000) is pinned to this set by a test.
+ */
+export function testCommunityFixtureHandles(): string[] {
+  return [...TEST_PERSONAS.map((p) => p.handle), ...TEST_AI_HELPERS.map((h) => h.handle)];
+}
+
+/** The seed_runs marker labels this seeder writes (never matched by prefix). */
+export const TEST_COMMUNITY_MARKER_LABELS = [
+  'test-community-v1',
+  'test-community-v2',
+  'test-community-awards',
+] as const;
 
 /** Personas indexed by handle (build-time sanity: handles must be unique). */
 export const PERSONAS_BY_HANDLE: ReadonlyMap<string, TestPersona> = new Map(

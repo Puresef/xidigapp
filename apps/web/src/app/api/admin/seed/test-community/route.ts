@@ -1,6 +1,11 @@
 import { apiError, apiOk, handleApiError } from '@/lib/api';
 import { requireRole } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
+import {
+  configuredSupabaseUrls,
+  decideConfiguredSeedTarget,
+  seedTargetRefusedResponse,
+} from '@/lib/seed/target-response';
 import { resetTestCommunity, runTestCommunity } from '@/lib/seed/test-community/run';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { env } from '@/env';
@@ -9,10 +14,16 @@ import { env } from '@/env';
  * TEST-COMMUNITY seed trigger (pre-launch test phase).
  *
  * Same authorisation posture as /api/admin/seed (admin session OR CRON_SECRET
- * bearer), but UNLIKE the launch-density seed this one is blocked outright in
- * production for BOTH run and reset: it provisions fake member accounts, which
- * must never exist on a live database (locked §21 "no fake people" rule —
- * test/staging environments only).
+ * bearer). It provisions fake member accounts, which must never exist on a
+ * live database (locked §21 "no fake people" rule), so BOTH run and reset are
+ * refused unless the DATABASE is a verified non-production target
+ * (lib/seed/target-guard.ts). The production project ref (the Supabase
+ * project labelled "Dev Xidig App", tbdryvhxxiqadseuxclm — the live xidig.net
+ * DB) is refused whatever NODE_ENV says, and an undeterminable target fails
+ * closed. The old guard was NODE_ENV only; a local dev server pointed at
+ * production passed it, which is how the test community reached production
+ * (12 Sep 2026 audit). The target is checked BEFORE auth and before any client
+ * is built.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,9 +41,11 @@ async function authorizeSeed(request: Request): Promise<{ actorUserId: string | 
 export async function POST(request: Request): Promise<Response> {
   try {
     if (env.NODE_ENV === 'production') return apiError('forbidden', 403);
+    const target = decideConfiguredSeedTarget();
+    if (!target.allowed) return seedTargetRefusedResponse(target);
     const { actorUserId } = await authorizeSeed(request);
     const admin = getSupabaseAdmin();
-    const summary = await runTestCommunity(admin);
+    const summary = await runTestCommunity(admin, { targetUrls: configuredSupabaseUrls() });
     await writeAudit(admin, {
       actorUserId,
       action: 'seed.test_community.run',
@@ -52,9 +65,11 @@ export async function POST(request: Request): Promise<Response> {
 export async function DELETE(request: Request): Promise<Response> {
   try {
     if (env.NODE_ENV === 'production') return apiError('forbidden', 403);
+    const target = decideConfiguredSeedTarget();
+    if (!target.allowed) return seedTargetRefusedResponse(target);
     const { actorUserId } = await authorizeSeed(request);
     const admin = getSupabaseAdmin();
-    const summary = await resetTestCommunity(admin);
+    const summary = await resetTestCommunity(admin, { targetUrls: configuredSupabaseUrls() });
     await writeAudit(admin, {
       actorUserId,
       action: 'seed.test_community.reset',

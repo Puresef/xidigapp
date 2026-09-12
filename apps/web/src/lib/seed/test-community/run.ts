@@ -9,6 +9,7 @@ import { issueSignupGrant } from '@/lib/auth/grants';
 import { awardBadge } from '@/lib/reputation/service';
 
 import { provisionAiAssistant } from '../run';
+import { assertSeedTargetAllowed } from '../target-guard';
 
 import { uploadPersonaMedia, uploadPostImage } from './avatars';
 import {
@@ -46,7 +47,9 @@ import {
   PERSONAS_BY_HANDLE,
   TEST_AI_HELPERS,
   TEST_COMMUNITY_LABEL,
+  TEST_COMMUNITY_MARKER_LABELS,
   TEST_PERSONAS,
+  testCommunityFixtureHandles,
   testEmail,
   type TestPersona,
 } from './personas';
@@ -66,7 +69,9 @@ import type {
 /**
  * TEST-COMMUNITY seeder (pre-launch test phase).
  *
- * Populates a NON-PRODUCTION database with a believable miniature society:
+ * Populates a VERIFIED NON-PRODUCTION database (lib/seed/target-guard.ts: never
+ * the production project "Dev Xidig App" / tbdryvhxxiqadseuxclm, whatever
+ * NODE_ENV says) with a believable miniature society:
  * 60 personas + labelled AI helpers, Plaza threads, Spaces, Capital
  * candidates, DMs, notifications, moderation cases, follows, reputation and
  * media. Everything runs as the service role through the same verified
@@ -182,6 +187,27 @@ async function resetPassword(ctx: Ctx, userId: string, handle: string): Promise<
   if (error) console.warn(`[test-community] password reset failed for ${handle}:`, error.message);
 }
 
+/**
+ * An existing account that holds a fixture handle is reused ONLY if it is the
+ * fixture itself (its email is the fixture's testEmail). A handle held by any
+ * other account — a real member who picked it — is refused, never reset or
+ * marked. The fixture is (re)marked users.is_test, so a re-run backfills the
+ * quarantine marker on databases seeded before it existed.
+ */
+async function claimExistingFixture(ctx: Ctx, userId: string, handle: string): Promise<void> {
+  const row = await ctx.admin.from('users').select('email, is_test').eq('id', userId).maybeSingle();
+  if (row.error) throw new Error(`fixture lookup (${handle}) failed: ${row.error.message}`);
+  if (!row.data || row.data.email?.toLowerCase() !== testEmail(handle)) {
+    throw new Error(
+      `handle @${handle} is held by an account that is not the test-community fixture; refusing to reuse, reset or mark it`,
+    );
+  }
+  if (!row.data.is_test) {
+    const mark = await ctx.admin.from('users').update({ is_test: true }).eq('id', userId);
+    if (mark.error) throw new Error(`test marker (${handle}) failed: ${mark.error.message}`);
+  }
+}
+
 async function ensurePersona(ctx: Ctx, p: TestPersona): Promise<{ created: boolean }> {
   const existing = await ctx.admin
     .from('profiles')
@@ -190,6 +216,7 @@ async function ensurePersona(ctx: Ctx, p: TestPersona): Promise<{ created: boole
     .maybeSingle();
   if (existing.error) throw new Error(`profile lookup failed: ${existing.error.message}`);
   if (existing.data) {
+    await claimExistingFixture(ctx, existing.data.user_id, p.handle);
     ctx.ids.set(p.handle, existing.data.user_id);
     await resetPassword(ctx, existing.data.user_id, p.handle);
     return { created: false };
@@ -202,6 +229,8 @@ async function ensurePersona(ctx: Ctx, p: TestPersona): Promise<{ created: boole
   const userPatch = await ctx.admin
     .from('users')
     .update({
+      // Quarantine marker (20260912050000): a fake member is never organic proof.
+      is_test: true,
       role: p.role,
       preferred_language: p.preferredLanguage,
       low_bandwidth_enabled: p.lowBandwidth,
@@ -258,6 +287,7 @@ async function ensureAiHelpers(ctx: Ctx): Promise<void> {
       .eq('handle', helper.handle)
       .maybeSingle();
     if (existing.data) {
+      await claimExistingFixture(ctx, existing.data.user_id, helper.handle);
       ctx.ids.set(helper.handle, existing.data.user_id);
       await resetPassword(ctx, existing.data.user_id, helper.handle);
       continue;
@@ -267,7 +297,7 @@ async function ensureAiHelpers(ctx: Ctx): Promise<void> {
 
     const flag = await ctx.admin
       .from('users')
-      .update({ is_ai: true, preferred_language: helper.preferredLanguage })
+      .update({ is_ai: true, is_test: true, preferred_language: helper.preferredLanguage })
       .eq('id', userId);
     if (flag.error) throw new Error(`AI flag failed: ${flag.error.message}`);
 
@@ -1893,7 +1923,10 @@ async function winPostIdByTitle(ctx: Ctx, authorHandle: string, title: string): 
  * mid-quarter state: LAST quarter's cycle is closed with published winners (a
  * bilingual results post authored by the AI account), and THIS quarter's cycle
  * is open for voting. Ballots are one-per-category; the winner of each closed
- * category has a clear plurality so `award_vote_tally()` resolves cleanly.
+ * category has a clear plurality so the tally resolves cleanly. (Every voter
+ * here is a quarantined test account, so on the app's re-tally — lib/awards/
+ * publish.ts, which drops test voters and targets — these ballots count for
+ * nothing; the seed only exercises the UI on a non-production database.)
  */
 async function seedAwards(ctx: Ctx): Promise<void> {
   const prev = quarterWindow(ctx.now, -1);
@@ -2068,7 +2101,6 @@ export interface TestCommunityLogin {
 
 export interface TestCommunitySummary {
   label: string;
-  password: string;
   usersCreated: number;
   usersExisting: number;
   contentSeeded: boolean;
@@ -2076,7 +2108,18 @@ export interface TestCommunitySummary {
   logins: TestCommunityLogin[];
 }
 
-export async function runTestCommunity(admin: Admin): Promise<TestCommunitySummary> {
+/** Where the service client points. Every URL is checked by the target guard. */
+export interface TestCommunityTarget {
+  targetUrls: ReadonlyArray<string | null | undefined>;
+}
+
+export async function runTestCommunity(
+  admin: Admin,
+  target: TestCommunityTarget,
+): Promise<TestCommunitySummary> {
+  // The DATABASE decides, not NODE_ENV: refuse production and any unverified
+  // target before a single write (throws SeedTargetRefused).
+  assertSeedTargetAllowed(target.targetUrls);
   getTestCommunityPassword(); // fail fast on missing env before touching the DB
   const ctx: Ctx = {
     admin,
@@ -2218,7 +2261,6 @@ export async function runTestCommunity(admin: Admin): Promise<TestCommunitySumma
 
   return {
     label: TEST_COMMUNITY_LABEL,
-    password: getTestCommunityPassword(),
     usersCreated,
     usersExisting,
     contentSeeded,
@@ -2236,23 +2278,60 @@ export interface TestCommunityResetSummary {
 }
 
 /**
- * Best-effort teardown. Immutable rows (mod_actions, audit_logs, snapshots,
+ * The fixture accounts a reset may touch. Identity is ALL of: a
+ * source-defined fixture handle, that handle's testEmail(), and the
+ * users.is_test quarantine marker. The example.com domain alone is never a
+ * selector — the test factories, verification sessions and any real member
+ * who typed an example address all share it.
+ */
+export async function selectTestCommunityFixtureIds(admin: Admin): Promise<string[]> {
+  const handles = testCommunityFixtureHandles();
+  const profiles = await admin.from('profiles').select('user_id, handle').in('handle', handles);
+  if (profiles.error) throw new Error(`fixture profile lookup failed: ${profiles.error.message}`);
+  const handleByUser = new Map<string, string>();
+  for (const row of profiles.data ?? []) handleByUser.set(row.user_id, String(row.handle).toLowerCase());
+  if (handleByUser.size === 0) return [];
+  const users = await admin
+    .from('users')
+    .select('id, email, is_test')
+    .in('id', [...handleByUser.keys()]);
+  if (users.error) throw new Error(`fixture user lookup failed: ${users.error.message}`);
+  const ids: string[] = [];
+  for (const row of users.data ?? []) {
+    const handle = handleByUser.get(row.id);
+    if (handle === undefined) continue;
+    if (row.is_test !== true) continue;
+    if (row.email?.toLowerCase() !== testEmail(handle)) continue;
+    ids.push(row.id);
+  }
+  return ids;
+}
+
+/**
+ * Best-effort teardown of a VERIFIED NON-PRODUCTION database. Refused outright
+ * (SeedTargetRefused) for the production project or any unverified target,
+ * whatever NODE_ENV says. Immutable rows (mod_actions, audit_logs, snapshots,
  * gate evaluations) and reports (DELETE revoked by §19) CANNOT be removed —
  * users referenced by them are anonymised in place instead of deleted,
  * mirroring the app's own anonymise-not-erase lifecycle.
+ *
+ * Production cleanup is NOT this function's job: on production the fixtures
+ * are quarantined (users.is_test) and contained; any removal there is a
+ * separate, owner- and legal-approved plan built on an explicit id list.
  */
-export async function resetTestCommunity(admin: Admin): Promise<TestCommunityResetSummary> {
+export async function resetTestCommunity(
+  admin: Admin,
+  target: TestCommunityTarget,
+): Promise<TestCommunityResetSummary> {
+  assertSeedTargetAllowed(target.targetUrls);
   const errors: string[] = [];
-  const users = await admin
-    .from('users')
-    .select('id, email')
-    .like('email', '%@example.com');
-  if (users.error) throw new Error(`test user lookup failed: ${users.error.message}`);
-  const ids = (users.data ?? []).map((u) => u.id);
+  const ids = await selectTestCommunityFixtureIds(admin);
+  const markerLabels = [...TEST_COMMUNITY_MARKER_LABELS];
   if (ids.length === 0) {
-    await admin.from('seed_runs').delete().like('label', 'test-community-%');
+    await admin.from('seed_runs').delete().in('label', markerLabels);
     return { usersDeleted: 0, usersAnonymised: 0, errors };
   }
+  const fixtureEmails = testCommunityFixtureHandles().map(testEmail);
 
   const tryDelete = async (label: string, fn: () => PromiseLike<{ error: { message: string } | null }>) => {
     const { error } = await fn();
@@ -2307,15 +2386,24 @@ export async function resetTestCommunity(admin: Admin): Promise<TestCommunityRes
   await tryDelete('verifications', () => admin.from('verifications').delete().in('user_id', ids));
   await tryDelete('verifier_grants', () => admin.from('verifier_grants').delete().in('user_id', ids));
   await tryDelete('signup_grants', () =>
-    admin.from('signup_grants').delete().like('email', '%@example.com'),
+    admin.from('signup_grants').delete().in('email', fixtureEmails),
   );
-  // Award votes cascade with their voters; drop the two seeded cycle windows.
-  await tryDelete('award_cycles', () =>
-    admin
-      .from('award_cycles')
-      .delete()
-      .in('quarter', [quarterWindow(Date.now(), -1).quarter, quarterWindow(Date.now(), 0).quarter]),
-  );
+  // Award votes cascade with their voters. The two seeded cycle windows are
+  // dropped only when this seeder's awards marker proves it created them.
+  const awardsMarker = await admin
+    .from('seed_runs')
+    .select('id')
+    .eq('label', 'test-community-awards')
+    .maybeSingle();
+  if (awardsMarker.error) errors.push(`awards marker lookup: ${awardsMarker.error.message}`);
+  if (awardsMarker.data) {
+    await tryDelete('award_cycles', () =>
+      admin
+        .from('award_cycles')
+        .delete()
+        .in('quarter', [quarterWindow(Date.now(), -1).quarter, quarterWindow(Date.now(), 0).quarter]),
+    );
+  }
 
   let usersDeleted = 0;
   let usersAnonymised = 0;
@@ -2341,6 +2429,6 @@ export async function resetTestCommunity(admin: Admin): Promise<TestCommunityRes
     if (anonError) errors.push(`anonymise ${id}: ${anonError.message}`);
   }
 
-  await tryDelete('markers', () => admin.from('seed_runs').delete().like('label', 'test-community-%'));
+  await tryDelete('markers', () => admin.from('seed_runs').delete().in('label', markerLabels));
   return { usersDeleted, usersAnonymised, errors };
 }

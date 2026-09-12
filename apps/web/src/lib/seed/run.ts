@@ -26,7 +26,9 @@ import { ensureSeedRun } from './registry';
  * AI-assistant account, records a named seed run, then seeds tags, Lab
  * templates, Plaza posts and starter listings — all through the shared,
  * label-safe content builders. Re-running is a no-op (deterministic dedup
- * keys). `resetSeed` tears a run's content back down for local/staging.
+ * keys). `resetSeed` tears a run's content back down on a verified
+ * non-production database only (the route refuses the production project
+ * ref via lib/seed/target-guard.ts; NODE_ENV alone is not a guard).
  *
  * This runs as the SERVICE ROLE (from the admin seed route or the CLI wrapper).
  */
@@ -168,7 +170,8 @@ export interface ResetSummary {
 }
 
 /**
- * Tear down a seed run's content (local/staging only). Deletes the registered
+ * Tear down a seed run's content (verified non-production DB only — the admin
+ * seed route checks the target with lib/seed/target-guard.ts). Deletes the registered
  * posts + listings and the demo playbooks, then the run (cascading its
  * registry rows). Leaves shared tags and the AI account intact (reusable).
  */
