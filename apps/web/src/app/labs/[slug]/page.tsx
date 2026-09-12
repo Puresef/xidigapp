@@ -24,6 +24,7 @@ import { Avatar } from '@/components/media/avatar';
 import { LiteMediaProvider } from '@/components/media/lite-media-provider';
 import { LiteShowAll } from '@/components/media/lite-show-all';
 import { MediaSlot } from '@/components/media/media-slot';
+import { isTestAccount, loadAccountFlags } from '@/lib/account-flags';
 import { getAuthContext } from '@/lib/auth/guards';
 import { isActiveAccount, isActiveAdmin } from '@/lib/auth/privilege';
 import { spaceControls } from '@/lib/labs/standing-controls';
@@ -504,7 +505,18 @@ async function TabMembers({ labId }: { labId: string }) {
     .eq('lab_id', labId)
     .eq('status', 'active')
     .order('joined_at', { ascending: true });
-  const items = await attachAuthors(admin, data ?? [], 'user_id');
+  // Test-account quarantine: a quarantined test account is not listed as a
+  // member (the member counts and facepiles already leave it out).
+  const rows = data ?? [];
+  const flags = await loadAccountFlags(
+    admin,
+    rows.map((row) => row.user_id),
+  );
+  const items = await attachAuthors(
+    admin,
+    rows.filter((row) => !isTestAccount(flags, row.user_id)),
+    'user_id',
+  );
 
   return (
     <section className="xidig-section">

@@ -37,7 +37,8 @@ interface Recorded {
 
 class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
   readonly recorded: Recorded[] = [];
-  constructor(private readonly rows: Row[]) {}
+  /** Rows are resolved when the query is awaited (see FakeClient.from). */
+  constructor(private readonly resolveRows: () => Row[]) {}
 
   private chain(op: string, args: unknown[]): this {
     this.recorded.push({ op, args });
@@ -86,22 +87,32 @@ class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
       ((value: { data: Row[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
-    return Promise.resolve({ data: this.rows, error: null }).then(onfulfilled, onrejected);
+    return Promise.resolve({ data: this.resolveRows(), error: null }).then(onfulfilled, onrejected);
   }
 }
 
 /**
- * Seeds are per-table FIFO queues consumed at .from() call time — a table
+ * Seeds are per-table FIFO queues consumed when a query is awaited — a table
  * queried twice in one searcher (user_settings: opt-outs, then granularity)
  * seeds two result sets in call order. An unseeded table returns [].
+ *
+ * The quarantined-test-account id lookup (users where is_test = true) is
+ * answered from `testIds` instead and consumes no seed, so the `users` queue
+ * stays the account-flags answers (users.status / is_ai / is_test per id).
  */
 class FakeClient {
   readonly calls: Array<{ table: string; query: FakeQuery }> = [];
-  constructor(private readonly seeds: Record<string, Row[][]> = {}) {}
+  constructor(
+    private readonly seeds: Record<string, Row[][]> = {},
+    private readonly testIds: string[] = [],
+  ) {}
 
   from(table: string): FakeQuery {
-    const rows = this.seeds[table]?.shift() ?? [];
-    const query = new FakeQuery(rows);
+    const query: FakeQuery = new FakeQuery(() =>
+      table === 'users' && query.has('eq', ['is_test', true])
+        ? this.testIds.map((id) => ({ id }))
+        : (this.seeds[table]?.shift() ?? []),
+    );
     this.calls.push({ table, query });
     return query;
   }
@@ -144,8 +155,8 @@ function person(id: string, extra: Row = {}): Row {
   };
 }
 
-function account(id: string, status: string, isAi = false): Row {
-  return { id, status, is_ai: isAi };
+function account(id: string, status: string, isAi = false, isTest = false): Row {
+  return { id, status, is_ai: isAi, is_test: isTest };
 }
 
 function listing(id: string, ownerId: string | null): Row {
@@ -252,6 +263,31 @@ describe('searchPeople — anonymous (service-role projection)', () => {
     const results = await searchPeople(clientsOf(null, admin), 'person');
     expect(results).toEqual([]);
   });
+
+  it('test-account quarantine: never returns a test account; a real member still shows', async () => {
+    const admin = new FakeClient(
+      {
+        profiles: [[person('u-real'), person('u-test')]],
+        users: [[account('u-real', 'active'), account('u-test', 'active', false, true)]],
+      },
+      ['u-test'],
+    );
+    const results = await searchPeople(clientsOf(null, admin), 'person');
+
+    // Excluded in the query (so the group still fills) …
+    expect(admin.queryFor('profiles').has('not', ['user_id', 'in', '(u-test)'])).toBe(true);
+    // … and dropped on its own flags even when a row slips through.
+    expect(results.map((row) => row.userId)).toEqual(['u-real']);
+  });
+
+  it('adds no test-account filter when there are no test accounts', async () => {
+    const admin = new FakeClient({
+      profiles: [[person('u1')]],
+      users: [[account('u1', 'active')]],
+    });
+    await searchPeople(clientsOf(null, admin), 'person');
+    expect(admin.queryFor('profiles').recorded.some((entry) => entry.op === 'not')).toBe(false);
+  });
 });
 
 describe('searchPeople — member (caller RLS + discovery exclusions)', () => {
@@ -279,6 +315,20 @@ describe('searchPeople — member (caller RLS + discovery exclusions)', () => {
     const admin = new FakeClient({ users: [[account('u-ai', 'active', true)]] });
     const results = await searchPeople(clientsOf(member, admin), 'person');
     expect(results.map((row) => row.userId)).toEqual(['u-ai']);
+  });
+
+  it('test-account quarantine applies to members too (not badged — never shown)', async () => {
+    const member = new FakeClient({ profiles: [[person('u-real'), person('u-test')]] });
+    const admin = new FakeClient(
+      { users: [[account('u-real', 'active'), account('u-test', 'active', false, true)]] },
+      ['u-test'],
+    );
+    const results = await searchPeople(clientsOf(member, admin), 'person');
+
+    // The exclusion rides the CALLER's query; only the id list is service-role.
+    expect(member.queryFor('profiles').has('not', ['user_id', 'in', '(u-test)'])).toBe(true);
+    expect(admin.queryCount('profiles')).toBe(0);
+    expect(results.map((row) => row.userId)).toEqual(['u-real']);
   });
 
   it("folds each member's location_granularity before rows leave the server", async () => {
@@ -321,8 +371,10 @@ describe('searchListings — member', () => {
 
     expect(member.queryFor('business_listings').has('eq', ['status', 'published'])).toBe(true);
     // Suspended-owner hiding is RLS's job on this path (author_is_active);
-    // no service-role fetch happens at all.
-    expect(admin.queryCount()).toBe(0);
+    // the only service-role read is the payload-free test-account id list.
+    expect(admin.queryCount()).toBe(1);
+    expect(admin.queryCount('users')).toBe(1);
+    expect(admin.queryCount('business_listings')).toBe(0);
     expect(results).toHaveLength(1);
   });
 
@@ -331,6 +383,18 @@ describe('searchListings — member', () => {
     const admin = new FakeClient();
     await searchListings(clientsOf(member, admin), 'biz');
     expect(member.queryFor('business_listings').has('eq', ['source', 'member'])).toBe(false);
+  });
+
+  it('test-account quarantine: excludes test-owned listings, keeping owner-less ones', async () => {
+    const member = new FakeClient({ business_listings: [[]] });
+    const admin = new FakeClient({}, ['u-test']);
+    await searchListings(clientsOf(member, admin), 'biz');
+    // A bare `not in` would drop NULL owners too — the null branch keeps them.
+    expect(
+      member
+        .queryFor('business_listings')
+        .has('or', ['owner_user_id.is.null,owner_user_id.not.in.(u-test)']),
+    ).toBe(true);
   });
 });
 
@@ -379,6 +443,26 @@ describe('searchListings — anonymous (service-role projection)', () => {
     expect(results).toEqual([]);
   });
 
+  it('test-account quarantine: drops a test owner’s listing; the real and owner-less ones stay', async () => {
+    const admin = new FakeClient(
+      {
+        business_listings: [
+          [listing('l-real', 'u-real'), listing('l-test', 'u-test'), listing('l-imported', null)],
+        ],
+        users: [[account('u-real', 'active'), account('u-test', 'active', false, true)]],
+      },
+      ['u-test'],
+    );
+    const results = await searchListings(clientsOf(null, admin), 'biz');
+
+    expect(
+      admin
+        .queryFor('business_listings')
+        .has('or', ['owner_user_id.is.null,owner_user_id.not.in.(u-test)']),
+    ).toBe(true);
+    expect(results.map((row) => row.id)).toEqual(['l-real', 'l-imported']);
+  });
+
   it('caps the group at 5 after the active-owner gate', async () => {
     const rows = Array.from({ length: 8 }, (_, index) => listing(`l${index}`, 'u-ok'));
     const admin = new FakeClient({
@@ -400,6 +484,42 @@ describe('searchLabs — anonymous (service-role projection)', () => {
     expect(query.has('eq', ['visibility', 'public'])).toBe(true);
     expect(query.has('eq', ['is_listed', true])).toBe(true);
     expect(query.has('eq', ['source', 'member'])).toBe(true);
+  });
+
+  it('test-account quarantine: never a Space led by a test account', async () => {
+    const admin = new FakeClient({ labs: [[]] }, ['u-test']);
+    await searchLabs(clientsOf(null, admin), 'fintech');
+    expect(admin.queryFor('labs').has('not', ['lead_user_id', 'in', '(u-test)'])).toBe(true);
+  });
+
+  it('test-account quarantine: member counts do not count test members', async () => {
+    const admin = new FakeClient(
+      {
+        labs: [
+          [
+            {
+              id: 'lab-1',
+              name: 'Fintech circle',
+              slug: 'fintech-circle',
+              space_mode: 'club',
+              short_description: null,
+              stage: 'building',
+              last_activity_at: '2026-07-01T00:00:00Z',
+            },
+          ],
+        ],
+        lab_members: [
+          [
+            { lab_id: 'lab-1', user_id: 'u-real-1' },
+            { lab_id: 'lab-1', user_id: 'u-test' },
+            { lab_id: 'lab-1', user_id: 'u-real-2' },
+          ],
+        ],
+      },
+      ['u-test'],
+    );
+    const [lab] = await searchLabs(clientsOf(null, admin), 'fintech');
+    expect(lab?.memberCount).toBe(2);
   });
 });
 
@@ -429,6 +549,13 @@ describe('searchLabs — member (caller RLS + listed-only discovery)', () => {
     expect(member.queryCount('labs')).toBe(1);
     expect(admin.queryCount('labs')).toBe(0);
   });
+
+  it('test-account quarantine: a test-led Space is excluded for members too', async () => {
+    const member = new FakeClient({ labs: [[]] });
+    const admin = new FakeClient({ lab_members: [[]] }, ['u-test']);
+    await searchLabs(clientsOf(member, admin), 'fintech');
+    expect(member.queryFor('labs').has('not', ['lead_user_id', 'in', '(u-test)'])).toBe(true);
+  });
 });
 
 // --- posts ---------------------------------------------------------------
@@ -454,6 +581,20 @@ describe('searchPosts', () => {
     // WHICH posts are visible is decided here and only here.
     expect(admin.queryCount('posts')).toBe(0);
     expect(results.map((row) => row.id)).toEqual(['p1']);
+  });
+
+  it('test-account quarantine: posts written by a test account are excluded', async () => {
+    const member = new FakeClient({ posts: [[]] });
+    const admin = new FakeClient({}, ['u-test']);
+    await searchPosts(clientsOf(member, admin), 'topic');
+    expect(member.queryFor('posts').has('not', ['author_user_id', 'in', '(u-test)'])).toBe(true);
+    expect(admin.queryCount('posts')).toBe(0);
+  });
+
+  it('anonymous: the quarantine lookup is not issued either (no client touched at all)', async () => {
+    const admin = new FakeClient({}, ['u-test']);
+    expect(await searchPosts(clientsOf(null, admin), 'topic')).toEqual([]);
+    expect(admin.queryCount()).toBe(0);
   });
 
   it('hydrates byline, tags and reply counts for the rows RLS already returned', async () => {

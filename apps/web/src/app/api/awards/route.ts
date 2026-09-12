@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
-import { loadAccountFlags } from '@/lib/account-flags';
+import { isTestAccount, loadAccountFlags } from '@/lib/account-flags';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -47,6 +47,11 @@ const voteSchema = z
  * category, checked through the caller's RLS client so a member can only vote
  * for a target they can actually see (no private Lab, no invented uuid). Wins
  * must be `win`-type posts.
+ *
+ * Test-account quarantine (users.is_test): a quarantined seeded/test account
+ * is never a candidate — not as a member, not as the lead of a winning Space,
+ * not as the author of a winning Win. Refused with the same invalid_request
+ * the deleted-member refusal uses (the awards page never offers them either).
  */
 async function targetIsValid(
   supabase: Awaited<ReturnType<typeof requireUser>>['supabase'],
@@ -54,17 +59,25 @@ async function targetIsValid(
   targetId: string,
 ): Promise<boolean> {
   if (targetType === 'lab') {
-    const { data } = await supabase.from('labs').select('id').eq('id', targetId).maybeSingle();
-    return Boolean(data);
+    const { data } = await supabase
+      .from('labs')
+      .select('id, lead_user_id')
+      .eq('id', targetId)
+      .maybeSingle();
+    if (!data) return false;
+    const flags = await loadAccountFlags(getSupabaseAdmin(), [data.lead_user_id]);
+    return !isTestAccount(flags, data.lead_user_id);
   }
   if (targetType === 'post') {
     const { data } = await supabase
       .from('posts')
-      .select('id')
+      .select('id, author_user_id')
       .eq('id', targetId)
       .eq('type', 'win')
       .maybeSingle();
-    return Boolean(data);
+    if (!data) return false;
+    const flags = await loadAccountFlags(getSupabaseAdmin(), [data.author_user_id]);
+    return !isTestAccount(flags, data.author_user_id);
   }
   const { data } = await supabase
     .from('profiles')
@@ -73,9 +86,10 @@ async function targetIsValid(
     .maybeSingle();
   if (!data) return false;
   // The tombstone profile of a deleted account survives; a vote for it is not
-  // a vote for a current member (retained content).
+  // a vote for a current member (retained content). A quarantined test
+  // account is not a real member at all.
   const flags = await loadAccountFlags(getSupabaseAdmin(), [targetId]);
-  return flags.get(targetId)?.status !== 'deleted';
+  return flags.get(targetId)?.status !== 'deleted' && !isTestAccount(flags, targetId);
 }
 
 /** The open cycle right now (newest window if several ever overlap), or null. */

@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database, Enums, Json } from '@xidig/db';
 
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { ApiError } from '@/lib/api';
 import type { AuthContext } from '@/lib/auth/guards';
 import {
@@ -493,7 +494,23 @@ export interface VentureIndexView {
  * Listing rule: a space shows when it is listed, OR when the viewer is in it —
  * otherwise "Kuwa aan ku jiro" would silently drop the viewer's own unlisted
  * venture, which is the one row they most need to find.
+ *
+ * Test-account quarantine (users.is_test): a listed space LED by a quarantined
+ * test account is not discovery and never counts in the chips — it is not a
+ * real member's venture. The viewer's own memberships still show (the same
+ * rule as "My Spaces").
  */
+function ventureVisibilityPredicate(myLabIds: string[], testIds: string[]): string | null {
+  const listed =
+    testIds.length > 0
+      ? `and(is_listed.eq.true,lead_user_id.not.in.${postgrestIdList(testIds)})`
+      : null;
+  if (listed === null) {
+    return myLabIds.length > 0 ? `is_listed.eq.true,id.in.(${myLabIds.join(',')})` : null;
+  }
+  return myLabIds.length > 0 ? `${listed},id.in.(${myLabIds.join(',')})` : listed;
+}
+
 export async function listVentureIndex(
   ctx: AuthContext,
   query: VentureIndexQuery = { filter: 'all' },
@@ -508,15 +525,14 @@ export async function listVentureIndex(
     .eq('status', 'active');
   if (mineError) throw new Error(`membership scan failed: ${mineError.message}`);
   const myLabIds = (mineRows ?? []).map((row) => row.lab_id);
+  const testIds = await loadTestAccountIds(admin);
+  const visibility = ventureVisibilityPredicate(myLabIds, testIds);
 
   let rowsQuery = ctx.supabase
     .from('labs')
     .select(VENTURE_COLUMNS)
     .in('space_mode', WORK_ORG_MODES);
-  rowsQuery =
-    myLabIds.length > 0
-      ? rowsQuery.or(`is_listed.eq.true,id.in.(${myLabIds.join(',')})`)
-      : rowsQuery.eq('is_listed', true);
+  rowsQuery = visibility !== null ? rowsQuery.or(visibility) : rowsQuery.eq('is_listed', true);
   if (query.filter === 'ventures') rowsQuery = rowsQuery.eq('space_mode', 'venture');
   if (query.filter === 'labs') rowsQuery = rowsQuery.eq('space_mode', 'lab');
   if (query.filter === 'mine') {
@@ -529,7 +545,7 @@ export async function listVentureIndex(
   if (error) throw new Error(`venture index failed: ${error.message}`);
   const labs = (data ?? []) as unknown as VentureRow[];
 
-  const counts = await countVentureIndex(ctx, myLabIds);
+  const counts = await countVentureIndex(ctx, myLabIds, testIds);
   if (labs.length === 0) return { rows: [], counts };
 
   // Facepile + viewerRelation come from the Phase 4 hydrator, which owns the
@@ -587,13 +603,13 @@ export async function listVentureIndex(
 async function countVentureIndex(
   ctx: AuthContext,
   myLabIds: string[],
+  testIds: string[],
 ): Promise<VentureIndexCounts> {
   const head = { count: 'exact', head: true } as const;
+  const visibility = ventureVisibilityPredicate(myLabIds, testIds);
   const base = () => {
     const query = ctx.supabase.from('labs').select('id', head).in('space_mode', WORK_ORG_MODES);
-    return myLabIds.length > 0
-      ? query.or(`is_listed.eq.true,id.in.(${myLabIds.join(',')})`)
-      : query.eq('is_listed', true);
+    return visibility !== null ? query.or(visibility) : query.eq('is_listed', true);
   };
   const [all, ventures, labs, mine] = await Promise.all([
     base(),
@@ -714,6 +730,23 @@ export interface VentureOverview {
 }
 
 /**
+ * A Space's active-member count, head-only through the service role (the
+ * count-without-roster split). Quarantined seeded/test accounts
+ * (users.is_test, migration 20260912050000) never count: the exclusion runs
+ * inside the head count, so it stays an aggregate.
+ */
+async function countOrganicActiveMembers(admin: Admin, labId: string) {
+  const testIds = await loadTestAccountIds(admin);
+  let query = admin
+    .from('lab_members')
+    .select('user_id', { count: 'exact', head: true })
+    .eq('lab_id', labId)
+    .eq('status', 'active');
+  if (testIds.length > 0) query = query.not('user_id', 'in', postgrestIdList(testIds));
+  return query;
+}
+
+/**
  * Frames 7b (member/lead) and 7e (non-member). ONE model for both: 7e is not a
  * different page, it is this page with an empty board and an empty ledger,
  * which is exactly what RLS returns to a non-member. Workstreams and members
@@ -757,12 +790,9 @@ export async function getVentureOverview(
       .eq('status', 'active')
       .order('joined_at', { ascending: true }),
     // The COUNT does not: 7e shows "Xubno · {n}" before you join, which is
-    // exactly the count-without-roster split the directory cards use.
-    admin
-      .from('lab_members')
-      .select('user_id', { count: 'exact', head: true })
-      .eq('lab_id', lab.id)
-      .eq('status', 'active'),
+    // exactly the count-without-roster split the directory cards use. Test
+    // accounts never count toward it (countOrganicActiveMembers).
+    countOrganicActiveMembers(admin, lab.id),
     // Applications are a LEAD surface — not fetched at all for anyone else.
     viewer.canManage
       ? admin
@@ -1129,14 +1159,20 @@ export async function getVentureLedger(
   const days = query.days ?? LEDGER_DEFAULT_DAYS;
   const since = new Date(Date.now() - days * DAY_MS).toISOString();
 
-  const [tallyResult, weights, memberRows] = await Promise.all([
+  const [tallyResult, weights, memberRows, testIds] = await Promise.all([
     admin.rpc('venture_contribution_tally', { p_lab_id: lab.id }),
     resolveWeightScheme(admin, lab.id),
     admin.from('lab_members').select('user_id, role').eq('lab_id', lab.id),
+    loadTestAccountIds(admin),
   ]);
   if (tallyResult.error) throw new Error(`contribution tally failed: ${tallyResult.error.message}`);
   if (memberRows.error) throw new Error(`member roles failed: ${memberRows.error.message}`);
-  const tally = tallyResult.data ?? [];
+  // Quarantined seeded/test accounts (users.is_test) are not organic
+  // contributors: their rows never reach the totals, the contributor count,
+  // the member table or the share denominator. The work_events themselves are
+  // untouched (append-only) — this is the read model only.
+  const testSet = new Set(testIds);
+  const tally = (tallyResult.data ?? []).filter((row) => !testSet.has(row.member_user_id));
   const roles = new Map((memberRows.data ?? []).map((row) => [row.user_id, row.role] as const));
 
   const authors = await fetchProfiles(

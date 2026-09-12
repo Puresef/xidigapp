@@ -48,30 +48,77 @@ vi.mock('@/lib/reputation/service', () => ({
 vi.mock('@/lib/analytics/emit', () => ({
   emitServer: () => {},
 }));
+// The stored interests the counts are read from: real members' help/support,
+// a quarantined test account's help/support (users.is_test — never counted),
+// and a non-zero legacy invest tally, as Dev really holds (the projection must
+// drop it, not merely happen to see a zero). Organic counts: help 1, cosign 2.
+const stored = vi.hoisted(() => ({
+  users: [
+    { id: 'fixture-1', is_test: true },
+    { id: 'real-1', is_test: false },
+    { id: 'real-2', is_test: false },
+  ] as Array<Record<string, unknown>>,
+  interests: [
+    { candidate_id: '22222222-2222-4222-8222-222222222222', user_id: 'real-1', type: 'help' },
+    { candidate_id: '22222222-2222-4222-8222-222222222222', user_id: 'fixture-1', type: 'help' },
+    { candidate_id: '22222222-2222-4222-8222-222222222222', user_id: 'real-1', type: 'cosign' },
+    { candidate_id: '22222222-2222-4222-8222-222222222222', user_id: 'real-2', type: 'cosign' },
+    { candidate_id: '22222222-2222-4222-8222-222222222222', user_id: 'fixture-1', type: 'cosign' },
+    ...Array.from({ length: 7 }, (_, i) => ({
+      candidate_id: '22222222-2222-4222-8222-222222222222',
+      user_id: `investor-${i}`,
+      type: 'invest',
+    })),
+  ] as Array<Record<string, unknown>>,
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
   getSupabaseAdmin: () => ({
     rpc: async (name: string) => {
       dbCalls.rpc.push(name);
-      // A non-zero legacy invest tally, as Dev really holds: the projection
-      // must drop it, not merely happen to see a zero.
-      return { data: [{ help: 1, cosign: 2, invest: 7 }], error: null };
+      return { data: null, error: null };
     },
     from: (table: string) => {
-      if (table !== 'interests') throw new Error(`unexpected table ${table}`);
+      if (table !== 'interests' && table !== 'users') throw new Error(`unexpected table ${table}`);
       const filters: Record<string, unknown> = {};
+      const excluded: string[] = [];
+      let mode: 'read' | 'delete' | 'count' = 'read';
+      const matching = () =>
+        (table === 'users' ? stored.users : stored.interests).filter(
+          (row) =>
+            Object.entries(filters).every(([col, val]) => row[col] === val) &&
+            !excluded.includes(String(row.user_id)),
+        );
       const chain = {
         upsert: async (row: Record<string, unknown>) => {
           dbCalls.upserts.push(row);
           return { error: null };
         },
-        delete: () => chain,
+        delete: () => ((mode = 'delete'), chain),
+        select: (_cols: string, opts?: { head?: boolean }) => (
+          (mode = opts?.head ? 'count' : 'read'),
+          chain
+        ),
         eq: (col: string, val: unknown) => {
           filters[col] = val;
           return chain;
         },
-        then: (resolve: (v: { error: null }) => unknown) => {
-          dbCalls.deletes.push(filters);
-          return Promise.resolve({ error: null }).then(resolve);
+        not: (col: string, op: string, list: string) => {
+          if (col !== 'user_id' || op !== 'in') throw new Error(`unexpected not ${col}.${op}`);
+          excluded.push(...list.replace(/^\(|\)$/g, '').split(','));
+          return chain;
+        },
+        then: (resolve: (v: unknown) => unknown) => {
+          if (mode === 'delete') {
+            dbCalls.deletes.push(filters);
+            return Promise.resolve({ error: null }).then(resolve);
+          }
+          const rows = matching();
+          return Promise.resolve(
+            mode === 'count'
+              ? { data: null, count: rows.length, error: null }
+              : { data: rows, error: null },
+          ).then(resolve);
         },
       };
       return chain;
@@ -161,6 +208,18 @@ describe('help / cosign stay never-gated, badge-free', () => {
 
     expect(body.data.counts).toEqual({ help: 1, cosign: 2 });
     expect(text).not.toMatch(/invest/i);
+  });
+
+  it('a quarantined test account’s help and support never count (and the SQL tally is not used)', async () => {
+    authHolder.ctx = ctxOf();
+
+    const res = await POST(postReq({ type: 'help' }), routeCtx());
+    const body = (await res.json()) as { data: { counts: Record<string, number> } };
+
+    // Stored: help 2 / cosign 3 including the fixture account's → 1 / 2.
+    expect(body.data.counts).toEqual({ help: 1, cosign: 2 });
+    // candidate_interest_counts() still counts test accounts in SQL.
+    expect(dbCalls.rpc).toEqual([]);
   });
 
   it('help records the interest and awards NO badge', async () => {

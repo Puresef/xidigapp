@@ -6,7 +6,12 @@ import { formatNumber } from '@xidig/i18n';
 import { EmptyState } from '@/components/empty-state';
 import { Avatar } from '@/components/media/avatar';
 import { getAuthContext } from '@/lib/auth/guards';
-import { loadAccountFlags } from '@/lib/account-flags';
+import {
+  isTestAccount,
+  loadAccountFlags,
+  loadTestAccountIds,
+  postgrestIdList,
+} from '@/lib/account-flags';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { getLocale, getT } from '@/lib/locale';
 
@@ -18,6 +23,7 @@ export const dynamic = 'force-dynamic';
  * reputation_scores is member-readable (RLS `select_all`) and the score is a
  * public/aggregate figure (same class as follower counts), so this reads under
  * the caller's own RLS client. Only positive scores rank; the list caps at ~20.
+ * Quarantined test accounts (users.is_test) never rank (see below).
  */
 
 const LIMIT = 20;
@@ -36,11 +42,21 @@ export default async function LeaderboardPage() {
 
   const t = await getT();
   const locale = await getLocale();
+  const admin = getSupabaseAdmin();
 
-  const { data: scores } = await ctx.supabase
+  // Quarantined seeded/test accounts (users.is_test) never take a rank. They
+  // are excluded IN the query, before the limit, so a fixture account with a
+  // top score can neither appear nor push a real member off the list — the 20
+  // slots still fill with real members when there are 20.
+  const testIds = await loadTestAccountIds(admin);
+  let scoresQuery = ctx.supabase
     .from('reputation_scores')
     .select('user_id, helper_score')
-    .gt('helper_score', 0)
+    .gt('helper_score', 0);
+  if (testIds.length > 0) {
+    scoresQuery = scoresQuery.not('user_id', 'in', postgrestIdList(testIds));
+  }
+  const { data: scores } = await scoresQuery
     .order('helper_score', { ascending: false })
     .limit(LIMIT);
 
@@ -48,12 +64,17 @@ export default async function LeaderboardPage() {
   // survives anonymisation, so the "absent profile drops the row" rule below
   // never fired for it (retained content — awards/reputation must not imply a
   // current standing after deletion). Suspended members are unchanged here.
+  // The test-account check repeats the query exclusion from the flags already
+  // loaded (a marker set between the two reads still never ranks).
   const rawRows = scores ?? [];
   const rankFlags = await loadAccountFlags(
-    getSupabaseAdmin(),
+    admin,
     rawRows.map((row) => row.user_id),
   );
-  const scoreRows = rawRows.filter((row) => rankFlags.get(row.user_id)?.status !== 'deleted');
+  const scoreRows = rawRows.filter(
+    (row) =>
+      rankFlags.get(row.user_id)?.status !== 'deleted' && !isTestAccount(rankFlags, row.user_id),
+  );
   const userIds = scoreRows.map((row) => row.user_id);
 
   // Join display fields under the same RLS client (profiles carry a member

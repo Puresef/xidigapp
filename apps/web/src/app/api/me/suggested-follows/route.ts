@@ -1,3 +1,4 @@
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { findLabsSeekingSkills } from '@/lib/matching/looking-for';
@@ -19,11 +20,14 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * nothing else. No behavioral signals, no follower counts (feedback loops),
  * no filler — sparse declared data means a short (or empty) list.
  *
- * Privacy: AI accounts, non-active accounts, directory opt-outs
- * (user_settings.discoverable_directory=false; absent row = discoverable),
- * already-followed, blocked (either direction), and muted members are all
- * excluded in lib/matching/suggestions.ts. Lab matches ride the member's own
- * RLS session (can_read_lab), so private Labs never leak.
+ * Privacy: AI accounts, quarantined test accounts, non-active accounts,
+ * directory opt-outs (user_settings.discoverable_directory=false; absent row
+ * = discoverable), already-followed, blocked (either direction), and muted
+ * members are all excluded in lib/matching/suggestions.ts. Test accounts are
+ * also kept out of the candidate pool itself (so they cannot crowd real
+ * members out of the bounded legs), and a Space led by a test account is
+ * never suggested. Lab matches ride the member's own RLS session
+ * (can_read_lab), so private Labs never leak.
  *
  * Deterministic by construction: bounded candidate legs ordered by
  * (created_at desc, user_id) and pure scoring — the same declared data always
@@ -74,6 +78,7 @@ export async function GET(): Promise<Response> {
       { data: muteRows },
       { data: blockedByMe },
       { data: blockedMe },
+      testIds,
     ] = await Promise.all([
       ctx.supabase
         .from('profiles')
@@ -90,7 +95,11 @@ export async function GET(): Promise<Response> {
       ctx.supabase.from('mutes').select('entity_type, entity_id').eq('user_id', myId).limit(1000),
       admin.from('user_blocks').select('blocked_user_id').eq('blocker_user_id', myId).limit(1000),
       admin.from('user_blocks').select('blocker_user_id').eq('blocked_user_id', myId).limit(1000),
+      // Quarantined test accounts (service role; throws rather than guess).
+      loadTestAccountIds(admin),
     ]);
+    const testIdSet = new Set(testIds);
+    const testIdList = testIds.length > 0 ? postgrestIdList(testIds) : null;
 
     const declared: DeclaredFields = {
       lanes: (me?.lanes ?? []) as string[],
@@ -113,21 +122,41 @@ export async function GET(): Promise<Response> {
     ]);
 
     // Labs seeking the member's skills — the member's own RLS session, so
-    // private Labs are already filtered by can_read_lab.
-    const labMatches = await findLabsSeekingSkills(ctx.supabase, [...declared.skills]);
+    // private Labs are already filtered by can_read_lab. A Space led by a
+    // quarantined test account is never suggested (service-role lead read;
+    // a match whose lead cannot be confirmed is dropped — fail closed).
+    let labMatches = await findLabsSeekingSkills(ctx.supabase, [...declared.skills]);
+    if (labMatches.length > 0 && testIdSet.size > 0) {
+      const { data: leadRows, error: leadError } = await admin
+        .from('labs')
+        .select('id, lead_user_id')
+        .in(
+          'id',
+          labMatches.map((match) => match.labId),
+        );
+      if (leadError) throw new Error(`suggested lab lead lookup failed: ${leadError.message}`);
+      const leadByLab = new Map((leadRows ?? []).map((row) => [row.id, row.lead_user_id]));
+      labMatches = labMatches.filter((match) => {
+        const lead = leadByLab.get(match.labId);
+        return lead !== undefined && !testIdSet.has(lead);
+      });
+    }
 
     // Bounded, deterministic candidate legs — one per declared field. Each is
     // optional when the member declared nothing for it; there is deliberately
     // NO unconditioned "recent joiners" leg (a candidate with no shared
-    // declared field has no reason to show, and filler is banned).
-    const base = () =>
-      admin
+    // declared field has no reason to show, and filler is banned). Test
+    // accounts are excluded in the query so they cannot fill a bounded leg.
+    const base = () => {
+      const leg = admin
         .from('profiles')
         .select(CANDIDATE_SELECT)
         .neq('user_id', myId)
         .order('created_at', { ascending: false })
         .order('user_id')
         .limit(POOL_PER_QUERY);
+      return testIdList ? leg.not('user_id', 'in', testIdList) : leg;
+    };
 
     const legs: PromiseLike<{ data: unknown[] | null }>[] = [];
     if (declared.lanes.length > 0) legs.push(base().overlaps('lanes', [...declared.lanes]));
@@ -148,15 +177,15 @@ export async function GET(): Promise<Response> {
     // Open-to leg: members whose chips match (or complement) the viewer's.
     const wantedOpenTo = wantedOpenToSlugs([...declared.openTo]);
     if (wantedOpenTo.length > 0) {
-      const { data: openToLeg } = await admin
+      let openToQuery = admin
         .from('profile_open_to')
         .select('user_id')
         .in('open_to_id', wantedOpenTo)
-        .neq('user_id', myId)
-        .order('user_id')
-        .limit(OPEN_TO_POOL);
+        .neq('user_id', myId);
+      if (testIdList) openToQuery = openToQuery.not('user_id', 'in', testIdList);
+      const { data: openToLeg } = await openToQuery.order('user_id').limit(OPEN_TO_POOL);
       const missing = [...new Set((openToLeg ?? []).map((row) => row.user_id))].filter(
-        (id) => !pool.has(id),
+        (id) => !pool.has(id) && !testIdSet.has(id),
       );
       if (missing.length > 0) {
         const { data: extra } = await admin
@@ -178,7 +207,7 @@ export async function GET(): Promise<Response> {
     const ids = [...pool.keys()];
     const [{ data: userRows }, { data: settingsRows }, { data: openToRows }] = await Promise.all([
       ids.length > 0
-        ? admin.from('users').select('id, is_ai, status').in('id', ids)
+        ? admin.from('users').select('id, is_ai, is_test, status').in('id', ids)
         : Promise.resolve({ data: [] }),
       ids.length > 0
         ? admin
@@ -212,6 +241,7 @@ export async function GET(): Promise<Response> {
         country: row.location_country,
         openTo: (openToByUser.get(row.user_id) ?? []).sort(),
         isAi: flag?.is_ai ?? true, // unknown account ⇒ fail closed
+        isTest: flag?.is_test ?? true, // unknown account ⇒ fail closed
         accountStatus: flag?.status ?? 'suspended',
         discoverable: setting?.discoverable_directory ?? true,
         locationGranularity: setting?.location_granularity ?? 'city',

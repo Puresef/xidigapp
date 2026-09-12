@@ -44,6 +44,9 @@ class FakeQuery implements PromiseLike<{ data: Row[]; error: null; count: number
   is(column: string, value: unknown) {
     return this.chain('is', [column, value]);
   }
+  not(column: string, op: string, value: unknown) {
+    return this.chain('not', [column, op, value]);
+  }
   or(filter: string) {
     return this.chain('or', [filter]);
   }
@@ -339,6 +342,108 @@ describe('GET /api/labs — tab counts', () => {
     const response = await GET(getRequest());
 
     expect(response.status).toBe(401);
+  });
+});
+
+describe('GET /api/labs — test-account quarantine (users.is_test)', () => {
+  const TEST_LEAD = '33333333-3333-4333-8333-333333333333';
+  const excludeTestLed = ['lead_user_id', 'in', `(${TEST_LEAD})`];
+
+  it('Discover never lists or counts a Space led by a test account; My Spaces is unfiltered', async () => {
+    const caller = new FakeClient({
+      // Queue order: main browse query, then all / clubs / labs / mine heads.
+      labs: [{ rows: [] }, { count: 4 }, { count: 2 }, { count: 2 }, { count: 1 }],
+    });
+    const admin = new FakeClient({
+      lab_members: [{ rows: [{ lab_id: 'LAB-A' }] }],
+      users: [{ rows: [{ id: TEST_LEAD }] }],
+    });
+    authHolder.ctx = contextFor(caller);
+    adminHolder.client = admin;
+
+    const response = await GET(getRequest());
+    expect(response.status).toBe(200);
+
+    // The browse and the three discovery tab counts exclude test-led Spaces …
+    for (const nth of [0, 1, 2, 3]) {
+      expect(caller.queryFor('labs', nth).has('not', excludeTestLed), `labs query #${nth}`).toBe(
+        true,
+      );
+    }
+    // … the caller's own memberships count is left as it is.
+    expect(caller.queryFor('labs', 4).has('not', excludeTestLed)).toBe(false);
+    // The id list is read once on the service role, by the is_test marker.
+    expect(admin.queryFor('users').has('eq', ['is_test', true])).toBe(true);
+  });
+
+  it('mine=1 lists the caller’s own Spaces without the discovery exclusion', async () => {
+    const caller = new FakeClient({
+      labs: [{ rows: [] }, { count: 4 }, { count: 2 }, { count: 2 }, { count: 1 }],
+    });
+    const admin = new FakeClient({
+      lab_members: [{ rows: [{ lab_id: 'LAB-A' }] }],
+      users: [{ rows: [{ id: TEST_LEAD }] }],
+    });
+    authHolder.ctx = contextFor(caller);
+    adminHolder.client = admin;
+
+    const response = await GET(getRequest('?mine=1'));
+    expect(response.status).toBe(200);
+
+    const browse = caller.queryFor('labs', 0);
+    expect(browse.argsOf('in')).toEqual(['id', ['LAB-A']]);
+    expect(browse.has('not', excludeTestLed)).toBe(false);
+  });
+
+  it('hydrated member counts on the Discover page exclude test members', async () => {
+    const caller = new FakeClient({
+      labs: [
+        { rows: [labRow('LAB-A', { member_list_visibility: 'public' })] },
+        { count: 1 },
+        { count: 0 },
+        { count: 1 },
+      ],
+    });
+    const admin = new FakeClient({
+      lab_members: [
+        { rows: [] }, // membership scan
+        {
+          rows: [
+            { lab_id: 'LAB-A', user_id: LEAD_ID, role: 'lead' },
+            { lab_id: 'LAB-A', user_id: TEST_LEAD, role: 'member' },
+          ],
+        },
+        { rows: [] }, // viewer membership
+      ],
+      lab_tags: [{ rows: [] }],
+      lab_skill_needs: [{ rows: [] }],
+      // Route's quarantine read, then hydrateLabs' own.
+      users: [{ rows: [{ id: TEST_LEAD }] }, { rows: [{ id: TEST_LEAD }] }],
+      profiles: [
+        {
+          rows: [
+            {
+              user_id: LEAD_ID,
+              display_name: 'Amina',
+              handle: 'amina',
+              avatar_path: null,
+              avatar_blurhash: null,
+            },
+          ],
+        },
+      ],
+    });
+    authHolder.ctx = contextFor(caller);
+    adminHolder.client = admin;
+
+    const response = await GET(getRequest());
+    const body = (await response.json()) as {
+      data: { items: Array<{ memberCount: number; memberPreview: Array<{ user_id: string }> }> };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.data.items[0]?.memberCount).toBe(1);
+    expect(body.data.items[0]?.memberPreview.map((m) => m.user_id)).toEqual([LEAD_ID]);
   });
 });
 

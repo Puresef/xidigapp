@@ -48,6 +48,7 @@ function candidate(overrides: Partial<PersonCandidate> & { userId: string }): Pe
     country: null,
     openTo: [],
     isAi: false,
+    isTest: false,
     accountStatus: 'active',
     discoverable: true,
     locationGranularity: 'city',
@@ -210,6 +211,25 @@ describe('buildPersonSuggestions — privacy exclusions', () => {
       exclusions(),
     );
     expect(result.map((s) => s.candidate.userId)).toEqual(['ok']);
+  });
+
+  it('never suggests a quarantined test account, however well it matches', () => {
+    const result = buildPersonSuggestions(
+      me,
+      [
+        // A perfect match on every declared field — still never suggested.
+        candidate({
+          userId: 'test-persona',
+          lanes: ['fintech'],
+          skills: ['react'],
+          city: 'Hargeisa',
+          isTest: true,
+        }),
+        candidate({ userId: 'real', ...matcher }),
+      ],
+      exclusions(),
+    );
+    expect(result.map((s) => s.candidate.userId)).toEqual(['real']);
   });
 
   it('excludes followed, blocked (either direction), and muted members', () => {

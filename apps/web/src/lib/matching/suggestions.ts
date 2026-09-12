@@ -10,9 +10,10 @@ import type { LabMatch } from './looking-for';
  * the card says about it. Deterministic: the same declared data always
  * produces the same list (stable weights, stable tiebreak on id).
  *
- * Privacy is enforced here, not in the UI: AI accounts, non-active accounts,
- * directory opt-outs, and anyone the viewer follows/blocked/muted (or who
- * blocked the viewer) never survive `buildFollowSuggestions`. Location-based
+ * Privacy is enforced here, not in the UI: AI accounts, quarantined test
+ * accounts, non-active accounts, directory opt-outs, and anyone the viewer
+ * follows/blocked/muted (or who blocked the viewer) never survive
+ * `buildFollowSuggestions`. Location-based
  * reasons respect the candidate's location_granularity — a member who rounds
  * their location to region/hidden is never surfaced as "same city as you".
  */
@@ -67,6 +68,12 @@ export interface PersonCandidate extends DeclaredFields {
   userId: string;
   /** users.is_ai — AI accounts are never suggested (§21 organic-proof). */
   isAi: boolean;
+  /**
+   * users.is_test — quarantined seeded/test accounts are never suggested.
+   * Callers pass `true` for an account whose flags could not be read (fail
+   * closed), exactly as they do for isAi.
+   */
+  isTest: boolean;
   /** users.status — only 'active' accounts are suggested. */
   accountStatus: string;
   /** user_settings.discoverable_directory (absent row = true). */
@@ -177,6 +184,7 @@ export function buildPersonSuggestions<T extends PersonCandidate>(
 
     if (candidate.userId === exclusions.viewerId) continue;
     if (candidate.isAi) continue;
+    if (candidate.isTest) continue;
     if (candidate.accountStatus !== 'active') continue;
     if (!candidate.discoverable) continue;
     if (exclusions.followedUserIds.has(candidate.userId)) continue;

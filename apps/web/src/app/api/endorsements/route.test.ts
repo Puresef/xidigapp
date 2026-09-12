@@ -13,8 +13,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  *
  * The write runs on the CALLER's client on purpose — `skill_endorsements` has a
  * real insert policy, and going through the service role would move the
- * decision out of the database. `getSupabaseAdmin` is mocked to throw so that
- * regression is a test failure, not a review note.
+ * decision out of the database. `getSupabaseAdmin` is mocked as a READ-ONLY
+ * fake that serves exactly one read — the quarantined test-account set
+ * (`users` where is_test) — and throws for any other table; it has no write
+ * methods at all. So a regression to a service-role write is still a test
+ * failure, not a review note.
  */
 
 type Row = Record<string, unknown>;
@@ -25,11 +28,17 @@ interface Recorded {
   args: unknown[];
 }
 
+interface Seed {
+  row?: Row | null;
+  error?: PgError;
+  count?: number | null;
+  /** A count that depends on the recorded filters — emulates PostgREST `not in`. */
+  countFor?: (query: FakeQuery) => number;
+}
+
 class FakeQuery implements PromiseLike<{ data: Row | null; error: PgError; count: number | null }> {
   readonly recorded: Recorded[] = [];
-  constructor(
-    private readonly seed: { row?: Row | null; error?: PgError; count?: number | null },
-  ) {}
+  constructor(private readonly seed: Seed) {}
 
   private chain(op: string, args: unknown[]): this {
     this.recorded.push({ op, args });
@@ -43,6 +52,9 @@ class FakeQuery implements PromiseLike<{ data: Row | null; error: PgError; count
   }
   eq(column: string, value: unknown) {
     return this.chain('eq', [column, value]);
+  }
+  not(column: string, operator: string, value: unknown) {
+    return this.chain('not', [column, operator, value]);
   }
   maybeSingle() {
     return this.chain('maybeSingle', []);
@@ -64,19 +76,14 @@ class FakeQuery implements PromiseLike<{ data: Row | null; error: PgError; count
     return Promise.resolve({
       data: this.seed.row ?? null,
       error: this.seed.error ?? null,
-      count: this.seed.count ?? null,
+      count: this.seed.countFor ? this.seed.countFor(this) : (this.seed.count ?? null),
     }).then(onfulfilled, onrejected);
   }
 }
 
 class FakeClient {
   readonly calls: Array<{ table: string; query: FakeQuery }> = [];
-  constructor(
-    private readonly seeds: Record<
-      string,
-      Array<{ row?: Row | null; error?: PgError; count?: number | null }>
-    > = {},
-  ) {}
+  constructor(private readonly seeds: Record<string, Seed[]> = {}) {}
 
   from(table: string): FakeQuery {
     const query = new FakeQuery(this.seeds[table]?.shift() ?? {});
@@ -94,14 +101,29 @@ class FakeClient {
 }
 
 const authHolder = vi.hoisted(() => ({ ctx: null as unknown }));
+/** The quarantined test-account ids the service role reports, and its reads. */
+const adminHolder = vi.hoisted(() => ({ testIds: [] as string[], reads: [] as string[] }));
 
 vi.mock('@/lib/auth/guards', () => ({
   requireUser: async () => authHolder.ctx,
 }));
 vi.mock('@/lib/supabase/server', () => ({
-  getSupabaseAdmin: () => {
-    throw new Error('endorsements must write as the endorser, never the service role');
-  },
+  getSupabaseAdmin: () => ({
+    from: (table: string) => {
+      if (table !== 'users') {
+        throw new Error('endorsements must write as the endorser, never the service role');
+      }
+      // Read-only, and only the one read loadTestAccountIds makes.
+      return {
+        select: (columns: string) => ({
+          eq: async (column: string, value: unknown) => {
+            adminHolder.reads.push(`${table}.${columns} where ${column}=${String(value)}`);
+            return { data: adminHolder.testIds.map((id) => ({ id })), error: null };
+          },
+        }),
+      };
+    },
+  }),
 }));
 vi.mock('@/lib/locale', () => ({
   getT: async () => (key: string) => key,
@@ -137,6 +159,8 @@ async function errorCode(response: Response): Promise<string> {
 
 beforeEach(() => {
   authHolder.ctx = null;
+  adminHolder.testIds = [];
+  adminHolder.reads = [];
 });
 
 describe('POST /api/endorsements', () => {
@@ -217,5 +241,82 @@ describe('POST /api/endorsements', () => {
 
     expect(response.status).toBe(404);
     expect(client.queryCount('skill_endorsements')).toBe(0);
+  });
+});
+
+/**
+ * Test-account quarantine (users.is_test). An endorsement from a seeded/test
+ * account is not attested evidence: such an account cannot endorse, cannot be
+ * endorsed, and the depth the route returns leaves test endorsers out — the
+ * same number the Xirfadaha module renders.
+ */
+describe('POST /api/endorsements test-account quarantine', () => {
+  const TEST_A = '99999999-9999-4999-8999-99999999999a';
+  const TEST_B = '99999999-9999-4999-8999-99999999999b';
+
+  it('a test account cannot endorse — 403 forbidden, nothing read or written on the caller client', async () => {
+    adminHolder.testIds = [ENDORSER];
+    const client = new FakeClient({ profiles: [{ row: { skills: ['react'] } }] });
+    authHolder.ctx = contextFor(client);
+
+    const response = await POST(postRequest({ userId: ENDORSEE, skill: 'react' }));
+
+    expect(response.status).toBe(403);
+    expect(await errorCode(response)).toBe('forbidden');
+    expect(client.calls).toEqual([]);
+  });
+
+  it('a test account cannot be endorsed — 404, no endorsement row', async () => {
+    adminHolder.testIds = [ENDORSEE];
+    const client = new FakeClient({ profiles: [{ row: { skills: ['react'] } }] });
+    authHolder.ctx = contextFor(client);
+
+    const response = await POST(postRequest({ userId: ENDORSEE, skill: 'react' }));
+
+    expect(response.status).toBe(404);
+    expect(client.queryCount('skill_endorsements')).toBe(0);
+  });
+
+  it('the returned depth leaves test endorsers out', async () => {
+    adminHolder.testIds = [TEST_A, TEST_B];
+    const client = new FakeClient({
+      profiles: [{ row: { skills: ['react'] } }],
+      skill_endorsements: [
+        {},
+        // Five endorsers on file for this skill; two are test accounts.
+        { countFor: (query) => (query.argsOf('not') ? 3 : 5) },
+      ],
+    });
+    authHolder.ctx = contextFor(client);
+
+    const response = await POST(postRequest({ userId: ENDORSEE, skill: 'react' }));
+    const body = (await response.json()) as { data: { endorsers: number } };
+
+    expect(response.status).toBe(201);
+    expect(body.data.endorsers).toBe(3);
+    expect(client.queryFor('skill_endorsements', 1).argsOf('not')).toEqual([
+      'endorser_user_id',
+      'in',
+      `(${TEST_A},${TEST_B})`,
+    ]);
+    // The write still ran as the endorser, on the caller's client.
+    expect(client.queryFor('skill_endorsements').argsOf('insert')).toEqual([
+      { endorser_user_id: ENDORSER, endorsee_user_id: ENDORSEE, skill: 'react' },
+    ]);
+    // And the service role was only ever asked for the test-account set.
+    expect(adminHolder.reads).toEqual(['users.id where is_test=true']);
+  });
+
+  it('with no test accounts at all, the count is unfiltered (no empty `in ()` list)', async () => {
+    const client = new FakeClient({
+      profiles: [{ row: { skills: ['react'] } }],
+      skill_endorsements: [{}, { count: 2 }],
+    });
+    authHolder.ctx = contextFor(client);
+
+    const response = await POST(postRequest({ userId: ENDORSEE, skill: 'react' }));
+
+    expect(response.status).toBe(201);
+    expect(client.queryFor('skill_endorsements', 1).argsOf('not')).toBeUndefined();
   });
 });

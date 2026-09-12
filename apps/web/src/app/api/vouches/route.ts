@@ -1,4 +1,4 @@
-import { isLiveStatus } from '@/lib/account-flags';
+import { isLiveStatus, loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
@@ -16,6 +16,13 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * an in-app notice. Idempotent: a repeat vouch (unique constraint) is a no-op
  * success. Writes are service role (`vouches`/`user_badges` have no client
  * write grant); the eligibility read uses the caller's own profile.
+ *
+ * Test-account quarantine (users.is_test): a quarantined test account is not a
+ * real member, so it cannot vouch (403 forbidden, the same refusal an
+ * unverified voucher gets) and cannot be vouched for (404, like a non-live
+ * target — no trust write onto a fake). The threshold count — and the tally
+ * returned — counts only vouches from non-test accounts, so test vouches
+ * already on file can never tip anyone into Community Verified.
  */
 
 export async function POST(request: Request): Promise<Response> {
@@ -28,16 +35,25 @@ export async function POST(request: Request): Promise<Response> {
 
     const admin = getSupabaseAdmin();
 
-    // Only a verified member may vouch (§14). Read the caller's own trust tier.
-    const { data: voucher, error: voucherError } = await admin
-      .from('profiles')
-      .select('verification_status')
-      .eq('user_id', ctx.appUser.id)
-      .maybeSingle();
+    // Only a verified member may vouch (§14). Read the caller's own trust tier,
+    // and the quarantined test-account set (throws on error: a trust write
+    // that cannot tell test accounts apart must not guess).
+    const [{ data: voucher, error: voucherError }, testIdList] = await Promise.all([
+      admin
+        .from('profiles')
+        .select('verification_status')
+        .eq('user_id', ctx.appUser.id)
+        .maybeSingle(),
+      loadTestAccountIds(admin),
+    ]);
     if (voucherError) throw new Error(`voucher lookup failed: ${voucherError.message}`);
     if (!voucher || !isVerifiedProfile(voucher.verification_status)) {
       throw new ApiError('forbidden', 403);
     }
+    // A test account is not a real member: whatever its tier says, its vouch
+    // is not community trust. Same refusal as an unverified voucher.
+    const testIds = new Set(testIdList);
+    if (testIds.has(ctx.appUser.id)) throw new ApiError('forbidden', 403);
 
     // The target must be a live account (active, or in the cancellable
     // deletion grace — still a member). Vouching for an anonymised member
@@ -51,6 +67,10 @@ export async function POST(request: Request): Promise<Response> {
       .maybeSingle();
     if (targetError) throw new Error(`vouchee account lookup failed: ${targetError.message}`);
     if (!target || !isLiveStatus(target.status)) throw new ApiError('not_found', 404);
+    // Nor may a test account be vouched for: the threshold upgrade below would
+    // write a Community Verified status and badge onto a fake person. Same 404
+    // as a non-live target — its profile is not projected as a member's.
+    if (testIds.has(voucheeUserId)) throw new ApiError('not_found', 404);
 
     // Insert the vouch; a duplicate (23505) is an idempotent success — we still
     // report the current count so a client always gets a truthful tally.
@@ -66,10 +86,16 @@ export async function POST(request: Request): Promise<Response> {
       throw new Error(`vouch insert failed: ${vouchError.message}`);
     }
 
-    const { count, error: countError } = await admin
+    // Only non-test vouchers count toward the threshold. A test vouch recorded
+    // before the quarantine (or by the seeder) is not community trust.
+    let countQuery = admin
       .from('vouches')
       .select('id', { count: 'exact', head: true })
       .eq('vouchee_user_id', voucheeUserId);
+    if (testIdList.length > 0) {
+      countQuery = countQuery.not('voucher_user_id', 'in', postgrestIdList(testIdList));
+    }
+    const { count, error: countError } = await countQuery;
     if (countError) throw new Error(`vouch count failed: ${countError.message}`);
     const vouchCount = count ?? 0;
 

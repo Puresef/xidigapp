@@ -119,3 +119,107 @@ describe('collectDigestCandidates — retained-content filters', () => {
     expect(JSON.stringify(candidates)).not.toMatch(/author_user_id|owner_user_id|host_user_id/);
   });
 });
+
+describe('collectDigestCandidates — test-account quarantine (users.is_test)', () => {
+  it('drops posts, Spaces, listings and events by a test account; real and owner-less ones stay', async () => {
+    const admin = fakeAdmin({
+      posts: [
+        {
+          data: [
+            { id: 'w-real', title: 'Real win', author_user_id: 'real' },
+            { id: 'w-test', title: 'Seeded win', author_user_id: 'persona' },
+          ],
+          error: null,
+        },
+        {
+          data: [
+            { id: 'a-real', title: 'Real ask', author_user_id: 'real' },
+            { id: 'a-test', title: 'Seeded ask', author_user_id: 'persona' },
+          ],
+          error: null,
+        },
+      ],
+      labs: [
+        {
+          data: [
+            { id: 'lab-real', name: 'Real Space', slug: 'real-space', lead_user_id: 'real' },
+            { id: 'lab-test', name: 'Seeded Space', slug: 'seeded', lead_user_id: 'persona' },
+          ],
+          error: null,
+        },
+      ],
+      business_listings: [
+        {
+          data: [
+            { id: 'l-real', business_name: 'Real shop', city: 'Hargeisa', owner_user_id: 'real' },
+            {
+              id: 'l-test',
+              business_name: 'Seeded shop',
+              city: 'Berbera',
+              owner_user_id: 'persona',
+            },
+            { id: 'l-none', business_name: 'Unclaimed', city: 'Burao', owner_user_id: null },
+          ],
+          error: null,
+        },
+      ],
+      events: [
+        {
+          data: [
+            {
+              slug: 'real-meetup',
+              title: 'Real meetup',
+              starts_at: '2026-09-20T10:00:00Z',
+              ends_at: null,
+              host_user_id: 'real',
+              lab_id: null,
+            },
+            {
+              slug: 'seeded-meetup',
+              title: 'Seeded meetup',
+              starts_at: '2026-09-21T10:00:00Z',
+              ends_at: null,
+              host_user_id: 'persona',
+              lab_id: null,
+            },
+          ],
+          error: null,
+        },
+      ],
+      users: [
+        {
+          // authors + Space leads + event hosts (one read)
+          data: [
+            { id: 'real', status: 'active', is_ai: false, is_test: false },
+            { id: 'persona', status: 'active', is_ai: false, is_test: true },
+          ],
+          error: null,
+        },
+        {
+          // listing owners
+          data: [
+            { id: 'real', status: 'active', is_ai: false, is_test: false },
+            { id: 'persona', status: 'active', is_ai: false, is_test: true },
+          ],
+          error: null,
+        },
+        {
+          // event hosts (deleted-host rule) — only the surviving real host
+          data: [{ id: 'real', status: 'active', is_ai: false, is_test: false }],
+          error: null,
+        },
+      ],
+    });
+
+    const candidates = await collectDigestCandidates(admin, WINDOW);
+
+    expect(candidates.wins.map((w) => w.id)).toEqual(['w-real']);
+    expect(candidates.openAsks.map((a) => a.id)).toEqual(['a-real']);
+    expect(candidates.newLabs.map((l) => l.id)).toEqual(['lab-real']);
+    expect(candidates.newListings.map((l) => l.id)).toEqual(['l-real', 'l-none']);
+    expect(candidates.upcomingEvents?.map((e) => e.slug)).toEqual(['real-meetup']);
+    expect(candidates.counts).toEqual({ wins: 1, openAsks: 1, newLabs: 1, newListings: 2 });
+    // The lead id rides the query for the gate only — never the snapshot.
+    expect(JSON.stringify(candidates)).not.toMatch(/lead_user_id|persona/);
+  });
+});

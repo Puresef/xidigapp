@@ -321,3 +321,37 @@ describe('hydrateLabs — facepile visibility gate (§16 member_list_visibility)
     expect(preview?.avatar_blurhash).toBe('LEHV6nWB2yk8');
   });
 });
+
+describe('hydrateLabs — test-account quarantine (users.is_test)', () => {
+  it('a test member is neither counted nor shown in the facepile, and never enters the profile batch', async () => {
+    const roster = memberRows('lab-1', ['u1', 'u-test', 'u2', 'u-test-2', 'u3']);
+    const admin = new FakeAdmin({
+      ...seedsFor(roster, [], profileRows([LEAD, 'u1', 'u2', 'u3'])),
+      // The quarantine id lookup (users where is_test = true).
+      users: [[{ id: 'u-test' }, { id: 'u-test-2' }]],
+    });
+
+    const [view] = await hydrateLabs(admin.asClient(), VIEWER, [
+      labRow({ member_list_visibility: 'public' }),
+    ]);
+
+    expect(view?.memberCount).toBe(3);
+    expect(view?.memberPreview.map((m) => m.user_id)).toEqual(['u1', 'u2', 'u3']);
+    expect(admin.queryFor('users').argsOf('eq')).toEqual(['is_test', true]);
+    const batch = admin.queryFor('profiles').argsOf('in')?.[1] as string[];
+    expect(batch).not.toContain('u-test');
+    expect(batch).not.toContain('u-test-2');
+  });
+
+  it('with no test accounts, counts and facepiles are unchanged', async () => {
+    const roster = memberRows('lab-1', ['u1', 'u2']);
+    const admin = new FakeAdmin(seedsFor(roster, [], profileRows([LEAD, 'u1', 'u2'])));
+
+    const [view] = await hydrateLabs(admin.asClient(), VIEWER, [
+      labRow({ member_list_visibility: 'public' }),
+    ]);
+
+    expect(view?.memberCount).toBe(2);
+    expect(view?.memberPreview.map((m) => m.user_id)).toEqual(['u1', 'u2']);
+  });
+});

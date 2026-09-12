@@ -23,7 +23,9 @@ import { isLiveStatus, loadAccountFlags, type AccountFlags } from '@/lib/account
  *   search: suspended/deactivated owners were already hidden from members and
  *   search, so aligning the signed-out page and the external API with them is
  *   deliberate, not incidental. Owner-less (seeded, unclaimed) listings are
- *   unaffected.
+ *   unaffected. A listing owned by a quarantined TEST account (users.is_test,
+ *   migration 20260912050000) is not projected publicly either, whatever the
+ *   owner's status: a fake member's business is not community proof.
  *
  * EVENTS — only DELETION changes an event's projection (suspension is
  *   reversible and out of this slice), and only for an event hosted by the
@@ -87,16 +89,21 @@ export async function keepRetainedAuthorRows<T extends { author_user_id: string 
 
 // --- listings ---------------------------------------------------------------
 
-/** True when a listing may be projected publicly: owner-less, or its owner is live. */
+/**
+ * True when a listing may be projected publicly: owner-less, or its owner is
+ * live AND not a quarantined test account. `owner` is the owner's account
+ * flags (loadStatuses); unknown (undefined) fails closed.
+ */
 export function listingIsPubliclyProjectable(
   ownerUserId: string | null,
-  ownerStatus: Enums<'account_status'> | null | undefined,
+  owner: Pick<AccountFlags, 'status' | 'isTest'> | null | undefined,
 ): boolean {
   if (ownerUserId === null) return true;
-  return isLiveStatus(ownerStatus);
+  if (!owner) return false;
+  return isLiveStatus(owner.status) && !owner.isTest;
 }
 
-/** Drop rows whose owner is not live; owner-less rows stay. */
+/** Drop rows whose owner is not live or is a test account; owner-less rows stay. */
 export async function keepProjectableListings<T extends { owner_user_id: string | null }>(
   admin: SupabaseClient<Database>,
   rows: readonly T[],
@@ -108,7 +115,7 @@ export async function keepProjectableListings<T extends { owner_user_id: string 
   return rows.filter((row) =>
     listingIsPubliclyProjectable(
       row.owner_user_id,
-      row.owner_user_id ? flags.get(row.owner_user_id)?.status : null,
+      row.owner_user_id ? flags.get(row.owner_user_id) : null,
     ),
   );
 }

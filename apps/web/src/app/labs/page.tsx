@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { XidigIcon } from '@/components/icons/XidigIcon';
 import { LabsFeed } from '@/components/labs/labs-feed';
+import { loadTestAccountIds } from '@/lib/account-flags';
 import { getAuthContext } from '@/lib/auth/guards';
 import { fetchLabCounts, fetchLabMembershipIds } from '@/lib/labs/views';
 import { getLitePrefs } from '@/lib/lite/server';
@@ -71,12 +72,14 @@ export default async function LabsPage({
   const litePrefs = await getLitePrefs();
 
   // Tab counts under the CALLER's RLS (same helper GET /api/labs serves) —
-  // the numbers can never reveal a Space this member cannot read.
+  // the numbers can never reveal a Space this member cannot read, and the
+  // discovery tabs never count a Space led by a quarantined test account.
   const admin = getSupabaseAdmin();
-  const counts = await fetchLabCounts(
-    ctx.supabase,
-    await fetchLabMembershipIds(admin, ctx.appUser.id),
-  );
+  const [memberLabIds, testIds] = await Promise.all([
+    fetchLabMembershipIds(admin, ctx.appUser.id),
+    loadTestAccountIds(admin),
+  ]);
+  const counts = await fetchLabCounts(ctx.supabase, memberLabIds, testIds);
 
   return (
     <main className="xidig-section">

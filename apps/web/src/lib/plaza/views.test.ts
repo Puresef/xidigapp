@@ -80,10 +80,10 @@ describe('keepLiveAuthors (service-role half of comments_select_visible)', () =>
   // that hides a non-active author's comments from the thread does not apply
   // to the feed-card teaser and count. This is the rule it enforces instead.
   const flags = new Map<string, AccountFlags>([
-    ['live', { status: 'active', isAi: false }],
-    ['gone', { status: 'deleted', isAi: false }],
-    ['paused', { status: 'suspended', isAi: false }],
-    ['leaving', { status: 'pending_deletion', isAi: false }],
+    ['live', { status: 'active', isAi: false, isTest: false }],
+    ['gone', { status: 'deleted', isAi: false, isTest: false }],
+    ['paused', { status: 'suspended', isAi: false, isTest: false }],
+    ['leaving', { status: 'pending_deletion', isAi: false, isTest: false }],
   ]);
 
   it('drops comments by deleted, suspended and unknown authors; keeps a grace-period author', () => {

@@ -131,8 +131,8 @@ function publishedListing(overrides: Row = {}): Row {
   };
 }
 
-function liveOwner(status = 'active'): Row {
-  return { id: OWNER_ID, status, is_ai: false };
+function liveOwner(status = 'active', isTest = false): Row {
+  return { id: OWNER_ID, status, is_ai: false, is_test: isTest };
 }
 
 beforeEach(() => {
@@ -204,6 +204,22 @@ describe('getPublicListingView — retained content: an owner who is no longer l
       expect(view?.listing.id, status).toBe(LISTING_ID);
       expect(view?.owner).toEqual({ display_name: 'Hodan', handle: 'hodan' });
     }
+  });
+
+  it('test-account quarantine: a listing owned by a quarantined test account is not public (page 404s, OG falls back)', async () => {
+    // Even an ACTIVE test owner: the marker, not the status, decides.
+    const admin = new FakeClient({
+      business_listings: [[publishedListing()]],
+      users: [[liveOwner('active', true)]],
+      profiles: [[{ display_name: 'Luul Dukaan', handle: 'luul_dukaan' }]],
+    });
+    adminHolder.client = admin;
+
+    expect(await getPublicListingView(LISTING_ID)).toBeNull();
+    // Nothing is decorated for a suppressed listing — no byline, photos, services.
+    expect(admin.queryCount('profiles')).toBe(0);
+    expect(admin.queryCount('listing_photos')).toBe(0);
+    expect(admin.queryCount('listing_services')).toBe(0);
   });
 
   it('an owner-less (seeded, unclaimed) listing is unaffected and reads no account row', async () => {

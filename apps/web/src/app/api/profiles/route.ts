@@ -7,7 +7,12 @@ import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/
 import { VERIFIED_PROFILE_STATUSES } from '@/lib/profile-verified';
 import { applyLocationGranularity, loadLocationGranularities } from '@/lib/profile-view';
 import { normalizeSearchName } from '@/lib/search-norm';
-import { isLiveAccount, loadAccountFlags } from '@/lib/account-flags';
+import {
+  isOrganicAccount,
+  loadAccountFlags,
+  loadTestAccountIds,
+  postgrestIdList,
+} from '@/lib/account-flags';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -79,9 +84,17 @@ export async function GET(request: Request): Promise<Response> {
 
     // Directory opt-outs are excluded server-side — hiding in the client
     // would still ship the rows (§ privacy: exclusion is data, not CSS).
-    const optOutIds = await directoryOptOutIds();
+    // Quarantined test accounts (users.is_test) are never listed either:
+    // excluded in the query so a page still fills, and re-checked below.
+    const [optOutIds, testIds] = await Promise.all([
+      directoryOptOutIds(),
+      loadTestAccountIds(getSupabaseAdmin()),
+    ]);
     if (optOutIds.length > 0) {
       query = query.not('user_id', 'in', `(${optOutIds.join(',')})`);
+    }
+    if (testIds.length > 0) {
+      query = query.not('user_id', 'in', postgrestIdList(testIds));
     }
 
     // "Open to" chip filter: resolve the member set first (profile_open_to is
@@ -138,16 +151,18 @@ export async function GET(request: Request): Promise<Response> {
     const nextCursor =
       hasMore && last ? encodeCursor({ createdAt: last.created_at, id: last.user_id }) : null;
 
-    // Account-status gate, the same rule search applies: profiles RLS is
+    // Account gate, the same rule search applies: profiles RLS is
     // `using (true)`, so a deleted (tombstoned), suspended or deactivated
     // member would otherwise be listed (a member in the deletion grace is
-    // still listed — they are live). The cursor advances over the raw
-    // window so a page of tombstones cannot stall pagination.
+    // still listed — they are live), and a quarantined test account never is
+    // (checked on each row's own flags, not only the id-list filter above).
+    // The cursor advances over the raw window so a page of tombstones cannot
+    // stall pagination.
     const flags = await loadAccountFlags(
       getSupabaseAdmin(),
       window.map((row) => row.user_id),
     );
-    const page = window.filter((row) => isLiveAccount(flags, row.user_id));
+    const page = window.filter((row) => isOrganicAccount(flags, row.user_id));
 
     // Honor each member's location_granularity before their city/country
     // leaves the server — 'region'/'hidden' rounds it for the whole member

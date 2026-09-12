@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
 import { requireUser } from '@/lib/auth/guards';
 import { enforceRateLimit } from '@/lib/rate-limit';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
  * POST /api/endorsements — peer skill endorsement (§14, Xirfadaha module).
@@ -24,6 +26,14 @@ import { enforceRateLimit } from '@/lib/rate-limit';
  * unique(endorser, endorsee, skill) constraint is what makes acceptance A8 a
  * structural fact rather than a query convention, so a repeat is a 200, not a
  * second row.
+ *
+ * Test-account quarantine (users.is_test): an endorsement from a quarantined
+ * test account is not attested evidence. A test account cannot endorse (403
+ * forbidden) and cannot be endorsed (404, the same answer as a profile the
+ * caller cannot read — its skills are not projected), and the depth this
+ * route returns leaves test endorsers out, matching the Xirfadaha module.
+ * The test-account set is the ONE service-role read here (users is not
+ * readable across members under RLS); the write stays on the caller's client.
  */
 
 const postSchema = z
@@ -43,6 +53,13 @@ export async function POST(request: Request): Promise<Response> {
     if (input.userId === ctx.appUser.id) throw new ApiError('endorse_self', 400);
 
     await enforceRateLimit(`endorse:${ctx.appUser.id}`, { max: 60, windowSeconds: 3600 });
+
+    // Read-only service-role lookup of the quarantined set (throws on error:
+    // a proof write that cannot tell test accounts apart must not guess).
+    const testIdList = await loadTestAccountIds(getSupabaseAdmin());
+    const testIds = new Set(testIdList);
+    if (testIds.has(ctx.appUser.id)) throw new ApiError('forbidden', 403);
+    if (testIds.has(input.userId)) throw new ApiError('not_found', 404);
 
     // RLS-scoped: a profile the caller cannot read cannot be endorsed.
     const { data: endorsee, error: lookupError } = await ctx.supabase
@@ -71,11 +88,16 @@ export async function POST(request: Request): Promise<Response> {
       else throw new Error(`endorsement insert failed: ${error.message}`);
     }
 
-    const { count, error: countError } = await ctx.supabase
+    // Depth = distinct NON-TEST endorsers, the same number the module shows.
+    let countQuery = ctx.supabase
       .from('skill_endorsements')
       .select('endorser_user_id', { count: 'exact', head: true })
       .eq('endorsee_user_id', input.userId)
       .eq('skill', input.skill);
+    if (testIdList.length > 0) {
+      countQuery = countQuery.not('endorser_user_id', 'in', postgrestIdList(testIdList));
+    }
+    const { count, error: countError } = await countQuery;
     if (countError) throw new Error(`endorsement count failed: ${countError.message}`);
 
     if (created) {

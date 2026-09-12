@@ -119,6 +119,9 @@ export function PostCard({
   // gets its own overflow menu, so /p/[id] is where an award post's report
   // path lives. Null off-award; the two call sites below only read it under
   // an `award` guard.
+  // A test-account winner (users.is_test) is never named or linked, and its
+  // body is withheld; the title says plainly that the result belongs to a
+  // test account instead of falling back to an empty line.
   const awardTitle = award
     ? award.winner
       ? t('awards.resultTitle', {
@@ -126,7 +129,13 @@ export function PostCard({
           period: award.quarter,
           name: award.winner.displayName,
         })
-      : post.body.split('\n')[0]
+      : award.winnerIsTest
+        ? t('awards.resultTitle', {
+            category: t(AWARD_CATEGORY_KEYS[award.category]),
+            period: award.quarter,
+            name: t('content.testAccount'),
+          })
+        : post.body.split('\n')[0]
     : null;
   const isOwn = post.author_user_id === viewerId;
   const permalink = `/p/${post.id}`;
@@ -315,9 +324,13 @@ export function PostCard({
             <span className="xidig-award-identity__lines">
               <span className="xidig-award-identity__title">{awardTitle}</span>
               <span className="xidig-award-identity__evidence">
-                {award.evidence.asksResolved !== undefined
-                  ? t('awards.evidenceMostHelpful', { count: award.evidence.asksResolved })
-                  : t('awards.evidenceVotes', { count: award.votes })}
+                {/* A test-account result is not community proof: no vote or
+                    evidence count, just what the account is. */}
+                {award.winnerIsTest
+                  ? t('content.testAccountTooltip')
+                  : award.evidence.asksResolved !== undefined
+                    ? t('awards.evidenceMostHelpful', { count: award.evidence.asksResolved })
+                    : t('awards.evidenceVotes', { count: award.votes })}
               </span>
             </span>
           </div>

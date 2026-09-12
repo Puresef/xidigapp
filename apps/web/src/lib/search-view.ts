@@ -2,7 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
-import { isLiveStatus, loadAccountFlags } from '@/lib/account-flags';
+import {
+  isOrganicAccount,
+  loadAccountFlags,
+  loadTestAccountIds,
+  postgrestIdList,
+} from '@/lib/account-flags';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { aggregateComments, fetchAuthors, type CommentAggregateRow } from '@/lib/plaza/views';
 import { applyLocationGranularity } from '@/lib/profile-view';
@@ -29,6 +34,12 @@ import { normalizeSearchName } from '@/lib/search-norm';
  *   accounts excluded.
  * - Posts are members-only in v1 (§28): the anonymous searcher returns empty
  *   WITHOUT issuing a query.
+ * - Quarantined test accounts (users.is_test, migration 20260912050000) are
+ *   excluded for EVERY caller class: their profiles, the listings they own,
+ *   the Spaces they lead and the posts they wrote never surface in search,
+ *   and they are not counted in Space member counts. Excluded DB-side (a
+ *   `not in` over the small test-id set, so a group still fills) and, where
+ *   account flags are already loaded, re-checked after the fetch.
  *
  * Callers hand in both clients explicitly (no module-level getSupabaseAdmin)
  * so the projection tests can prove which client each query rides on.
@@ -62,10 +73,19 @@ export function sanitizeTerm(raw: string): string {
     .trim();
 }
 
-// --- account flags (users.status / users.is_ai) ---------------------------
+// --- account flags (users.status / users.is_ai / users.is_test) ------------
 // The status primitive lives in lib/account-flags (shared with the directory,
 // the public profile projection and the feed comment teaser) so every
 // service-role surface applies the one rule.
+
+/**
+ * `.or()` fragment keeping owner-less rows and rows whose owner is not a test
+ * account. A bare `not in` would also drop NULL owners (SQL three-valued
+ * logic), and owner-less (imported, unclaimed) listings are legitimate.
+ */
+function nullableNotIn(column: string, ids: readonly string[]): string {
+  return `${column}.is.null,${column}.not.in.${postgrestIdList(ids)}`;
+}
 
 // --- People ------------------------------------------------------------
 
@@ -147,9 +167,16 @@ export async function searchPeople(clients: SearchClients, q: string): Promise<S
     .order('created_at', { ascending: false })
     .limit(SEARCH_GROUP_LIMIT * STATUS_OVERFETCH);
 
-  const optOutIds = await directoryOptOutIds(clients.admin);
+  const [optOutIds, testIds] = await Promise.all([
+    directoryOptOutIds(clients.admin),
+    loadTestAccountIds(clients.admin),
+  ]);
   if (optOutIds.length > 0) {
     query = query.not('user_id', 'in', `(${optOutIds.join(',')})`);
+  }
+  // Quarantined test accounts are never discoverable, for any caller.
+  if (testIds.length > 0) {
+    query = query.not('user_id', 'in', postgrestIdList(testIds));
   }
 
   // Same folding ladder as GET /api/profiles: search_norm substring when the
@@ -167,16 +194,19 @@ export async function searchPeople(clients: SearchClients, q: string): Promise<S
   const { data, error } = await query;
   if (error) throw new Error(`people search failed: ${error.message}`);
 
-  // Account-status gate: only LIVE accounts (active, or in the cancellable
-  // deletion grace) are discoverable (profiles RLS is `using (true)`, so
-  // suspended/deactivated/deleted members would otherwise resurface here). Anonymous additionally drops badged AI
-  // assistants (§21 organic-proof invariant on the signed-out surface).
+  // Account gate: only LIVE accounts (active, or in the cancellable deletion
+  // grace) are discoverable (profiles RLS is `using (true)`, so
+  // suspended/deactivated/deleted members would otherwise resurface here), and
+  // never a quarantined test account — re-checked against each row's own
+  // flags, so the result never rests on the id-list filter alone. Anonymous
+  // additionally drops badged AI assistants (§21 organic-proof invariant on
+  // the signed-out surface).
   const rows = (data ?? []) as unknown as PersonRow[];
   const flags = await loadAccountFlags(
     clients.admin,
     rows.map((row) => row.user_id),
   );
-  let visible = rows.filter((row) => isLiveStatus(flags.get(row.user_id)?.status));
+  let visible = rows.filter((row) => isOrganicAccount(flags, row.user_id));
   if (anon) visible = visible.filter((row) => flags.get(row.user_id)?.isAi !== true);
   visible = visible.slice(0, SEARCH_GROUP_LIMIT);
 
@@ -294,21 +324,27 @@ export async function searchListings(clients: SearchClients, q: string): Promise
     return [];
   }
 
+  // Every caller: never a listing owned by a quarantined test account.
+  // Owner-less rows stay (see nullableNotIn). The id list is service-role
+  // and payload-free; the listing query itself still rides the caller's RLS.
+  // (Separate `or` params are ANDed by PostgREST.)
+  const testIds = await loadTestAccountIds(clients.admin);
+  if (testIds.length > 0) query = query.or(nullableNotIn('owner_user_id', testIds));
+
   const { data, error } = await query;
   if (error) throw new Error(`listing search failed: ${error.message}`);
   let rows = (data ?? []) as unknown as ListingRow[];
 
   // Anonymous rides the service role, which bypasses the Phase 6
   // author_is_active RLS clause — re-apply it here: a suspended owner's
-  // published listing must not leak to visitors. Ownerless (imported) rows
-  // stay, matching the RLS `owner_user_id is null or author_is_active(...)`.
+  // published listing must not leak to visitors (nor a test owner's, whatever
+  // the id-list filter above saw). Ownerless (imported) rows stay, matching
+  // the RLS `owner_user_id is null or author_is_active(...)`.
   if (anon) {
     const ownerIds = rows.map((row) => row.owner_user_id).filter((id): id is string => id !== null);
     const flags = await loadAccountFlags(clients.admin, ownerIds);
     rows = rows
-      .filter(
-        (row) => row.owner_user_id === null || isLiveStatus(flags.get(row.owner_user_id)?.status),
-      )
+      .filter((row) => row.owner_user_id === null || isOrganicAccount(flags, row.owner_user_id))
       .slice(0, SEARCH_GROUP_LIMIT);
   }
 
@@ -363,27 +399,35 @@ export interface SearchLab {
  * Active-member counts for the result Spaces. Service role, ids in / count
  * out — a headcount carries no roster, which is why /api/labs already serves
  * one for Spaces whose member list is hidden. Aggregated in JS rather than
- * with `count: 'exact'` so the shape stays a plain row fetch.
+ * with `count: 'exact'` so the shape stays a plain row fetch. Quarantined
+ * test accounts are not counted (a headcount is community proof).
  */
 async function loadLabMemberCounts(
   admin: AnyClient,
   labIds: string[],
+  testIds: ReadonlySet<string>,
 ): Promise<Map<string, number>> {
   const counts = new Map<string, number>();
   if (labIds.length === 0) return counts;
   const { data, error } = await admin
     .from('lab_members')
-    .select('lab_id')
+    .select('lab_id, user_id')
     .in('lab_id', labIds)
     .eq('status', 'active');
   if (error) throw new Error(`member count lookup failed: ${error.message}`);
-  for (const row of data ?? []) counts.set(row.lab_id, (counts.get(row.lab_id) ?? 0) + 1);
+  for (const row of data ?? []) {
+    if (testIds.has(row.user_id)) continue;
+    counts.set(row.lab_id, (counts.get(row.lab_id) ?? 0) + 1);
+  }
   return counts;
 }
 
 export async function searchLabs(clients: SearchClients, q: string): Promise<SearchLab[]> {
   const term = sanitizeTerm(q);
   if (!term) return [];
+
+  // Every caller: never a Space led by a quarantined test account.
+  const testIds = await loadTestAccountIds(clients.admin);
 
   let query;
   if (clients.member !== null && clients.memberUserId !== null) {
@@ -415,8 +459,9 @@ export async function searchLabs(clients: SearchClients, q: string): Promise<Sea
       .eq('source', 'member');
   }
 
-  const { data, error } = await query
-    .or(`name.ilike.%${term}%,short_description.ilike.%${term}%`)
+  let matched = query.or(`name.ilike.%${term}%,short_description.ilike.%${term}%`);
+  if (testIds.length > 0) matched = matched.not('lead_user_id', 'in', postgrestIdList(testIds));
+  const { data, error } = await matched
     .order('last_activity_at', { ascending: false })
     .limit(SEARCH_GROUP_LIMIT);
   if (error) throw new Error(`lab search failed: ${error.message}`);
@@ -425,6 +470,7 @@ export async function searchLabs(clients: SearchClients, q: string): Promise<Sea
   const counts = await loadLabMemberCounts(
     clients.admin,
     rows.map((row) => row.id),
+    new Set(testIds),
   );
 
   return rows.map((row) => ({
@@ -514,13 +560,19 @@ export async function searchPosts(clients: SearchClients, q: string): Promise<Se
   const term = sanitizeTerm(q);
   if (!term) return [];
 
-  const { data, error } = await clients.member
+  // Never a post written by a quarantined test account (service-role id
+  // list, payload-free; the post query itself rides the caller's RLS).
+  const testIds = await loadTestAccountIds(clients.admin);
+
+  let query = clients.member
     .from('posts')
     .select('id, author_user_id, title, type, body, created_at')
     .eq('status', 'published')
     .is('lab_id', null)
     .not('title', 'is', null)
-    .ilike('title', `%${term}%`)
+    .ilike('title', `%${term}%`);
+  if (testIds.length > 0) query = query.not('author_user_id', 'in', postgrestIdList(testIds));
+  const { data, error } = await query
     .order('created_at', { ascending: false })
     .limit(SEARCH_GROUP_LIMIT);
   if (error) throw new Error(`post search failed: ${error.message}`);

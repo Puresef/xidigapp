@@ -50,6 +50,9 @@ class FakeQuery implements PromiseLike<{ data: Row[]; error: null; count: number
   in(column: string, values: unknown[]) {
     return this.chain('in', [column, values]);
   }
+  not(column: string, operator: string, value: unknown) {
+    return this.chain('not', [column, operator, value]);
+  }
   is(column: string, value: unknown) {
     return this.chain('is', [column, value]);
   }
@@ -926,5 +929,341 @@ describe('owner facts (Xogta) — owner-only, and mirrored as a visitor sees it'
       { slug: 'logistics', label: 'Saadka' },
       { slug: 'qaad-free', label: 'qaad-free' },
     ]);
+  });
+});
+
+/**
+ * Test-account quarantine (users.is_test, 20260912050000). A seeded/test
+ * account is not a real member: its own profile projects nothing beyond the
+ * stripped base, and on a REAL profile an edge whose other end is a test
+ * account is not evidence — not an endorsement, not a Caawimo credit, not a
+ * mutual, not an ask helped.
+ */
+describe('test-account quarantine', () => {
+  const TEST_A = '99999999-9999-4999-8999-99999999999a';
+  const TEST_B = '99999999-9999-4999-8999-99999999999b';
+
+  /** The `not in` list a query asked PostgREST to exclude on `column`, if any. */
+  function notIn(query: FakeQuery, column: string): string[] {
+    const hit = query.recorded.find((entry) => entry.op === 'not' && entry.args[0] === column);
+    if (!hit || hit.args[1] !== 'in') return [];
+    return String(hit.args[2]).replace(/[()]/g, '').split(',').filter(Boolean);
+  }
+
+  /** The service role's quarantined set: `users` where is_test = true. */
+  function testUsers(ids: string[] = [TEST_A, TEST_B]): Seed {
+    return (query) => (query.has('eq', ['is_test', true]) ? ids.map((id) => ({ id })) : []);
+  }
+
+  function stripped(): ProfileView {
+    return {
+      ...baseView({
+        bio: null,
+        location_city: null,
+        location_country: null,
+        skills: [],
+        lanes: [],
+        links: undefined,
+        verification_status: 'unverified',
+      }),
+      counts: { followers: 0, vouches: 0 },
+      openTo: [],
+      isTest: true,
+    } as ProfileView;
+  }
+
+  it('a test account’s own profile projects nothing beyond the stripped base — for any viewer', async () => {
+    baseHolder.view = stripped();
+    for (const viewer of [OWNER, VISITOR, null]) {
+      const caller = new FakeClient(
+        callerSeeds({ skill_endorsements: [{ endorser_user_id: OTHER, skill: 'React' }] }),
+        { profile_metrics_module: true },
+      );
+      adminHolder.client = new FakeClient(adminSeeds({ users: testUsers([OWNER]) }));
+
+      const view = await getAnigaView(caller as unknown as AnyClient, 'hodan', viewer, t);
+
+      expect(view?.base.isTest).toBe(true);
+      expect(view).toMatchObject({
+        headline: null,
+        modules: [],
+        showcase: [],
+        skills: [],
+        links: [],
+        lookingFor: { slugs: [], matches: [] },
+        helper: [],
+        mutuals: null,
+        suuq: null,
+        metrics: null,
+        privateStats: null,
+        ownerFacts: null,
+      });
+      // Not fetched-then-dropped: no module, skill, helper, link or Suuq read
+      // ran for the test account, and no mutuals / metrics read either.
+      for (const table of [
+        'profiles',
+        'profile_modules',
+        'profile_showcase',
+        'skill_endorsements',
+        'profile_link_meta',
+        'posts',
+        'business_listings',
+      ]) {
+        expect(caller.queryCount(table)).toBe(0);
+      }
+      const admin = adminHolder.client as FakeClient;
+      expect(admin.queryCount('lab_members')).toBe(0);
+      expect(admin.queryCount('posts')).toBe(0);
+    }
+  });
+
+  it('getPublicAnigaView refuses a test account (null → the anon page 404s)', async () => {
+    // getPublicProfileView returns null for a test account (profile-view.test.ts)…
+    publicHolder.view = null;
+    expect(await getPublicAnigaView('hodan')).toBeNull();
+    // …and a base that ever said isTest is refused here too.
+    publicHolder.view = stripped();
+    expect(await getPublicAnigaView('hodan')).toBeNull();
+  });
+
+  it('endorsement depth leaves test endorsers out — member path', async () => {
+    adminHolder.client = new FakeClient(adminSeeds({ users: testUsers() }));
+    const caller = new FakeClient(
+      callerSeeds({
+        skill_endorsements: [
+          { endorser_user_id: TEST_A, skill: 'Amniga xogta' },
+          { endorser_user_id: TEST_B, skill: 'Amniga xogta' },
+          { endorser_user_id: TEST_A, skill: 'React' },
+          { endorser_user_id: OTHER, skill: 'React' },
+        ],
+      }),
+    );
+
+    const view = await getAnigaView(caller as unknown as AnyClient, 'hodan', VISITOR);
+
+    // Two test endorsements would have made "Amniga xogta" the deepest skill;
+    // without them it has none, and React (one real endorser) ranks first.
+    expect(view?.skills.map((skill) => [skill.skill, skill.endorsers, skill.rank])).toEqual([
+      ['React', 1, 1],
+      ['Amniga xogta', 0, 2],
+    ]);
+  });
+
+  it('endorsement depth leaves test endorsers out — public (anon) path', async () => {
+    adminHolder.client = new FakeClient(
+      adminSeeds({
+        users: testUsers(),
+        profiles: [{ headline: null }],
+        skill_endorsements: [
+          { endorser_user_id: TEST_A, skill: 'React' },
+          { endorser_user_id: TEST_B, skill: 'React' },
+          { endorser_user_id: OTHER, skill: 'React' },
+        ],
+      }),
+    );
+
+    const view = await getPublicAnigaView('hodan');
+
+    expect(view?.skills.find((skill) => skill.skill === 'React')?.endorsers).toBe(1);
+  });
+
+  it('a test viewer’s own endorsement still reads as "already endorsed" but adds no depth', async () => {
+    adminHolder.client = new FakeClient(adminSeeds({ users: testUsers([VISITOR]) }));
+    const caller = new FakeClient(
+      callerSeeds({ skill_endorsements: [{ endorser_user_id: VISITOR, skill: 'React' }] }),
+    );
+
+    const view = await getAnigaView(caller as unknown as AnyClient, 'hodan', VISITOR);
+
+    expect(view?.skills.find((skill) => skill.skill === 'React')).toMatchObject({
+      endorsers: 0,
+      endorsedByViewer: true,
+    });
+  });
+
+  it('Caawimo drops credits from test askers — in the query, and after it', async () => {
+    adminHolder.client = new FakeClient(adminSeeds({ users: testUsers() }));
+    const caller = new FakeClient(
+      callerSeeds({
+        // The fake ignores filters, so the test asker's row comes back anyway:
+        // the post-filter has to catch it too.
+        posts: (query) =>
+          query.has('eq', ['ask_helper_user_id', OWNER])
+            ? [
+                {
+                  id: 'ask-t',
+                  title: 'Fake ask',
+                  body: 'b',
+                  author_user_id: TEST_A,
+                  ask_fulfilled_at: '2026-08-02T10:00:00Z',
+                },
+                {
+                  id: 'ask-9',
+                  title: 'Real ask',
+                  body: 'b',
+                  author_user_id: OTHER,
+                  ask_fulfilled_at: '2026-08-01T10:00:00Z',
+                },
+              ]
+            : [],
+        profiles: (query) =>
+          query.has('maybeSingle', [])
+            ? [{ headline: null }]
+            : [
+                {
+                  user_id: OTHER,
+                  display_name: 'Deeqa Nuur',
+                  handle: 'deeqa',
+                  avatar_path: null,
+                  location_city: null,
+                  location_country: null,
+                },
+                {
+                  user_id: TEST_A,
+                  display_name: 'Ayaan Dev',
+                  handle: 'ayaan_dev',
+                  avatar_path: null,
+                  location_city: null,
+                  location_country: null,
+                },
+              ],
+      }),
+    );
+
+    const view = await getAnigaView(caller as unknown as AnyClient, 'hodan', VISITOR);
+
+    expect(view?.helper.map((entry) => entry.postId)).toEqual(['ask-9']);
+    const posts = caller.calls.find((call) => call.table === 'posts')!.query;
+    expect(notIn(posts, 'author_user_id')).toEqual([TEST_A, TEST_B]);
+    // The test asker's profile is never even asked for.
+    const askers = caller.calls
+      .filter((call) => call.table === 'profiles')
+      .map((call) => call.query)
+      .find((query) => query.recorded.some((entry) => entry.op === 'in'));
+    expect(askers?.has('in', ['user_id', [OTHER]])).toBe(true);
+  });
+
+  it('mutuals leave test accounts out of the strip and the count', async () => {
+    const labRows = [OWNER, VISITOR, TEST_A, OTHER, TEST_B, 'x5'].map((user_id) => ({ user_id }));
+    adminHolder.client = new FakeClient(
+      adminSeeds({
+        users: testUsers(),
+        lab_members: (query) => {
+          if (query.has('eq', ['user_id', VISITOR])) return [{ lab_id: LAB }];
+          if (query.has('eq', ['user_id', OWNER])) return [{ lab_id: LAB }];
+          if (query.has('eq', ['lab_id', LAB])) {
+            // Emulate PostgREST: apply the `not in` the query asked for.
+            const out = new Set(notIn(query, 'user_id'));
+            return labRows.filter((row) => !out.has(row.user_id));
+          }
+          return [];
+        },
+        labs: [{ name: 'Warshadda Ganacsi Yaryar 101' }],
+        profiles: (query) =>
+          query.has('in', ['user_id', [OTHER, 'x5']])
+            ? [
+                { user_id: OTHER, display_name: 'Cali Xasan', handle: 'cali', avatar_path: null },
+                { user_id: 'x5', display_name: 'Xamda', handle: 'xamda', avatar_path: null },
+              ]
+            : [
+                {
+                  user_id: TEST_A,
+                  display_name: 'Ayaan Dev',
+                  handle: 'ayaan_dev',
+                  avatar_path: null,
+                },
+              ],
+      }),
+    );
+    const caller = new FakeClient(callerSeeds());
+
+    const view = await getAnigaView(caller as unknown as AnyClient, 'hodan', VISITOR);
+
+    // Six members minus the two test accounts minus the two of them.
+    expect(view?.mutuals?.totalCount).toBe(2);
+    expect(view?.mutuals?.members.map((member) => member.handle)).toEqual(['cali', 'xamda']);
+    const admin = adminHolder.client as FakeClient;
+    const labQueries = admin.calls
+      .filter((call) => call.table === 'lab_members' && call.query.has('eq', ['lab_id', LAB]))
+      .map((call) => call.query);
+    expect(labQueries).toHaveLength(2);
+    for (const query of labQueries) expect(notIn(query, 'user_id')).toEqual([TEST_A, TEST_B]);
+  });
+
+  it('a test VIEWER is not subtracted twice from the mutuals count', async () => {
+    const labRows = [OWNER, VISITOR, OTHER, 'x4'].map((user_id) => ({ user_id }));
+    adminHolder.client = new FakeClient(
+      adminSeeds({
+        users: testUsers([VISITOR]),
+        lab_members: (query) => {
+          if (query.has('eq', ['user_id', VISITOR])) return [{ lab_id: LAB }];
+          if (query.has('eq', ['user_id', OWNER])) return [{ lab_id: LAB }];
+          if (query.has('eq', ['lab_id', LAB])) {
+            const out = new Set(notIn(query, 'user_id'));
+            return labRows.filter((row) => !out.has(row.user_id));
+          }
+          return [];
+        },
+        labs: [{ name: 'Lab' }],
+        profiles: [],
+      }),
+    );
+    const caller = new FakeClient(callerSeeds());
+
+    const view = await getAnigaView(caller as unknown as AnyClient, 'hodan', VISITOR);
+
+    // Count without the test viewer = 3 (owner, OTHER, x4); minus the owner = 2.
+    expect(view?.mutuals?.totalCount).toBe(2);
+  });
+
+  it('metrics: asksHelped leaves out asks posted by test accounts', async () => {
+    adminHolder.client = new FakeClient(
+      adminSeeds({
+        users: testUsers(),
+        posts: (query) => {
+          if (query.has('eq', ['author_user_id', OWNER])) return [{ id: 'p1' }];
+          // Three fulfilled asks credited to the owner; one from a test asker.
+          const rows = [{ author: OTHER }, { author: TEST_A }, { author: 'x4' }];
+          const out = new Set(notIn(query, 'author_user_id'));
+          return rows.filter((row) => !out.has(row.author));
+        },
+      }),
+    );
+    const caller = new FakeClient(callerSeeds());
+
+    const view = await getAnigaView(caller as unknown as AnyClient, 'hodan', OWNER);
+
+    expect(view?.metrics).toEqual({ posts: 1, asksHelped: 2, connections: 128 });
+    expect(view?.privateStats).toMatchObject({ asksHelped: 2 });
+  });
+
+  it('reads the quarantined set ONCE per projection, from the service role', async () => {
+    adminHolder.client = new FakeClient(adminSeeds({ users: testUsers() }));
+    const caller = new FakeClient(callerSeeds(), { profile_metrics_module: true });
+
+    await getAnigaView(caller as unknown as AnyClient, 'hodan', VISITOR);
+
+    const admin = adminHolder.client as FakeClient;
+    expect(
+      admin.calls.filter(
+        (call) => call.table === 'users' && call.query.has('eq', ['is_test', true]),
+      ),
+    ).toHaveLength(1);
+    expect(caller.queryCount('users')).toBe(0);
+  });
+
+  it('with no test accounts at all, no `not in` filter is sent (an empty list is invalid PostgREST)', async () => {
+    adminHolder.client = new FakeClient(adminSeeds({ users: testUsers([]) }));
+    const caller = new FakeClient(callerSeeds(), { profile_metrics_module: true });
+
+    await getAnigaView(caller as unknown as AnyClient, 'hodan', VISITOR);
+
+    const everyQuery = [
+      ...caller.calls.map((call) => call.query),
+      ...(adminHolder.client as FakeClient).calls.map((call) => call.query),
+    ];
+    expect(everyQuery.some((query) => query.recorded.some((entry) => entry.op === 'not'))).toBe(
+      false,
+    );
   });
 });

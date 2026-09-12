@@ -26,8 +26,9 @@ import { PlainErrorBanner } from '../auth/plain-error';
  * The invest slot (Maalgeli CTA → fund modal) was removed under A2
  * containment: Xidig does not currently offer investment, so no invest
  * affordance or fund copy renders here at all. help/cosign counts come from
- * candidate_interest_counts (aggregate — no enumeration of who). The viewer's
- * own toggles come from their own-row reads.
+ * fetchCandidateInterestCounts (lib/capital/interest-counts.ts: service-role
+ * aggregates that exclude quarantined test accounts — no enumeration of who).
+ * The viewer's own toggles come from their own-row reads.
  */
 
 type InterestType = Enums<'interest_type'>;

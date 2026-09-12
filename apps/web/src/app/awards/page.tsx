@@ -6,7 +6,12 @@ import type { MessageKey } from '@xidig/i18n';
 import { AwardVoteControl, type VoteTargetOption } from '@/components/awards/award-vote-control';
 import { EmptyState } from '@/components/empty-state';
 import { getAuthContext } from '@/lib/auth/guards';
-import { loadAccountFlags } from '@/lib/account-flags';
+import {
+  isTestAccount,
+  loadAccountFlags,
+  loadTestAccountIds,
+  postgrestIdList,
+} from '@/lib/account-flags';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { getT } from '@/lib/locale';
 
@@ -100,10 +105,18 @@ export default async function AwardsPage() {
   const voteByCategory = new Map<AwardCategory, CastVote>(votes.map((v) => [v.category, v]));
 
   // --- Bounded, RLS-visible option lists per category -----------------------
+  // Quarantined seeded/test accounts (users.is_test) are never ballot options:
+  // no Space a test account leads, no Win one wrote, no test member. Each
+  // exclusion runs IN its query, before the limit, so the bounded list still
+  // fills with real options. The vote API refuses the same targets.
+  const admin = getSupabaseAdmin();
+  const testIds = await loadTestAccountIds(admin);
+  const testIdList = testIds.length > 0 ? postgrestIdList(testIds) : null;
+
   // Best Lab → Labs the member can read (RLS scopes the fetch).
-  const { data: labRows } = await supabase
-    .from('labs')
-    .select('id, name')
+  let labQuery = supabase.from('labs').select('id, name');
+  if (testIdList) labQuery = labQuery.not('lead_user_id', 'in', testIdList);
+  const { data: labRows } = await labQuery
     .order('last_activity_at', { ascending: false })
     .limit(TARGET_LIMIT);
   const labOptions: VoteTargetOption[] = (labRows ?? []).map((l) => ({
@@ -113,11 +126,13 @@ export default async function AwardsPage() {
   }));
 
   // Best Win → recent Win posts (RLS scopes visibility).
-  const { data: winRows } = await supabase
+  let winQuery = supabase
     .from('posts')
     .select('id, title, body')
     .eq('type', 'win')
-    .eq('status', 'published')
+    .eq('status', 'published');
+  if (testIdList) winQuery = winQuery.not('author_user_id', 'in', testIdList);
+  const { data: winRows } = await winQuery
     .order('created_at', { ascending: false })
     .limit(TARGET_LIMIT);
   const winOptions: VoteTargetOption[] = (winRows ?? []).map((p) => ({
@@ -127,12 +142,13 @@ export default async function AwardsPage() {
   }));
 
   // Most Helpful / Rising Builder → members the viewer follows.
-  const { data: followRows } = await supabase
+  let followQuery = supabase
     .from('follows')
     .select('target_id')
     .eq('follower_user_id', ctx.appUser.id)
-    .eq('target_type', 'user')
-    .limit(TARGET_LIMIT);
+    .eq('target_type', 'user');
+  if (testIdList) followQuery = followQuery.not('target_id', 'in', testIdList);
+  const { data: followRows } = await followQuery.limit(TARGET_LIMIT);
   const followedIds = (followRows ?? []).map((f) => f.target_id);
   let memberOptions: VoteTargetOption[] = [];
   if (followedIds.length > 0) {
@@ -141,18 +157,23 @@ export default async function AwardsPage() {
       .select('user_id, display_name, handle')
       .in('user_id', followedIds);
     // A deleted member is not a candidate for a current award (retained
-    // content): the tombstone survives, so filter on account status.
+    // content): the tombstone survives, so filter on account status. A test
+    // account is re-checked from the same flags (defense in depth).
     const ballotFlags = await loadAccountFlags(
-      getSupabaseAdmin(),
+      admin,
       (profileRows ?? []).map((p) => p.user_id),
     );
     memberOptions = (profileRows ?? [])
-      .filter((p) => ballotFlags.get(p.user_id)?.status !== 'deleted')
+      .filter(
+        (p) =>
+          ballotFlags.get(p.user_id)?.status !== 'deleted' &&
+          !isTestAccount(ballotFlags, p.user_id),
+      )
       .map((p) => ({
-      targetType: 'user',
-      targetId: p.user_id,
-      label: p.display_name || `@${p.handle}`,
-    }));
+        targetType: 'user',
+        targetId: p.user_id,
+        label: p.display_name || `@${p.handle}`,
+      }));
   }
 
   const optionsByCategory: Record<AwardCategory, VoteTargetOption[]> = {

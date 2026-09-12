@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
-import { isLiveStatus } from '@/lib/account-flags';
+import { isOrganicAccount, isTestAccount } from '@/lib/account-flags';
 import {
   dropDeletedHostUpcoming,
   keepProjectableListings,
@@ -26,6 +26,10 @@ import type { DigestWindow } from './period';
  *
  * Runs as the service role, but every query hard-codes the same predicates RLS
  * would enforce, so nothing leaks.
+ *
+ * Test-account quarantine (users.is_test, migration 20260912050000): nothing
+ * written, led, owned or hosted by a quarantined test account is a digest
+ * candidate — the digest is broadcast community proof.
  */
 
 const LIMIT = 5;
@@ -102,7 +106,7 @@ export async function collectDigestCandidates(
   // New PUBLIC Labs — public + listed only (never a private/members-only Lab).
   const labsQuery = admin
     .from('labs')
-    .select('id, name, slug')
+    .select('id, name, slug, lead_user_id')
     .eq('visibility', 'public')
     .eq('is_listed', true)
     .gte('created_at', since)
@@ -161,24 +165,42 @@ export async function collectDigestCandidates(
   // Service-role reads bypass RLS, so the digest re-applies the member rules:
   // a non-live author's post is hidden from members (author_is_active), a
   // non-live owner's listing is suppressed, and an upcoming event whose host
-  // was deleted is no longer running (lib/retained-content.ts). A filtered
-  // candidate is simply dropped, not replaced.
-  const authorFlags = await loadStatuses(admin, [
+  // was deleted is no longer running (lib/retained-content.ts). On top of
+  // those, anything by a quarantined test account is dropped: its author,
+  // Space lead, listing owner or event host (for leads and hosts only a
+  // confirmed test marker drops the row — their liveness rules are unchanged).
+  // A filtered candidate is simply dropped, not replaced. One flags read
+  // covers authors, leads and hosts (keepProjectableListings reads its owners
+  // itself).
+  const flags = await loadStatuses(admin, [
     ...(wins.data ?? []).map((p) => p.author_user_id),
     ...(asks.data ?? []).map((p) => p.author_user_id),
+    ...(labs.data ?? []).map((l) => l.lead_user_id),
+    ...(events.data ?? []).map((e) => e.host_user_id),
   ]);
-  const liveAuthor = (p: { author_user_id: string }) =>
-    isLiveStatus(authorFlags.get(p.author_user_id)?.status);
-  const winRows = (wins.data ?? []).filter(liveAuthor).map((p) => ({ id: p.id, title: p.title }));
-  const askRows = (asks.data ?? []).filter(liveAuthor).map((p) => ({ id: p.id, title: p.title }));
-  const labRows = (labs.data ?? []).map((l) => ({ id: l.id, name: l.name, slug: l.slug }));
+  const organicAuthor = (p: { author_user_id: string }) =>
+    isOrganicAccount(flags, p.author_user_id);
+  const winRows = (wins.data ?? [])
+    .filter(organicAuthor)
+    .map((p) => ({ id: p.id, title: p.title }));
+  const askRows = (asks.data ?? [])
+    .filter(organicAuthor)
+    .map((p) => ({ id: p.id, title: p.title }));
+  const labRows = (labs.data ?? [])
+    .filter((l) => !isTestAccount(flags, l.lead_user_id))
+    .map((l) => ({ id: l.id, name: l.name, slug: l.slug }));
   const listingRows = (await keepProjectableListings(admin, listings.data ?? [])).map((l) => ({
     id: l.id,
     name: l.business_name,
     city: l.city,
   }));
   const mentorRow = (mentor.data ?? [])[0] ?? null;
-  const eventRows = (await dropDeletedHostUpcoming(admin, events.data ?? [])).map((e) => ({
+  const eventRows = (
+    await dropDeletedHostUpcoming(
+      admin,
+      (events.data ?? []).filter((e) => !isTestAccount(flags, e.host_user_id)),
+    )
+  ).map((e) => ({
     slug: e.slug,
     title: e.title,
     startsAt: e.starts_at,

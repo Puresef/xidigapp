@@ -3,7 +3,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Enums } from '@xidig/db';
 
 import { CANDIDATE_LIST_PAGE_SIZE } from '@/lib/capital/constants';
-import { toInterestCounts, type InterestCounts } from '@/lib/capital/interest-counts';
+import {
+  isTestAccount,
+  loadAccountFlags,
+  loadTestAccountIds,
+  postgrestIdList,
+} from '@/lib/account-flags';
+import { fetchCandidateInterestCounts, type InterestCounts } from '@/lib/capital/interest-counts';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { keysetBefore, type Cursor } from '@/lib/pagination';
 
@@ -12,8 +18,14 @@ import { keysetBefore, type Cursor } from '@/lib/pagination';
  * CALLER's RLS (can_read_candidate governs draft/reviewers-only/members
  * visibility, so whatever RLS hides is a plain 404). Cross-user hydration —
  * lab name/slug, creator profile, interest counts — goes through the service
- * role: interest counts come from candidate_interest_counts (social proof
- * without enumerating who).
+ * role: interest counts come from the one projection in interest-counts.ts
+ * (aggregates without enumerating who; help + support only; test accounts
+ * never count).
+ *
+ * Test-account quarantine (users.is_test, migration 20260912050000): a
+ * candidate created by a quarantined seeded/test account is never public
+ * (getPublicCandidateView → null → 404 / brand-card OG) and never listed
+ * (listCandidates excludes it in the query, before the page limit).
  *
  * NO vote tally is projected (Xidig Plus doctrine, owner 12 Sep). The
  * candidate vote is paused, and every stored ballot was cast under the old
@@ -217,12 +229,9 @@ async function fetchLabs(admin: Admin, labIds: string[]): Promise<Map<string, La
   return labs;
 }
 
-async function fetchInterestCounts(admin: Admin, candidateId: string): Promise<InterestCounts> {
-  const { data, error } = await admin.rpc('candidate_interest_counts' as never, {
-    cand: candidateId,
-  } as never);
-  if (error) throw new Error(`interest counts failed: ${error.message}`);
-  return toInterestCounts(data);
+/** Help + support counts, organic only — the one projection (interest-counts.ts). */
+function fetchInterestCounts(admin: Admin, candidateId: string): Promise<InterestCounts> {
+  return fetchCandidateInterestCounts(admin, candidateId);
 }
 
 function buildTimeline(cand: CandidateRow): TimelineMilestone[] {
@@ -324,7 +333,9 @@ export async function getPublicCandidateView(
 ): Promise<PublicCandidateView | null> {
   const { data, error } = await admin
     .from('venture_candidates')
-    .select(`${CANDIDATE_PUBLIC_COLUMNS}, visibility, timeline_public, co_lab_id`)
+    .select(
+      `${CANDIDATE_PUBLIC_COLUMNS}, visibility, timeline_public, co_lab_id, created_by_user_id`,
+    )
     .eq('id', id)
     .maybeSingle();
   if (error) throw new Error(`public candidate fetch failed: ${error.message}`);
@@ -334,6 +345,12 @@ export async function getPublicCandidateView(
   const isPublic =
     cand.timeline_public && cand.visibility === 'all_members' && cand.status !== 'draft';
   if (!isPublic) return null;
+
+  // A candidate a quarantined test account created is fixture data, not a
+  // real build-in-public project: never projected (page 404, brand-card OG).
+  // The creator id is read for this check only and never leaves the server.
+  const creatorFlags = await loadAccountFlags(admin, [cand.created_by_user_id]);
+  if (isTestAccount(creatorFlags, cand.created_by_user_id)) return null;
 
   const labs = await fetchLabs(admin, [cand.lab_id]);
   return {
@@ -366,7 +383,8 @@ export interface CandidateListResult {
 /**
  * Keyset list of readable candidates (mirrors labs/views pagination). Reads run
  * under the caller's RLS (can_read_candidate), so hidden candidates simply don't
- * appear. `admin` hydrates lab + creator refs over the page.
+ * appear. `admin` hydrates lab + creator refs over the page, and supplies the
+ * quarantined test-account ids whose candidates are never listed.
  */
 export async function listCandidates(
   supabase: AnyClient,
@@ -375,6 +393,11 @@ export async function listCandidates(
 ): Promise<CandidateListResult> {
   const limit = opts.limit ?? CANDIDATE_LIST_PAGE_SIZE;
 
+  // Quarantined test accounts' candidates are never listed. Excluded in the
+  // query (before the limit) so a page is full and the keyset cursor stays
+  // exact.
+  const testIds = await loadTestAccountIds(admin);
+
   let query = supabase
     .from('venture_candidates')
     .select(CANDIDATE_COLUMNS)
@@ -382,6 +405,7 @@ export async function listCandidates(
     .order('id', { ascending: false })
     .limit(limit + 1);
 
+  if (testIds.length > 0) query = query.not('created_by_user_id', 'in', postgrestIdList(testIds));
   if (opts.labId) query = query.or(`lab_id.eq.${opts.labId},co_lab_id.eq.${opts.labId}`);
   if (opts.status) query = query.eq('status', opts.status);
   if (opts.cursor) query = query.or(keysetBefore(opts.cursor, 'id'));

@@ -56,6 +56,11 @@ export const en = {
   'content.aiTooltip':
     'Created with Xidig AI. Labelled so you can tell it apart from member content.',
   'content.aiAccountTooltip': 'A clearly-labelled AI assistant account, not a human member.',
+  // Test-account quarantine (users.is_test, 12 Sep 2026): a seeded/test
+  // account is labelled as such and never presented as a real member.
+  'content.testAccount': 'Test account',
+  'content.testAccountTooltip':
+    'A pre-launch test account, not a real member. It does not count toward community numbers, rankings or trust.',
   // Munaasabado dispatch (Task 2) — the Community Awards result card's
   // "published by the system" label, reusing the §21 seeded/AI provenance
   // pattern for a system-authored (not member-authored) post.
@@ -961,6 +966,11 @@ export const en = {
   'profile.deletedMemberTitle': 'Deleted member',
   'profile.deletedMemberBody':
     'This account has been deleted. Things it contributed that others can still see are shown as “Deleted member”. It has no current profile, badges or verification.',
+  // Test-account quarantine: what a member sees on a test account's profile
+  // (signed-out visitors get a 404). No badges, verification or counts.
+  'profile.testAccountTitle': 'Test account',
+  'profile.testAccountBody':
+    'This is a test account created before launch. It is not a real member, and its badges, verification and activity do not count toward Xidig’s community numbers.',
   'profile.verifStatusUnverified': 'Unverified',
   'profile.verifStatusPending': 'Verification pending',
   'profile.verifStatusCommunity': 'Community Verified',

@@ -1,17 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
- * Community Awards ballot (POST /api/awards) — retained content. A deleted
- * account keeps a tombstone profile row, so "the profile exists" no longer
- * means "a current member". A vote for a deleted member is refused (400
+ * Community Awards ballot (POST /api/awards) — retained content and the
+ * test-account quarantine.
+ *
+ * A deleted account keeps a tombstone profile row, so "the profile exists" no
+ * longer means "a current member". A vote for a deleted member is refused (400
  * invalid_request, the ballot's existing envelope) and nothing is written;
  * live members — including one in the deletion grace — are unchanged.
+ *
+ * A quarantined seeded/test account (users.is_test, migration 20260912050000)
+ * is not a real member at all: a vote for one — or for a Space one leads, or a
+ * Win one wrote — is refused with the same envelope, and nothing is written.
  */
 
 const TARGET = '44444444-4444-4444-8444-444444444444';
+const LAB = '55555555-5555-4555-8555-555555555555';
+const WIN = '66666666-6666-4666-8666-666666666666';
+const OWNER = '77777777-7777-4777-8777-777777777777';
 
 const state = vi.hoisted(() => ({
-  targetStatus: 'active' as string,
+  users: {} as Record<string, { status: string; is_test: boolean }>,
   inserts: [] as unknown[],
 }));
 
@@ -64,6 +73,8 @@ vi.mock('@/lib/auth/guards', () => ({
           error: null,
         };
       if (table === 'profiles') return { data: [{ user_id: TARGET }], error: null };
+      if (table === 'labs') return { data: [{ id: LAB, lead_user_id: OWNER }], error: null };
+      if (table === 'posts') return { data: [{ id: WIN, author_user_id: OWNER }], error: null };
       return { data: [], error: null };
     }),
   }),
@@ -73,7 +84,15 @@ vi.mock('@/lib/supabase/server', () => ({
     proxyClient(
       (table) =>
         table === 'users'
-          ? { data: [{ id: TARGET, status: state.targetStatus, is_ai: false }], error: null }
+          ? {
+              data: Object.entries(state.users).map(([id, u]) => ({
+                id,
+                status: u.status,
+                is_ai: false,
+                is_test: u.is_test,
+              })),
+              error: null,
+            }
           : { data: [], error: null },
       (row) => state.inserts.push(row),
     ),
@@ -81,31 +100,74 @@ vi.mock('@/lib/supabase/server', () => ({
 
 import { POST } from './route';
 
-const vote = () =>
+const vote = (body: Record<string, string>) =>
   POST(
     new Request('https://xidig.test/api/awards', {
       method: 'POST',
-      body: JSON.stringify({ category: 'most_helpful', targetType: 'user', targetId: TARGET }),
+      body: JSON.stringify(body),
     }),
   );
+const voteForMember = () =>
+  vote({ category: 'most_helpful', targetType: 'user', targetId: TARGET });
 
 beforeEach(() => {
-  state.targetStatus = 'active';
+  state.users = {
+    [TARGET]: { status: 'active', is_test: false },
+    [OWNER]: { status: 'active', is_test: false },
+  };
   state.inserts.length = 0;
 });
 
 describe('award ballot — a deleted member is not a current candidate', () => {
   it('refuses a vote for a deleted member and writes no ballot', async () => {
-    state.targetStatus = 'deleted';
-    const res = await vote();
+    state.users[TARGET] = { status: 'deleted', is_test: false };
+    const res = await voteForMember();
     expect(res.status).toBe(400);
     expect(state.inserts).toEqual([]);
   });
 
   it.each(['active', 'pending_deletion'])('accepts a vote for a %s member', async (status) => {
-    state.targetStatus = status;
-    const res = await vote();
+    state.users[TARGET] = { status, is_test: false };
+    const res = await voteForMember();
     expect(res.status).toBe(201);
     expect(state.inserts).toHaveLength(1);
+  });
+});
+
+describe('award ballot — a quarantined test account is never a candidate', () => {
+  it.each(['active', 'pending_deletion'])(
+    'refuses a vote for a %s test member with the deleted-target envelope; writes nothing',
+    async (status) => {
+      state.users[TARGET] = { status, is_test: true };
+      const res = await voteForMember();
+      const body = (await res.json()) as { error?: { code?: string } };
+      expect(res.status).toBe(400);
+      expect(body.error?.code).toBe('invalid_request');
+      expect(state.inserts).toEqual([]);
+    },
+  );
+
+  it('refuses Best Lab for a Space led by a test account', async () => {
+    state.users[OWNER] = { status: 'active', is_test: true };
+    const res = await vote({ category: 'best_lab', targetType: 'lab', targetId: LAB });
+    expect(res.status).toBe(400);
+    expect(state.inserts).toEqual([]);
+  });
+
+  it('refuses Best Win for a Win written by a test account', async () => {
+    state.users[OWNER] = { status: 'active', is_test: true };
+    const res = await vote({ category: 'best_win', targetType: 'post', targetId: WIN });
+    expect(res.status).toBe(400);
+    expect(state.inserts).toEqual([]);
+  });
+
+  it('a real lead and a real author are unchanged (control)', async () => {
+    expect((await vote({ category: 'best_lab', targetType: 'lab', targetId: LAB })).status).toBe(
+      201,
+    );
+    expect((await vote({ category: 'best_win', targetType: 'post', targetId: WIN })).status).toBe(
+      201,
+    );
+    expect(state.inserts).toHaveLength(2);
   });
 });

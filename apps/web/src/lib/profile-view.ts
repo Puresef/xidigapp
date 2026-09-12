@@ -2,7 +2,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
-import { isLiveAccount, loadAccountFlags } from '@/lib/account-flags';
+import {
+  isOrganicAccount,
+  isTestAccount,
+  loadAccountFlags,
+  loadTestAccountIds,
+  postgrestIdList,
+} from '@/lib/account-flags';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -31,6 +37,14 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  *   rules decide whether it renders. The login-free public view deliberately
  *   hydrates NO pins (posts/labs/listings are member-visible surfaces and the
  *   service role would bypass their RLS).
+ * - Test-account quarantine (users.is_test, 20260912050000): a seeded/test
+ *   account is not a real member, so it is never projected as one. The
+ *   public view returns null (anon 404, brand OG card); the member view
+ *   returns `testAccountProfileView` — identity only, `isTest: true`, no
+ *   trust-bearing field — so every consumer (page, mobile API) gets nothing
+ *   it could present as proof even if it forgot to check the flag. On REAL
+ *   profiles, follows and vouches from test accounts are left out of the
+ *   counts.
  * - BOTH the member (signed-in) and public views honor
  *   user_settings.location_granularity: exact/city → as stored, region →
  *   country only, hidden → nothing. It is a member-audience privacy control
@@ -151,6 +165,14 @@ export interface ProfileView {
   pins: ProfilePinItem[];
   /** Badged AI-assistant account (§21) — drives the "AI assistant" chip. */
   isAi: boolean;
+  /**
+   * Quarantined seeded/test account (users.is_test). When true the rest of
+   * this object is the stripped `testAccountProfileView` shape, and every
+   * surface renders the test-account notice instead of a profile. Every
+   * producer in this module sets it; optional only so hand-built render
+   * fixtures elsewhere keep compiling (absent reads as not-test).
+   */
+  isTest?: boolean;
 }
 
 type AnyClient = SupabaseClient<Database>;
@@ -173,17 +195,74 @@ export function profileMediaView(profile: {
   };
 }
 
+/**
+ * Follower and vouch counts. A follow or vouch FROM a quarantined test account
+ * is not organic proof, so those edges are left out in the query (a head
+ * count cannot be filtered after the fact). Every other edge counts exactly
+ * as before.
+ */
 async function loadCounts(userId: string): Promise<ProfileCounts> {
   const admin = getSupabaseAdmin();
+  const testIds = await loadTestAccountIds(admin);
+  let followersQuery = admin
+    .from('follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('target_type', 'user')
+    .eq('target_id', userId);
+  let vouchesQuery = admin
+    .from('vouches')
+    .select('*', { count: 'exact', head: true })
+    .eq('vouchee_user_id', userId);
+  // An empty `in ()` list is not valid PostgREST, and there is nothing to
+  // exclude anyway.
+  if (testIds.length > 0) {
+    const list = postgrestIdList(testIds);
+    followersQuery = followersQuery.not('follower_user_id', 'in', list);
+    vouchesQuery = vouchesQuery.not('voucher_user_id', 'in', list);
+  }
   const [{ count: followers }, { count: vouches }] = await Promise.all([
-    admin
-      .from('follows')
-      .select('*', { count: 'exact', head: true })
-      .eq('target_type', 'user')
-      .eq('target_id', userId),
-    admin.from('vouches').select('*', { count: 'exact', head: true }).eq('vouchee_user_id', userId),
+    followersQuery,
+    vouchesQuery,
   ]);
   return { followers: followers ?? 0, vouches: vouches ?? 0 };
+}
+
+/**
+ * The only projection a quarantined test account gets on a member surface
+ * (the public one gets none). Identity only — who this is, so the notice and
+ * a mobile client can name it — and every trust-bearing field empty: no bio,
+ * location, skills, lanes, links, contact channels or media; verification
+ * reported as 'unverified' (no trust claim is projected, whatever the row
+ * says); no badges (founding-member included); zero counts and reputation;
+ * no open-to chips or pins. Nothing beyond the profile row and the flags
+ * lookup is read to build it.
+ */
+export function testAccountProfileView(
+  row: Pick<ProfileViewRow, 'user_id' | 'display_name' | 'handle' | 'created_at'>,
+  isAi: boolean,
+): ProfileView {
+  return {
+    profile: {
+      user_id: row.user_id,
+      display_name: row.display_name,
+      handle: row.handle,
+      bio: null,
+      location_city: null,
+      location_country: null,
+      skills: [],
+      lanes: [],
+      verification_status: 'unverified',
+      created_at: row.created_at,
+    },
+    badges: [],
+    counts: { followers: 0, vouches: 0 },
+    reputation: { contribution: 0, helper: 0 },
+    media: profileMediaView({}),
+    openTo: [],
+    pins: [],
+    isAi,
+    isTest: true,
+  };
 }
 
 /**
@@ -213,19 +292,6 @@ export async function loadReputation(
  * view passes the service role (open-to is public identity, same class as
  * lanes).
  */
-/**
- * Is this account a badged AI assistant (§21)? Read via the service role
- * because users.is_ai is not readable through another member's RLS client.
- */
-export async function loadIsAi(userId: string): Promise<boolean> {
-  const { data } = await getSupabaseAdmin()
-    .from('users')
-    .select('is_ai')
-    .eq('id', userId)
-    .maybeSingle();
-  return data?.is_ai ?? false;
-}
-
 export async function loadOpenTo(client: AnyClient, userId: string): Promise<string[]> {
   const { data, error } = await client
     .from('profile_open_to')
@@ -436,6 +502,11 @@ async function loadBadges(client: AnyClient, userId: string): Promise<ProfileBad
  * only on the public/crawler surface. The owner viewing their OWN profile
  * always sees their real city/coords (pass `viewerId` = their id), so the
  * privacy setting never hides a member's data from themselves.
+ *
+ * A quarantined test account resolves to `testAccountProfileView` for EVERY
+ * signed-in viewer, its owner included, and nothing else is read for it.
+ * users.is_ai / is_test are not readable through another member's RLS
+ * client, so the flags come from the service role.
  */
 export async function getMemberProfileView(
   supabase: SupabaseClient<Database>,
@@ -451,8 +522,12 @@ export async function getMemberProfileView(
   if (!profile) return null;
 
   const rawRow = profile as unknown as ProfileViewRow;
+  const flags = await loadAccountFlags(getSupabaseAdmin(), [rawRow.user_id]);
+  const isAi = flags.get(rawRow.user_id)?.isAi ?? false;
+  if (isTestAccount(flags, rawRow.user_id)) return testAccountProfileView(rawRow, isAi);
+
   const isOwner = viewerId !== undefined && viewerId === rawRow.user_id;
-  const [badges, counts, reputation, openTo, pins, settings, isAi] = await Promise.all([
+  const [badges, counts, reputation, openTo, pins, settings] = await Promise.all([
     loadBadges(supabase, rawRow.user_id),
     loadCounts(rawRow.user_id),
     loadReputation(supabase, rawRow.user_id),
@@ -462,7 +537,6 @@ export async function getMemberProfileView(
     isOwner
       ? Promise.resolve({ locationGranularity: 'city', searchEngines: true })
       : loadPublicSettings(rawRow.user_id),
-    loadIsAi(rawRow.user_id),
   ]);
   const row = isOwner ? rawRow : applyLocationGranularity(rawRow, settings.locationGranularity);
 
@@ -475,6 +549,7 @@ export async function getMemberProfileView(
     openTo,
     pins,
     isAi,
+    isTest: false,
   };
 }
 
@@ -499,11 +574,16 @@ export async function getPublicProfileView(handle: string): Promise<ProfileView 
   // The logged-out projection is service role, so it bypasses the RLS rule
   // that hides a non-live member's content from members. Apply the same
   // rule here: only a live account (active, or in the cancellable deletion
-  // grace) has a public share page, an OG card, or a crawlable /u/ URL. A tombstoned (deleted) profile 404s to the world, the
-  // way search already hides it. Members reading through RLS still get the
-  // neutral tombstone on the member surface.
+  // grace) has a public share page, an OG card, or a crawlable /u/ URL. A
+  // tombstoned (deleted) profile 404s to the world, the way search already
+  // hides it. Members reading through RLS still get the neutral tombstone on
+  // the member surface.
+  //
+  // A quarantined test account is not a real member either: no public page,
+  // no OG card, nothing crawlable — whatever its status. Members get the
+  // test-account notice instead (getMemberProfileView).
   const flags = await loadAccountFlags(admin, [row.user_id]);
-  if (!isLiveAccount(flags, row.user_id)) return null;
+  if (!isOrganicAccount(flags, row.user_id)) return null;
   const isAi = flags.get(row.user_id)?.isAi ?? false;
 
   const [badges, counts, reputation, openTo, settings] = await Promise.all([
@@ -524,5 +604,26 @@ export async function getPublicProfileView(handle: string): Promise<ProfileView 
     openTo,
     pins: [],
     isAi,
+    isTest: false,
   };
+}
+
+/**
+ * Does this handle belong to a quarantined test account? Service role (the
+ * users row is not readable through another member's RLS client). Used where
+ * the answer must not depend on who is asking — /u/[handle]'s metadata emits
+ * noindex/nofollow for a test account for every viewer. Unknown handle →
+ * false (the page 404s on its own).
+ */
+export async function isTestAccountHandle(handle: string): Promise<boolean> {
+  const admin = getSupabaseAdmin();
+  const { data: profile, error } = await admin
+    .from('profiles')
+    .select('user_id')
+    .eq('handle', handle)
+    .maybeSingle();
+  if (error) throw new Error(`profile lookup failed: ${error.message}`);
+  if (!profile) return false;
+  const flags = await loadAccountFlags(admin, [profile.user_id]);
+  return isTestAccount(flags, profile.user_id);
 }

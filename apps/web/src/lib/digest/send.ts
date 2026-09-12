@@ -18,7 +18,8 @@ import { renderDigestEmail } from './render';
  *   * users.status live (active, or the §19 deletion grace — the grace is
  *     ordinary membership until final deletion, owner ruling 11 Sep; the
  *     grace keeps its email on file by constraint), users.is_ai = false,
- *     email on file;
+ *     users.is_test = false (a quarantined seeded/test account is not a
+ *     member and is never emailed), email on file;
  *   * user_settings.digest_frequency ≠ 'off' (absent row = the 'weekly'
  *     default — the §26 cadence switch);
  *   * no notification_prefs override turning weekly_digest/email off
@@ -90,6 +91,7 @@ export async function selectDigestRecipients(
       .select('id, email')
       .in('status', [...LIVE_ACCOUNT_STATUSES])
       .eq('is_ai', false)
+      .eq('is_test', false)
       .not('email', 'is', null)
       .order('id', { ascending: true })
       .range(offset, offset + PAGE_SIZE - 1);

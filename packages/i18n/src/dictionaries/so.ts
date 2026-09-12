@@ -59,6 +59,10 @@ export const so = {
     'Waxaa sameeyay Xidig AI. Waa la calaamadeeyay si aad uga kala saarto nuxurka xubnaha.',
   'content.aiAccountTooltip':
     'Akoon kaaliye AI ah oo si cad loo calaamadeeyay, maaha xubin bini-aadam ah.',
+  // Test-account quarantine (12 Sep 2026). PROVISIONAL — native review.
+  'content.testAccount': 'Akoon tijaabo ah',
+  'content.testAccountTooltip':
+    'Akoon tijaabo ah oo la sameeyay ka hor furitaanka, maaha xubin dhab ah. Kuma xisaabtamo tirooyinka bulshada, kaalinta ama kalsoonida.',
   'content.systemLabel': 'Nidaamka Xidig',
   'content.systemTooltip': 'Waxaa si toos ah u daabacay nidaamka — kama iman xubin.',
 
@@ -785,6 +789,10 @@ export const so = {
   'profile.deletedMemberTitle': 'Xubin la tirtiray',
   'profile.deletedMemberBody':
     'Akoonkan waa la tirtiray. Waxyaalihii uu ku darsaday ee dadka kale weli arki karaan waxay u muuqdaan “Xubin la tirtiray”. Ma laha profile, calaamado ama xaqiijin hadda.',
+  // Test-account quarantine. PROVISIONAL — native review.
+  'profile.testAccountTitle': 'Akoon tijaabo ah',
+  'profile.testAccountBody':
+    'Kani waa akoon tijaabo ah oo la sameeyay ka hor furitaanka. Maaha xubin dhab ah, calaamadihiisa, xaqiijintiisa iyo waxqabadkiisuna kuma xisaabtamaan tirooyinka bulshada Xidig.',
   'profile.verifStatusUnverified': 'Aan la xaqiijin',
   'profile.verifStatusPending': 'Xaqiijin socota',
   'profile.verifStatusCommunity': 'Bulsho la xaqiijiyay',

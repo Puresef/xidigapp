@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { formatDate, type MessageKey } from '@xidig/i18n';
+import { formatDate, type MessageKey, type Translator } from '@xidig/i18n';
 
 import { Avatar } from '@/components/media/avatar';
 import { MediaSlot } from '@/components/media/media-slot';
@@ -207,6 +207,31 @@ function PencilGlyph() {
   );
 }
 
+/**
+ * What a signed-in reader (owner included) meets on a quarantined test
+ * account's /u/ page, IN PLACE of the profile — the same shape as the deleted-
+ * member tombstone: a title, the test-account chip, one sentence. No avatar,
+ * name, badges (founding-member included), verification chip or ring, counts,
+ * reputation, modules, contact row or controls: a fake person's page must not
+ * read as a member's, and nothing on it may count as community proof.
+ *
+ * Synchronous with the caller's translator so the page can render it without
+ * mounting the profile shell at all.
+ */
+export function TestAccountNotice({ t }: { t: Translator }) {
+  return (
+    <>
+      <h1 className="xidig-auth__title">{t('profile.testAccountTitle')}</h1>
+      <p>
+        <span className="xidig-tag xidig-tag--seeded" title={t('content.testAccountTooltip')}>
+          {t('content.testAccount')}
+        </span>
+      </p>
+      <p className="xidig-card__meta">{t('profile.testAccountBody')}</p>
+    </>
+  );
+}
+
 export interface AnigaProfileProps {
   view: AnigaView;
   viewer: 'owner' | 'member' | 'anon';
@@ -237,6 +262,18 @@ export async function AnigaProfile({
   endorseAction,
 }: AnigaProfileProps) {
   const t = await getT();
+
+  // Structural, not only the page's early return: a test account's projection
+  // mounted here by any caller renders the notice and nothing else — none of
+  // the chrome, the actions or the rail below.
+  if (view.base.isTest) {
+    return (
+      <article className="xidig-section">
+        <TestAccountNotice t={t} />
+      </article>
+    );
+  }
+
   const locale = await getLocale();
   const { profile, badges, counts, reputation, media, isAi } = view.base;
   const isOwner = viewer === 'owner';

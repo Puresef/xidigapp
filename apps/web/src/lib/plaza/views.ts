@@ -3,7 +3,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Enums } from '@xidig/db';
 
 import { detectLink, type LinkKind } from '@/lib/embeds';
-import { isLiveAccount, loadAccountFlags, type AccountFlags } from '@/lib/account-flags';
+import {
+  isLiveAccount,
+  isTestAccount,
+  loadAccountFlags,
+  type AccountFlags,
+} from '@/lib/account-flags';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 
 /**
@@ -162,6 +167,21 @@ export interface AwardPostView {
    * untouched.
    */
   winnerDeleted: boolean;
+  /**
+   * Test-account quarantine (users.is_test, migration 20260912050000): the
+   * winner is a quarantined seeded/test account (or the winning post's author,
+   * or the winning Space's lead, is one). A test account is not a real member,
+   * so it is never presented as the winner: `winner` is null (no name, avatar
+   * or link) and, as for a deleted winner, the stored body — which baked the
+   * fixture's name in — is not shipped. The award_results row is untouched.
+   * Always set by the hydrator; optional only so older fixtures type-check.
+   */
+  winnerIsTest?: boolean;
+}
+
+/** A results post whose stored body must not ship (deleted or test-account winner). */
+function awardWithholdsBody(award: AwardPostView | undefined): boolean {
+  return Boolean(award && (award.winnerDeleted || award.winnerIsTest));
 }
 
 export interface PostView {
@@ -433,20 +453,30 @@ async function fetchAwardViews(
 
   const winnerLabs = new Map<
     string,
-    { name: string; slug: string; icon_path: string | null; icon_blurhash: string | null }
+    {
+      name: string;
+      slug: string;
+      icon_path: string | null;
+      icon_blurhash: string | null;
+      lead_user_id: string;
+    }
   >();
   if (labIds.length > 0) {
     const res = await admin
       .from('labs')
-      .select('id, name, slug, icon_path, icon_blurhash')
+      .select('id, name, slug, icon_path, icon_blurhash, lead_user_id')
       .in('id', labIds);
     if (res.error) throw new Error(`award winner lab hydration failed: ${res.error.message}`);
     for (const row of res.data ?? []) winnerLabs.set(row.id, row);
   }
 
+  // Account flags cover every person behind a winner: the member, the Win's
+  // author, and — for the test-account check only — the winning Space's lead.
+  const flagIds = new Set(profileIds);
+  for (const lab of winnerLabs.values()) flagIds.add(lab.lead_user_id);
   const [profiles, winnerFlags] = await Promise.all([
     profileIds.size > 0 ? fetchAuthors(admin, [...profileIds]) : new Map<string, AuthorRef>(),
-    loadAccountFlags(admin, [...profileIds]),
+    loadAccountFlags(admin, [...flagIds]),
   ]);
   const isDeleted = (userId: string) => winnerFlags.get(userId)?.status === 'deleted';
   const winnerDeleted = (hit: (typeof hits)[number]): boolean => {
@@ -457,8 +487,25 @@ async function fetchAwardViews(
     }
     return false;
   };
+  // Test-account quarantine: a fixture account is never presented as a
+  // winner — as the member, the Win's author or the Space's lead.
+  const winnerIsTest = (hit: (typeof hits)[number]): boolean => {
+    if (hit.target_type === 'user') return isTestAccount(winnerFlags, hit.target_id);
+    if (hit.target_type === 'post') {
+      const target = winnerPosts.get(hit.target_id);
+      return target ? isTestAccount(winnerFlags, target.author_user_id) : false;
+    }
+    if (hit.target_type === 'lab') {
+      const lab = winnerLabs.get(hit.target_id);
+      return lab ? isTestAccount(winnerFlags, lab.lead_user_id) : false;
+    }
+    return false;
+  };
 
   const winnerFor = (hit: (typeof hits)[number]): AwardPostView['winner'] => {
+    // No name, avatar or link for a test-account winner (see winnerIsTest on
+    // AwardPostView) — there is no real member to celebrate.
+    if (winnerIsTest(hit)) return null;
     if (hit.target_type === 'user') {
       const profile = profiles.get(hit.target_id);
       if (!profile) return null;
@@ -520,6 +567,7 @@ async function fetchAwardViews(
       winner: winnerFor(hit),
       evidence: asksResolved === undefined ? {} : { asksResolved },
       winnerDeleted: winnerDeleted(hit),
+      winnerIsTest: winnerIsTest(hit),
     });
   }
   return byPost;
@@ -732,10 +780,11 @@ export async function hydratePosts(
   }
 
   const views = rows.map((post) => ({
-    // A system award post whose winner has since been deleted baked the real
-    // name into its body at publish time; the card renders from the award
-    // view (tombstone), so the body is not shipped to the browser at all.
-    post: awards.get(post.id)?.winnerDeleted ? { ...post, body: '' } : post,
+    // A system award post whose winner has since been deleted (or is a
+    // quarantined test account) baked that name into its body at publish
+    // time; the card renders from the award view (tombstone / no winner), so
+    // the body is not shipped to the browser at all.
+    post: awardWithholdsBody(awards.get(post.id)) ? { ...post, body: '' } : post,
     author: authors.get(post.author_user_id) ?? null,
     imageUrls: post.image_urls.map(publicMediaUrl),
     // posts.image_urls stays the attachment order of record; meta joins by

@@ -75,6 +75,16 @@ export async function seedAiAccount(db: TestDatabase, handle: string): Promise<s
   return userId;
 }
 
+/**
+ * A quarantined seeded/test account (users.is_test, 20260912050000): excluded
+ * from organic proof. Set by the service role only, like is_ai.
+ */
+export async function seedTestAccount(db: TestDatabase, handle: string): Promise<string> {
+  const userId = await seedMember(db, handle);
+  await db.admin.query(`update users set is_test = true where id = $1`, [userId]);
+  return userId;
+}
+
 /** Set a user's lifecycle status (active/suspended/deactivated/...). */
 export async function setStatus(
   db: TestDatabase,

@@ -2,7 +2,14 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { AuthContext } from '@/lib/auth/guards';
 
-import { getFeaturedUpcomingPublicEvent, listEventCards } from './views';
+import {
+  getFeaturedUpcomingPublicEvent,
+  getPublicEventView,
+  listEventCards,
+  listMemberEvents,
+  listPublicEvents,
+  listUpcomingEventsFor,
+} from './views';
 
 /**
  * Homepage "next up" helper (front-door standard §2-E26): featured-else-
@@ -54,6 +61,11 @@ function makeFakeAdmin(resultsByTable: Record<string, QueryResult[]>) {
       not: rec('not'),
       order: rec('order'),
       limit: rec('limit'),
+      maybeSingle: () =>
+        Promise.resolve({
+          data: Array.isArray(result.data) ? (result.data[0] ?? null) : result.data,
+          error: result.error,
+        }),
       then: (onFulfilled: (v: QueryResult) => unknown, onRejected?: (e: unknown) => unknown) =>
         Promise.resolve(result).then(onFulfilled, onRejected),
     };
@@ -206,6 +218,117 @@ describe('getFeaturedUpcomingPublicEvent (merged featured-else-soonest)', () => 
     holder.admin = admin;
 
     await expect(getFeaturedUpcomingPublicEvent(NOW)).rejects.toThrow(/event query failed/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test-account quarantine (users.is_test, migration 20260912050000): every
+// signed-out event surface drops rows hosted by a quarantined test account,
+// through the same users lookup as the AI-host drop.
+// ---------------------------------------------------------------------------
+
+/** The AI/test host lookup must ask for BOTH markers. */
+function hostFlagLookup(
+  queries: Array<{ table: string; calls: Array<{ method: string; args: unknown[] }> }>,
+) {
+  return queries.find(
+    (q) =>
+      q.table === 'users' &&
+      q.calls.some((c) => c.method === 'or' && c.args[0] === 'is_ai.eq.true,is_test.eq.true'),
+  );
+}
+
+describe('signed-out event surfaces — test-account quarantine', () => {
+  it('featured front-door event: a test-hosted row is dropped and the next organic one wins', async () => {
+    const { admin, queries } = makeFakeAdmin({
+      events: [
+        {
+          data: [
+            eventRow({ slug: 'seeded-meetup', host_user_id: 'test-1' }),
+            eventRow({ slug: 'organic', host_user_id: 'human-1' }),
+          ],
+          error: null,
+        },
+      ],
+      users: [{ data: [{ id: 'test-1' }], error: null }],
+    });
+    holder.admin = admin;
+
+    expect((await getFeaturedUpcomingPublicEvent(NOW))?.slug).toBe('organic');
+    expect(hostFlagLookup(queries)).toBeDefined();
+  });
+
+  it('public /events index: test-hosted rows are dropped', async () => {
+    const { admin, queries } = makeFakeAdmin({
+      events: [
+        {
+          data: [
+            eventRow({ id: 'e1', slug: 'seeded-meetup', host_user_id: 'test-1', lab_id: null }),
+            eventRow({ id: 'e2', slug: 'organic', host_user_id: 'human-1', lab_id: null }),
+          ],
+          error: null,
+        },
+      ],
+      users: [{ data: [{ id: 'test-1' }], error: null }],
+    });
+    holder.admin = admin;
+
+    const rows = await listPublicEvents({ now: NOW });
+    expect(rows.map((row) => row.slug)).toEqual(['organic']);
+    expect(hostFlagLookup(queries)).toBeDefined();
+  });
+
+  it('public event page: a test-hosted event is not projected (null → 404)', async () => {
+    const { admin, queries } = makeFakeAdmin({
+      events: [
+        {
+          data: [
+            eventRow({ id: 'e1', slug: 'seeded-meetup', host_user_id: 'test-1', lab_id: null }),
+          ],
+          error: null,
+        },
+      ],
+      users: [{ data: [{ id: 'test-1' }], error: null }],
+    });
+    holder.admin = admin;
+
+    expect(await getPublicEventView('seeded-meetup')).toBeNull();
+    expect(hostFlagLookup(queries)).toBeDefined();
+    // Nothing is hydrated for a suppressed event — no host byline, no counts.
+    expect(queries.filter((q) => q.table === 'profiles')).toHaveLength(0);
+    expect(queries.filter((q) => q.table === 'event_rsvps')).toHaveLength(0);
+  });
+
+  it('publicOnly embedded list (host profile / Space / listing page): test-hosted rows are dropped', async () => {
+    const { admin, queries } = makeFakeAdmin({
+      events: [
+        {
+          data: [
+            eventRow({ slug: 'seeded-meetup', host_user_id: 'test-1', lab_id: null }),
+            eventRow({ slug: 'organic', host_user_id: 'human-1', lab_id: null }),
+          ],
+          error: null,
+        },
+      ],
+      users: [{ data: [{ id: 'test-1' }], error: null }],
+    });
+    holder.admin = admin;
+
+    const rows = await listUpcomingEventsFor({ labId: 'lab-1' }, { publicOnly: true, now: NOW });
+    expect(rows.map((row) => row.slug)).toEqual(['organic']);
+    expect(hostFlagLookup(queries)).toBeDefined();
+  });
+
+  it('a failed host-flags lookup fails closed (throws) instead of letting rows through', async () => {
+    const { admin } = makeFakeAdmin({
+      events: [{ data: [eventRow({ host_user_id: 'test-1' })], error: null }],
+      users: [{ data: null, error: { message: 'boom' } }],
+    });
+    holder.admin = admin;
+
+    await expect(getFeaturedUpcomingPublicEvent(NOW)).rejects.toThrow(
+      /event host flags lookup failed/,
+    );
   });
 });
 
@@ -418,5 +541,64 @@ describe('listEventCards (batched card loader)', () => {
     expect(queries.filter((q) => q.table === 'event_rsvps')).toHaveLength(0);
     expect(queries.filter((q) => q.table === 'labs')).toHaveLength(0);
     expect(queries.filter((q) => q.table === 'profiles')).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test-account quarantine, member half: a quarantined test account's event is
+// never listed to members as community activity (index, cards on every tab,
+// embedded Space/profile lists). AI-hosted events stay visible to members.
+// ---------------------------------------------------------------------------
+describe('member event lists — test-account quarantine', () => {
+  const real = cardRow({ id: 'real-ev', slug: 'real-meetup', host_user_id: 'real-host' });
+  const fake = cardRow({ id: 'fake-ev', slug: 'fixture-meetup', host_user_id: 'test-host' });
+
+  it('listMemberEvents drops a test-hosted event and keeps a real one', async () => {
+    const { admin, queries } = makeFakeAdmin({
+      events: [{ data: [real, fake], error: null }],
+      users: [{ data: [{ id: 'test-host' }], error: null }],
+    });
+    holder.admin = admin;
+    const rows = await listMemberEvents(ctxFor(admin), { now: CARDS_NOW });
+    expect(rows.map((r) => r.slug)).toEqual(['real-meetup']);
+    const flagQuery = queries.find(
+      (q) => q.table === 'users' && q.calls.some((c) => c.method === 'eq' && c.args[0] === 'is_test'),
+    );
+    expect(flagQuery).toBeDefined();
+  });
+
+  it('listEventCards (upcoming) drops a test-hosted event from items and the count', async () => {
+    const { admin } = makeFakeAdmin({
+      events: [
+        { data: [real, fake], error: null },
+        { data: [], error: null },
+      ],
+      users: [{ data: [{ id: 'test-host' }], error: null }],
+    });
+    holder.admin = admin;
+    const { items, upcomingCount } = await listEventCards(ctxFor(admin), 'upcoming', CARDS_NOW);
+    expect(items.map((i) => i.slug)).toEqual(['real-meetup']);
+    expect(upcomingCount).toBe(1);
+  });
+
+  it('listUpcomingEventsFor (members) drops test-hosted rows', async () => {
+    const { admin } = makeFakeAdmin({
+      events: [{ data: [real, fake], error: null }],
+      users: [{ data: [{ id: 'test-host' }], error: null }],
+    });
+    holder.admin = admin;
+    const rows = await listUpcomingEventsFor({ labId: 'lab-1' }, { publicOnly: false, now: CARDS_NOW });
+    expect(rows.map((r) => r.slug)).toEqual(['real-meetup']);
+  });
+
+  it('a failed host lookup throws instead of letting test-hosted rows through', async () => {
+    const { admin } = makeFakeAdmin({
+      events: [{ data: [real, fake], error: null }],
+      users: [{ data: null, error: { message: 'boom' } }],
+    });
+    holder.admin = admin;
+    await expect(listMemberEvents(ctxFor(admin), { now: CARDS_NOW })).rejects.toThrow(
+      /test-flag lookup failed/,
+    );
   });
 });

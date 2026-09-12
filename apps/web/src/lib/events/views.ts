@@ -42,7 +42,12 @@ import {
  *   * attendee NAMES: host sees all; members see the named wall — opted-in
  *     (show_publicly) 'going' names; the login-free surface sees none;
  *   * organic-proof invariant: every signed-out surface filters
- *     source='member' AND drops rows hosted by AI accounts (users.is_ai).
+ *     source='member' AND drops rows hosted by AI accounts (users.is_ai) or
+ *     by quarantined test accounts (users.is_test) — dropAiOrTestHosted;
+ *   * member lists (index, cards, embedded Space/profile lists) drop events
+ *     hosted by quarantined test accounts — dropTestHosted. A fake member's
+ *     event is never listed as community activity (AI-hosted events stay
+ *     visible to members, labelled).
  */
 
 /**
@@ -351,17 +356,47 @@ export function resolveVenueFacts(
 
 /**
  * Organic-proof invariant for signed-out surfaces: drop rows hosted by AI
- * accounts. (source='member' is filtered SQL-side; is_ai needs the users join.)
+ * accounts or by quarantined test accounts (users.is_test, migration
+ * 20260912050000). source='member' is filtered SQL-side; the account flags
+ * need the users lookup. A failed lookup throws rather than letting the rows
+ * through unchecked (callers already treat a query error as a failure).
  */
-async function dropAiHosted<T extends { host_user_id: string }>(
+async function dropAiOrTestHosted<T extends { host_user_id: string }>(
   admin: AnyClient,
   rows: T[],
 ): Promise<T[]> {
   if (rows.length === 0) return rows;
   const hostIds = [...new Set(rows.map((row) => row.host_user_id))];
-  const { data } = await admin.from('users').select('id').in('id', hostIds).eq('is_ai', true);
-  const aiIds = new Set((data ?? []).map((row) => row.id));
-  return rows.filter((row) => !aiIds.has(row.host_user_id));
+  const { data, error } = await admin
+    .from('users')
+    .select('id')
+    .in('id', hostIds)
+    .or('is_ai.eq.true,is_test.eq.true');
+  if (error) throw new Error(`event host flags lookup failed: ${error.message}`);
+  const excludedIds = new Set((data ?? []).map((row) => row.id));
+  return rows.filter((row) => !excludedIds.has(row.host_user_id));
+}
+
+/**
+ * Member-list half of the quarantine: drop rows hosted by a quarantined test
+ * account (users.is_test), past and upcoming. Service role (another member's
+ * users row is not RLS-readable). Throws on a failed lookup rather than
+ * letting test-hosted rows through unchecked.
+ */
+async function dropTestHosted<T extends { host_user_id: string }>(
+  admin: AnyClient,
+  rows: T[],
+): Promise<T[]> {
+  if (rows.length === 0) return rows;
+  const hostIds = [...new Set(rows.map((row) => row.host_user_id))];
+  const { data, error } = await admin
+    .from('users')
+    .select('id')
+    .in('id', hostIds)
+    .eq('is_test', true);
+  if (error) throw new Error(`event host test-flag lookup failed: ${error.message}`);
+  const excludedIds = new Set((data ?? []).map((row) => row.id));
+  return rows.filter((row) => !excludedIds.has(row.host_user_id));
 }
 
 async function loadCategory(admin: AnyClient, slug: string): Promise<EventView['category']> {
@@ -676,7 +711,7 @@ export async function getPublicEventView(slug: string): Promise<EventView | null
   if (error) throw new Error(`public event lookup failed: ${error.message}`);
   if (!row) return null;
 
-  const [event] = await dropAiHosted(admin, [row as unknown as EventViewRow]);
+  const [event] = await dropAiOrTestHosted(admin, [row as unknown as EventViewRow]);
   if (!event) return null;
 
   const now = new Date();
@@ -744,9 +779,10 @@ export async function listMemberEvents(
   if (options.category) query = query.eq('category_id', options.category);
   const { data, error } = await query;
   if (error) throw new Error(`events index query failed: ${error.message}`);
+  const admin = getSupabaseAdmin();
   return dropDeletedHostUpcoming(
-    getSupabaseAdmin(),
-    (data ?? []) as unknown as EventViewRow[],
+    admin,
+    await dropTestHosted(admin, (data ?? []) as unknown as EventViewRow[]),
     options.now,
   );
 }
@@ -772,7 +808,7 @@ export async function listPublicEvents(
   if (error) throw new Error(`public events query failed: ${error.message}`);
   return dropDeletedHostUpcoming(
     admin,
-    await dropAiHosted(admin, (data ?? []) as unknown as EventViewRow[]),
+    await dropAiOrTestHosted(admin, (data ?? []) as unknown as EventViewRow[]),
     options.now,
   );
 }
@@ -934,6 +970,10 @@ export async function listEventCards(
   }
 
   const admin = getSupabaseAdmin();
+  // A quarantined test account's event is never listed as community activity,
+  // on any tab (past included).
+  upcomingRows = await dropTestHosted(admin, upcomingRows);
+  pastRows = await dropTestHosted(admin, pastRows);
   // An upcoming event whose host was deleted is no longer running — it leaves
   // every list, "mine" included. Past ones stay (history).
   upcomingRows = await dropDeletedHostUpcoming(admin, upcomingRows, now);
@@ -1075,7 +1115,9 @@ export async function listUpcomingEventsFor(
   const { data, error } = await query;
   if (error) throw new Error(`upcoming events query failed: ${error.message}`);
   let rows = (data ?? []) as unknown as (EventViewRow & { source: string })[];
-  if (options.publicOnly) rows = await dropAiHosted(admin, rows);
+  rows = options.publicOnly
+    ? await dropAiOrTestHosted(admin, rows)
+    : await dropTestHosted(admin, rows);
   rows = await dropDeletedHostUpcoming(admin, rows, options.now);
   return rows.map((row) => ({
     slug: row.slug,
@@ -1096,7 +1138,7 @@ export async function listUpcomingEventsFor(
  * ONE round-trip (front-door standard §2-E26): the featured-else-soonest
  * fallback is the ORDER BY — featured rows first (newest pin wins, NULLs
  * last), then the soonest of the rest. The window is wider than 1 so the
- * AI-host drop can fall through to the next organic candidate.
+ * AI/test-host drop can fall through to the next organic candidate.
  */
 export async function getFeaturedUpcomingPublicEvent(
   now: Date = new Date(),
@@ -1119,7 +1161,7 @@ export async function getFeaturedUpcomingPublicEvent(
   if (result.error) throw new Error(`upcoming event query failed: ${result.error.message}`);
   const rows = await dropDeletedHostUpcoming(
     admin,
-    await dropAiHosted(admin, (result.data ?? []) as unknown as EventViewRow[]),
+    await dropAiOrTestHosted(admin, (result.data ?? []) as unknown as EventViewRow[]),
     now,
   );
 

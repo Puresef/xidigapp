@@ -4,7 +4,7 @@ import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { loadCandidateForViewer, parseCandidateId } from '@/lib/capital/candidates-api';
 import { candidateInterestSchema, interestTypeSchema } from '@/lib/capital/schemas';
-import { toInterestCounts, type InterestCounts } from '@/lib/capital/interest-counts';
+import { fetchCandidateInterestCounts, type InterestCounts } from '@/lib/capital/interest-counts';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -31,22 +31,21 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * definition and historically awarded badges are retained as truthful history.
  *
  * Reading a candidate is required for help/cosign (a hidden candidate is a
- * 404). Writes go through the service role; counts return via
- * candidate_interest_counts, projected to help + cosign only — the legacy
- * invest tally never leaves the server (lib/capital/interest-counts.ts).
+ * 404). Writes go through the service role; counts return through the one
+ * projection (lib/capital/interest-counts.ts): help + cosign only — the legacy
+ * invest tally never leaves the server — and quarantined test accounts
+ * (users.is_test) never count.
  */
 
 interface Ctx {
   params: Promise<{ id: string }>;
 }
 
-async function readCounts(
+function readCounts(
   admin: ReturnType<typeof getSupabaseAdmin>,
   candidateId: string,
 ): Promise<InterestCounts> {
-  const { data, error } = await admin.rpc('candidate_interest_counts', { cand: candidateId });
-  if (error) throw new Error(`interest counts failed: ${error.message}`);
-  return toInterestCounts(data);
+  return fetchCandidateInterestCounts(admin, candidateId);
 }
 
 export async function POST(request: Request, context: Ctx): Promise<Response> {

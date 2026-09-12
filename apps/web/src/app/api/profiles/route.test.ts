@@ -19,7 +19,7 @@ interface Recorded {
 
 class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
   readonly recorded: Recorded[] = [];
-  constructor(private readonly rows: Row[]) {}
+  constructor(private readonly rows: Row[] | ((query: FakeQuery) => Row[])) {}
 
   private chain(op: string, args: unknown[]): this {
     this.recorded.push({ op, args });
@@ -57,13 +57,19 @@ class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
   argsOf(op: string): unknown[] | undefined {
     return this.recorded.find((entry) => entry.op === op)?.args;
   }
+  has(op: string, args: unknown[]): boolean {
+    return this.recorded.some(
+      (entry) => entry.op === op && JSON.stringify(entry.args) === JSON.stringify(args),
+    );
+  }
 
   then<TResult1, TResult2>(
     onfulfilled?:
       ((value: { data: Row[]; error: null }) => TResult1 | PromiseLike<TResult1>) | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
-    return Promise.resolve({ data: this.rows, error: null }).then(onfulfilled, onrejected);
+    const rows = typeof this.rows === 'function' ? this.rows(this) : this.rows;
+    return Promise.resolve({ data: rows, error: null }).then(onfulfilled, onrejected);
   }
 }
 
@@ -138,17 +144,26 @@ describe('GET /api/profiles account-status gate', () => {
   // tombstone ("Deleted member" + avatar) sat in the people directory while
   // search already hid it. Same rule, same primitive.
   class StatusAdmin extends FakeClient {
-    constructor(private readonly statuses: Record<string, string>) {
+    constructor(
+      private readonly statuses: Record<string, string>,
+      private readonly testIds: string[] = [],
+    ) {
       super();
     }
     override from(table: string): FakeQuery {
       if (table !== 'users') return super.from(table);
-      const rows = Object.entries(this.statuses).map(([id, status]) => ({
-        id,
-        status,
-        is_ai: false,
-      }));
-      const query = new FakeQuery(rows);
+      // The quarantine id lookup (is_test = true) answers the test ids; the
+      // account-flags lookup answers every seeded account with its flags.
+      const query = new FakeQuery((self) =>
+        self.has('eq', ['is_test', true])
+          ? this.testIds.map((id) => ({ id }))
+          : Object.entries(this.statuses).map(([id, status]) => ({
+              id,
+              status,
+              is_ai: false,
+              is_test: this.testIds.includes(id),
+            })),
+      );
       this.calls.push({ table, query });
       return query;
     }
@@ -193,5 +208,33 @@ describe('GET /api/profiles account-status gate', () => {
     expect(response.status).toBe(200);
     const body = (await response.json()) as { data: { profiles: Array<{ user_id: string }> } };
     expect(body.data.profiles.map((p) => p.user_id)).toEqual(['a', 'd']);
+  });
+
+  it('test-account quarantine: a test account is never listed; a real member still is', async () => {
+    userClient = new FakeClient();
+    const seeded = new FakeQuery([
+      { user_id: 'real', display_name: 'Real', handle: 'real', created_at: '2026-09-01T00:00:00Z' },
+      {
+        user_id: 'persona',
+        display_name: 'Luul Dukaan',
+        handle: 'luul_dukaan',
+        created_at: '2026-08-01T00:00:00Z',
+      },
+    ]);
+    userClient.from = (table: string) => {
+      userClient.calls.push({ table, query: seeded });
+      return seeded;
+    };
+    authHolder.ctx = { supabase: userClient };
+    adminHolder.client = new StatusAdmin({ real: 'active', persona: 'active' }, ['persona']);
+
+    const response = await GET(request('limit=20'));
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { data: { profiles: Array<{ user_id: string }> } };
+
+    // Excluded in the directory query itself (so a page still fills) …
+    expect(seeded.has('not', ['user_id', 'in', '(persona)'])).toBe(true);
+    // … and dropped on its own flags when a row gets through anyway.
+    expect(body.data.profiles.map((p) => p.user_id)).toEqual(['real']);
   });
 });

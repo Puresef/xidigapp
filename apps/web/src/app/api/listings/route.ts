@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { apiError, apiOk, handleApiError } from '@/lib/api';
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
@@ -16,6 +17,7 @@ import {
   pageSizeSchema,
 } from '@/lib/pagination';
 import { enforceRateLimit } from '@/lib/rate-limit';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 import type { Json } from '@xidig/db';
 
@@ -102,6 +104,18 @@ export async function GET(request: Request): Promise<Response> {
     // restart from page 1 — a stale client never 400s and never mixes orders.
     const cursor = decodeListingCursor(params.cursor);
     if (cursor) query = query.or(keysetBeforeListing(cursor));
+
+    // Never a listing owned by a quarantined test account (users.is_test):
+    // not directory or map proof. Excluded in the query so a page still
+    // fills. Owner-less (imported, unclaimed) listings stay — a bare
+    // `not in` would drop their NULL owner too. Separate `or` params are
+    // ANDed by PostgREST, so this composes with the q/cursor filters.
+    const testIds = await loadTestAccountIds(getSupabaseAdmin());
+    if (testIds.length > 0) {
+      query = query.or(
+        `owner_user_id.is.null,owner_user_id.not.in.${postgrestIdList(testIds)}`,
+      );
+    }
 
     const { data, error } = await query;
     if (error) throw new Error(`listings query failed: ${error.message}`);

@@ -110,7 +110,15 @@ function makeFakeAdmin(seed: Partial<FakeTables> = {}) {
 }
 
 function user(id: string, overrides: Row = {}): Row {
-  return { id, email: `${id}@example.so`, status: 'active', is_ai: false, ...overrides };
+  // users.is_test is NOT NULL DEFAULT false (migration 20260912050000).
+  return {
+    id,
+    email: `${id}@example.so`,
+    status: 'active',
+    is_ai: false,
+    is_test: false,
+    ...overrides,
+  };
 }
 
 function payload(overrides: Partial<DigestCandidates> = {}): DigestCandidates {
@@ -199,6 +207,22 @@ describe('selectDigestRecipients', () => {
 
     expect(await selectDigestRecipients(admin)).toEqual([
       { userId: 'g1', email: 'g1@example.so' },
+    ]);
+  });
+
+  it('never emails a quarantined test account, whatever its status or prefs', async () => {
+    const { admin } = makeFakeAdmin({
+      users: [
+        user('real'),
+        user('persona', { is_test: true }), // seeded fixture account — never
+        user('persona-grace', { status: 'pending_deletion', is_test: true }), // never
+      ],
+      // An explicit weekly ON row does not rescue a test account.
+      user_settings: [{ user_id: 'persona', digest_frequency: 'weekly' }],
+    });
+
+    expect(await selectDigestRecipients(admin)).toEqual([
+      { userId: 'real', email: 'real@example.so' },
     ]);
   });
 });

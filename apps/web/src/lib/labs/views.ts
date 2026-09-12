@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database, Enums } from '@xidig/db';
 
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { DORMANCY_DAYS } from '@/lib/labs/constants';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 
@@ -176,6 +177,12 @@ export const MEMBER_PREVIEW_LIMIT = 4;
  * 'public' → facepile for everyone; 'members' → only the lead / an active
  * member of THIS Space; 'private' → never (count-only). A Discover card is a
  * broadcast surface — the detail page's Members tab is the roster surface.
+ *
+ * TEST-ACCOUNT QUARANTINE (users.is_test): a quarantined test member is not
+ * counted in memberCount and never appears in the facepile — a headcount and
+ * a facepile are community proof. Filtered in JS against the (small) test-id
+ * set, fetched alongside the roster, so no extra round-trip is serialised and
+ * the roster query never carries a long id list.
  */
 export async function hydrateLabs(
   admin: SupabaseClient<Database>,
@@ -188,7 +195,7 @@ export async function hydrateLabs(
   const labIds = rows.map((r) => r.id);
   const leadIds = [...new Set(rows.map((r) => r.lead_user_id))];
 
-  const [membersResult, tagsResult, skillsResult, mineResult] = await Promise.all([
+  const [membersResult, tagsResult, skillsResult, mineResult, testIds] = await Promise.all([
     admin
       .from('lab_members')
       .select('lab_id, user_id, role')
@@ -202,15 +209,19 @@ export async function hydrateLabs(
       .in('lab_id', labIds)
       .is('filled_at', null),
     admin.from('lab_members').select('lab_id, role, status').in('lab_id', labIds).eq('user_id', viewerId),
+    loadTestAccountIds(admin),
   ]);
   if (membersResult.error) throw new Error(`member count failed: ${membersResult.error.message}`);
   if (tagsResult.error) throw new Error(`lab tags failed: ${tagsResult.error.message}`);
   if (skillsResult.error) throw new Error(`skill needs failed: ${skillsResult.error.message}`);
   if (mineResult.error) throw new Error(`viewer membership failed: ${mineResult.error.message}`);
 
+  const testIdSet = new Set(testIds);
   const memberCounts = new Map<string, number>();
   const membersByLab = new Map<string, string[]>();
   for (const row of membersResult.data ?? []) {
+    // Quarantined test members: neither counted nor eligible for the facepile.
+    if (testIdSet.has(row.user_id)) continue;
     memberCounts.set(row.lab_id, (memberCounts.get(row.lab_id) ?? 0) + 1);
     membersByLab.set(row.lab_id, [...(membersByLab.get(row.lab_id) ?? []), row.user_id]);
   }
@@ -305,16 +316,29 @@ export async function fetchLabMembershipIds(
  * number here. `memberLabIds` comes from fetchLabMembershipIds (service role;
  * the rows are the caller's own memberships), then the mine count itself is
  * still RLS-filtered through the labs SELECT policy.
+ *
+ * `testAccountIds` (loadTestAccountIds): the discovery tabs (All / Clubs /
+ * Labs) never count a Space led by a quarantined test account — the same
+ * exclusion the Discover list applies. My Spaces is the caller's own
+ * membership record, not discovery, and is left as it is (the mine=1 list
+ * does not exclude them either, so count and list agree).
  */
 export async function fetchLabCounts(
   caller: SupabaseClient<Database>,
   memberLabIds: string[],
+  testAccountIds: readonly string[],
 ): Promise<LabTabCounts> {
   const head = { count: 'exact', head: true } as const;
+  const listed = () => {
+    const query = caller.from('labs').select('id', head).eq('is_listed', true);
+    return testAccountIds.length > 0
+      ? query.not('lead_user_id', 'in', postgrestIdList(testAccountIds))
+      : query;
+  };
   const [all, clubs, labs, mine] = await Promise.all([
-    caller.from('labs').select('id', head).eq('is_listed', true),
-    caller.from('labs').select('id', head).eq('is_listed', true).eq('space_mode', 'club'),
-    caller.from('labs').select('id', head).eq('is_listed', true).eq('space_mode', 'lab'),
+    listed(),
+    listed().eq('space_mode', 'club'),
+    listed().eq('space_mode', 'lab'),
     memberLabIds.length > 0
       ? caller.from('labs').select('id', head).in('id', memberLabIds)
       : Promise.resolve({ count: 0, error: null }),

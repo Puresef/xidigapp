@@ -13,7 +13,9 @@ import {
  * fake admin whose `users` answers are the account statuses.
  */
 
-function fakeAdmin(users: Array<{ id: string; status: string; is_ai?: boolean }>) {
+function fakeAdmin(
+  users: Array<{ id: string; status: string; is_ai?: boolean; is_test?: boolean }>,
+) {
   const calls: Array<{ table: string; method: string; args: unknown[] }> = [];
   const admin = {
     from(table: string) {
@@ -22,7 +24,8 @@ function fakeAdmin(users: Array<{ id: string; status: string; is_ai?: boolean }>
         in: (...args: unknown[]) => (calls.push({ table, method: 'in', args }), chain),
         then: (resolve: (v: unknown) => unknown) =>
           Promise.resolve({
-            data: table === 'users' ? users.map((u) => ({ is_ai: false, ...u })) : [],
+            data:
+              table === 'users' ? users.map((u) => ({ is_ai: false, is_test: false, ...u })) : [],
             error: null,
           }).then(resolve),
       };
@@ -40,15 +43,21 @@ describe('listingIsPubliclyProjectable', () => {
     ['suspended', false],
     ['deactivated', false],
   ] as const)('owner %s → %s', (status, expected) => {
-    expect(listingIsPubliclyProjectable('owner-1', status)).toBe(expected);
+    expect(listingIsPubliclyProjectable('owner-1', { status, isTest: false })).toBe(expected);
   });
 
   it('an owner-less (seeded, unclaimed) listing is always projectable', () => {
     expect(listingIsPubliclyProjectable(null, null)).toBe(true);
   });
 
-  it('fails closed when the owner status is unknown', () => {
+  it('fails closed when the owner is unknown', () => {
     expect(listingIsPubliclyProjectable('owner-1', undefined)).toBe(false);
+  });
+
+  it('a quarantined test owner is never projectable, even while active', () => {
+    for (const status of ['active', 'pending_deletion'] as const) {
+      expect(listingIsPubliclyProjectable('owner-1', { status, isTest: true }), status).toBe(false);
+    }
   });
 });
 
@@ -93,6 +102,20 @@ describe('keepProjectableListings', () => {
     ];
     const kept = await keepProjectableListings(admin, rows);
     expect(kept.map((row) => row.id)).toEqual(['a', 'c', 'd']);
+  });
+
+  it('drops a test-owned listing; an owner-less listing still projects', async () => {
+    const { admin } = fakeAdmin([
+      { id: 'real', status: 'active' },
+      { id: 'persona', status: 'active', is_test: true },
+    ]);
+    const rows = [
+      { id: 'real-shop', owner_user_id: 'real' },
+      { id: 'persona-shop', owner_user_id: 'persona' },
+      { id: 'unclaimed', owner_user_id: null },
+    ];
+    const kept = await keepProjectableListings(admin, rows);
+    expect(kept.map((row) => row.id)).toEqual(['real-shop', 'unclaimed']);
   });
 });
 

@@ -7,10 +7,11 @@ import { createTranslator } from '@xidig/i18n';
  * Plaza posts → award_results (Task 8).
  *
  * The FakeClient harness is the endorsements one adapted for this route: the
- * admin client is LEGITIMATELY used here (award_vote_tally is service-role-
- * only and every write is service-role + audited behind requireRole('admin')),
- * so `rpc`, `upsert`, `update`, range filters, and head-counts are recorded
- * too. Properties under lock:
+ * admin client is LEGITIMATELY used here (the ballots are own-row-only under
+ * RLS and re-tallied service-side without quarantined test accounts — see
+ * lib/awards/publish.test.ts — and every write is service-role + audited
+ * behind requireRole('admin')), so `rpc`, `upsert`, `update`, range filters,
+ * and head-counts are recorded too. Properties under lock:
  *
  *   * non-admin → 403, nothing touched;
  *   * cycle still open (closes_at > now) → 409 award_cycle_not_closed, no
@@ -73,6 +74,15 @@ class FakeQuery implements PromiseLike<{ data: unknown; error: PgError; count: n
   }
   in(column: string, values: unknown[]) {
     return this.chain('in', [column, values]);
+  }
+  not(column: string, operator: string, value: unknown) {
+    return this.chain('not', [column, operator, value]);
+  }
+  order(column: string, options?: unknown) {
+    return this.chain('order', options === undefined ? [column] : [column, options]);
+  }
+  range(from: number, to: number) {
+    return this.chain('range', [from, to]);
   }
   maybeSingle() {
     return this.chain('maybeSingle', []);
@@ -232,6 +242,8 @@ describe('POST /api/admin/award-cycles/[quarter]/publish', () => {
     expect(response.status).toBe(409);
     expect(await errorCode(response)).toBe('award_cycle_not_closed');
     expect(client.rpcCalls).toEqual([]);
+    // No ballot read either — the tally is re-counted from award_votes now.
+    expect(client.queryCount('award_votes')).toBe(0);
     expect(client.queryCount('posts')).toBe(0);
   });
 
@@ -268,6 +280,7 @@ describe('POST /api/admin/award-cycles/[quarter]/publish', () => {
     expect(response.status).toBe(200);
     expect(body.data).toEqual({ already: true });
     expect(client.rpcCalls).toEqual([]);
+    expect(client.queryCount('award_votes')).toBe(0);
     expect(client.queryCount('posts')).toBe(0);
     expect(holder.audits).toEqual([]);
     expect(holder.emits).toEqual([]);
@@ -294,6 +307,7 @@ describe('POST /api/admin/award-cycles/[quarter]/publish', () => {
     expect(response.status).toBe(200);
     expect(body.data).toEqual({ already: true });
     expect(client.rpcCalls).toEqual([]);
+    expect(client.queryCount('award_votes')).toBe(0);
     expect(client.queryCount('posts')).toBe(0);
     expect(client.queryCount('seed_entities')).toBe(0);
     expect(client.queryCount('award_results')).toBe(0);
@@ -308,41 +322,47 @@ describe('POST /api/admin/award-cycles/[quarter]/publish', () => {
   });
 
   it('happy path: tallies, creates the system post, records the result, stamps the cycle', async () => {
-    const client = new FakeClient(
-      {
-        award_cycles: [
-          // 1: the cycle lookup; 2: the claim-first publish stamp (returns
-          // the row — this caller won); 3: the anchor-post link.
-          { row: { quarter: QUARTER, opens_at: PAST, closes_at: PAST_CLOSE, published_at: null } },
-          { row: { quarter: QUARTER } },
-          {},
-        ],
-        profiles: [
-          // 1: the badged system actor (getSeedActorUserId); 2: winner display.
-          { row: { user_id: AI_USER } },
-          { row: { display_name: 'Deeqa Axmed' } },
-        ],
-        posts: [
-          // 1: most_helpful evidence head-count; 2: the system post insert.
-          { count: 7 },
-          { row: { id: 'post-1' } },
-        ],
-        seed_entities: [
-          // Registry claim path: lookup miss → claim → backfill.
-          { row: null },
-          { row: { id: 'se-1' } },
-          {},
-        ],
-        award_results: [{}],
-      },
-      {
-        award_vote_tally: [
-          {
-            rows: [{ category: 'most_helpful', target_type: 'user', target_id: WINNER, votes: 3 }],
-          },
-        ],
-      },
-    );
+    const client = new FakeClient({
+      award_cycles: [
+        // 1: the cycle lookup; 2: the claim-first publish stamp (returns
+        // the row — this caller won); 3: the anchor-post link.
+        { row: { quarter: QUARTER, opens_at: PAST, closes_at: PAST_CLOSE, published_at: null } },
+        { row: { quarter: QUARTER } },
+        {},
+      ],
+      profiles: [
+        // 1: the badged system actor (getSeedActorUserId); 2: winner display.
+        { row: { user_id: AI_USER } },
+        { row: { display_name: 'Deeqa Axmed' } },
+      ],
+      posts: [
+        // 1: most_helpful evidence head-count; 2: the system post insert.
+        { count: 7 },
+        { row: { id: 'post-1' } },
+      ],
+      seed_entities: [
+        // Registry claim path: lookup miss → claim → backfill.
+        { row: null },
+        { row: { id: 'se-1' } },
+        {},
+      ],
+      award_results: [{}],
+      // No quarantined test accounts in this cycle.
+      users: [{ rows: [] }],
+      // The ballots themselves (re-tallied app-side): three votes for WINNER,
+      // then the empty page that ends the read.
+      award_votes: [
+        {
+          rows: ['v1', 'v2', 'v3'].map((voter) => ({
+            category: 'most_helpful',
+            target_type: 'user',
+            target_id: WINNER,
+            voter_user_id: voter,
+          })),
+        },
+        { rows: [] },
+      ],
+    });
     holder.ctx = adminCtx();
     holder.admin = client;
 
@@ -356,8 +376,10 @@ describe('POST /api/admin/award-cycles/[quarter]/publish', () => {
     expect(response.status).toBe(200);
     expect(body.data).toEqual({ postIds: ['post-1'] });
 
-    // The tally ran for the requested quarter, service-role-only RPC.
-    expect(client.rpcCalls).toEqual([{ fn: 'award_vote_tally', args: { p_quarter: QUARTER } }]);
+    // The tally re-counted the requested quarter's ballots (service role),
+    // instead of award_vote_tally() — which would also count test accounts.
+    expect(client.rpcCalls).toEqual([]);
+    expect(client.queryFor('award_votes').argsOf('eq')).toEqual(['quarter', QUARTER]);
 
     // The post is authored by the badged system actor with system provenance —
     // an 'update', never pinned, body carrying the composed title + provenance
@@ -417,19 +439,16 @@ describe('POST /api/admin/award-cycles/[quarter]/publish', () => {
   });
 
   it('a zero-vote cycle publishes empty: no posts, cycle stamped with results_post_id null, still 200', async () => {
-    const client = new FakeClient(
-      {
-        award_cycles: [
-          // 1: the cycle lookup; 2: the claim-first publish stamp; 3: anchor.
-          { row: { quarter: QUARTER, opens_at: PAST, closes_at: PAST_CLOSE, published_at: null } },
-          { row: { quarter: QUARTER } },
-          {},
-        ],
-      },
-      {
-        award_vote_tally: [{ rows: [] }],
-      },
-    );
+    const client = new FakeClient({
+      award_cycles: [
+        // 1: the cycle lookup; 2: the claim-first publish stamp; 3: anchor.
+        { row: { quarter: QUARTER, opens_at: PAST, closes_at: PAST_CLOSE, published_at: null } },
+        { row: { quarter: QUARTER } },
+        {},
+      ],
+      users: [{ rows: [] }],
+      award_votes: [{ rows: [] }],
+    });
     holder.ctx = adminCtx();
     holder.admin = client;
 

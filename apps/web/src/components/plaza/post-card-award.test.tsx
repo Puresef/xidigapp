@@ -134,6 +134,22 @@ describe('PostCard award presentation (frame 9c)', () => {
     expect(html).toContain('7 Codsi oo la xaliyay · qoraaga codsiga ayaa mid kasta xaqiijiyay');
   });
 
+  it('a test-account winner is named as a test account, with no vote/evidence count and no link', () => {
+    const base = awardView();
+    const view = fakeView({
+      post: { ...base.post, body: '' },
+      award: { ...base.award!, winner: null, winnerIsTest: true },
+    });
+    const html = render(view);
+    // Title names the result as a test account (SO provisional label), never a blank line.
+    expect(html).toContain('Kan Ugu Caawiya — 2026-Q2: Akoon tijaabo ah');
+    // No asker-confirmed evidence, no vote count, no winner link or avatar ring.
+    expect(html).not.toContain('Codsi oo la xaliyay');
+    expect(html).not.toContain('xidig-award-ring');
+    expect(html).not.toContain('Deeqa Axmed');
+    expect(html).toContain('Akoon tijaabo ah oo la sameeyay ka hor furitaanka');
+  });
+
   it('suppresses the author byline entirely — no link to the system account, no byline block', () => {
     const html = render(awardView());
     expect(html).not.toContain('/u/xidig_ai');

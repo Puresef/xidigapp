@@ -109,6 +109,15 @@ vi.mock('@/lib/auth/guards', () => ({
   },
 }));
 
+/**
+ * Service role: answers only the quarantined-test-account id lookup
+ * (users where is_test = true). Default: no test accounts.
+ */
+const adminHolder = vi.hoisted(() => ({ testIds: [] as string[] }));
+vi.mock('@/lib/supabase/server', () => ({
+  getSupabaseAdmin: () => new FakeClient({ users: [adminHolder.testIds.map((id) => ({ id }))] }),
+}));
+
 // Locale/analytics/rate-limit ride request scope (cookies, after()) that
 // doesn't exist under vitest — stubbed to inert equivalents.
 vi.mock('@/lib/locale', () => ({
@@ -174,6 +183,7 @@ function getRequest(qs = ''): Request {
 beforeEach(() => {
   authHolder.ctx = null;
   authHolder.error = null;
+  adminHolder.testIds = [];
 });
 
 describe('GET /api/listings — bookmarked hydration', () => {
@@ -347,5 +357,53 @@ describe('GET /api/listings — verified-first sort + versioned cursor (Task 11)
     expect(response.status).toBe(200);
     const query = client.queryFor('business_listings');
     expect(query.recorded.some((entry) => entry.op === 'or')).toBe(false);
+  });
+});
+
+describe('GET /api/listings — test-account quarantine', () => {
+  const TEST_OWNER = '55555555-5555-4555-8555-555555555555';
+  const OTHER_TEST = '66666666-6666-4666-8666-666666666666';
+  const QUARANTINE_FILTER = `owner_user_id.is.null,owner_user_id.not.in.(${TEST_OWNER},${OTHER_TEST})`;
+
+  it('excludes listings owned by a test account while keeping owner-less ones (directory + map)', async () => {
+    adminHolder.testIds = [TEST_OWNER, OTHER_TEST];
+    const client = new FakeClient({ business_listings: [[]] });
+    authHolder.ctx = contextFor(client);
+
+    const response = await GET(getRequest('?bbox=43,9,45,10'));
+
+    expect(response.status).toBe(200);
+    // A bare `not in` would silently drop NULL-owner rows; the null branch
+    // keeps imported/unclaimed listings.
+    expect(client.queryFor('business_listings').has('or', [QUARANTINE_FILTER])).toBe(true);
+  });
+
+  it('composes with the keyset cursor as a separate (ANDed) `or` filter', async () => {
+    adminHolder.testIds = [TEST_OWNER, OTHER_TEST];
+    const client = new FakeClient({ business_listings: [[]] });
+    authHolder.ctx = contextFor(client);
+
+    const cursor = encodeListingCursor({
+      verified: true,
+      updatedAt: '2026-07-19T00:00:00Z',
+      id: 'L9',
+    });
+    await GET(getRequest(`?cursor=${encodeURIComponent(cursor)}`));
+
+    const ors = client
+      .queryFor('business_listings')
+      .recorded.filter((entry) => entry.op === 'or')
+      .map((entry) => entry.args[0]);
+    expect(ors).toHaveLength(2);
+    expect(ors).toContain(QUARANTINE_FILTER);
+  });
+
+  it('adds no quarantine filter when there are no test accounts', async () => {
+    const client = new FakeClient({ business_listings: [[]] });
+    authHolder.ctx = contextFor(client);
+
+    await GET(getRequest());
+
+    expect(client.queryFor('business_listings').recorded.some((e) => e.op === 'or')).toBe(false);
   });
 });

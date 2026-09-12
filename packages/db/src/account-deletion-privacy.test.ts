@@ -93,6 +93,9 @@ const USER_CONTRACT: Record<string, Disposition> = {
   // timestamps are the account's own history. Reviewed, kept.
   role: { kind: 'keep' },
   is_ai: { kind: 'keep' },
+  // Test-account quarantine (20260912050000): a deleted test account is still
+  // a test account, so it never re-enters organic proof. Not identifying.
+  is_test: { kind: 'keep' },
   preferred_language: { kind: 'keep' },
   low_bandwidth_enabled: { kind: 'keep' },
   onboarding_state: { kind: 'keep' },

@@ -1,3 +1,4 @@
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
@@ -25,7 +26,9 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * RLS so private/members/public visibility is DB-enforced. Every page also
  * carries `counts` for the Discover tabs (All / Clubs / Labs / My Spaces) —
  * head-only exact counts on the caller's client, so the numbers can never
- * reveal a Space the caller's RLS hides.
+ * reveal a Space the caller's RLS hides. The Discover browse and its tab
+ * counts never include a Space led by a quarantined test account
+ * (users.is_test); My Spaces (the caller's own memberships) is unfiltered.
  *
  * POST creates a Space. A Club is free and is the ordinary project: updates,
  * decisions, artifacts and members. Opening a new LAB is PAUSED for everyone
@@ -44,11 +47,15 @@ export async function GET(request: Request): Promise<Response> {
     const params = querySchema.parse(Object.fromEntries(new URL(request.url).searchParams));
     const admin = getSupabaseAdmin();
 
-    // One membership scan feeds both the mine=1 filter and the mine count.
-    const memberLabIds = await fetchLabMembershipIds(admin, ctx.appUser.id);
+    // One membership scan feeds both the mine=1 filter and the mine count;
+    // one test-account read feeds the Discover exclusion and its counts.
+    const [memberLabIds, testIds] = await Promise.all([
+      fetchLabMembershipIds(admin, ctx.appUser.id),
+      loadTestAccountIds(admin),
+    ]);
 
     if (params.mine === '1' && memberLabIds.length === 0) {
-      const counts = await fetchLabCounts(ctx.supabase, memberLabIds);
+      const counts = await fetchLabCounts(ctx.supabase, memberLabIds, testIds);
       return apiOk({ items: [], nextCursor: null, counts });
     }
 
@@ -64,6 +71,8 @@ export async function GET(request: Request): Promise<Response> {
       query = query.in('id', memberLabIds);
     } else {
       query = query.eq('is_listed', true);
+      // Discovery never surfaces a Space led by a quarantined test account.
+      if (testIds.length > 0) query = query.not('lead_user_id', 'in', postgrestIdList(testIds));
     }
 
     if (params.mode) query = query.eq('space_mode', params.mode);
@@ -83,7 +92,7 @@ export async function GET(request: Request): Promise<Response> {
 
     const [items, counts] = await Promise.all([
       hydrateLabs(admin, ctx.appUser.id, page),
-      fetchLabCounts(ctx.supabase, memberLabIds),
+      fetchLabCounts(ctx.supabase, memberLabIds, testIds),
     ]);
     return apiOk({ items, nextCursor, counts });
   } catch (error) {

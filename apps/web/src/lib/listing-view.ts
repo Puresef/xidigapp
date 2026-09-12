@@ -146,7 +146,9 @@ export async function getMemberListingView(
  * live is suppressed pending claim/review (lib/retained-content.ts): the
  * member path already hides it under RLS, and nothing distinguishes business
  * contact data from the member's own — so the public path must not keep
- * serving the address, contacts, photos, verified mark and owner byline.
+ * serving the address, contacts, photos, verified mark and owner byline. A
+ * listing owned by a quarantined test account is never public either (the
+ * page 404s and the OG card falls back).
  */
 export async function getPublicListingView(id: string): Promise<ListingView | null> {
   const admin = getSupabaseAdmin();
@@ -161,8 +163,9 @@ export async function getPublicListingView(id: string): Promise<ListingView | nu
   const row = listing as unknown as ListingViewRow;
   if (row.owner_user_id) {
     const flags = await loadStatuses(admin, [row.owner_user_id]);
-    const ownerStatus = flags.get(row.owner_user_id)?.status;
-    if (!listingIsPubliclyProjectable(row.owner_user_id, ownerStatus)) return null;
+    if (!listingIsPubliclyProjectable(row.owner_user_id, flags.get(row.owner_user_id))) {
+      return null;
+    }
   }
   return decorate(admin, row);
 }

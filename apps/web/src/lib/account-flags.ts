@@ -40,6 +40,13 @@ export function isLiveStatus(status: Enums<'account_status'> | null | undefined)
 export interface AccountFlags {
   status: Enums<'account_status'>;
   isAi: boolean;
+  /**
+   * Quarantined seeded/test account (users.is_test, migration
+   * 20260912050000). Test accounts never count or appear as organic
+   * community proof: not in counters, rankings, awards, trust, search,
+   * discovery or public projections. See isOrganicAccount().
+   */
+  isTest: boolean;
 }
 
 export async function loadAccountFlags(
@@ -49,13 +56,54 @@ export async function loadAccountFlags(
   const flags = new Map<string, AccountFlags>();
   const ids = Array.from(new Set(userIds));
   if (ids.length === 0) return flags;
-  const { data, error } = await admin.from('users').select('id, status, is_ai').in('id', ids);
+  const { data, error } = await admin
+    .from('users')
+    .select('id, status, is_ai, is_test')
+    .in('id', ids);
   if (error) throw new Error(`account flags lookup failed: ${error.message}`);
-  for (const row of data ?? []) flags.set(row.id, { status: row.status, isAi: row.is_ai });
+  for (const row of data ?? []) {
+    flags.set(row.id, { status: row.status, isAi: row.is_ai, isTest: row.is_test });
+  }
   return flags;
 }
 
 /** True only for a live account; unknown ids fail closed. */
 export function isLiveAccount(flags: Map<string, AccountFlags>, userId: string): boolean {
   return isLiveStatus(flags.get(userId)?.status);
+}
+
+/** True for a quarantined seeded/test account. */
+export function isTestAccount(flags: Map<string, AccountFlags>, userId: string): boolean {
+  return flags.get(userId)?.isTest === true;
+}
+
+/**
+ * A live account that is NOT a quarantined test account: the only accounts
+ * whose presence, activity and edges may count as organic community proof.
+ * Unknown ids fail closed. (AI accounts are labelled rather than hidden on
+ * most surfaces; callers that also exclude AI check isAi themselves.)
+ */
+export function isOrganicAccount(flags: Map<string, AccountFlags>, userId: string): boolean {
+  const flag = flags.get(userId);
+  return flag !== undefined && isLiveStatus(flag.status) && !flag.isTest;
+}
+
+/**
+ * Every quarantined test account id (service role). Small by design; used to
+ * build `not in` filters for counts and lists that cannot be filtered after
+ * the fact. Throws on error: a proof surface that cannot tell test accounts
+ * apart must not guess.
+ */
+export async function loadTestAccountIds(admin: SupabaseClient<Database>): Promise<string[]> {
+  const { data, error } = await admin.from('users').select('id').eq('is_test', true);
+  if (error) throw new Error(`test account lookup failed: ${error.message}`);
+  return (data ?? []).map((row) => row.id);
+}
+
+/**
+ * A PostgREST list literal for `.not(column, 'in', …)`. Only uuids reach it
+ * (ids come from users.id), so no quoting is needed.
+ */
+export function postgrestIdList(ids: readonly string[]): string {
+  return `(${ids.join(',')})`;
 }

@@ -4458,6 +4458,7 @@ export type Database = {
           email: string | null
           id: string
           is_ai: boolean
+          is_test: boolean
           low_bandwidth_enabled: boolean
           onboarding_state: Json
           phone: string | null
@@ -4479,6 +4480,7 @@ export type Database = {
           email?: string | null
           id: string
           is_ai?: boolean
+          is_test?: boolean
           low_bandwidth_enabled?: boolean
           onboarding_state?: Json
           phone?: string | null
@@ -4500,6 +4502,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_ai?: boolean
+          is_test?: boolean
           low_bandwidth_enabled?: boolean
           onboarding_state?: Json
           phone?: string | null

@@ -108,7 +108,12 @@ describe('award results post — a winner who has since been deleted', () => {
         { data: [profile('seed-actor', 'Xidig', 'xidig')], error: null },
         { data: [profile('winner-1', 'Deleted member', 'deleted_abc123abc123')], error: null },
       ],
-      users: [{ data: [{ id: 'winner-1', status: 'deleted', is_ai: false }], error: null }],
+      users: [
+        {
+          data: [{ id: 'winner-1', status: 'deleted', is_ai: false, is_test: false }],
+          error: null,
+        },
+      ],
     });
 
     const [view] = await hydratePosts(admin, 'viewer-1', [awardPost()], {
@@ -146,7 +151,9 @@ describe('award results post — a winner who has since been deleted', () => {
         { data: [profile('seed-actor', 'Xidig', 'xidig')], error: null },
         { data: [profile('winner-1', 'Hodan Warsame', 'hodan')], error: null },
       ],
-      users: [{ data: [{ id: 'winner-1', status: 'active', is_ai: false }], error: null }],
+      users: [
+        { data: [{ id: 'winner-1', status: 'active', is_ai: false, is_test: false }], error: null },
+      ],
     });
 
     const [view] = await hydratePosts(admin, 'viewer-1', [awardPost()], {
@@ -188,7 +195,12 @@ describe('award results post — a winner who has since been deleted', () => {
         { data: [profile('seed-actor', 'Xidig', 'xidig')], error: null },
         { data: [profile('author-1', 'Deleted member', 'deleted_def456def456')], error: null },
       ],
-      users: [{ data: [{ id: 'author-1', status: 'deleted', is_ai: false }], error: null }],
+      users: [
+        {
+          data: [{ id: 'author-1', status: 'deleted', is_ai: false, is_test: false }],
+          error: null,
+        },
+      ],
     });
 
     const [view] = await hydratePosts(admin, 'viewer-1', [awardPost()], {
@@ -200,5 +212,155 @@ describe('award results post — a winner who has since been deleted', () => {
     expect(view?.award?.winner?.href).not.toContain('/p/');
     expect(JSON.stringify(view)).not.toContain('Burao shop');
     expect(view?.post.body).toBe('');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test-account quarantine (users.is_test, migration 20260912050000). A results
+// card whose winner is a quarantined seeded/test account — the member, the
+// winning Win's author or the winning Space's lead — never presents that
+// account as a real member: no name, no avatar, no link, and (as for a deleted
+// winner) the stored body that baked the fixture's name in is not shipped.
+// ---------------------------------------------------------------------------
+
+function awardResult(category: string, targetType: string, targetId: string) {
+  return {
+    data: [
+      {
+        post_id: POST_ID,
+        quarter: '2026-Q3',
+        category,
+        target_type: targetType,
+        target_id: targetId,
+        votes: 12,
+        evidence: {},
+      },
+    ],
+    error: null,
+  };
+}
+
+describe('award results post — a quarantined test-account winner', () => {
+  it('a test member winner is not presented: no winner, no stored body', async () => {
+    const admin = fakeAdmin({
+      award_results: [awardResult('most_helpful', 'user', 'fixture-1')],
+      profiles: [
+        { data: [profile('seed-actor', 'Xidig', 'xidig')], error: null },
+        { data: [profile('fixture-1', 'Hodan Warsame', 'hodan_fixture')], error: null },
+      ],
+      users: [
+        { data: [{ id: 'fixture-1', status: 'active', is_ai: false, is_test: true }], error: null },
+      ],
+    });
+
+    const [view] = await hydratePosts(admin, 'viewer-1', [awardPost()], {
+      applyMuteFilter: false,
+    });
+
+    expect(view?.award?.winnerIsTest).toBe(true);
+    expect(view?.award?.winnerDeleted).toBe(false); // not deleted — quarantined
+    expect(view?.award?.winner).toBeNull();
+    expect(view?.post.body).toBe('');
+    expect(JSON.stringify(view)).not.toContain('Hodan Warsame');
+    expect(JSON.stringify(view)).not.toContain('hodan_fixture');
+  });
+
+  it('a Best Win written by a test account shows neither its title, its link nor its author', async () => {
+    const admin = fakeAdmin({
+      award_results: [awardResult('best_win', 'post', 'win-post-1')],
+      posts: [
+        {
+          data: [
+            { id: 'win-post-1', title: 'We opened the Burao shop', author_user_id: 'fixture-2' },
+          ],
+          error: null,
+        },
+      ],
+      profiles: [
+        { data: [profile('seed-actor', 'Xidig', 'xidig')], error: null },
+        { data: [profile('fixture-2', 'Fixture Author', 'fixture_author')], error: null },
+      ],
+      users: [
+        { data: [{ id: 'fixture-2', status: 'active', is_ai: false, is_test: true }], error: null },
+      ],
+    });
+
+    const [view] = await hydratePosts(admin, 'viewer-1', [awardPost()], {
+      applyMuteFilter: false,
+    });
+
+    expect(view?.award?.winnerIsTest).toBe(true);
+    expect(view?.award?.winner).toBeNull();
+    expect(view?.post.body).toBe('');
+    const shipped = JSON.stringify(view);
+    expect(shipped).not.toContain('Burao shop');
+    expect(shipped).not.toContain('Fixture Author');
+    expect(shipped).not.toContain('/p/win-post-1');
+  });
+
+  it('a Best Lab led by a test account is not presented either', async () => {
+    const admin = fakeAdmin({
+      award_results: [awardResult('best_lab', 'lab', 'lab-1')],
+      labs: [
+        {
+          data: [
+            {
+              id: 'lab-1',
+              name: 'Fixture Space',
+              slug: 'fixture-space',
+              icon_path: null,
+              icon_blurhash: null,
+              lead_user_id: 'fixture-3',
+            },
+          ],
+          error: null,
+        },
+      ],
+      profiles: [{ data: [profile('seed-actor', 'Xidig', 'xidig')], error: null }],
+      users: [
+        { data: [{ id: 'fixture-3', status: 'active', is_ai: false, is_test: true }], error: null },
+      ],
+    });
+
+    const [view] = await hydratePosts(admin, 'viewer-1', [awardPost()], {
+      applyMuteFilter: false,
+    });
+
+    expect(view?.award?.winnerIsTest).toBe(true);
+    expect(view?.award?.winner).toBeNull();
+    expect(JSON.stringify(view)).not.toContain('/labs/fixture-space');
+  });
+
+  it('a real Space lead is unchanged (control)', async () => {
+    const admin = fakeAdmin({
+      award_results: [awardResult('best_lab', 'lab', 'lab-1')],
+      labs: [
+        {
+          data: [
+            {
+              id: 'lab-1',
+              name: 'Burao Makers',
+              slug: 'burao-makers',
+              icon_path: null,
+              icon_blurhash: null,
+              lead_user_id: 'lead-1',
+            },
+          ],
+          error: null,
+        },
+      ],
+      profiles: [{ data: [profile('seed-actor', 'Xidig', 'xidig')], error: null }],
+      users: [
+        { data: [{ id: 'lead-1', status: 'active', is_ai: false, is_test: false }], error: null },
+      ],
+    });
+
+    const [view] = await hydratePosts(admin, 'viewer-1', [awardPost()], {
+      applyMuteFilter: false,
+    });
+
+    expect(view?.award?.winnerIsTest).toBe(false);
+    expect(view?.award?.winner?.href).toBe('/labs/burao-makers');
+    expect(view?.post.body).toContain('Hodan Warsame'); // stored body kept
   });
 });

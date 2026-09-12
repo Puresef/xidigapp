@@ -10,6 +10,7 @@ import type {
   SuuqListingSummary,
   SuuqTestimonial,
 } from '@/components/profile/modules/suuq-module';
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { loadModuleFlags } from '@/lib/aniga/flags';
 import { loadLaneCatalog, resolveLaneLabels, type LaneOption } from '@/lib/aniga/lanes';
 import { normalizeUrlKey } from '@/lib/aniga/links';
@@ -53,9 +54,36 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * Endorsement counts are NOT covered by "no counts on the visitor DOM" (A1):
  * that rule is about follower/engagement counts. An endorsement count is
  * attested evidence — the frames render it to visitors (ANIGA-SPEC §3.2).
+ *
+ * Test-account quarantine (users.is_test, 20260912050000). Two rules:
+ *
+ *   * a test account's OWN profile gets `testAccountAnigaView` — no module,
+ *     skill, helper row, mutual, metric or owner fact is read for it; the
+ *     page renders the test-account notice (the public variant is null);
+ *   * on a REAL profile, an edge whose other end is a test account is not
+ *     evidence: endorsements from test endorsers, Caawimo credits from test
+ *     askers, test members in the mutuals strip/count and asks from test
+ *     askers in `asksHelped` are all left out. The test-account set is read
+ *     ONCE per projection (service role) and shared by every loader.
  */
 
 type AnyClient = SupabaseClient<Database>;
+
+/**
+ * The quarantined test accounts, as a set (post-filtering fetched rows) and as
+ * a PostgREST list literal (`not in` filters for counts and limited lists that
+ * cannot be filtered after the fact). `list` is null when there are none — an
+ * empty `in ()` is not valid PostgREST, and there is nothing to exclude.
+ */
+interface TestAccounts {
+  ids: ReadonlySet<string>;
+  list: string | null;
+}
+
+async function loadTestAccounts(): Promise<TestAccounts> {
+  const ids = await loadTestAccountIds(getSupabaseAdmin());
+  return { ids: new Set(ids), list: ids.length > 0 ? postgrestIdList(ids) : null };
+}
 
 export interface AnigaShowcaseItem {
   position: number;
@@ -357,12 +385,18 @@ const skillKey = (skill: string) => skill.trim().toLowerCase();
  *
  * Only skills the member still declares render: an endorsement for a skill
  * they have since removed would resurrect a self-description they retracted.
+ *
+ * An endorsement from a quarantined test account is not attested evidence, so
+ * it adds nothing to the depth (or the rank it drives). `endorsedByViewer`
+ * still reads the viewer's own row: it answers "did I already endorse this?",
+ * which stays true whoever is asking.
  */
 async function loadSkills(
   client: AnyClient,
   userId: string,
   declared: readonly string[],
   viewerId: string | null,
+  test: TestAccounts,
 ): Promise<AnigaSkill[]> {
   const unique = declared.map((skill) => skill.trim()).filter((skill) => skill !== '');
   if (unique.length === 0) return [];
@@ -373,8 +407,11 @@ async function loadSkills(
     .eq('endorsee_user_id', userId);
 
   const endorsersBySkill = new Map<string, Set<string>>();
+  const endorsedByViewer = new Set<string>();
   for (const row of data ?? []) {
     const key = skillKey(row.skill);
+    if (viewerId !== null && row.endorser_user_id === viewerId) endorsedByViewer.add(key);
+    if (test.ids.has(row.endorser_user_id)) continue;
     const set = endorsersBySkill.get(key) ?? new Set<string>();
     set.add(row.endorser_user_id);
     endorsersBySkill.set(key, set);
@@ -387,7 +424,7 @@ async function loadSkills(
         skill,
         endorsers: endorsers.size,
         rank: 0,
-        endorsedByViewer: viewerId !== null && endorsers.has(viewerId),
+        endorsedByViewer: endorsedByViewer.has(skillKey(skill)),
       };
     })
     // Depth first, then the member's own declared order — a stable ramp that
@@ -560,19 +597,33 @@ async function loadMatches(
  *
  * Posts ride the caller's RLS, so a helper credit on something the viewer
  * cannot read never surfaces here.
+ *
+ * A credit from a quarantined test account is not evidence — the crediting
+ * asker is the whole point — so those asks are excluded IN the query, which
+ * keeps the recent end of the history HELPER_LIMIT organic rows long rather
+ * than letting test rows eat the slots.
  */
-async function loadHelper(client: AnyClient, userId: string): Promise<AnigaHelperEntry[]> {
-  const { data: posts } = await client
+async function loadHelper(
+  client: AnyClient,
+  userId: string,
+  test: TestAccounts,
+): Promise<AnigaHelperEntry[]> {
+  let query = client
     .from('posts')
     .select('id, title, body, author_user_id, ask_fulfilled_at')
     .eq('ask_helper_user_id', userId)
     .eq('ask_status', 'fulfilled')
-    .eq('status', 'published')
+    .eq('status', 'published');
+  if (test.list) query = query.not('author_user_id', 'in', test.list);
+  const { data: posts } = await query
     .order('ask_fulfilled_at', { ascending: false })
     .limit(HELPER_LIMIT);
   const rows = (posts ?? []).filter(
     (row): row is typeof row & { ask_fulfilled_at: string } =>
-      typeof row.ask_fulfilled_at === 'string',
+      typeof row.ask_fulfilled_at === 'string' &&
+      // Belt and braces for the query filter: never a test asker's credit,
+      // and never a read of a test asker's profile.
+      !test.ids.has(row.author_user_id),
   );
   if (rows.length === 0) return [];
 
@@ -633,8 +684,15 @@ async function loadHelper(client: AnyClient, userId: string): Promise<AnigaHelpe
  * Scoped to ONE shared Space (the frame names one), which also keeps the count
  * exact: `lab_members` is keyed (lab_id, user_id), so counting rows in a
  * single lab counts people.
+ *
+ * Quarantined test accounts are not people to have in common: they are left
+ * out of both the face strip and the count, in the query.
  */
-async function loadMutuals(viewerId: string, userId: string): Promise<AnigaMutuals | null> {
+async function loadMutuals(
+  viewerId: string,
+  userId: string,
+  test: TestAccounts,
+): Promise<AnigaMutuals | null> {
   const admin = getSupabaseAdmin();
   const [mine, theirs] = await Promise.all([
     admin.from('lab_members').select('lab_id').eq('user_id', viewerId).eq('status', 'active'),
@@ -644,18 +702,25 @@ async function loadMutuals(viewerId: string, userId: string): Promise<AnigaMutua
   const sharedId = (mine.data ?? []).map((row) => row.lab_id).find((id) => theirLabs.has(id));
   if (!sharedId) return null;
 
+  let countQuery = admin
+    .from('lab_members')
+    .select('*', { count: 'exact', head: true })
+    .eq('lab_id', sharedId)
+    .eq('status', 'active');
+  let othersQuery = admin
+    .from('lab_members')
+    .select('user_id')
+    .eq('lab_id', sharedId)
+    .eq('status', 'active');
+  if (test.list) {
+    countQuery = countQuery.not('user_id', 'in', test.list);
+    othersQuery = othersQuery.not('user_id', 'in', test.list);
+  }
+
   const [{ data: lab }, { count }, { data: others }] = await Promise.all([
     admin.from('labs').select('name').eq('id', sharedId).maybeSingle(),
-    admin
-      .from('lab_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('lab_id', sharedId)
-      .eq('status', 'active'),
-    admin
-      .from('lab_members')
-      .select('user_id')
-      .eq('lab_id', sharedId)
-      .eq('status', 'active')
+    countQuery,
+    othersQuery
       // Ordered so the strip shows the same faces on every render — an
       // unordered LIMIT reshuffles per request and reads as a glitch.
       .order('created_at', { ascending: true })
@@ -665,8 +730,12 @@ async function loadMutuals(viewerId: string, userId: string): Promise<AnigaMutua
 
   const otherIds = (others ?? [])
     .map((row) => row.user_id)
-    .filter((id) => id !== viewerId && id !== userId)
+    .filter((id) => id !== viewerId && id !== userId && !test.ids.has(id))
     .slice(0, MUTUALS_STRIP);
+  // The two of them are both active members of the shared Space, so each one
+  // the count above still includes (i.e. each who is not a test account) is
+  // subtracted — they are not their own mutuals.
+  const selves = [viewerId, userId].filter((id) => !test.ids.has(id)).length;
   const profiles =
     otherIds.length > 0
       ? ((
@@ -684,7 +753,7 @@ async function loadMutuals(viewerId: string, userId: string): Promise<AnigaMutua
       avatarUrl: row.avatar_path ? publicMediaUrl(derivedThumbPath(row.avatar_path)) : null,
     })),
     // The two of them are not their own mutuals.
-    totalCount: Math.max((count ?? 0) - 2, 0),
+    totalCount: Math.max((count ?? 0) - selves, 0),
     sharedSpaceName: lab?.name ?? null,
   };
 }
@@ -777,21 +846,30 @@ async function loadSuuq(
  * The same three numbers feed both the flag-gated Tirakoobka module and the
  * owner-private block — one loader so they can never disagree, and one place
  * where "Xiriir" is defined (followers, already aggregated by ProfileView, no
- * second round trip).
+ * second round trip — and already without test followers).
+ *
+ * `asksHelped` leaves out asks posted by quarantined test accounts: help
+ * credited by a fake person is not help anyone received.
  */
-async function loadMetrics(userId: string, followers: number): Promise<AnigaMetrics> {
+async function loadMetrics(
+  userId: string,
+  followers: number,
+  test: TestAccounts,
+): Promise<AnigaMetrics> {
   const admin = getSupabaseAdmin();
+  let asksHelpedQuery = admin
+    .from('posts')
+    .select('*', { count: 'exact', head: true })
+    .eq('ask_helper_user_id', userId)
+    .eq('ask_status', 'fulfilled');
+  if (test.list) asksHelpedQuery = asksHelpedQuery.not('author_user_id', 'in', test.list);
   const [{ count: posts }, { count: asksHelped }] = await Promise.all([
     admin
       .from('posts')
       .select('*', { count: 'exact', head: true })
       .eq('author_user_id', userId)
       .eq('status', 'published'),
-    admin
-      .from('posts')
-      .select('*', { count: 'exact', head: true })
-      .eq('ask_helper_user_id', userId)
-      .eq('ask_status', 'fulfilled'),
+    asksHelpedQuery,
   ]);
   return { posts: posts ?? 0, asksHelped: asksHelped ?? 0, connections: followers };
 }
@@ -841,6 +919,31 @@ async function loadOwnerFacts(
 // ---------------------------------------------------------------------------
 
 /**
+ * A quarantined test account's projection: the stripped base
+ * (`testAccountProfileView`) and nothing else — no module arrangement, no
+ * skills, links, helper history, mutuals, Suuq card, metrics or owner facts.
+ * Every consumer renders the test-account notice from `base.isTest`; one that
+ * forgot would still have nothing to present as proof.
+ */
+function testAccountAnigaView(base: ProfileView): AnigaView {
+  return {
+    base,
+    headline: null,
+    modules: [],
+    showcase: [],
+    skills: [],
+    links: [],
+    lookingFor: { slugs: [], matches: [] },
+    helper: [],
+    mutuals: null,
+    suuq: null,
+    metrics: null,
+    privateStats: null,
+    ownerFacts: null,
+  };
+}
+
+/**
  * The Aniga projection for one profile, from one viewer's seat.
  *
  * `t` is the request translator. It is optional only so the 3-argument
@@ -861,11 +964,15 @@ export async function getAnigaView(
   t?: Translator,
   locale: Locale = DEFAULT_LOCALE,
 ): Promise<AnigaView | null> {
-  const [base, flags] = await Promise.all([
+  const [base, flags, test] = await Promise.all([
     getMemberProfileView(supabase, handle, viewerId ?? undefined),
     loadModuleFlags(supabase),
+    loadTestAccounts(),
   ]);
   if (!base) return null;
+  // A test account's profile — for every viewer, its owner included — is the
+  // notice, never a profile. Nothing below is read for it.
+  if (base.isTest) return testAccountAnigaView(base);
 
   const userId = base.profile.user_id;
   const isOwner = viewerId !== null && viewerId === userId;
@@ -891,12 +998,12 @@ export async function getAnigaView(
     supabase.from('profiles').select('headline').eq('user_id', userId).maybeSingle(),
     loadModuleStates(supabase, userId, flags),
     loadShowcase(supabase, userId),
-    loadSkills(supabase, userId, base.profile.skills ?? [], viewerId),
+    loadSkills(supabase, userId, base.profile.skills ?? [], viewerId, test),
     loadLinks(supabase, userId, base.profile.links, isOwner),
     isOwner ? loadMatches(supabase, base.profile.skills ?? [], t) : Promise.resolve([]),
-    loadHelper(supabase, userId),
-    viewerId !== null && !isOwner ? loadMutuals(viewerId, userId) : Promise.resolve(null),
-    metricsVisible ? loadMetrics(userId, base.counts.followers) : Promise.resolve(null),
+    loadHelper(supabase, userId, test),
+    viewerId !== null && !isOwner ? loadMutuals(viewerId, userId, test) : Promise.resolve(null),
+    metricsVisible ? loadMetrics(userId, base.counts.followers, test) : Promise.resolve(null),
     loadSuuq(supabase, userId, locale),
     // Not fetched-then-dropped for visitors: the reads never happen, so the
     // fold state cannot reach a payload it could be un-hidden from.
@@ -944,21 +1051,29 @@ export async function getAnigaView(
  * same class of aggregate as `counts` and `reputation`, and the evidence the
  * whole surface rests on), their open-to slugs, their headline, and the order
  * they arranged their own page in.
+ *
+ * A quarantined test account has no login-free projection at all:
+ * `getPublicProfileView` already returns null for one (anon 404, brand OG
+ * card), and the `isTest` check below keeps that true here even if the base
+ * ever changed.
  */
 export async function getPublicAnigaView(handle: string): Promise<AnigaView | null> {
   const base = await getPublicProfileView(handle);
-  if (!base) return null;
+  if (!base || base.isTest) return null;
 
   const admin = getSupabaseAdmin();
   const userId = base.profile.user_id;
-  const [flags, headlineRow, skills] = await Promise.all([
+  const [flags, headlineRow, test] = await Promise.all([
     loadModuleFlags(admin),
     admin.from('profiles').select('headline').eq('user_id', userId).maybeSingle(),
+    loadTestAccounts(),
+  ]);
+  const [skills, modules] = await Promise.all([
     // viewerId null: nobody is signed in, so no chip can be "already endorsed"
     // and the module's endorse action never renders.
-    loadSkills(admin, userId, base.profile.skills ?? [], null),
+    loadSkills(admin, userId, base.profile.skills ?? [], null, test),
+    loadModuleStates(admin, userId, flags),
   ]);
-  const modules = await loadModuleStates(admin, userId, flags);
 
   return {
     base,
@@ -975,7 +1090,10 @@ export async function getPublicAnigaView(handle: string): Promise<AnigaView | nu
     suuq: null,
     // A logged-out visitor is never the owner, so the flag is the only gate —
     // and it is off by default (ruling 7).
-    metrics: flags.profile_metrics_module === true ? await loadMetrics(userId, base.counts.followers) : null,
+    metrics:
+      flags.profile_metrics_module === true
+        ? await loadMetrics(userId, base.counts.followers, test)
+        : null,
     privateStats: null,
     // A logged-out reader is never the owner. `getPublicProfileView` has
     // already folded the location for the header; the mirror has no audience.
