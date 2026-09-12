@@ -28,8 +28,11 @@ export const WORK_ORG_MODES = ['lab', 'venture'] as const satisfies readonly Enu
  * warning went out. Advance notice is a precondition of the demotion, not a
  * courtesy attached to it, which is why the grace period is its own number.
  *
- * The sweep passes these to the RPCs explicitly (lib/labs/sweeps.ts) so the app
- * is the single authority and the SQL defaults can never silently disagree.
+ * PAUSED (owner ruling, 12 Sep): while re-promotion is paused the timeout would
+ * be one-way, so the sweep no longer warns or demotes. The numbers stay as the
+ * record of the paused rule. The only thing still reading one is the sweep's
+ * read-only operator count of Ventures idle past VENTURE_TIMEOUT_DAYS
+ * (lib/labs/sweeps.ts), which changes no state and tells no member anything.
  */
 export const VENTURE_WARN_DAYS = 70;
 export const VENTURE_TIMEOUT_DAYS = 84;
@@ -137,6 +140,7 @@ export const RECUSED_TRANSITIONS = [
 export const WORKSTREAM_NAME_MAX = 80;
 export const TASK_TITLE_MAX = 200;
 export const WORK_NOTE_MAX = 400;
+/** Mirrors the DB check on recorded needs. Declaring a new one is paused (12 Sep). */
 export const CAPITAL_PURPOSE_MAX = 400;
 
 /** Goal statement + its unit ("40 / ganacsi firfircoon" on 7b). */

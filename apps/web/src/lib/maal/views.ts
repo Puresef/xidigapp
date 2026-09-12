@@ -26,8 +26,6 @@ import {
   OVERVIEW_DECISIONS_LIMIT,
   TASK_STATUS_COLUMN,
   VENTURE_INDEX_PAGE_SIZE,
-  VENTURE_TIMEOUT_DAYS,
-  VENTURE_WARN_GRACE_DAYS,
   WORK_EVENT_TYPES,
   WORK_ORG_MODES,
   type BoardColumn,
@@ -378,32 +376,9 @@ export function sprintLine(
   return { round, daysLeft: Math.ceil((Date.parse(lab.sprint_deadline) - now) / DAY_MS) };
 }
 
-/**
- * Where a Maal stands against the demotion clock (ruling 2). `warnedAt` is set
- * by the sweep; the deadline is the LATER of the two conditions the RPC checks,
- * because both must hold. Any activity clears `demotion_warned_at` in the DB
- * trigger, so a warned venture that revives simply stops reporting one.
- */
-export interface DemotionClock {
-  warnedAt: string;
-  demoteAfter: string;
-  daysIdle: number;
-}
-
-export function demotionClock(
-  lab: Pick<VentureRow, 'space_mode' | 'demotion_warned_at' | 'last_activity_at'>,
-  now: number = Date.now(),
-): DemotionClock | null {
-  if (lab.space_mode !== 'venture' || !lab.demotion_warned_at) return null;
-  const lastActivity = Date.parse(lab.last_activity_at);
-  const byTimeout = lastActivity + VENTURE_TIMEOUT_DAYS * DAY_MS;
-  const byGrace = Date.parse(lab.demotion_warned_at) + VENTURE_WARN_GRACE_DAYS * DAY_MS;
-  return {
-    warnedAt: lab.demotion_warned_at,
-    demoteAfter: new Date(Math.max(byTimeout, byGrace)).toISOString(),
-    daysIdle: Math.floor((now - lastActivity) / DAY_MS),
-  };
-}
+// No demotion clock: the Maal stage timeout is PAUSED (owner ruling, 12 Sep),
+// so there is no deadline to compute or show. A `demotion_warned_at` stamped
+// before the pause is kept as data; nothing derives a deadline from it.
 
 // --- shared hydration --------------------------------------------------------
 
@@ -736,7 +711,6 @@ export interface VentureOverview {
   };
   capitalNeed: CapitalNeedRow | null;
   isDormant: boolean;
-  demotion: DemotionClock | null;
 }
 
 /**
@@ -909,7 +883,6 @@ export async function getVentureOverview(
     },
     capitalNeed: (needResult.data as unknown as CapitalNeedRow | null) ?? null,
     isDormant: Boolean(lab.dormant_since),
-    demotion: demotionClock(lab),
   };
 }
 

@@ -285,7 +285,7 @@ a missing check is a hole rather than a style question.
 | POST         | `/api/labs/{id}/contributions/{eventId}/reverse` | user    | the correction: a NEW event with the negation + `reverses_event_id`. `reason` required. Owner or lead. `contribution_already_reversed` 409 on a second try |
 | POST         | `/api/labs/{id}/contributions/{eventId}/attest`  | user    | "Marag" — the co-sign. Never your own (`attestation_recusal` 403); re-attesting is a no-op 200. No body |
 | GET          | `/api/labs/{id}/contributions/export`          | user     | `text/csv` + `Content-Disposition: attachment`. Calls the same `getVentureLedger` as the screen, so the readability gate cannot drift; RFC-4180 quoting + a formula-injection guard on the member-written `note` |
-| GET/POST     | `/api/labs/{id}/capital`                       | user/lead | the declared need + the decision behind it (7f). **No pledge endpoint** |
+| GET/POST     | `/api/labs/{id}/capital`                       | user/lead | GET: the declared need + the decision behind it (7f), including needs recorded before the pause. POST is **paused** (owner ruling, 12 Sep): a lead or manager gets `capital_pathway_under_review` 403 (CTA-free), anyone else `forbidden`; nothing is parsed, written or logged. **No pledge endpoint** |
 
 Maal conventions worth knowing:
 
@@ -294,9 +294,11 @@ Maal conventions worth knowing:
   correction is `/reverse` (an append). Pledging ships as a control that is
   present and disabled with the escrow reason — an endpoint behind a disabled
   button would be a claim that money can move.
-- **There is no demotion endpoint.** Maal → Warshad happens only in the cron
+- **There is no demotion endpoint.** Maal → Warshad happened only in the cron
   sweep (`demote_timed_out_ventures()`), logged to the Governance Log and
-  history-preserving. `/promote` is one-way by construction.
+  history-preserving. **The timeout is paused** (owner ruling, 12 Sep): the
+  sweep calls neither the warn nor the demote RPC and reports only a
+  read-only `venturesPastTimeout` count. `/promote` is one-way by construction.
 - **Recusal is stated twice on purpose.** The DB has the CHECK constraints; the
   service states the same rule first so a member reads a sentence
   (`task_recusal` / `attestation_recusal`) instead of a 500.
@@ -304,8 +306,9 @@ Maal conventions worth knowing:
   venture's current voted scheme, derives `units`, and the DB CHECK re-derives
   the same number. A client-sent weight would be a client-sent share.
 - **Analytics fire from the service layer**, not the routes: `venture_promoted`,
-  `contribution_logged {type}`, `contribution_attested`, `contribution_reversed`,
-  `venture_capital_need_declared`. `venture_timeline_viewed` stays client-side.
+  `contribution_logged {type}`, `contribution_attested`, `contribution_reversed`.
+  `venture_capital_need_declared` stays in the taxonomy but nothing emits it
+  while declaration is paused. `venture_timeline_viewed` stays client-side.
 
 ## PRD-alignment sprint route notes
 

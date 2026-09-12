@@ -112,15 +112,28 @@ describe('the declared need and what works today', () => {
     expect(need).toContain('18,000');
   });
 
-  it('marks the two locked rungs as pending, never as failures', async () => {
+  it('marks the paused and locked rungs as pending, never as failures', async () => {
     const host = await render(capital());
     const rows = [...host.querySelectorAll('.xidig-works__row')];
     expect(rows).toHaveLength(5);
     const pending = rows.filter((row) => row.className.includes('--pending'));
+    // Declaring a new capital need is paused (owner ruling, 12 Sep): the row no
+    // longer claims it works, and says why without a date or a CTA.
     expect(pending.map((row) => row.textContent)).toEqual([
+      'Sheegista baahi raasamaal oo cusub — waa la hakiyay inta habka raasamaalka dib loo eegayo',
       'Ballanqaad lacageed — xiran',
       'Amaan (escrow) — lama bixiyo',
     ]);
+  });
+
+  it('a need recorded before the pause stays readable, and nothing invites a new one', async () => {
+    const host = await render(capital());
+    expect(host.querySelector('.xidig-need')).not.toBeNull();
+    // The only form control on the tab is the disabled pledge pair — there is
+    // no declare-a-need input or button, enabled or otherwise.
+    const controls = [...host.querySelectorAll('input, button, textarea, select, form')];
+    expect(controls.every((el) => (el as HTMLInputElement).disabled === true)).toBe(true);
+    expect(host.querySelector('form')).toBeNull();
   });
 });
 

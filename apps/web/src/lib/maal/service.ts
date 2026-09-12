@@ -14,7 +14,6 @@ import {
   WORKSTREAMS_PER_VENTURE_MAX,
 } from '@/lib/maal/constants';
 import type {
-  CapitalNeedInput,
   ContributionLogInput,
   ContributionReversalInput,
   TaskCreateInput,
@@ -62,10 +61,12 @@ import {
  *     instead of a constraint violation. Nobody witnesses or approves their own
  *     work, and a lead is not an exception — they are the reason for the rule.
  *
- * There is deliberately NO pledge function and no demotion function. Pledging
- * is a built-and-disabled control (escrow does not exist), and demotion is the
- * system's move alone — `demote_timed_out_ventures()` called from the sweep,
- * never from a route (ruling 2).
+ * There is deliberately NO pledge function, no demotion function and no
+ * capital-need function. Pledging is a built-and-disabled control (escrow does
+ * not exist); declaring a need is paused while the capital pathway is under
+ * review (owner ruling, 12 Sep); and demotion was only ever the system's move —
+ * `demote_timed_out_ventures()` from the sweep, never from a route (ruling 2) —
+ * and the sweep no longer calls it while the stage ladder is under review.
  */
 
 type Admin = SupabaseClient<Database>;
@@ -676,48 +677,11 @@ export async function recordWeightScheme(
 
 // --- capital (7f) ------------------------------------------------------------
 
-/**
- * Declare what the venture needs ("Baahida la sheegay"). A statement and the
- * decision behind it — nothing more. There is no `pledge()` beside this on
- * purpose: pledge controls ship built and disabled with the escrow reason, and
- * a service function would be a claim that money can move.
- */
-export async function declareCapitalNeed(
-  admin: Admin,
-  lab: VentureRow,
-  actorUserId: string,
-  input: CapitalNeedInput,
-): Promise<{ id: string }> {
-  requireVenture(lab);
-
-  if (input.decisionId) {
-    const { data: decision, error: decisionError } = await admin
-      .from('lab_decisions')
-      .select('id')
-      .eq('id', input.decisionId)
-      .eq('lab_id', lab.id)
-      .maybeSingle();
-    if (decisionError) throw new Error(`decision lookup failed: ${decisionError.message}`);
-    if (!decision) throw new ApiError('invalid_request', 409);
-  }
-
-  const { data, error } = await admin
-    .from('venture_capital_needs')
-    .insert({
-      lab_id: lab.id,
-      amount_cents: input.amountCents,
-      currency: input.currency,
-      purpose: input.purpose,
-      decision_id: input.decisionId ?? null,
-    })
-    .select('id')
-    .single();
-  if (error || !data) throw new Error(`capital need insert failed: ${error?.message ?? 'no row'}`);
-
-  await logLabEvent(admin, lab.id, actorUserId, 'capital_need_declared', { need_id: data.id });
-  emitServer(event('venture_capital_need_declared', {}), {
-    distinctId: actorUserId,
-    userId: actorUserId,
-  });
-  return { id: data.id };
-}
+// There is no capital-need write here. Declaring a need is PAUSED (owner
+// ruling, 12 Sep) until the capital/P3 review approves a model with legal and
+// product sign-off — POST /api/labs/[id]/capital refuses with
+// `capital_pathway_under_review`. Needs recorded before the pause stay in
+// `venture_capital_needs`, read-only (clients hold no insert/update/delete).
+// There is still no `pledge()` either: pledge controls ship built and disabled
+// with the escrow reason, and a service function would be a claim that money
+// can move.

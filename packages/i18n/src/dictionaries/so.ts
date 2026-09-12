@@ -1136,6 +1136,9 @@ export const so = {
     'Codbixinta musharaxa waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   // PROVISIONAL wording pending the native SO review (G34) — neutral status only.
   'error.capitalUnavailable': 'Maalgashi hadda laguma bixiyo Xidig.',
+  // PROVISIONAL wording pending the native SO review (G34) — neutral status only.
+  'error.capitalPathwayUnderReview':
+    'Sheegista baahi raasamaal waa la hakiyay inta habka raasamaalka dib loo eegayo. Baahiyihii hore loo diiwaangeliyay sidooda ayay u sii jiraan.',
   'error.charterIncomplete':
     'Axdiga Warshaddaadu wuxuu u baahan yahay dhawr meelood oo dheeraad ah ka hor inta aan la daabicin. Halkan ku dhammee.',
   'error.labSlugTaken': 'Ciwaankaas Warshad horey ayaa loo qaatay. Mid kale isku day.',
@@ -2486,7 +2489,7 @@ export const so = {
   // gaari waynin).
   'maal.candidatesLink': 'Guddiga musharaxiinta Maalka',
   'maal.indexLaw':
-    "Maal-nimadu waa heer, ma aha abaalmarin. Maal waxay ku noqotaa Warshad haddii firfircooni-la'aantu dhaafto xadka waqti-dhaafka — si toos ah, ogeysiis hore, iyo diiwaan guud. Celintu waxba ma lumiso: axdiga, diiwaanka iyo go'aannadu way sii jiraan. U dallacaadda Warshad heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo. Labadooduba isku meel ayay ku jiraan si aan qofna u qarsoodin heerka dhabta ah.",
+    "Maal-nimadu waa heer, ma aha abaalmarin. U dallacaadda Warshad heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo, celinta tooska ah ee Warshad-na waa la hakiyay inta xeerarka heerarka dib loo eegayo — heerna iskiis uma beddelmo. Axdiga, diiwaanka iyo go'aannadu way sii jiraan. Labadooduba isku meel ayay ku jiraan si aan qofna u qarsoodin heerka dhabta ah.",
 
   // 7b — guudmarka Maalka. Safka tab-yadu waa kan frame-ka: Guud / Wada-hadal /
   // Lifaaqyo, halka Warshaddu tiraahdo Guudmar / Warbixino / Wax-soo-saar.
@@ -2708,7 +2711,8 @@ export const so = {
     'Xiran — ballanqaad hadda laguma bixiyo Xidig, lacagna weligeed si toos ah uma tagto akoonka aasaasaha.',
   'maal.worksNowTitle': 'Waxa hadda shaqeeya',
   'maal.worksLedger': 'Diiwaanka wax-ku-darsiga iyo saamiga',
-  'maal.worksNeed': "Baahida la sheegay iyo go'aankeeda",
+  'maal.worksNeed':
+    'Sheegista baahi raasamaal oo cusub — waa la hakiyay inta habka raasamaalka dib loo eegayo',
   'maal.worksMoneyWeight': 'Miisaanka lacagta sida wax-ku-darsi',
   'maal.worksPledgeLocked': 'Ballanqaad lacageed — xiran',
   'maal.worksEscrow': 'Amaan (escrow) — lama bixiyo',
@@ -2726,15 +2730,15 @@ export const so = {
     other: '{count} Warshad ayaa hadda shaqeynaya. Midkoodna kuma khasbana inuu Maal noqdo.',
   },
   'maal.dormantNotice': {
-    one: '{name} wax dhaqdhaqaaq ah ma yeelan {count} toddobaad. Heerkeeda, xubnaheeda iyo taariikhdeeda waxba ma isbeddelin — hal cusboonaysiin ayaa dib u firfircoonaysa. Haddii ay sii socoto, xadka waqti-dhaafka ayaa si toos ah ugu celinaya Warshad — ogeysiis hore iyo diiwaan guud ayay la socdaan.',
+    one: '{name} wax dhaqdhaqaaq ah ma yeelan {count} toddobaad. Heerkeeda, xubnaheeda iyo taariikhdeeda waxba ma isbeddelin — hal cusboonaysiin ayaa dib u firfircoonaysa. Heerkeedu iskiis uma beddelmayo inta xeerarka heerarka dib loo eegayo.',
     other:
-      '{name} wax dhaqdhaqaaq ah ma yeelan {count} toddobaad. Heerkeeda, xubnaheeda iyo taariikhdeeda waxba ma isbeddelin — hal cusboonaysiin ayaa dib u firfircoonaysa. Haddii ay sii socoto, xadka waqti-dhaafka ayaa si toos ah ugu celinaya Warshad — ogeysiis hore iyo diiwaan guud ayay la socdaan.',
+      '{name} wax dhaqdhaqaaq ah ma yeelan {count} toddobaad. Heerkeeda, xubnaheeda iyo taariikhdeeda waxba ma isbeddelin — hal cusboonaysiin ayaa dib u firfircoonaysa. Heerkeedu iskiis uma beddelmayo inta xeerarka heerarka dib loo eegayo.',
   },
   'maal.resumeTitle': 'Halka laga sii wado',
   'maal.resumePostUpdate': 'Qor cusboonaysiin',
   'maal.resumeCallMembers': 'U yeedh xubnaha',
   'maal.dormantFooter':
-    'Hurdadu waa calaamad iyo digniin hore. Waqti-dhaaf dheeri ah ayaa heerka si toos ah u celinaya Warshad — qaanuun cad, ogeysiis hore, iyo diiwaan guud. Shaqadu meesheeda way ku sii jirtaa. Dib ugu dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
+    'Hurdadu waa calaamad, ma aha ciqaab. Celinta tooska ah ee Warshad waa la hakiyay inta xeerarka heerarka dib loo eegayo, sidaas darteed heerku iskiis uma beddelmo. Shaqadu meesheeda way ku sii jirtaa. Dib ugu dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   'maal.ledgerErrorNotice':
     'Diiwaanka faahfaahsan lama soo rari karin. Wadarrada kor ku qoran waa kuwii ugu dambeeyay ee la xaqiijiyay — diiwaanka laftiisa waxba kama maqna. Isku day mar kale.',
   'maal.ledgerErrorFooter':
@@ -2790,9 +2794,11 @@ export const so = {
 
   // Maal — ogeysiisyada waqti-dhaafka. Rafcaan lama balan qaadayo: rafcaanku
   // wuxuu ku xiran yahay ficillada maamulka (§19), waqti-dhaafna ma aha ficil
-  // maamul. Waxa jira waa dib-u-dallacaad.
+  // maamul. PAUSED (owner ruling, 12 Sep): the sweep sends neither notice now;
+  // the warning renders for pre-pause rows and says the stage is not changing.
+  // PROVISIONAL wording pending the native SO review (G34).
   'notif.ventureDemotionWarning':
-    '{name} waxay ku noqonaysaa Warshad haddii aan wax dhicin — hal wax-ku-darsi ama hal cusboonaysiin ayaa ku filan. Isbeddelka diiwaanka guud ayaa lagu qorayaa, waxbana ma lumayaan',
+    '{name} muddo way aamusnayd. Heerkeedu isma beddelayo — celinta tooska ah ee Warshad waa la hakiyay inta xeerarka heerarka dib loo eegayo. Waxba ma lumin.',
   'notif.ventureDemoted':
     '{name} waxay ku noqotay Warshad waqti-dhaaf awgeed. Shaqadeeda, diiwaankeeda, go’aannadeeda iyo taariikhdeeda waxba kama beddelmin. Dib ugu dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
 } satisfies SomaliDictionary;

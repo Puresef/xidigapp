@@ -154,6 +154,7 @@ const PAUSED_CODES = new Set([
   'put_forward_under_review',
   'venture_promotion_under_review',
   'vote_eligibility_under_review',
+  'capital_pathway_under_review',
 ]);
 const passedAuth = (r: { status: number; reached: boolean; code: string | null }) =>
   r.reached ||

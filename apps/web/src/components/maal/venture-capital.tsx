@@ -35,7 +35,9 @@ import type { VentureCapital as VentureCapitalModel } from '@/lib/maal/views';
 /** Every row of "Waxa hadda shaqeeya", with whether it is actually working. */
 const CHECKLIST: ReadonlyArray<{ key: MessageKey; done: boolean }> = [
   { key: 'maal.worksLedger', done: true },
-  { key: 'maal.worksNeed', done: true },
+  // Paused (owner ruling, 12 Sep): no new capital need can be declared. A need
+  // recorded before the pause still renders above, read-only.
+  { key: 'maal.worksNeed', done: false },
   { key: 'maal.worksMoneyWeight', done: true },
   { key: 'maal.worksPledgeLocked', done: false },
   { key: 'maal.worksEscrow', done: false },

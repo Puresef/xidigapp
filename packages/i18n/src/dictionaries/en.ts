@@ -287,6 +287,8 @@ export const en = {
   'error.voteEligibilityUnderReview':
     'Candidate voting is paused while eligibility is under review.',
   'error.capitalUnavailable': "Investing isn't offered on Xidig right now.",
+  'error.capitalPathwayUnderReview':
+    'Declaring a capital need is paused while the capital pathway is under review. Needs already recorded stay as they are.',
   'error.charterIncomplete':
     'Your Lab charter needs a few more fields before it can go live. Complete them here.',
   'error.labSlugTaken': 'That Lab address is already taken. Try a different one.',
@@ -2629,9 +2631,10 @@ export const en = {
   // deleted, so nothing may become unreachable either).
   'maal.candidatesLink': 'The Venture Candidates board',
   // The footer law. One key: it is a single statement of what the stage is and
-  // how it is lost, and a split would let one half ship without the other.
+  // how it changes, and a split would let one half ship without the other. Both
+  // directions are paused (owner rulings, 12 Sep), and the sentence says so.
   'maal.indexLaw':
-    'Venture is a stage, not a reward. A Venture returns to being a Lab if inactivity passes the timeout limit — automatically, with notice in advance and a public log. Nothing is lost in the return: the charter, the ledger and the decisions all stay. Moving a Lab to the Venture stage is paused while eligibility is under review. Both live in the same place so nobody’s real stage is hidden.',
+    'Venture is a stage, not a reward. Moving a Lab to the Venture stage is paused while eligibility is under review, and automatic returns to the Lab stage are paused while the stage rules are under review — no stage changes on its own. The charter, the ledger and the decisions all stay. Both live in the same place so nobody’s real stage is hidden.',
 
   // 7b — the venture overview. The tab row is the frames' own register: it says
   // Guud / Wada-hadal / Lifaaqyo where the Warshad row says Guudmar /
@@ -2881,7 +2884,8 @@ export const en = {
     'Locked — pledging is not currently offered on Xidig, and money never goes straight to a founder’s account.',
   'maal.worksNowTitle': 'What works today',
   'maal.worksLedger': 'The contribution and share ledger',
-  'maal.worksNeed': 'The declared need and its decision',
+  'maal.worksNeed':
+    'Declaring a new capital need — paused while the capital pathway is under review',
   'maal.worksMoneyWeight': 'Money weighted as a contribution',
   'maal.worksPledgeLocked': 'Money pledges — locked',
   'maal.worksEscrow': 'Escrow — not offered',
@@ -2901,15 +2905,15 @@ export const en = {
     other: '{count} Labs are working right now. None of them is required to become a Venture.',
   },
   'maal.dormantNotice': {
-    one: '{name} has had no activity for {count} week. Its stage, its members and its history have not changed — one update brings it back. If it continues, the timeout limit returns it to a Lab automatically — with notice in advance and a public log.',
+    one: '{name} has had no activity for {count} week. Its stage, its members and its history have not changed — one update brings it back. Its stage does not change on its own while the stage rules are under review.',
     other:
-      '{name} has had no activity for {count} weeks. Its stage, its members and its history have not changed — one update brings it back. If it continues, the timeout limit returns it to a Lab automatically — with notice in advance and a public log.',
+      '{name} has had no activity for {count} weeks. Its stage, its members and its history have not changed — one update brings it back. Its stage does not change on its own while the stage rules are under review.',
   },
   'maal.resumeTitle': 'Where to pick it up',
   'maal.resumePostUpdate': 'Write an update',
   'maal.resumeCallMembers': 'Call the members in',
   'maal.dormantFooter':
-    'Dormancy is a marker and an early warning. Further time out returns the stage to a Lab automatically — a clear rule, notice in advance, and a public log. The work stays where it is. Moving back to the Venture stage is paused while eligibility is under review.',
+    'Dormancy is a marker, not a penalty. Automatic returns to the Lab stage are paused while the stage rules are under review, so the stage does not change on its own. The work stays where it is. Moving back to the Venture stage is paused while eligibility is under review.',
   'maal.ledgerErrorNotice':
     'The detailed ledger could not be loaded. The totals above are the last verified ones — nothing is missing from the ledger itself. Try again.',
   'maal.ledgerErrorFooter':
@@ -2966,17 +2970,18 @@ export const en = {
   'error.contributionAlreadyReversed':
     'That entry has already been corrected. The ledger keeps both the original and the correction — a correction is not corrected again.',
 
-  // Maal — notification copy for the demotion clock (ruling 2). Both are the
-  // "ogeysiis hore" the index law promises: the warning arrives before the
-  // change, and the change is announced when it happens.
+  // Maal — notification copy for the demotion clock (ruling 2). The clock is
+  // PAUSED (owner ruling, 12 Sep): the sweep sends neither notice any more.
+  // These render at READ time for rows sent before the pause, so the warning
+  // must not promise a return to Lab that will not happen — it now says the
+  // stage is not changing. `ventureDemoted` describes a demotion that really
+  // did happen and stays true as history.
   //
   // Neither line offers an appeal. `appeals` is scoped to mod_actions (§19) and
   // a system timeout is not a moderation action, so there is no form to send
-  // anyone to — the remedy that actually exists is re-promotion, and PRD §16
-  // now says so. Each line therefore names the thing the member can really do:
-  // act before the deadline, or earn the stage back after it.
+  // anyone to.
   'notif.ventureDemotionWarning':
-    '{name} returns to Lab stage unless something happens — one contribution or update is enough. The change is logged publicly and nothing is lost',
+    '{name} has been quiet for a while. Its stage is not changing — automatic returns to the Lab stage are paused while the stage rules are under review. Nothing is lost.',
   'notif.ventureDemoted':
     '{name} returned to Lab stage after the timeout. Its work, ledger, decisions and history are untouched. Moving back to the Venture stage is paused while eligibility is under review.',
 } as const satisfies Record<string, Message>;

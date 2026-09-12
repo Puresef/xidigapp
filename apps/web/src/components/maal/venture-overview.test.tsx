@@ -129,7 +129,6 @@ const overview = (overrides: Partial<VentureOverviewModel> = {}): VentureOvervie
     visibility: { publicPage: true, ledgerOpenToMembers: true, hoursLeadsOnly: false },
     capitalNeed: null,
     isDormant: false,
-    demotion: null,
     ...overrides,
   }) as unknown as VentureOverviewModel;
 

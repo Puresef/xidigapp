@@ -1,11 +1,7 @@
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireActiveUser, requireUser } from '@/lib/auth/guards';
 import { parseLabId } from '@/lib/labs-api';
-import { LAB_WRITE_LIMIT, RATE_WINDOW_DAY_SECONDS } from '@/lib/labs/constants';
-import { capitalNeedSchema } from '@/lib/maal/schemas';
-import { declareCapitalNeed } from '@/lib/maal/service';
 import { getVentureCapital, getVentureViewer, loadVentureForViewer } from '@/lib/maal/views';
-import { enforceRateLimit } from '@/lib/rate-limit';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 /**
@@ -21,8 +17,16 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  *
  * GET is RLS-scoped: `venture_capital_needs` is members-or-mods, so a stranger
  * reads `need: null` and still sees the locked structure the frame describes.
- * POST records a need — a governance act, so leadership only, and the optional
- * `decisionId` is validated against this venture's own decision log.
+ * Needs recorded before the pause stay readable here, unchanged.
+ *
+ * POST is PAUSED (owner ruling, 12 Sep). Even with no money moving and no tier
+ * consulted, declaring a need is capital-adjacent and can read as an active
+ * funding path, so it waits for the capital/P3 review with legal and product
+ * approval. The refusal is `capital_pathway_under_review` — neutral, CTA-free —
+ * and it comes only after the active-account guard and the leadership check,
+ * so only someone who could have declared a need is told the pathway is under
+ * review. Nothing is parsed, rate-limited, written or logged, and the tier is
+ * never consulted. Reversal is restoring the pre-pause handler from history.
  */
 
 interface Ctx {
@@ -40,24 +44,16 @@ export async function GET(_request: Request, context: Ctx): Promise<Response> {
   }
 }
 
-export async function POST(request: Request, context: Ctx): Promise<Response> {
+export async function POST(_request: Request, context: Ctx): Promise<Response> {
   try {
     const ctx = await requireActiveUser();
     const id = parseLabId((await context.params).id);
-    const input = capitalNeedSchema.parse(await request.json());
 
     const lab = await loadVentureForViewer(ctx, id);
-    const admin = getSupabaseAdmin();
-    const viewer = await getVentureViewer(ctx, lab, admin);
+    const viewer = await getVentureViewer(ctx, lab, getSupabaseAdmin());
     if (!viewer.isLead && !viewer.canManage) throw new ApiError('forbidden', 403);
 
-    await enforceRateLimit(`maal:capital:${ctx.appUser.id}`, {
-      max: LAB_WRITE_LIMIT,
-      windowSeconds: RATE_WINDOW_DAY_SECONDS,
-    });
-
-    const need = await declareCapitalNeed(admin, lab, ctx.appUser.id, input);
-    return apiOk(need, 201);
+    throw new ApiError('capital_pathway_under_review', 403);
   } catch (error) {
     return handleApiError(error);
   }

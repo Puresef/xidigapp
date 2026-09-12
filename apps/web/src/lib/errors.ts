@@ -197,6 +197,10 @@ export const ERROR_DEFS = {
   // offering). Truthful refusal — never framed as a geography restriction:
   // eligibility is not the reason, availability is.
   capital_unavailable: { messageKey: 'error.capitalUnavailable' },
+  // Declaring a Venture's capital need is PAUSED (owner ruling, 12 Sep): it is
+  // capital-adjacent even though no money moves. CTA-free, like the other
+  // under-review refusals.
+  capital_pathway_under_review: { messageKey: 'error.capitalPathwayUnderReview' },
   lab_already_member: { messageKey: 'error.labAlreadyMember' },
   lab_collab_invalid: { messageKey: 'error.labCollabInvalid' },
   pinned_full: { messageKey: 'error.pinnedFull' },

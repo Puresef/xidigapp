@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import {
   BOARD_COLUMNS,
-  CAPITAL_PURPOSE_MAX,
   GOAL_STATEMENT_MAX,
   GOAL_UNIT_MAX,
   LEDGER_MAX_DAYS,
@@ -177,21 +176,8 @@ export type WeightSchemeInput = z.infer<typeof weightSchemeSchema>;
 
 // --- capital (7f) ------------------------------------------------------------
 
-/** The declared need and the decision behind it. No amount ever moves. */
-export const capitalNeedSchema = z.object({
-  amountCents: z.number().int().positive(),
-  currency: z
-    .string()
-    .trim()
-    .length(3)
-    .regex(/^[A-Za-z]{3}$/)
-    .transform((v) => v.toUpperCase())
-    .default('USD'),
-  purpose: z.string().trim().min(1).max(CAPITAL_PURPOSE_MAX),
-  decisionId: z.string().uuid().nullish(),
-});
-
-export type CapitalNeedInput = z.infer<typeof capitalNeedSchema>;
+// No capital-need input schema: declaring a need is PAUSED (owner ruling,
+// 12 Sep) while the capital pathway is under review, so no body is accepted.
 
 // --- read queries ------------------------------------------------------------
 

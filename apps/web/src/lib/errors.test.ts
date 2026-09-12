@@ -82,6 +82,7 @@ describe('Xidig Plus doctrine: paused-power refusals are neutral (owner, 12 Sep)
     'put_forward_under_review',
     'venture_promotion_under_review',
     'vote_eligibility_under_review',
+    'capital_pathway_under_review',
   ] as const;
 
   it.each(PAUSED)('%s carries no CTA, so it is never an upgrade prompt', (code) => {

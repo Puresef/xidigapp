@@ -208,6 +208,42 @@ describe('canonical product terms', () => {
     }
   });
 
+  it('no copy promises an automatic timeout demotion, and none invites a new capital need (owner, 12 Sep)', () => {
+    // Both are paused. Warnings sent before the pause render with today's
+    // dictionary, so no string may still threaten a return to Lab stage.
+    const EN_DEMOTION =
+      /returns (it )?to (being )?a Lab (automatically|if)|returns the stage to a Lab automatically|returns to Lab stage unless|timeout limit returns|will return to (the )?Lab/i;
+    const SO_DEMOTION =
+      /si toos ah u(gu)? celinaya Warshad|ku noqo(taa|naysaa) Warshad haddii|xadka waqti-dhaafka ayaa/i;
+    const EN_NEED_INVITE = /declare (a|the|your) (capital )?need|record (a|the|your) need/i;
+    for (const [key, value] of Object.entries(en)) {
+      const text = typeof value === 'string' ? value : Object.values(value).join(' ');
+      expect(text, key).not.toMatch(EN_DEMOTION);
+      expect(text, key).not.toMatch(EN_NEED_INVITE);
+    }
+    for (const [key, value] of Object.entries(so)) {
+      const text = typeof value === 'string' ? value : Object.values(value).join(' ');
+      expect(text, key).not.toMatch(SO_DEMOTION);
+    }
+
+    const flat = (v: unknown) => (typeof v === 'string' ? v : Object.values(v as object).join(' '));
+    for (const key of [
+      'maal.indexLaw',
+      'maal.dormantNotice',
+      'maal.dormantFooter',
+      'notif.ventureDemotionWarning',
+    ] as const) {
+      expect(flat(en[key]), key).toMatch(/while the stage rules are under review/);
+      expect(flat(so[key]), key).toMatch(/xeerarka heerarka dib loo eegayo/);
+    }
+    for (const key of ['error.capitalPathwayUnderReview', 'maal.worksNeed'] as const) {
+      expect(en[key], key).toMatch(/paused while the capital pathway is under review/);
+      expect(en[key], key).not.toMatch(/Xidig Plus|upgrade|\$1|requires|invest/i);
+      expect(so[key], key).toMatch(/waa la hakiyay/);
+      expect(so[key], key).not.toMatch(/Xidig Plus|kor u qaad|\$1|u baahan/i);
+    }
+  });
+
   it('the ToS fees clause no longer promises forbidden powers (interim wording, legal review pending)', () => {
     // Only the "which unlocks …" claim was removed. The legal wording and the
     // TERMS_VERSION bump belong to legal review. Neither is claimed final.
