@@ -354,9 +354,11 @@ main {
 }
 
 /* /out — unknown-link interstitial (§15): the destination host is the one
-   thing a member must read before leaving, so it leads. */
+   thing a member must read before leaving, so it leads. The var() fallbacks
+   equal today's token values; they exist only so the same block renders
+   identically when hotfixed onto a main that predates the size tokens. */
 .xidig-interstitial__host {
-  font-size: var(--x-text-l);
+  font-size: var(--x-text-l, 1.05rem);
   font-weight: 600;
   overflow-wrap: anywhere;
   margin: 0 0 0.75rem;
@@ -364,15 +366,15 @@ main {
 
 .xidig-interstitial__url {
   color: var(--x-muted);
-  font-size: var(--x-text-s);
+  font-size: var(--x-text-s, 0.85rem);
   overflow-wrap: anywhere;
 }
 
 .xidig-interstitial__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--x-space-xs);
-  margin-top: var(--x-space-s);
+  gap: var(--x-space-xs, 0.5rem);
+  margin-top: var(--x-space-s, 0.75rem);
 }
 
 .xidig-form {
