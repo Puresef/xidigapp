@@ -143,3 +143,51 @@ export function detectLink(raw: string): LinkKind | null {
 export function interstitialHref(url: string): string {
   return `/out?url=${encodeURIComponent(url)}`;
 }
+
+/** Longest destination /out accepts — bounds what a crafted link can stuff in. */
+const INTERSTITIAL_URL_MAX = 2048;
+
+export interface InterstitialTarget {
+  /** Normalised absolute URL the Continue link points at. */
+  href: string;
+  /**
+   * The host shown to the member. WHATWG URL parsing yields the ASCII
+   * (punycode) form, and that is deliberately what we show: a look-alike
+   * IDN such as Cyrillic "аpple.com" reads as xn--pple-43d.com, not as a
+   * familiar name.
+   */
+  host: string;
+}
+
+/**
+ * Validate /out's `url` param — attacker-controlled, since anyone can craft an
+ * /out link. Strict: absolute http(s) only, no credentials, bounded length,
+ * and never one of our own hosts (internal links are never interstitialed,
+ * and refusing them keeps /out from dressing up a link into Xidig's own auth
+ * pages). `selfHost` is the Host header of the request, so preview and local
+ * deployments count as "us" too. Anything else → null; the page then shows
+ * plain-language copy instead of a link.
+ */
+export function resolveInterstitialTarget(
+  raw: string | null | undefined,
+  selfHost?: string | null,
+): InterstitialTarget | null {
+  if (!raw || raw.length > INTERSTITIAL_URL_MAX) return null;
+  const url = parseHttpUrl(raw);
+  if (!url) return null;
+
+  const host = url.hostname.toLowerCase();
+  if (INTERNAL_HOSTS.has(host) || host === hostnameOf(selfHost)) return null;
+
+  return { href: url.href, host };
+}
+
+/** Hostname of a Host header value ("localhost:3000" → "localhost"). */
+function hostnameOf(hostHeader: string | null | undefined): string | null {
+  if (!hostHeader) return null;
+  try {
+    return new URL(`http://${hostHeader}`).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}
