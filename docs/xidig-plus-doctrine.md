@@ -134,9 +134,10 @@ an approved non-paid eligibility model.
   neutral interim language. For ToS clauses, use the smallest interim
   placeholder that stops promising forbidden powers, mark it for legal review
   and versioning, and claim no final legal wording. Implemented (questions 5
-  and 6 answered): only the "which unlocks …" claim was removed, the clause
-  is marked LEGAL REVIEW PENDING, and `TERMS_VERSION` is unchanged pending
-  legal.
+  and 6 answered): only the "which unlocks …" claim was removed. The clause
+  is marked LEGAL REVIEW PENDING **in the source** (a dictionary comment; the
+  public page shows no marker), and `TERMS_VERSION` and the public "Last
+  updated" date are unchanged, pending legal.
 - Native Somali and legal review remain required, and nothing is claimed
   final.
 
@@ -260,16 +261,41 @@ non-paid rule exists and it **narrows** access, use it. Everywhere else,
 **pause** with neutral "under review" copy. Nothing becomes broader, and
 every intermediate or rolled-back state gives at most today's access.
 
-> **As implemented (owner rulings, §1C).** Two recommendations below were
-> superseded:
+> **As implemented** (owner rulings §1C; corrected after the 12 Sep adversarial
+> review). The steps below are the plan; this is what actually shipped:
 >
-> - Lab creation and promotion are paused for **everyone**. There is no
->   active-admin interim.
-> - Leads of existing Labs **do not** keep the candidate handoff or Venture
->   promotion; every `/promote` target is paused.
+> - **Step 1:** shipped, including the post-limit copy ("upgrade for higher
+>   limits" is gone). The ToS clause got only the owner's smallest interim
+>   change: the "which unlocks …" claim was removed. The suggested placeholder
+>   wording and the `TERMS_VERSION` bump were NOT applied; they belong to the
+>   legal review. The public `/terms` "Last updated" date is legal's call too.
+> - **Step 2:** Lab creation and promotion are paused for **everyone**, with
+>   no active-admin interim.
+> - **Step 3:** `POST /api/candidates` is retired. **Submission is PAUSED for
+>   every manager.** It was not narrowed to an active lead/admin, because no
+>   platform criteria exist (owner ruling). Leads of existing Labs keep no
+>   handoff and no Venture promotion; every `/promote` target is paused.
+> - **Step 4:** the vote is paused. Submit writes nothing, so it opens no
+>   window. The app-side tally strip shipped. Withdrawing your own ballot works
+>   window or not, and the paused notice offers a "Retract vote" control to a
+>   pre-pause voter.
+> - **Steps 5–6:** shipped as written (`5b5e808`, `20260912100000`).
+> - **Also shipped, from the review:**
+>   - public and app surfaces that still invited paused actions are
+>     neutralised (the `/capital` CTA and subtitle, the Maal teaser, law,
+>     empty state and dormancy footer, the Venture-demotion notice, the
+>     ledger-locked error, the front-door Labs block, the candidate editor
+>     subtitle and the board's empty state);
+>   - the Dev seed test no longer requires Plus for ballots;
+>   - the guards that went vacuous once no tier held the rows are hardened.
+> - **Left open (owner):**
+>   - An existing Venture's lead can still declare a capital need. No money
+>     moves and no tier is consulted, so this was not treated as escalation.
+>   - Timeout demotion (Venture → Lab) still runs, and while re-promotion is
+>     paused it is one-way.
 >
-> Everything else below shipped as written. On the base: the integration
-> branch holds the retention line, Packet B and naming, as recommended here.
+> On the base: the integration branch holds the retention line, Packet B and
+> naming, as recommended here.
 
 **Base (owner call; merges are gated).** Build P1 on **one integration
 branch** shared with the retention work (`docs/retention-implementation-plan.md`
