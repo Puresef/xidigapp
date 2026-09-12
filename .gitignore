@@ -4,7 +4,11 @@ node_modules/
 
 # Build output
 .next/
-out/
+# Next static-export folder. Anchored: the old bare `out/` also matched the
+# /out route (apps/web/src/app/out/), which was never committed and 404'd in
+# production. source-not-ignored.test.ts guards against that happening again.
+/out/
+/apps/*/out/
 dist/
 build/
 *.tsbuildinfo

@@ -159,6 +159,11 @@ export const ERROR_DEFS = {
   tag_invalid: { messageKey: 'error.tagInvalid' },
   tag_limit: { messageKey: 'error.tagLimit' },
   post_not_editable: { messageKey: 'error.postNotEditable' },
+  // /out refused its destination (not an absolute http(s) link to another site).
+  link_invalid: {
+    messageKey: 'error.linkInvalid',
+    cta: { labelKey: 'action.goHome', href: '/' },
+  },
 
   // --- DMs / Fariimo (§27 DMs block) -------------------------------------------------
   dm_blocked: { messageKey: 'error.dmBlocked' },

@@ -185,6 +185,9 @@ export const so = {
     'Marar badan ayaad hadda isku dayday. Daqiiqad sug, ka dibna mar kale isku day.',
   'error.invalidRequest':
     'Codsigaas wax khaldan ayaa ku jiray. Bogga cusboonaysii oo mar kale isku day.',
+  // PROVISIONAL wording pending the native SO review (G34).
+  'error.linkInvalid':
+    'Linkigaas ma furi karno — ma aha cinwaan dhammaystiran oo bog kale ah. Weydii qofkii la wadaagay inuu hubiyo.',
 
   // --- Furayaasha API-ga dibadda / MCP (§21/§27) — native review needed ---
   'error.invalidApiKey':
