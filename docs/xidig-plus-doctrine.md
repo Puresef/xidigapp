@@ -11,9 +11,13 @@ rulings (§1C).
   **Deploy-order gated**: apply it only after the app is deployed. It is not
   applied to Dev.
 
-**Still gated:** the non-paid eligibility model (P3), ordinary-project parity
-(P2), legal wording and the `TERMS_VERSION` bump for the ToS clause, and
-native Somali review of every new string.
+- `1aa147f`: the §1D follow-up. Declaring a Venture's capital need and the
+  automatic Venture → Lab timeout demotion are both paused. No migration.
+
+**Still gated:** the non-paid eligibility model (P3), which now also carries
+any future capital-need model; ordinary-project parity (P2); legal wording and
+the `TERMS_VERSION` bump for the ToS clause; and native Somali review of every
+new string.
 
 §2 and §3 below describe the pre-P1 state (`384b840`) and are kept as the
 audit record.
@@ -140,6 +144,88 @@ an approved non-paid eligibility model.
   updated" date are unchanged, pending legal.
 - Native Somali and legal review remain required, and nothing is claimed
   final.
+
+### D. Third-pass rulings (12 Sep 2026): the two questions P1 left open
+
+**1. Capital-need declaration: paused.**
+
+- Even though no money moves and no tier is consulted, it is capital-adjacent
+  and can imply an active funding or escalation path.
+- Recorded capital-need data stays preserved and read-only for authorised
+  users. Historical records are not deleted.
+- CTAs and copy that invite a new declaration are removed or neutralised,
+  with wording like "capital pathway under review".
+- Any future capital-need model stays gated under the capital/P3 review path,
+  with legal and product approval.
+
+**Implemented (`1aa147f`):**
+
+- `POST /api/labs/[id]/capital` refuses a lead or manager, admins included,
+  with `capital_pathway_under_review` 403. The refusal is CTA-free. It comes
+  after the active-account guard and the leadership check, so anyone else
+  still gets `forbidden`.
+- Nothing is parsed, rate-limited, written, logged or emitted.
+- The only insert path (`declareCapitalNeed`) and its input schema are gone.
+  Clients never held insert rights on `venture_capital_needs`.
+- `GET` still returns a need recorded before the pause.
+- There was no declare form in the UI. The capital tab's "What works today"
+  row no longer claims the declared need works; it now reads "paused while
+  the capital pathway is under review".
+
+**2. Timeout demotion: paused.**
+
+- Automatic Venture → Lab demotion is paused while re-promotion and
+  escalation are paused. A one-way automated demotion would be unfair, and it
+  could corrupt project state while the ladder is under review.
+- Existing state and history are preserved.
+- If needed, the mutation is replaced by a private "needs review" marker or
+  operator note. Public state does not change automatically.
+- Owner reminders and check-ins may continue only if they do not demote,
+  shame, widen access or imply wrongdoing.
+
+**Implemented (`1aa147f`):**
+
+- The daily Labs sweep calls neither `warn_timed_out_ventures()` nor
+  `demote_timed_out_ventures()`. The sweep's warning notice promised a return
+  to Lab, so it stops too: it would now be untrue, and its stamp exists only
+  to arm the demotion.
+- Both RPCs stay in the schema, service-role only and uncalled.
+- Existing `demotion_warned_at` and `demoted_at` values, past Governance Log
+  entries and past notifications are untouched.
+- **The private marker is a read-only count.** The cron response carries
+  `venturesPastTimeout`, a head-only count of Ventures idle past 84 days, for
+  operator review. It writes nothing, stamps nothing and notifies no one. No
+  new column and no migration.
+- **The check-in that continues** is the existing 28-day dormancy nudge
+  (`mark_dormant_labs`: a marker and "revive it with an update"). It never
+  changed a stage.
+- **Copy:** the index law, the dormancy notice and footer, and the
+  pre-pause warning notice (it renders at read time) no longer promise
+  automatic demotion. They say the stage does not change on its own while
+  the stage rules are under review. The notice for a demotion that really
+  happened stays, as true history.
+- The overview model's unrendered `demotion` deadline field is removed.
+
+**Before any un-pause:** a Venture warned before the pause keeps its old
+`demotion_warned_at`, and the demote RPC's grace check would count that as
+notice already given. Re-warn from a clean stamp first. Never resume the
+demote pass straight onto a stale warning.
+
+**Tests:**
+
+- `apps/web/src/app/api/labs/capital-demotion-pause.test.ts`:
+  - every manager role is refused with no write, rate limit, emit or tier
+    lookup;
+  - non-managers get `forbidden`, and `GET` still reads;
+  - the cron never calls warn or demote and never updates;
+  - the count is head-only;
+  - source scans: no `venture_capital_needs` write, no warn/demote `rpc(...)`,
+    no new demotion notification, no app update of a Venture to `lab`
+    (Club → Lab only, guarded on `space_mode='club'`), and no tier check in
+    either path.
+- `vocabulary.test.ts`: no copy promises an automatic demotion or invites a
+  new need, in either locale. A self-check confirms the pre-slice strings
+  fail it.
 
 ## 2. Where the paid tier still decides a forbidden power (pre-P1 audit record)
 
@@ -288,11 +374,9 @@ every intermediate or rolled-back state gives at most today's access.
 >     subtitle and the board's empty state);
 >   - the Dev seed test no longer requires Plus for ballots;
 >   - the guards that went vacuous once no tier held the rows are hardened.
-> - **Left open (owner):**
->   - An existing Venture's lead can still declare a capital need. No money
->     moves and no tier is consulted, so this was not treated as escalation.
->   - Timeout demotion (Venture → Lab) still runs, and while re-promotion is
->     paused it is one-way.
+> - **Left open at P1, then ruled (§1D) and paused in `1aa147f`:**
+>   - capital-need declaration on existing Ventures;
+>   - the Venture → Lab timeout demotion.
 >
 > On the base: the integration branch holds the retention line, Packet B and
 > naming, as recommended here.
@@ -499,7 +583,8 @@ windows, 2 candidates (1 draft, 1 in review), 3 Labs (all with free leads),
 
 ## 5. Open owner questions
 
-Questions 1–6 were answered on 12 Sep (§1C). Still open:
+Questions 1–6 were answered on 12 Sep (§1C). The capital-need declaration and
+the timeout demotion were ruled the same day (§1D). Still open:
 
 1. Q4 Plus-only Spaces (`supporter_spaces`, DB-enforced), and whether
    `intelligence_updates` (an email perk, never built) is a convenience or an
@@ -509,7 +594,10 @@ Questions 1–6 were answered on 12 Sep (§1C). Still open:
 3. Should ballots from deleted accounts keep counting? They are restricted
    records now, and no tally is shown.
 4. P3: the approved non-paid eligibility model for the advisory vote, and the
-   platform criteria for review submission. Until then both stay paused.
+   platform criteria for review submission. Until then both stay paused. It
+   now also carries the capital pathway: any future capital-need model, with
+   legal and product approval, and whether and how the stage timeout resumes.
+   A resumption must re-warn first; see §1D.
 5. Native review of every new provisional SO string ("waa la hakiyay inta
    xaq-u-yeelashada dib loo eegayo" and the rest). `capital.voteNotEligible`
    ("Hadda xaq uma lihid") was removed.
