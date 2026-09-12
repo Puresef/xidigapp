@@ -53,8 +53,9 @@
     },
     {
       "key": "cod",
-      "so": "Cod",
-      "en": "Poll / Vote",
+      "so": "Xulasho",
+      "en": "Poll",
+      "note": "12 Sep owner ruling: chip label Xulasho (Cod collided with vote/ballot vocabulary). Icon key, filenames and post_type slug are identifiers and stay.",
       "post_type": "codbixin",
       "outline": "cod-outline.svg",
       "filled": "cod-filled.svg",

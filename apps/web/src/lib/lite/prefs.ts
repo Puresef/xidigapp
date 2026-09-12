@@ -1,5 +1,6 @@
 /**
- * Lite mode ("Xawli yar", §22 — Phase 4.5) preference model.
+ * Lite mode (user-facing name "Data Saver" in both locales since 12 Sep; §22 —
+ * Phase 4.5) preference model. "Lite" survives only as the internal name.
  *
  * Governing principle: Lite is a DELIVERY constraint, not a scope constraint.
  * Heavy bytes are deferred behind an explicit tap, never removed as features

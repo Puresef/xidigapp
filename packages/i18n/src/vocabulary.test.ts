@@ -209,22 +209,31 @@ describe('canonical product terms', () => {
     expect(so['term.club']).toBe('Koox');
   });
 
-  it('post types: Win/Guul · Update/War · Poll/Cod (12 Sep direction; SO Cod is provisional — the cod/codbixin vote-vocabulary collision is a flagged native-review item)', () => {
+  it('post types: Win/Guul · Update/War · Poll/Xulasho (12 Sep direction + owner clarification)', () => {
     expect(en['plaza.typeWin']).toBe('Win');
     expect(so['plaza.typeWin']).toBe('Guul');
     expect(en['plaza.typeUpdate']).toBe('Update');
     expect(so['plaza.typeUpdate']).toBe('War');
     expect(en['plaza.typePoll']).toBe('Poll');
-    expect(so['plaza.typePoll']).toBe('Cod');
+    // Not "Cod" (collides with vote/ballot vocabulary) and not "Codbixin"
+    // (a formal voting-process word, too long for a casual chip).
+    expect(so['plaza.typePoll']).toBe('Xulasho');
   });
 
-  it('the low-bandwidth mode is named "Data Saver" in EN — never "Lite" (12 Sep direction; SO term pending native review, Xawli yar remains SO-side until then)', () => {
-    expect(en['settings.liteTitle']).toBe('Data Saver');
-    expect(en['consent.liteLabel']).toBe('Data Saver');
-    for (const [key, value] of Object.entries(en)) {
-      const text = typeof value === 'string' ? value : Object.values(value).join(' ');
-      // Internal key names keep "lite"; user-facing EN copy must not say it.
-      expect(text.includes('Lite'), `${key} still says "Lite"`).toBe(false);
+  it('the low-bandwidth mode is named "Data Saver" in BOTH locales — never "Lite", never "Xawli yar" (owner, 12 Sep)', () => {
+    for (const dict of [en, so]) {
+      expect(dict['settings.liteTitle']).toBe('Data Saver');
+      expect(dict['consent.liteLabel']).toBe('Data Saver');
+    }
+    for (const [dict, retired] of [
+      [en, 'Lite'],
+      [so, 'Xawli'],
+    ] as const) {
+      for (const [key, value] of Object.entries(dict)) {
+        const text = typeof value === 'string' ? value : Object.values(value).join(' ');
+        // Internal key names keep "lite"; user-facing copy must not.
+        expect(text.includes(retired), `${key} still says "${retired}"`).toBe(false);
+      }
     }
   });
 
@@ -305,18 +314,19 @@ describe('the two label sets stay separate (naming review 23 Aug)', () => {
    * Everything else uses its own set's word: EN says Lab / Plaza / Directory /
    * Capital / Messages / Ask / Win / Support / Verified, SO says Warshad /
    * Madal / Suuq / Maal / Fariimo / Codsi / Guul / Taageer / Xaqiiq. The paid
-   * tier "Xidig Plus" is a brand in its own right and reads the same in both.
+   * tier "Xidig Plus" is a brand in its own right and reads the same in both,
+   * and so does the "Data Saver" mode name (owner ruling, 12 Sep — the SO
+   * "Xawli yar" label is retired; "Xawli" stays on the Somali list below so it
+   * can never resurface in English either).
    */
   const SOMALI_NOUNS =
     /\b(Warshad\w*|Madal\w*|Suuq|Fariimo|Maal|Aniga|Digniino|Koox|Garab|Taageer\w*|Guul\w*|Codsi\w*|Xaqiiq\w*|Xawli)\b/;
   const ENGLISH_NOUNS = /\b(Labs?|Plaza|Directory|Capital|Messages|Notifications)\b/;
 
   /** key → why the crossover earns its place. */
-  const ALLOWED: Record<string, string> = {
-    // A one-time mode choice: the gloss teaches the term the member will meet
-    // the moment they read the app in Somali.
-    'consent.liteLabel': 'teaching gloss on the Lite mode name',
-  };
+  // Empty since 12 Sep: the only entry was the EN consent gloss teaching the
+  // Somali "Xawli yar", retired now that both locales say "Data Saver".
+  const ALLOWED: Record<string, string> = {};
 
   /** Plural forms carry their variants in an object — check every branch. */
   function strings(value: unknown): string[] {

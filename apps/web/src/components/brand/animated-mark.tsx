@@ -35,7 +35,7 @@ import { motionAllowed } from '@/lib/motion-policy';
  * frame.
  *
  * GATING. The three global gates — prefers-reduced-motion, html[data-motion='off']
- * (Appearance + the Lite animations pref) and html[data-lite='1'] (Xawli yar) —
+ * (Appearance + the Lite animations pref) and html[data-lite='1'] (Data Saver) —
  * are enforced in CSS, and both attributes are server-rendered in app/layout.tsx,
  * so a gated visitor never paints a frame of motion. This component deliberately
  * does NOT consult the document at render time: doing so would either force the

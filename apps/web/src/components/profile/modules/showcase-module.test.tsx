@@ -153,7 +153,7 @@ describe('Lite defers bytes, never tiles (A15)', () => {
     // Three deferred slots, each with its own estimate and its own tap.
     expect(count(lite, 'xidig-media-slot__size')).toBe(3);
     expect(count(lite, 'xidig-media-slot__show')).toBe(3);
-    expect(lite).toContain('Xawli yar: sawirradu waa la sugaa');
+    expect(lite).toContain('Data Saver: sawirradu waa la sugaa');
     // …and the full-quality render says nothing about Lite at all.
     expect(full).not.toContain('xidig-ashowcase__lite');
   });

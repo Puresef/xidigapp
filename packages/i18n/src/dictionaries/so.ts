@@ -478,7 +478,7 @@ export const so = {
   'settings.hubAppearanceBody': 'Midabka, cabbirka qoraalka, iyo dhaqdhaqaaqa.',
   'settings.hubLanguage': 'Luqadda',
   'settings.hubLanguageBody': 'Somali ama English — mar kasta beddel.',
-  'settings.hubData': 'Xogta & Xawli yar',
+  'settings.hubData': 'Data Saver',
   'settings.hubDataBody': 'Kaydso xog, soo dejiso xogtaada, maamul akoonkaaga.',
   'settings.saved': 'Waa la kaydiyay.',
   // Privacy & safety
@@ -572,8 +572,8 @@ export const so = {
   'settings.motionSystem': 'Raac qalabka',
   'settings.motionOff': 'Yaree dhaqdhaqaaqa',
   // Data & Lite mode
-  'settings.dataTitle': 'Xogta & Xawli yar',
-  'settings.liteTitle': 'Xawli yar',
+  'settings.dataTitle': 'Data Saver',
+  'settings.liteTitle': 'Data Saver',
   'settings.liteIntro':
     'Waxba lama saaro — sawirrada, muuqaallada, iyo khariidadaha culus waxay sugaan badhanka Muuji ilaa aad codsato.',
   'settings.liteImages': 'Si toos ah u soo rar sawirrada',
@@ -581,13 +581,13 @@ export const so = {
   'settings.liteMaps': 'Si toos ah u soo rar khariidadaha',
   'settings.liteAnimations': 'Daar dhaqdhaqaaqa',
   'settings.liteSmallAvatars': 'Soo rar sawirro yaryar oo xubnaha',
-  'settings.liteBundlesAria': 'Gaaboyinka Xawli yar',
+  'settings.liteBundlesAria': 'Gaaboyinka Data Saver',
   'settings.liteBundleText': 'Qoraal keliya',
   'settings.liteBundleEssentials': 'Muhiimka',
   'settings.liteBundleEverything': 'Wax walba',
-  'settings.liteSaved': 'Xawli yar wuxuu kuu kaydiyay qiyaastii {amount} toddobaadkan.',
+  'settings.liteSaved': 'Data Saver wuxuu kuu kaydiyay qiyaastii {amount} toddobaadkan.',
   'settings.liteSavedNone': 'Weli xog lama kaydin toddobaadkan.',
-  'settings.liteMoreLink': 'Xakamayn dheeraad ah: Xogta & Xawli yar',
+  'settings.liteMoreLink': 'Xakamayn dheeraad ah: Data Saver',
   'settings.exportTitle': 'Soo dejiso xogtaada',
   'settings.exportBody':
     'Soo dejiso nuqul ka mid ah profile-kaaga, qoraaladaada, faallooyinkaaga, suuqyadaada, kaydkaaga, iyo qoraalada aan dhammayn — hal fayl.',
@@ -951,7 +951,7 @@ export const so = {
   'plaza.typeAsk': 'Codsi',
   'plaza.typeWin': 'Guul',
   'plaza.typeUpdate': 'War',
-  'plaza.typePoll': 'Cod',
+  'plaza.typePoll': 'Xulasho',
   'plaza.typeIntroHint': 'Bulshada isu soo bandhig.',
   'plaza.typeAskHint':
     'Caawimaad codso — kuwa ku caawin karaa si gaar ah ayay kuula soo xiriirayaan.',
@@ -1537,8 +1537,8 @@ export const so = {
   'lite.mapLabel': 'Khariidad',
   'lite.promptTitle': 'Xidhiidh gaabis ah?',
   'lite.promptBody':
-    'U beddel Xawli yar si aad xog u badbaadiso — sawirrada iyo khariidadaha waxay soo baxaan markaad taabato Muuji.',
-  'lite.promptAccept': 'Isticmaal Xawli yar',
+    'U beddel Data Saver si aad xog u badbaadiso — sawirrada iyo khariidadaha waxay soo baxaan markaad taabato Muuji.',
+  'lite.promptAccept': 'Isticmaal Data Saver',
   'lite.promptDismiss': 'Hadda maya',
 
   // Saved — bookmarks
@@ -1955,7 +1955,7 @@ export const so = {
   'consent.errorMonitoringLabel': 'La-socodka khaladaadka (dheeraad)',
   'consent.errorMonitoringHint':
     'Dib-u-ciyaarid fadhi iyo raad-raac waxqabad oo naga caawiya inaanu dhibaatooyinka si dhaqso ah u hagaajinno. Warbixinnada aasaasiga ah ee khaladaadku way sii shaqeeyaan — waxay ilaaliyaan Xidig.',
-  'consent.liteLabel': 'Xawli yar',
+  'consent.liteLabel': 'Data Saver',
   'consent.liteHint': 'Sawirrada iyo muuqaallada culus waxay sugaan ilaa aad taabato.',
   'consent.liteCta': 'Daar',
   'consent.settingsTitle': 'Doorashooyinka sirta',
@@ -2248,7 +2248,7 @@ export const so = {
   'profile.showcaseEmptyBody': 'Ku dhaji Guul, farshaxan Warshad, ama sawir War — adigaa doorta.',
   'profile.showcaseErrorTitle': 'Bandhiggu ma soo bixin',
   'profile.showcaseErrorBody': 'Wax baa qaldamay markii la soo rarayay. Isku day mar kale.',
-  'profile.showcaseLiteNote': 'Xawli yar: sawirradu waa la sugaa. Qaab-dhismeedku waa isku mid.',
+  'profile.showcaseLiteNote': 'Data Saver: sawirradu waa la sugaa. Qaab-dhismeedku waa isku mid.',
   'profile.retryShort': 'Isku day',
   'profile.pinQueuedTitle': 'Guul cusub — sugaya',
 
@@ -2413,7 +2413,7 @@ export const so = {
   'profile.queuedEditView': 'Fiiri isbeddelka',
   'profile.litePhotoSize': 'sawir ~{size}',
   'profile.liteFooterNote':
-    'Xawli yar: sawirrada waa la hakiyay. Avatar-adu waa xarfo — wax soo-dejin ah ma jirto.',
+    'Data Saver: sawirrada waa la hakiyay. Avatar-adu waa xarfo — wax soo-dejin ah ma jirto.',
 
   // Calaamadaha sharafta — doorarka Badge Canon ku daray. Doorarku weligood ma
   // casaan-oobaan; labelka aqoonsiga iyo tooltip-yada dhaadheer kor bay yaalliin.
