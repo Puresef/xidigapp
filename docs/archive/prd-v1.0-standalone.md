@@ -1,0 +1,1063 @@
+> **Historical reference — superseded; moved here 12 Sep 2026.** This is the repo copy of the v1.0 PRD, preserved for history. The canonical product direction is now the PRD Relook in [`/prd.md`](../../prd.md); implementing any of it still requires a bounded owner dispatch (Relook §2, §24.0). The Notion v1.0 PRD page is retained, not archived or deleted, for implementation history, prior assumptions and lessons learned. Nothing below is a current requirement unless the Relook preserves it. The learnings worth keeping are carried into the Relook's **Appendix A** as items CF-01 to CF-62, filtered for its direction. Section numbers here are unchanged, so older citations of `PRD §N` or `prd.md §N` without a D-ID still resolve to this file. **Before relying on any section, check the [archive crosswalk](#archive-crosswalk--what-happened-to-each-v10-section) at the end.** The "single source of truth" claim in the box below is historical.
+
+# PRD — Xidig App v1.0 (Standalone)
+
+<aside>
+📌
+
+This PRD is the single source of truth for building **Xidig v1.0** as a first‑party standalone app. It is written to be “promptable”: each section can be copied into Cursor/Claude builders as build instructions.
+
+</aside>
+
+## 1) Product summary
+
+- **One-liner:** Xidig is a member-owned platform where Somali builders connect, form Labs, build ventures, and fund them—end‑to‑end.
+- **Elevator pitch:** Xidig combines a high-signal social layer (Plaza), structured execution (Labs), and a visible venture pipeline (Capital).
+- **Audience:** builders, founders, operators, supporters/investors, and any Somali business/person advertising themselves via profile + directory/map.
+
+## 2) Goals (v1.0)
+
+- Trusted identity layer (profiles + verification + roles)
+- Discovery via directory + map (people + businesses)
+- High-signal Plaza (posts, asks, wins, updates)
+- Structured Labs (charters, members, updates, artifacts, decisions)
+- Venture pipeline (Lab → Venture Candidate → Capital readiness)
+- Moderation + governance primitives
+- Controlled beta + waitlist/onboarding
+- Social graph (follows) + DMs and full connectivity options
+- AI + API/MCP layer for seeding, automation, and integrations
+- Bilingual UI (Somali + English) + low-bandwidth mode
+
+## 3) Non-goals (v1.0)
+
+- Tokenization / on-chain ownership
+- Automated investment payment rails (v1.0 can be intent capture + manual ops)
+- Lab file uploads (v1.0 is link sharing only)
+- Courses/mentorship platform
+- Gig/marketplace mechanics
+
+## 4) Success metrics (first 60–90 days)
+
+- Activation: % of new users who complete profile + choose lanes
+- Retention: WAU, WAU/MAU
+- Contribution: # weekly Wins posts; # weekly Asks posts
+- Discovery: # profiles with location + skills; # business listings
+- Map quality: % listings with valid address + latitude/longitude
+- Map usage: map views → listing views; listing views → contact clicks
+- Labs: # Labs created; % Labs with weekly updates; time to first artifact
+- Pipeline: # Candidates created; # reviewed; time to first review
+- Safety: report rate; resolution time; % listings flagged/removed
+
+## 5) Product principles
+
+- Helpful everywhere (tips, onboarding, empty states that teach)
+- Execution beats vibes
+- Trust is a feature
+- Pipeline clarity
+- App-first (no external-host framing)
+
+## 6) Core entities
+
+- User
+- Profile
+- Verification (user)
+- Post
+- Comment
+- Tag
+- Lab
+- Lab Update
+- Lab Artifact
+- Decision
+- Venture Candidate
+- Interest ("I can help" / "Garab")
+- Business Listing
+- Follow
+- Conversation + Message (DMs)
+- Badge + Reputation Score
+- Vouch
+- Notification
+- Report + Mod Action + Audit Log
+- Invite
+
+## 7) Key user journeys
+
+1. Join → complete profile → choose lanes → first post (Intro/Ask/Win)
+2. Discover people: directory search + filters (skills, location, lanes, verification)
+3. Discover businesses: map + listing filters (category, city, tags) → contact click
+4. Create Lab: charter → members → weekly updates → artifacts → decisions
+5. Graduate: convert Lab → Candidate → rubric + ask → reviews → status
+6. Safety: report content/listing → mod action → visible outcome
+
+## 8) Information architecture
+
+- Home (personal dashboard)
+- Plaza
+- Labs
+- Capital
+- Directory
+- Map
+- Messages (DMs)
+- Notifications
+- Profile
+
+## 9) Feature requirements
+
+- Auth: sign in via email + password, email magic link, **or** phone SMS-OTP — three co-equal methods, one canonical account (at least one verified email or phone) + terms + invite-only toggle
+- Profiles: required (name, location, skills, lanes) + optional links/bio + verification badge
+- Directory: people + businesses search + filters
+- Map: business listing map + filters
+- Plaza: post types (Intro/Ask/Win/Update) + comments + tags + reporting
+- Labs: charter + weekly updates + artifacts + decision log + membership
+- Capital: Candidate pages + rubric fields + reviews + interest capture
+- Notifications: replies, mentions, lab updates, candidate status changes
+- Admin/mod: verification, reports queue, remove/suspend, listing moderation
+- Social graph: follow people, Labs, Ventures, tags
+- Messaging: 1:1 DMs with request-to-chat, block/report
+- Badges + reputation scores (see section 14)
+- AI seeding + API/MCP layer (see section 21)
+- Low-bandwidth mode + Somali/English toggle (see section 22)
+- Settings surface: account, privacy & safety, notifications matrix, appearance, language, data & Lite controls (see section 22)
+- Standard social hygiene: bookmarks/saves, post drafts, edit + edit history, mutes, global search, native share sheet
+
+## 10) Builder-friendly data fields
+
+- Profile: displayName, handle, bio, avatarUrl, coverUrl, locationCity, locationCountry, skills[], lanes[], verificationStatus, links[] (label + order), openTo[] (availability: co-founding / hiring / hire-me / investing / mentoring / collaborating), pinnedItems[] (up to 3 posts/Wins/Labs)
+- BusinessListing: businessName, ownerUserId, category, shortDescription, photos[] (1–5, alt text required; first photo = card thumbnail + OG image), openingHours, priceRange ($–$$$$), services[] (name + price label), address, latitude, longitude, city, country, tags[], contactLinks[], verificationStatus
+- Lab: name, shortDescription, problemStatement, hypothesis, sprintLengthWeeks, successDefinition, stage, tags[], leadUserId, members[]
+- Candidate: name, labId, oneLiner, problem, solution, traction, team, ask, status, rubricTeamScore, rubricTractionScore, rubricFeasibilityScore, notes, visibility, regionGated
+- Follow: followerUserId, targetType, targetId
+- Conversation: participantIds[], status (pending/accepted/blocked)
+- Message: conversationId, senderUserId, body, createdAt
+- Badge: userId, type, tier, awardedAt
+- Vouch: voucherUserId, voucheeUserId, createdAt
+- Report: reporterUserId, targetType, targetId, reason, status, resolution
+- AuditLog: actorUserId, action, targetType, targetId, metadata, createdAt
+
+> **Shipped-schema note (Sep 2026):** the raw shapes above are the original sketch, and the built schema has since superseded several of them the §25.5 way — lanes/skills ride seeded lookup tables with normalize triggers and a suggest-to-admin flow (raw arrays remain only as canonical-token storage), listing categories and membership tiers are slug-keyed lookup tables, tags are id-referenced rows, and `location_country` (display text) is paired with a derived `location_country_code` for the Capital gate. Where this section and the migrations disagree, the migrations win (§ PRD-is-living).
+
+## 11) Prompt pack (copy/paste)
+
+### How to use this prompt pack
+
+- **Phase 0 runs first — always.** Output the entire DB schema before writing any UI. Changing a column in Phase 4 breaks Phase 1 code.
+- Build **one phase per session**. Never combine phases in one prompt.
+- Every session uses the same **fixed header** (copy verbatim every time) + the **phase-specific sections** listed below.
+- End every session with the **fixed footer** (copy verbatim every time).
+- Deploy and verify acceptance criteria before starting the next phase.
+- **Never paste:** §11 (this section), §12 (decisions log), §25 (v1.1 roadmap), §24 infra notes (already set up). Pasting future-roadmap sections causes Claude to build features out of order.
+
+---
+
+### Fixed header — paste at the top of EVERY session
+
+> You are building Xidig v1.0, a member-owned platform for Somali builders. This is Phase [X] of 9 (Phases 0–8). Build only what is listed for this phase — do not invent or add features from other phases. The PRD is the source of truth. Alongside this header, always paste: §1 Product summary + §5 Product principles + §26 Build inputs & constants.
+> 
+
+---
+
+### Fixed footer — paste at the bottom of EVERY session
+
+> Before finishing: (1) output the full Postgres schema as a migration file for all new tables in this phase. (2) Write all Supabase RLS policies per table in a separate rls.sql file. (3) Write RLS negative tests for every new table — prove user A cannot read user B's private or gated rows (free vs Supporter, region gating, per-Candidate visibility, roles). (4) Confirm each acceptance criterion below passes. Do not move on until all pass.
+> 
+
+> Then paste the phase-specific acceptance criteria listed under this phase.
+> 
+
+---
+
+### Phase 0 — Schema (run this FIRST, before any UI)
+
+**Purpose:** get the entire database schema reviewed and approved before Phase 1 builds anything. Changing a table schema after UI is built causes cascading rewrites.
+
+**Paste these sections (after fixed header):**
+
+§6 Core entities (full list)
+
+§10 Builder-friendly data fields (full list, plus add: `membership_tiers`  on Profile; `subscriptionStatus` TEXT on Profile; `labVisibility` ENUM (private/members/public) on Lab; `sprintDeadline` TIMESTAMPTZ on Lab; `regionVerified` BOOLEAN on Profile; `spaceMode` ENUM (club/lab) on Lab — unified Spaces model, see §16; `email` TEXT + `phone` TEXT on User (both nullable, at least one required — supports email+password, magic-link, or phone-OTP sign-in; password hashes live in Supabase-managed `auth.users`, not app tables))
+
+§17 Capital spec (region gating definition only)
+
+**Instruction to Claude:**
+
+> Output a single complete Postgres migration file (`schema.sql`) covering ALL tables for the entire v1.0 build (all 7 phases). Include all columns, types, foreign keys, indexes, and enums. Do not generate any UI, API routes, or RLS yet. After outputting the schema, list any ambiguities or missing fields you found.
+> 
+
+**Acceptance criteria (Phase 0):**
+
+- All entities from §6 have a corresponding table
+- membership tier (`membership_tier_id` → `membership_tiers` lookup, per Seq 3) and `subscriptionStatus` are on the `profiles` table (drives all RLS gating)
+- `regionVerified` is on `profiles` (drives Capital gating)
+- `labVisibility` enum exists on `labs` table
+- No circular foreign key dependencies
+- Review output manually before proceeding to Phase 1 — this is the only phase where you edit the output before continuing
+
+---
+
+### Phase 1 — Auth + Profiles + Follows + Directory + Map
+
+**Paste these sections (after fixed header):**
+
+§6 Core entities (User, Profile, Verification, Business Listing, Follow, Badge, Vouch, Invite only)
+
+§10 Data fields (Profile, BusinessListing, Follow, Badge, Vouch rows only)
+
+§13 Social graph (Follow + mentions + linkable + contact options)
+
+§14 Verification, badges & reputation (full)
+
+§18 Directory & Map spec (full)
+
+§19 Account policy (rate limits + account lifecycle only)
+
+§20 Onboarding (Founding Member moment + Looking for matching)
+
+§22 Platform requirements (API-first architecture note + bilingual i18n scaffold + low-bandwidth mode)
+
+§27 Plain language errors (Auth & access + Profile & verification + Directory & Map blocks only)
+
+**Do not paste:** Plaza, Labs, Capital, DMs, mod queue, analytics events (later phases)
+
+**Acceptance criteria (Phase 1):**
+
+- User can sign up via invite code or waitlist; email + password, email magic link, **or** phone SMS-OTP all work
+- Profile fields (name, handle, location, skills, lanes) save and display correctly
+- Follow/unfollow works; Following feed tab appears on Home
+- Business listing created via map pin-drop; appears on map and in directory
+- Duplicate listing detection fires; Claim this listing flow works
+- Directory fuzzy search returns results for transliteration variants (e.g. Maxamed / Mohamed)
+- Founding Member counter shown on waitlist page; badge awarded to first 500
+- Low-bandwidth (Lite) mode toggle works; images and map tiles **defer to ~0-byte placeholders with a (Show / Muuji) tap-to-load** — deferred, not disabled (§22)
+- API-first: all data operations go through defined API routes (no direct DB calls from UI)
+- RLS: free member cannot access Supporter-gated routes; admin can access everything
+
+---
+
+### Phase 2 — Plaza
+
+**Paste these sections (after fixed header):**
+
+§6 Core entities (Post, Comment, Tag only)
+
+§10 Data fields (Post, Comment, Tag rows only)
+
+§15 Plaza spec (full)
+
+§20 Onboarding (reaction taxonomy + tips/empty states)
+
+§27 Plain language errors (Plaza block only)
+
+**Do not paste:** Labs, Capital, DMs, mod queue, badges beyond reactions, analytics
+
+**Acceptance criteria (Phase 2):**
+
+- All post types (Intro / Ask / Win / Update / Poll) create and display correctly
+- Ask lifecycle: Open → Answered (with helper credit) → Closed; stale Ask nudge fires at 7 days
+- Image upload 1–5MB compresses to WebP; EXIF stripped
+- Pasted YouTube / TikTok / Vimeo / X / Instagram URL plays in-app
+- Unwhitelisted link shows warning interstitial
+- Reaction taxonomy (🔥💪🤲💡👀) works; no generic like button
+- Rate limit fires correctly for free members (5 posts/day); error message matches §27
+- Feed displays chronological + post-type filters + pinned highlights slot
+
+---
+
+### Phase 3 — DMs + Notifications
+
+**Paste these sections (after fixed header):**
+
+§6 Core entities (Conversation, Message, Notification only)
+
+§10 Data fields (Conversation, Message rows only)
+
+§13 Social graph (DMs section + mentions section)
+
+§22 Platform requirements (smart notification bundling + push notifications)
+
+§26 Notification matrix (in-app / email / push breakdown)
+
+§27 Plain language errors (DMs block only)
+
+**Realtime note (paste this too):**
+
+> Use **Supabase Realtime** (Postgres changes → subscriptions) for DM message delivery. Do not use polling. Subscribe to the `messages` table filtered by `conversationId`. Presence is not required in v1.0.
+> 
+
+**Do not paste:** Labs, Capital, Plaza (already built), mod queue, analytics
+
+**Acceptance criteria (Phase 3):**
+
+- DM request sent → recipient notified → accept/decline works
+- 1:1 chat sends and receives messages in real time
+- Block and report work inside DMs
+- Mention (@handle) in a post or DM notifies the mentioned user
+- Notifications are bundled (grouped by type, not individual pings)
+- Push notification delivered on Android PWA for new DM
+- Email notification sent for DM requests and candidate status changes
+
+---
+
+### Phase 4 — Labs
+
+**Paste these sections (after fixed header):**
+
+§6 Core entities (Lab, Lab Update, Lab Artifact, Decision only)
+
+§10 Data fields (Lab row only)
+
+§16 Labs spec (full)
+
+§20 Onboarding (Lab sprints countdown + pinned Labs on profiles + skill tree)
+
+§27 Plain language errors (Labs block only)
+
+**Do not paste:** Capital, analytics, mod queue
+
+**Acceptance criteria (Phase 4):**
+
+- Lab created with completed charter template (playbook starters available)
+- Join modes work: open join / request to join / invite-only
+- Weekly update published; link artifact shared
+- Lab marked Dormant after 28 days no activity; revival works instantly
+- Lab visibility toggle (Private / Members only / Public) works; Public Labs are readable without login
+- Public Lab page is server-side rendered for SEO
+- Inter-Lab collaboration link created; shared update cross-posts to both Labs
+- Skills gap alert fires after 7 days with no match
+- IP/ownership reminder banner shows in Lab UI
+- Lab sprint countdown visible on Lab card
+
+---
+
+### Phase 5 — Capital
+
+**Paste these sections (after fixed header):**
+
+§6 Core entities (Venture Candidate, Interest only)
+
+§10 Data fields (Candidate row only)
+
+§17 Capital spec (full)
+
+§27 Plain language errors (Capital block only)
+
+**Do not paste:** analytics, mod queue
+
+**Acceptance criteria (Phase 5):**
+
+- Candidate workflow: Draft → Submitted → In Review → Approved / Parked / Declined
+- Reviewer recusal: Lab members blocked from reviewing own Candidate
+- Per-Candidate visibility setting (all members / reviewers only) enforced by RLS
+- Somalia-region users see investment language + the Maalgeli (Invest) CTA
+- Non-Somalia users see informational view only; no investment language or Maalgeli action anywhere in their session (Garab remains available to everyone)
+- Fund-first funnel: the Maalgeli (Invest) CTA opens the Xidig Venture Fund modal first
+- Venture timeline renders on Candidate page (when Lab has made it public)
+- Supporter governance vote appears alongside rubric scores
+
+---
+
+### Phase 6 — Admin / Mod
+
+**Paste these sections (after fixed header):**
+
+§6 Core entities (Report, Mod Action, Audit Log only)
+
+§10 Data fields (Report, AuditLog rows only)
+
+§14 Verification process (video call flow + verifier role)
+
+§19 Moderation, safety & account policy (full)
+
+§27 Plain language errors (Moderation block only)
+
+**Do not paste:** analytics, i18n, badges
+
+**Acceptance criteria (Phase 6):**
+
+- Report submitted → appears in mod queue with SLA timer
+- Mod removes content → content hidden → user notified with plain language message
+- Appeal submitted → routed to second mod/admin
+- Every mod/admin action writes an immutable audit log entry
+- Verification queue: admin schedules call, member notified, badge awarded on completion
+- Suspended user's posts hidden; account shows suspension message
+- Rate limits enforced at edge (Upstash) for new accounts
+- Account delete: 30-day grace, data export available, content anonymised not deleted
+
+---
+
+### Phase 7 — Badges, Onboarding, i18n, Low-bandwidth, Analytics
+
+**Paste these sections (after fixed header):**
+
+§14 Reputation scores + milestone badges (full)
+
+§20 Onboarding (full, everything not yet built)
+
+§22 Platform requirements (bilingual + low-bandwidth full spec)
+
+§23 Analytics spec (full event taxonomy)
+
+§27 Plain language errors (Platform / technical block only)
+
+**Do not paste:** anything already built in phases 1–6
+
+**Acceptance criteria (Phase 7):**
+
+- Contribution score and Helper score increment correctly
+- Milestone badges (Founding Member, Lab Lead, Top Helper, Early Backer) award at correct triggers
+- Anti-gaming rules: no self-interaction points, daily caps, time decay
+- Community Awards (quarterly) feature exists and accepts member votes
+- First-session onboarding checklist completes and dismisses
+- Looking for matching surfaces relevant Labs on profile completion
+- Mentor-in-residence badge and featured slot in digest works
+- English / Somali language toggle switches UI strings (i18n keys present even if Somali strings are placeholder)
+- Low-bandwidth auto-prompt appears when 3G/2G detected, offering Lite bundles (Text only / Essentials / Everything); MediaSlot placeholders render with blurhash + (Show / Muuji) per §22
+- All PostHog events from §23 fire and appear in PostHog dashboard
+
+---
+
+### Phase 8 — AI seeding + API/MCP layer (pre-launch)
+
+**Paste these sections (after fixed header):**
+
+§21 AI & API layer (full)
+
+**Instruction to Claude:**
+
+> Build the AI seeding scripts and the REST API + MCP server. Seeding scripts must be idempotent (safe to re-run). All seeded content must carry a labeled `source: "seed"` flag so it is distinguishable from real member content. API keys must be scoped, rate-limited, and logged in the audit table.
+> 
+
+**Acceptance criteria (Phase 8):**
+
+- Seeding script runs and populates Plaza posts, tags, listings, and Lab templates without duplicates on re-run
+- All seeded content is flagged `source: seed` and visually labeled in the admin view
+- REST API returns correct data for all major entities with auth scoping
+- MCP server lists tools and executes read/write calls with valid API key
+- Invalid or expired API keys return the plain language 403 error from §27
+- Weekly digest job runs and produces correct output (email + pinned post)
+
+---
+
+### Prompt A — Master build instruction (use at start of Phase 1 only)
+
+Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member / mod / admin). Use Next.js + Supabase + Vercel. Build API-first: all data operations through defined API routes. Write RLS policies as a separate migration file. Do not build beyond Phase 1 in this session.
+
+## 12) Decisions log & open items
+
+**Decided**
+
+- DMs are in scope (old "no real-time chat" non-goal removed)
+- Verification: live admin video call (face + ID), recorded with consent — see section 14
+- Capital: investment language gated to Somalia region; informational view elsewhere — see section 17
+- Cold start: AI-generated/seeded content + AI participation; app exposes API/MCP — see section 21
+- Labs: link sharing only (no file uploads in v1.0); Dormant badge after 4 weeks of no updates
+- Lab/venture IP & ownership: decided later by **member vote** — app shows recurring reminders during early usage
+- Media: embed-first; image/meme uploads 5MB; video via embeds (see sections 15 and 24)
+- Labs creation: **Supporter members** can create (per membership model), with a completed charter template (quality gate without approval bottleneck)
+- Candidate reviews: role-based reviewers (with recusal) + open member comments below
+- Signup gating: **invite-only + waitlist** for beta
+- Video: **Option A — embeds only (free)** for v1.0; B/C are upgrade paths (see section 24)
+- Plaza feed: default stands — chronological + filters + pinned weekly highlights (revisit post-launch with usage data)
+- v1.1: Cloudflare Stream uploads + group video rooms / live sessions, gated to a **paid membership tier** to offset costs — see section 25
+- Seed tags + listing categories: **approved** (see section 26)
+- Membership lanes follow [xidig.net/membership](http://xidig.net/membership); **"Supporter+" is renamed "Supporter"** everywhere
+- Capital: investment can flow to individual ventures, but UX **funnels all users to the Xidig Venture Fund** first — see section 17
+
+**Open (need a decision)**
+
+- None right now — all build-blocking decisions are locked. New open items get logged here and as decision rows in the Build Tracker.
+
+**Governance note (6 Jul) — this PRD is a living document, not frozen canon**
+
+- Continuous improvement and genuine product wins override stale PRD text. When a later insight justifies changing a decision (schema, UX, scope), update this document and ship the change — don't preserve an earlier call just because it's written down here.
+- Caution language embedded in instructional/process text (e.g. §11's "changing a column in Phase 4 breaks Phase 1 code") is **advisory, not a rule.** It's a reminder to weigh migration cost, not a blocker on justified schema evolution — additive, backward-compatible columns in particular are cheap to add in any phase.
+- Corollary *(superseded — see the Phase 4.5 entry immediately below)*: this note originally asserted that the then-current no-avatar/no-cover-photo design (§10 field lists) and the "Lite mode disables images" Phase 1 AC were deliberate, already-encoded consequences of the §22 low-bandwidth mandate, and that any revisit had to happen explicitly (§10 + the relevant ACs updated together). That explicit revisit happened per this note's own procedure: the 6 Jul Phase 4.5 decision below reframed §22 from *disable* to *defer* (MediaSlot + Show/Muuji) and updated §10/§15/§18/§20/§22/§27 plus the Phase 1/7 ACs — so neither the no-avatar design nor that AC exists any longer. Kept only as a decision-log record.
+
+**Decided (6 Jul) — Phase 4.5 "experience expansion": Lite mode v2 + media identity**
+
+- Root cause acknowledged and fixed: §22 low-bandwidth was treated as a **scope** constraint ("don't build media-heavy features") when it is a **delivery** constraint ("don't auto-download heavy bytes"). §22 is reframed from *disable* to *defer* (MediaSlot + Show/Muuji pattern, granular toggles + bundles, blurhash placeholders, data-saved counter). This revisits the "no-avatar / Lite-disables-images by design" consequence **explicitly per the 6 Jul governance note's own procedure** — §10, §15, §18, §20, §22, §27 and the Phase 1/7 acceptance criteria are updated in the same change.
+- Shipped as Phase 4.5 (backend + frontend, some surfaces enabled in later versions): profile avatars/covers + listing photo galleries + Space icons/covers + Candidate logo/cover columns (extends the existing Plaza media pipeline — same upload/transcode/moderation path, new `kind`s); alt text required on uploads; blurhash stored at upload; full settings surface (privacy / notifications matrix / appearance incl. dark mode + text size + reduced motion / data & Lite); bookmarks, post drafts, edit history, mutes, global search, availability ("open to"), pinned profile content, opening hours / services / price range / WhatsApp CTA on listings; interest-based follow suggestions + profile completion meter; `page_blocks` schema groundwork for block-style profile/Space layouts (renderer/editor = later version).
+- **Deliberately still excluded:** listing reviews/ratings (highest brigading/extortion-risk surface — if ever built: verified-customer-only + mod queue, not v1.0), voice intros, offline read cache, verified-photo badge, DM read receipts/typing, image polls, listing announcements (v1.1 candidates, see §25).
+
+**Decided (2 Jul)**
+
+- **Capital launch gating** (Tracker Seq 6): geo-IP + profile country match **+ self-attestation checkbox** — all three required for investment language/Maalgeli at launch; enhanced attestation mechanism stays deferred (Seq 7) for pre-Capital-launch review
+- **EN label for the backing button** (Tracker Seq 51): **Co-sign** (SO: Garab) — social proof shown as "142 garab / 142 co-signs"
+
+**Decided (formerly schema-blocking — all locked in the Build Tracker)**
+
+- ENUM vs lookup tables · unified Spaces model (one entity + `spaceMode`) · reputation score formulas (30pt/day caps, 90-day decay) + AI-account Helper-score rule · Supporter governance vote (advisory + soft gate; quorum 5 or 20%; 60% approval; 7-day window) · Poll mechanics · "Looking for" matching · profile location (no chapters; proximity-based) · Streaks (cosmetic-only v1.0) · Somali translation scope (full; trust surfaces = launch floor) · design tokens · empty/loading/error StateView pattern · Capital nav placement (entry inside Labs; no bottom tab)
+- **Capital v1 scope:** listing/intro service + intent capture + manual ops — **no financial flows through the platform** (no pledge ledger, no payout states); revenue-share mechanics documented for v2+ reference only
+- **Payments:** Paddle or Lemon Squeezy as merchant of record for diaspora card billing + EVC Plus/Zaad Somalia-side; no direct Stripe (Somalia unsupported)
+- **Auth method:** **three co-equal sign-in methods — email + password, email magic link, or phone SMS-OTP** (any one sufficient), with one canonical account per person (at least one verified email or phone); additional methods link to the same account. Passwords are stored only in Supabase-managed `auth.users` (bcrypt), so no app-schema change is needed. WhatsApp OTP deferred to v1.1 behind a provider abstraction.
+- **Suuq scope:** Suuq = Directory + Map (people + business listings), not a marketplace/commerce surface (commerce is a non-goal, §3).
+
+**Reminders (recurring until done)**
+
+- ✍️ Content policy document — to be written separately by Xidig; app links to it
+- 🗳️ IP/ownership member vote — surfaced in Lab UI + onboarding until resolved
+- ⚖️ ToS + Privacy Policy + cookie/analytics consent — human-authored + legal review, required **before Phase 1 data collection**
+- 🪪 Biometric DPIA (verification video: face + ID, 24-month retention) — required **before the verification flow is built** (Phase 1 · Seq 31, not just Phase 6)
+
+## 13) Social graph & connectivity
+
+- **Follow** (one-way) people, Labs, Ventures, and tags; "Following" feed tab on Home
+- **DMs:** 1:1 text messages; request-to-chat on first contact (recipient accepts/declines); block + report inside DMs; no group DMs as its the same as creating a space
+- **Mentions:** @handle for users, #tag for topics; mentioning notifies
+- **Everything is linkable:** every entity (post, comment, profile, Lab, Venture, Candidate, listing) has a permalink; pasting an internal link in any post, comment, or DM renders a rich preview chip
+- **Contact options on profiles:** members choose what to show (DM, email, WhatsApp, socials)
+
+## 14) Verification, badges & reputation
+
+**Identity verification (Somalia-compatible — standard KYC providers don't cover Somalia reliably)**
+
+- Live video call with a trained admin/verifier; member shows face + ID document
+- Liveness prompts during the call (turn head, read a one-time code) to defeat photos/deepfakes
+- Call recorded **with explicit consent**; encrypted storage, 24-month retention, access-logged
+- Scale path: train trusted mods as verifiers to spread verified badges widely; 7-day queue SLA; admin spot-checks of verifier decisions
+
+**Verification tiers & badges (distinct, never one conflated badge)**
+
+- ✅ Identity Verified (video call)
+- 🤝 Community Verified (3 verified members vouch — lighter tier, upgradeable to full verification)
+- 🏪 Verified Business (premises video, documents, or admin call)
+- Skill endorsements (peers endorse specific skills, shown on profile)
+
+**Reputation scores**
+
+- Contribution score: posts, comments, Lab updates
+- Helper score: credited resolved Asks
+- Streaks + milestone badges: Founding Member, Lab Lead, Top Helper, Early Backer
+- Anti-gaming: time decay, no points from self-interactions, daily caps
+- **Reputation is not a ledger unit, and a ledger unit is not reputation (decided 6 Aug 2026, ruling 5).** They are two separate systems that never convert into each other. Reputation is social standing: it may gate *nomination* or eligibility where a spec says so, and that is its ceiling — it never weights a vote and never becomes an economic claim. Maal ledger units (§16) are economic and contribution-derived, governed by a member-voted weight scheme. Every Maal vote is **one verified member, one vote**, regardless of either number.
+
+## 15) Plaza spec
+
+- Post types: Intro / Ask / Win / Update / Poll
+- **Ask lifecycle (P1 Codsi model, 9 Aug 2026):** Open → In progress (asker accepts a private offer; the helper is named publicly) → Fulfilled (terminal; the named helper earns Helper score). Offers arrive as private DMs — no public offer counts; the asker alone moves the lifecycle (reopen walks an in-progress ask back). Stale Asks auto-nudge after 7 days. Garab (co-sign) exists on fulfilled Asks only. *(Supersedes the v1.0 credit-an-answer flow: Answered rows were backfilled to Fulfilled with the credited answerer as helper; Closed survives read-only as a legacy terminal state.)*
+- **Feed (default):** chronological + post-type filters + pinned weekly highlights — no engagement-bait algorithm
+- **Images/memes:** direct upload, 1–5MB, auto-compressed to WebP (+ ~480px thumbnail variant), EXIF stripped, AI moderation pre-scan; **alt text required on all uploads** (accessibility AA + doubles as the Lite-mode placeholder label); **blurhash/LQIP string (~30 bytes) generated and stored at upload** for ~0-byte Lite placeholders
+- **Video:** embed-first — paste a YouTube/TikTok/Vimeo/X/Instagram link and it plays in-app; no native video uploads in v1.0 (see section 24 options)
+- **Link embeds:** rich previews for whitelisted domains; warning interstitial for unknown domains
+
+## 16) Labs spec (rooms model)
+
+**Unified Spaces model (Club ⇄ Lab) — decided; supersedes the old "Labs only" framing (see Build Tracker Seq 2):**
+
+- Labs and Clubs are **one entity with a mode flag** (`spaceMode`), not two systems. A Space is created as a **Club** (casual — same room mechanics, low commitment) or a **Lab** (serious — venture-track, charter-backed).
+- **Merit ladder:** Club → Lab → Venture Candidate. A Club promotes to a Lab by completing the Lab charter (the quality gate); promotion layers the charter over the existing Space and never deletes its history, members, or activity. A Lab (Warshad) graduates into Maal when the required venture/work conditions are met.
+- **System timeout demotion (decided 12 Aug 2026; built in Maal F2):** Maal auto-demotes back to Warshad through the system timeout path. Demotion is system-driven only — never user-initiated — is publicly logged in the Governance Log, and preserves history in full: the venture's work history, ledger, contribution record, and prior decisions all survive; only the current stage/status changes. Below the Maal stage, a stalled Lab still receives dormancy *encouragement* prompts (see Dormant below) — direction there is encouragement, not punishment.
+  - **Trigger:** `labs.last_activity_at`, the same clock the dormancy sweep reads. Activity = a Space update, artifact, decision, Space-scoped post, logged contribution, or new task.
+  - **Thresholds:** 28 days idle → Dormant (encouragement only, unchanged). 70 days idle → **advance notice**: every active member is notified that the venture will return to Warshad, and `demotion_warned_at` is stamped. 84 days idle **and** at least 7 days after that notice → demotion. A venture that was never warned is never demoted. Any activity clears the warning and restarts the clock — one update genuinely revives it.
+  - **Actor:** the `service_role` daily sweep only (`/api/cron/labs`). No member, lead, mod, or admin path exists; client writes to `labs.space_mode` stay revoked.
+  - **Public record:** a published `governance_log_entries` row (category `stage_demotion`, readable by any member) plus a `lab_events` row `demoted_timeout` carrying `{from, to, timeout_days, last_activity_at, actor: 'system'}`.
+  - **Remedy = re-promotion, and there is deliberately no appeal (ruled 12 Aug 2026).** A timeout demotion is a **system lifecycle/governance action, not a `mod_action`** — there is no decision to contest, because nothing was judged and nothing was taken away. The charter, goal, workstreams, ledger, work history and decisions all survive intact; the venture returns to Maal by meeting the conditions again, through the normal Warshad → Maal promotion. That is the whole remedy, and it is a better one than adjudication: the way back is work, not a form.
+  - Consequently **no appeal type will be built for this path**, and no copy anywhere may offer an appeal form for it. §19's `appeals` stays scoped to `mod_actions`. Member-facing strings say the stage can be earned back — never "rafcaan" / "appeal".
+  - **Member-voted demotion remains deferred** until vote machinery exists.
+- **Mode toggle + dynamic naming:** the top-nav label and Space chrome swap with the mode — **Lab (Warshad) ⇄ Club (Koox)** (SO label for Lab = **Warshad**; naming review resolved 27 Jun). Switching mode is a Space setting, not a rebuild.
+- **Space settings UI (owner-editable):** mode/label, privacy (Private / Members only / Public), member view, and message history. *(Disappearing messages are deferred to v1.3/v1.4 — not v1.0.)*
+- **Space History / activity log:** every Space keeps an auditable timeline — promotions, system-timeout demotions (also publicly logged in the Governance Log), joins/exits, badge & reputation changes, charter completion, and dormancy events.
+- Both modes share the same join modes, roles, updates, decision log, artifacts (links only), visibility toggle, playbooks, inter-Lab collaboration, and skills-gap alerts described below.
+- Labs function like other spaces (rooms), purpose-built for **collaborating, sharing, and tracking progress**
+- Join modes (lead picks per Lab): open join / request to join / invite-only
+- Lab roles: Lead, Core, Member, Observer; contributor specialisations per the membership model: Operator, Researcher, Advisor
+- Weekly updates, decision log, milestones; **artifacts are shared links only in v1.0** (no file uploads)
+- **Dormant badge:** no update in 4 weeks → Lab marked Dormant + revival nudges to members; instantly revivable
+- Labs (and Ventures) appear in the Directory with a summary card: one-liner, stage, member count, last update, "looking for"
+- **IP/ownership banner:** until the member vote resolves ownership rules, Labs show a recurring reminder; leads see it again when publishing artifacts
+- **Public build-in-public pages:** each Lab has a visibility toggle (Private / Members only / Public); Public Labs are SEO-indexed and readable without an account — free growth and acquisition loop
+- **Lab playbooks:** pre-built charter templates per venture type (e-commerce, import/export, services, SaaS, agri-food); AI-generated starters that the lead edits; turns "structured execution" from a promise into a tool
+- **Inter-Lab collaboration:** two Labs can formally link — shared updates cross-posted to both, co-membership visibility, ability to co-own a Candidate; turns isolated Labs into a network
+- **Skills gap alerts:** if a Lab has been "looking for" a skill for 7+ days with no match, the app proactively notifies members whose profile matches that skill
+
+## 17) Capital spec
+
+- **Region gating:** the **Maalgeli** (Invest) action + investment language are available only to Somalia-region users (geo-IP + profile country + self-attestation checkbox — all three required at launch); everyone else sees an informational view with no offer/solicitation language. **Garab** (EN: Co-sign) is non-financial and available to **everyone, all regions** — it is never gated
+- Standing disclaimer: nothing on the platform is an offer of securities; v1.0 is intent capture + manual ops
+- Candidate workflow: Draft → Submitted → In Review → Approved / Parked / Declined (reasons visible)
+- Reviewer recusal: Lab members cannot review their own Candidate
+- Per-Candidate visibility setting: all members / reviewers only
+- Rubric anchors: written 1–5 definitions for Team, Traction, Feasibility
+- Interest types: "I can help" and **Garab** (EN: **Co-sign**) — both available to everyone, all regions; **Maalgeli** (Invest) is a separate, Somalia-region-gated action
+- **Venture timeline / build log:** each Candidate has a public-facing timeline (with Lab's permission): Lab created → first update → Candidate submitted → reviewed → funded; proof-of-work that builds credibility with external press and future backers
+- **Fund-first funnel:** direct investment into individual ventures is allowed (Investor Path), but every investment CTA routes users to the **Xidig Venture Fund** first — diversified, community-vetted, simpler ops
+- **Supporter governance:** Supporter members vote on Venture Candidates (signal vote shown alongside reviewer rubric scores)
+- **Investor Path** (per membership model): requires Supporter membership + enhanced verification (KYC/AML where feasible; video-call verification as the baseline)
+
+## 18) Directory & Map spec
+
+- **Manual pin-drop is the primary location input** (address text + landmark field optional) — geocoding APIs fail on Somali addressing
+- Fuzzy search engine (Typesense/Meilisearch) tolerant of transliteration variants (Maxamed/Mohamed/Mohammed)
+- Duplicate detection + "Claim this listing" flow for owners
+- Categories + tags: admin-curated starter set, member-suggested additions
+- **Listing photos (1–5):** alt text required; first photo = card thumbnail + OG share image; photos compete with Google Maps/Facebook listings and directly feed the §4 "listing views → contact clicks" metric
+- **Listing extras:** opening hours (+ "Open now" filter), price range indicator ($–$$$$), simple services/menu rows (name + price label — display only, no commerce per §3), **WhatsApp contact as a first-class CTA button** (diaspora default channel)
+- Low-bandwidth: list view is the default surface; map tiles defer behind a MediaSlot "(Show map)" tap target (§22) instead of being removed
+- **Somali business intelligence layer:** surface aggregate insights from Directory data — "37 fintech builders in Mogadishu", "most active sector this month: import/export"; monthly intelligence report emailed to Supporters; a press-worthy data layer no one else produces for this market
+- **Export readiness score:** for import/export business listings, an optional checklist score (documentation, certifications, capacity, contacts); unique data layer for the market
+- **Location-based discovery:** members set where they live / are based on their profile (free-text city/region via locationCity/locationCountry — see §10, editable anytime); Directory, Map, and matching use **proximity / distance** (and optionally timezone), not a fixed grouping; there is no separate chapter or city-grouping taxonomy
+- **Future-ready (§25.5):** Directory, map, and matching remain Somali-first at launch, but location and taxonomy stay modeled so future communities/markets can be added without a rewrite — normalized taxonomy tokens (lanes/skills/categories as lookup rows), free-text geography kept separate from any derived/compliance fields, no Somali-only assumption baked into query logic
+
+## 19) Moderation, safety & account policy (standard app policy)
+
+- **Content policy:** separate document (to be written — app links to it; reminder active)
+- Impersonation prohibited; handle-squatting reclaimable by verified owners; notable figures protected
+- Reports: queue with SLA, visible outcomes, one appeal routed to a second mod/admin
+- **Immutable audit log** of every mod/admin action
+- Anti-spam: new-account rate limits (posts/day, links, DM requests), listing caps, edge rate limiting
+- Account lifecycle: deactivate / delete (30-day grace) / data export (UK GDPR); deleted users' content anonymised, not silently removed
+- **Transparent governance log:** every platform-level decision (rule change, policy update, feature vote result) is published to a public Governance Log visible to all members; operationalises the "member-owned" claim — no other platform in this space does this
+
+## 20) Onboarding & guidance
+
+- First-session checklist: complete profile → pick lanes → follow 3 → first post; the "follow 3" step is powered by interest-based suggestions (shared lanes/skills/location, verified boost); a **profile completion meter** (avatar upload counts as a step) pairs with the §4 activation metric
+- **Set-a-password reminder:** if a member signed up via magic link or phone OTP (no password), the onboarding checklist + a Settings banner nudge them to set a password as a delivery-independent backup sign-in — dismissible, and it stops showing once a password is set
+- Tips everywhere: contextual tooltips, teaching empty states, progress nudges — the app always suggests the next helpful step
+- Invite system: codes + tracked referrals
+- Early-usage recurring reminders for supporters: IP/ownership vote pending; content policy
+- **Founding Member moment:** first 500 members get a permanent Founding Member badge; waitlist page shows a live counter of spots remaining; special onboarding screen on entry; Founding Member directory section; creates urgency, pride, and press hooks
+- **"Looking for" matching:** on profile completion, the app surfaces Labs actively seeking someone with your skills; when posting an Ask, it suggests relevant people or Labs; active matching vs passive discovery
+- **Mentor-in-residence:** rotating verified Advisor (from the community) who commits to answering 5 Asks/week in their domain; badged prominently, featured in the digest; recognition for experts, access for builders — costs nothing to operate
+- **Reaction taxonomy:** instead of a generic like, culturally resonant reactions: 🔥 Fire · 💪 Strong · 🤲 Mashallah · 💡 Idea · 👀 Watching; small detail, huge community feel
+- **Lab sprints with public countdowns:** visible sprint timer on Lab cards ("8 days left in Sprint 2"); creates urgency and spectator interest from the broader community
+- **Skill tree on profiles:** visual web of skills + endorsements, not a flat list; shows depth at a glance and is far more shareable than a standard skills section
+- **Pinned content on profiles:** members choose up to 3 items — Labs, posts, or Wins — to feature prominently on their profile; surfaces Labs and best work passively across the whole app everywhere profiles appear
+- **Community Awards (quarterly):** member-voted — Best Lab, Best Win, Most Helpful, Rising Builder; results posted to Plaza as a featured post; costs nothing to operate, drives strong engagement and gives members a reason to return
+
+## 21) AI & API layer (cold start + automation)
+
+- **Seeding:** generate + populate Plaza posts, tags, starter listings, and Lab templates before launch; labeled appropriately
+- **AI participation:** clearly badged AI assistant accounts can answer Asks, summarise Lab updates, and compile the weekly digest
+- **API scope:** REST API + webhooks + **MCP server** so external agents/tools can read and write (posts, listings, Lab updates) using scoped, rate-limited, audited API keys
+- Weekly digest (email + pinned post): top Wins, open Asks, new Labs, new listings
+
+## 22) Platform requirements
+
+- **Bilingual:** Somali + English UI from day one (i18n architecture), per-user toggle. EN/SO are the only launch languages, but the i18n system must support additional locales later (§25.5): compiler-enforced `Record<Locale, …>` registration, `name_<locale>` label columns on lookup tables, no logic keyed on display strings — see docs/i18n.md "Adding a locale"
+- **Mobile:** responsive PWA, installable, push notifications (Android full; iOS 16.4+ limited), lightweight
+- **API-first architecture:** clean separation between frontend and backend from day one so a React Native app can consume the same API in v1.2 without a rewrite
+- **Low-bandwidth mode ("Lite" / Xawli yar) — defer, never disable:** Lite mode is a **delivery constraint, not a scope constraint** — no feature is ever cut or hidden for bandwidth. Every image/embed/map renders through one reusable **MediaSlot** component: normal mode renders the asset (WebP + lazy-loading everywhere); Lite mode renders a ~0-byte placeholder (blurhash/LQIP stored at upload, or initials avatar) with the alt-text label, estimated size, and a **(Show / Muuji)** tap target that fetches that one asset on demand. Revealed assets stay visible for the session; pages with several hidden assets offer "show all on this page". **Granular controls, not one kill-switch:** images / embeds / map tiles / animations individually toggleable plus bundles (Text only / Essentials / Everything) and a "small avatars always on" option (<8 KB thumbs keep the app feeling human at near-zero cost). A data-saved counter ("Lite mode saved you ~4.2 MB this week") makes the mode feel like a gift. **Auto pop-up offering the mode when 3G/2G is detected or the user is in a low-bandwidth region.** Future phases must build to this pattern — new media features route through MediaSlot instead of being descoped.
+- **Settings surface (standard-app expectation, grouped):** Account (email/phone/sign-in methods, password, sign out everywhere, deactivate/delete per §19) · Privacy & safety (who can DM me: everyone/verified/no one; directory + search-engine discoverability; location granularity: exact/city/region/hidden; blocked + muted lists; report-reasons info) · Notifications (per-type × per-channel matrix with the §26 defaults; quiet hours; digest frequency) · Appearance (dark mode, text size S–XL, reduced motion) · Language & region (EN/SO) · Data & storage (granular Lite controls, data-saved counter, one-click data export per §19)
+- Compatibility: embed/link-first philosophy; works on low-end Android browsers; accessibility AA basics
+- **Smart notification bundling:** group related notifications instead of individual pings ("3 people reacted to your post · 2 new Lab updates · 1 Ask answered"); less noise, more signal
+- **Embed widget:** a JS snippet / iframe any Somali business or diaspora org can drop on their website to show their Xidig profile card or Lab card; drives backlinks and passive brand spread
+
+## 23) Analytics spec (event taxonomy)
+
+- Activation: signup_completed, profile_completed, lane_selected, verification_started, verification_completed
+- Plaza: post_created (by type), comment_created, ask_resolved, report_submitted, report_resolved
+- Social: follow_created, dm_request_sent, dm_sent, mention_sent
+- Directory/Map: listing_created, listing_claimed, map_view, listing_view, contact_click
+- Labs: lab_created, lab_joined, lab_update_published, lab_marked_dormant, lab_revived
+- Capital: candidate_submitted, candidate_reviewed, interest_expressed (by type), venture_timeline_viewed
+- Community: lab_collaboration_created, skills_gap_alert_sent, skills_gap_alert_clicked, mentor_ask_answered, reaction_added (by type), governance_log_viewed
+- Platform: badge_awarded, low_bandwidth_enabled, language_switched, invite_sent, invite_accepted
+- Tooling: PostHog (EU cloud or self-hosted); dashboards map 1:1 to section 4 metrics; no PII in event payloads
+
+## 24) Infrastructure & media stack (recommended)
+
+- Core: Supabase (Postgres + RLS as the permission model, auth, storage) + Vercel
+- Search: Typesense or Meilisearch · Maps: MapLibre + Protomaps/MapTiler · Background jobs: Inngest or [Trigger.dev](http://Trigger.dev) · Email: Resend or Postmark · Rate limiting: Upstash · Errors: Sentry · AI moderation pre-filter on posts and images
+- Images: Supabase Storage + transcode pipeline (MB cap enforced client + server side); one pipeline for all image kinds (post / avatar / cover / listing photo / Space icon+cover) — WebP main + thumbnail variant + blurhash at upload, EXIF stripped, AI pre-scan
+- **Video — decided: Option A for v1.0 (B/C are later upgrade paths):**
+    - **A — Embed-only (free, recommended for v1.0):** users paste YouTube/TikTok/etc links; plays in-app
+    - **B — A + short native clips:** one-click upload of clips up to 60s via Cloudinary free tier (quota-limited)
+    - **C — A + full uploads:** Cloudflare Stream (≈5 USD per 1,000 minutes stored; cheapest reliable in-app video upload)
+- Ops: dev/staging/prod environments, nightly backups + point-in-time recovery, incident-response basics
+
+## 25) v1.1+ roadmap (paid membership tier)
+
+- **Paid membership = Supporter tier** (renamed from "Supporter+"; about 1 USD/month per [xidig.net/membership](http://xidig.net/membership)) — offsets infrastructure costs; pricing reviewed with members (member-owned ethos)
+- **Native video uploads** via Cloudflare Stream (Option C) — Supporter members
+- **Group face chats:** video rooms attached to Labs (LiveKit or Daily) — Supporter members can host; any member can join
+- **Live service:** scheduled live sessions/AMAs with RSVP; recordings auto-posted to Plaza
+- **"This week in Xidig" shareable card:** auto-generated designed image card (top Win, hottest Ask, newest Lab, biggest listing); members share to WhatsApp/Twitter/X; brand spreads virally through community networks
+- 🌙 **Ramadan mode:** Plaza gains Dua/Reflection post types for the month; Lab sprint clocks pause; special seasonal badge; minimal effort, major community resonance
+- 📊 **"State of Somali Business" annual report:** auto-generated from Directory + Capital data; published as a public PDF each year; press-ready, repeatable, unique
+- Payments: Stripe where supported + manual/local rails (e.g. EVC Plus) via manual ops initially
+- **v1.1 candidates carried from the Phase 4.5 review (§12, 6 Jul):** voice intro on profiles (30s opus, ~100 KB — culturally resonant with WhatsApp voice-note habits; Lite shows a Play button) · offline read cache (PWA service-worker cache of last feed/DMs) · verified listing photo badge (photo captured during business verification) · DM read receipts/typing (needs Realtime presence) · listing announcements/mini-updates · block-style profile/Space layout **editor** (drag-drop; `page_blocks` schema + renderer contract already in place) · listing reviews/ratings only with verified-customer-only + mod-queue safeguards (see §12 risk note)
+- **v1.2 — React Native (Expo):** cross-platform native app (iOS + Android) consuming the existing API; App Store + Play Store listing; full push notifications on both platforms; share most logic with the web codebase via Expo
+- No Swift/Kotlin native planned — React Native via Expo covers all requirements without two separate codebases
+- Principle: free keeps the community core (Plaza, chat, social, browsing); Supporter unlocks governance, Lab creation, Builder/Investor paths, and heavy-bandwidth features
+
+## 25.5) Future-ready architecture (Somali-first surface, extensible infrastructure)
+
+> **The sync rule: surface positioning stays Somali-first. Architecture stays extensible. No global launch features unless separately approved.**
+
+- **Keep hardcoded at the surface** — copy, brand, and seeded data are correctly Somali-first: Somali builders, Somali businesses, diaspora, the Somalia-region Capital gate, EN/SO as the launch languages, Somali-economy seed tags/lanes/categories.
+- **Avoid hardcoding in architecture** — database schema, RLS, API logic, search/matching, i18n plumbing, and URL structure must not assume *forever*: only one community, only Somali users, only EN/SO locales, only one tag vocabulary, only Somalia/diaspora geography, only one verification type, only one partner type.
+- **The working rules** (already the house style — hold every new build to them):
+  - Lookup/config tables for lists likely to grow (tiers, lanes, skills, categories, badges); enums only for closed state machines. DB enum *values* stay English; the display layer maps them to vocabulary.
+  - Search and matching join on normalized IDs/slugs/canonical tokens, never display labels ("match both labels to the same normalized token, never 'finance' text to 'maal' text").
+  - Access control via roles/capabilities/lookup joins (`tier_capabilities` + `has_capability()`), never a literal business value (tier slug, country name, locale) in a policy or route branch.
+  - Display text and compliance/logic inputs are separate fields (e.g. free-text `location_country` for display vs the derived `location_country_code` the Capital gate reads).
+  - EN/SO are the only launch languages, but a third locale must be additive: register-in-a-`Record<Locale, …>` plumbing, `name_<locale>` label columns, no logic keyed on display strings.
+- **Classification for audits** — every hardcoding finding is one of: (1) correct surface copy, leave as-is; (2) acceptable v1.0 constant, leave + document; (3) risky architecture hardcoding, fix minimally; (4) scope creep, reject for v1.0.
+- **Explicitly NOT to build now** (scope creep, re-affirmed by the Sep 2026 audit): a communities/markets table or `community_id` columns, locale-prefixed URLs/hreflang, translation-table engines, a country gazetteer/geocoder, a config-driven verification-type registry, partner/program abstractions, any UI for hypothetical non-Somali audiences. These wait until a real flow exists, not a hypothetical one.
+- **No worldwide repositioning:** future-ready seams are an architecture posture only — the product is not repositioned as generic or worldwide, in copy, SEO, or strategy. Somali-first is the launch and near-term identity, not a temporary skin.
+
+## 26) Build inputs & constants (for one-shot builds)
+
+- **Design:** follow the [Xidig Brand Guide](https://app.notion.com/p/Xidig-Brand-Guide-4b6bc4ea07404a96aa81aad60d30e9b8?pvs=21) for colors, typography, and tone
+- **Auth method:** **three co-equal methods — email + password, email magic link, or phone SMS-OTP** (any one sufficient; one canonical account per person with at least one verified email or phone; additional methods link to it). Password hashes are managed by Supabase `auth.users` (no app-schema column); enforce a minimum password policy (length + breach check where feasible) and a "forgot password" email reset. WhatsApp OTP deferred to v1.1 behind a provider abstraction (build the OTP send channel-agnostic).
+- **Membership & lanes (per [xidig.net/membership](http://xidig.net/membership)):** Free Member (Plaza access, chat, social features, read-only select Labs, view some venture profiles) → **Supporter** (renamed from "Supporter+", about 1 USD/month: Candidate votes, governance rights, create/join more Labs, monthly intelligence updates, unlocks paths) → **Builder Path** (join Labs as Contributor, build Candidates, earn equity) / **Investor Path** (deploy capital, priority deal flow; enhanced verification). Lab contributor roles: Operator · Researcher · Advisor
+- **"Somalia region" definition (Capital gating):** profile country is Somalia AND geo-IP agrees AND the member has ticked the self-attestation checkbox ("I confirm I am based in Somalia"); any mismatch or missing attestation → informational view
+- **RBAC summary:** member (create/edit own content, report, vouch if verified) · mod (reports queue, remove content, suspend users, verify members) · admin (all mod powers + role management, listing moderation, badge management, settings, audit log access)
+- **Constants:** images 5MB · Ask nudge after 7 days · Lab dormant after 28 days · new accounts: 5 posts/day, 10 comments/day, 5 DM requests/day, 2 listings/week · vouches required: 3 · account delete grace: 30 days
+- **Notification matrix:** in-app = everything · email = DM requests, candidate status changes, weekly digest · push (PWA) = DMs, mentions, replies
+- **Seed tags (approved):** fintech, logistics, import/export, agri-food, e-commerce, real-estate, construction, education, health, media, fashion, travel, energy, halal-finance, diaspora
+- **Listing categories (approved):** Restaurant & Food, Retail, Professional Services, Tech & Digital, Import/Export, Transport & Logistics, Beauty & Fashion, Construction, Agriculture, Education, Health, Media & Creative, Finance, Real Estate, Travel
+- **Required accounts/env vars before build:** Supabase, Resend or Postmark, MapTiler, Typesense/Meilisearch, PostHog, Upstash, Sentry, AI provider key (moderation pre-scan + AI accounts)
+- **Plain language errors:** every error state must use human language, not technical codes; errors should explain what happened, why, and what to do next; see section 27
+- **Human inputs a builder cannot generate:** Somali translation strings (ship English + i18n keys first), final brand assets, content policy document, verifier call scheduling (use an external booking link in v1), legal review of the Capital disclaimer, seed-content review before launch
+- **Future-ready build rule (§25.5):** do not add global launch features, but flag unnecessary hardcoding of community, language, region, tags, or verification types — when a schema/API/RLS/tag/i18n/location choice would needlessly block future communities, languages, or markets, choose the extensible version if it adds no user-facing scope
+
+## 27) Plain language error messages
+
+Every error must answer three questions: **what happened · why · what to do next.** No raw HTTP codes shown to users. Errors are also conversion moments — where relevant, link directly to the resolution.
+
+**Auth & access**
+
+- Gate: free → Supporter action → *"You need a Supporter membership to do this. Upgrade for $1/month →"*
+- Gate: Supporter → Builder/Investor path → *"This is available on the Builder Path. Apply to a Lab to get started →"*
+- Gate: non-Somalia region → Capital investment language → *"Investment features are available to Somalia-region members. You're seeing the informational view."*
+- Session expired → *"You've been signed out. Sign back in to continue →"*
+- Magic link expired → *"That sign-in link has expired — they're only valid for 10 minutes. Request a new one →"*
+- OTP code expired or incorrect → *"That code didn't work — codes expire after 10 minutes. Request a new one, or use the magic link instead →"*
+- Wrong email or password → *"That email or password doesn't match. Try again, reset your password, or sign in with a magic link instead →"*
+- Password reset sent → *"Check your email for a link to reset your password — it's valid for 60 minutes."*
+- Account suspended → *"Your account has been suspended. If you think this is a mistake, appeal here →"*
+
+**Profile & verification**
+
+- Verification queue full → *"We're fully booked for verification calls this week. You've been added to next week's queue — we'll email you when your slot opens."*
+- Handle already taken → *"That handle is taken. Try @[suggestion] or choose your own."*
+- Incomplete profile blocking action → *"Finish setting up your profile first — it only takes 2 minutes →"*
+
+**Plaza**
+
+- Post rate limit hit → *"You've posted a lot today — free members can post 5 times per day. Come back tomorrow or upgrade for higher limits →"*
+- Image too large → *"That image is over 5MB. Compress it or choose a smaller one — we accept JPG, PNG, GIF, and WebP."*
+- Link not embeddable → *"We can't preview that link. It'll still post as a plain URL — or paste a YouTube/TikTok/Vimeo link for an in-app player."*
+- Ask already answered → *"This Ask has been marked as answered. You can still comment if you have something to add."*
+
+**Labs**
+
+- Not a Supporter → *"Creating a Lab requires a Supporter membership. Upgrade for $1/month →"*
+- Lab join request pending → *"Your request to join has been sent. The Lab lead will review it — you'll get a notification when they respond."*
+- Charter incomplete → *"Your Lab charter needs a few more fields before it can go live. Complete them here →"*
+- Lab dormant → *"This Lab has been quiet for 4 weeks and is marked Dormant. Are you still working on this? Revive it with a quick update →"*
+- Inter-Lab collaboration invite declined → *"[Lab name] declined the collaboration request. You can reach out to their lead directly to discuss →"*
+
+**Capital**
+
+- Reviewer conflict → *"You're a member of this Lab, so you can't review its Candidate. That's to keep reviews fair."*
+- Candidate not visible → *"This Candidate is set to reviewers-only. Ask the Lab lead for access."*
+- Investment intent (non-Somalia) → *"Direct investment is available to Somalia-region members. You can still explore the Xidig Venture Fund →"*
+
+**Directory & Map**
+
+- Duplicate listing detected → *"A listing for [name] already exists. Is this your business? Claim it here →"*
+- Pin not placed → *"Drop a pin on the map to set your location — we use the pin as the primary address for Somalia locations."*
+- Export readiness score incomplete → *"Complete your export checklist to get your score. Listings with scores get 3× more contact clicks."*
+
+**DMs**
+
+- DM request blocked → *"You can't message this member — they've restricted their messages."*
+- DM request pending → *"Your message request has been sent. They'll see it when they next open Xidig."*
+
+**Moderation**
+
+- Content removed → *"This post was removed for violating our content policy. Read our guidelines →"*
+- Report submitted → *"Thanks for the report. We review all reports within 48 hours and will update you on the outcome."*
+- Appeal submitted → *"Your appeal has been sent to a senior moderator. We'll respond within 72 hours."*
+
+**Lite mode (Xawli yar) placeholders**
+
+- Show button → EN *"Show"* · SO *"Muuji"*
+- Placeholder label → EN *"[alt text] · ~[size]"* (e.g. *"Storefront photo · ~120 KB"*) · SO *"[alt] · ~[size]"*
+- Show all → EN *"Show all on this page"* · SO *"Muuji dhammaan boggan"*
+- Mode explainer → EN *"Lite mode is on — images, embeds, and maps load only when you tap Show."* · SO *"Xawli yar wuu shidan yahay — sawirrada, muuqaallada iyo khariidaddu waxay soo shubmaan kaliya marka aad taabato Muuji."*
+- Data saved → EN *"Lite mode saved you ~[size] this week."* · SO *"Xawli yar wuxuu kuu badbaadiyay ~[size] usbuucan."*
+- Show map → EN *"Show map (~[size])"* · SO *"Muuji khariidadda (~[size])"*
+
+**Platform / technical**
+
+- Offline / no connection → *"You're offline. Xidig needs a connection to load — check your signal and try again."*
+- Low-bandwidth auto-detected → *"Looks like you're on a slow connection. Switch to lightweight mode for a faster experience →"*
+- Generic server error → *"Something went wrong on our end. We've been notified automatically — try again in a moment."*
+- Not found (404) → *"We can't find that page. It may have been deleted or moved. Go to Home →"*
+- Forbidden (403) → *"You don't have access to this. If you think that's wrong, contact support."*
+
+## 28) Overlooked wins to leverage (v1.0)
+
+High-leverage, low-cost moves identified during reassessment. Each maps to the section it strengthens.
+
+- **WhatsApp-first sharing (strengthens §15, §20, §22):** auto-generate OG link-preview images for every Lab, Candidate, profile, and listing; add prominent 'Share to WhatsApp' actions everywhere. The diaspora lives on WhatsApp — this is the primary organic growth loop. Pulls a lightweight version of the v1.1 'This week in Xidig' card forward.
+- **Public, login-free pages as the acquisition engine (strengthens §16, §18, §20):** make profiles and business listings shareable and indexable without login (like Public Labs). Every shared link becomes a top-of-funnel entry point.
+- **Directory data as a launch PR asset (strengthens §18, §4):** ship a lightweight 'State of Somali Business' stat at launch ('37 fintech builders in Mogadishu') rather than waiting for the v1.1 intelligence report — press-worthy and unique to this market.
+- **Position explicitly against WhatsApp groups (strengthens §3, §5):** structured, searchable, persistent execution is the core differentiator over chaotic WhatsApp group threads — make this framing explicit in onboarding and marketing.
+- **Email digest as a primary surface (strengthens §21, §22):** for low-bandwidth users who rarely open the PWA, the weekly digest can BE the product — treat it as a first-class retention channel, not an afterthought.
+- **'Xidig Verified' as a portable trust brand (strengthens §14):** position verification tiers as a credential members can display off-platform — a moat, not just a badge.
+
+[Xidig v1.0 — UI Spec & Canonical Screens](https://app.notion.com/p/Xidig-v1-0-UI-Spec-Canonical-Screens-885fa5570d19450e8d46306a39aa14a4?pvs=21)
+
+---
+
+## Archive crosswalk — what happened to each v1.0 section
+
+Added 12 Sep 2026, when this repo copy moved to `docs/archive/` at the owner's request and the PRD Relook ([`/prd.md`](../../prd.md)) became the canonical product direction. Each row says where a v1.0 rule stands now. "CF-nn" points to the Relook's Appendix A, which holds the carried learnings in their filtered form. "§n" and "D-nn" without "v1.0" refer to the Relook.
+
+| Disposition | Meaning |
+| --- | --- |
+| **Carried** | The learning is kept, filtered for the new direction, as a CF item. |
+| **Covered** | The Relook already says it, often more strictly. |
+| **Superseded** | The Relook replaces it. Do not reinstate it. |
+| **Retired** | Withdrawn for capital-containment, truthfulness or legal reasons. Do not reinstate it. |
+| **Existing** | A shipped capability outside the Relook's core. Under Relook §5 it is audited, then preserved, simplified, isolated or retired. It is neither deleted for being absent nor a target for being present. |
+| **Historical** | A build-method or process record only. |
+
+### v1.0 §1–§10: summary, goals, principles, entities, journeys, IA, feature list, data fields
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| §1 One-liner ("member-owned platform where Somali builders … build ventures, and fund them") | Superseded | §1 ("connect, share, and build together"). Say "member-owned" only when the rights exist (§14). Funding is gated (D-08) |
+| §2 Goals | Superseded | §5. The venture pipeline is no longer a goal; readiness is contextual (D-05) |
+| §3 Non-goals | Covered, one superseded | §5 "Not required". "Lab file uploads" is superseded: bounded attachments are core (D-04) |
+| §4 Success metrics (WAU, weekly Wins/Asks, Labs created, contact clicks) | Superseded | §21 and D-12 separate the scorecards. Volume is not value, and contact clicks are not job or revenue claims → CF-62 |
+| §5 Principles | Superseded | §3. "Helpful everywhere" → CF-01. "Execution beats vibes" and "Pipeline clarity" are retired: belonging is an outcome |
+| §6 Core entities, §10 Data fields | Historical | §20 logical domain model. The migrations are the schema of record. The split between display fields and logic fields → CF-55 |
+| §7 Journeys (profile + lanes + first post; Lab → Candidate graduation) | Superseded | §4, §7 lightweight entry and the D-01 journey audit. There is no graduation (D-05) |
+| §8 IA (Home, Plaza, Labs, Capital, Directory, Map, Messages…) | Superseded | §6 and D-01: Home · Spaces · Discover · Messages |
+| §9 Feature list | Mixed | See the rows below. Required profile fields are superseded (§7). Settings → CF-10. Social hygiene → CF-12 |
+
+### v1.0 §11: prompt pack and Phases 0–8
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| One phase per session; fixed header and footer; "schema first — changing a column in Phase 4 breaks Phase 1" | Historical | D-16 replaces this with reviewed vertical slices and no whole-future schema freeze. Kept: RLS negative tests for every table → CF-57; honest migrations → CF-58 |
+| Phase acceptance criteria | Historical | Many describe retired behaviour: Supporter gates, the region-gated Maalgeli CTA, the Dormant badge and the region-triggered Lite prompt. Audit against the Relook, not these |
+| Realtime note (Phase 3) | Carried | CF-23 |
+| Seeding instruction (Phase 8) | Carried | CF-53 |
+
+### v1.0 §12: decisions log
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| DMs in scope | Covered | §10. Small group chat is now core as well (D-03) |
+| Verification by a recorded video call (face + ID) with 24-month retention; Biometric DPIA reminder | Superseded | D-06: no routine recorded calls, approvals before any sensitive collection, and a 30-day raw-evidence cap as a PARAMETER. The KYC coverage gap → CF-32 |
+| Capital investment language gated to Somalia; 2 Jul launch gating (geo-IP + profile country + attestation) | Retired | D-08 and §15: no invest CTA switched on by geography. Geo-IP, profile country and attestation do not prove compliance |
+| Cold start through AI-seeded content and AI participation | Superseded | §19 and D-15: the platform does not simulate a population. Seed labelling → CF-53 |
+| Labs share links only; Dormant after 4 weeks | Superseded | D-04 bounded attachments. D-05 private 28-day check-in → CF-17 |
+| IP and ownership to be decided later by member vote, with a recurring reminder | Superseded | D-08: members accept project terms before contributing. A vote does not replace consent |
+| Media: embed-first, 5 MB images | Carried | CF-13, CF-14 |
+| Lab creation for Supporters, with the charter as the quality gate | Superseded | D-02 free meaningful collaboration. D-05 minimal brief; templates are configurations |
+| Candidate reviews: role-based reviewers with recusal, plus open comments | Carried (gate input) | CF-19 |
+| Invite-only beta with a waitlist | Carried | CF-09 |
+| Video Option A (embeds only) | Covered | D-04 and D-15 defer native video. The cost notes → CF-14 |
+| Plaza feed: chronological + filters + pinned highlights | Covered | §8 and D-01: Following is reverse-chronological; Community has transparent filters and labelled editorial highlights |
+| v1.1 video uploads and rooms for a paid tier | Superseded | D-15 defers native video and live. Paid status never gates basic participation (D-02) |
+| Seed tags and listing categories approved | Carried | CF-29. The lists stay in §26 below; the database is the source of truth |
+| "Supporter+" renamed "Supporter" | Superseded | D-02 and D-10: Xidig Plus. "Supporter" is a superseded paid-tier label |
+| Fund-first funnel to the Xidig Venture Fund | Retired | D-08: no compulsory fund-first route |
+| Naming direction (owner, 12 Sep 2026): a decisions-log entry kept on `claude/naming-direction-12sep`, pending review, and not in this copy | Covered | D-10 sets the target labels; the naming branch applies them → CF-45 |
+| Governance note: a living document; its caution language is advisory | Split | The engineering half is carried (CF-58). "Wins override stale PRD text" does not carry: under the Relook, product changes need an explicit owner ruling (§2, §24.0) |
+| Phase 4.5: Lite v2 (defer, never disable) + media identity | Carried | CF-46, CF-47; §17 and D-11 |
+| Phase 4.5 exclusions: listing reviews, voice intros, offline cache, verified-photo badge, DM read receipts and typing, image polls, listing announcements | Mixed | The reviews exclusion is not carried; reviews are an open decision (Relook A.0, O-1; CF-04 withdrawn). Offline cache → CF-49. Read receipts → D-03 (off by default). Voice → CF-26. The rest stay unscheduled ideas, not targets |
+| "Co-sign" / Garab as the backing-button label | Superseded | D-10: Support / Taageer, which is non-financial |
+| Formerly schema-blocking decisions: lookup tables vs enums; unified Spaces; reputation formulas (30 pt/day caps, 90-day decay, the AI-account helper rule); Supporter governance vote (quorum 5 or 20%, 60% approval, 7 days); poll mechanics; "Looking for" matching; proximity location with no chapters; cosmetic streaks; full Somali scope with trust surfaces as the floor; design tokens and StateView; Capital nav inside Labs | Mixed | Lookups → CF-55. Unified Spaces → CF-16. Formulas → CF-34 (gate input, not target). The Supporter vote is superseded by D-07. Polls are not votes (§8, D-14). Matching is Existing → CF-02. Location → CF-27. Streaks → D-14. Somali scope → §16 acceptance, CF-45. Tokens → §16. Capital nav → D-01 |
+| Capital v1: no financial flows through the platform | Covered | D-08, more strictly: no intent capture either |
+| Payments: Paddle or Lemon Squeezy, EVC Plus and Zaad, no direct Stripe | Carried (gate input) | CF-42 |
+| Auth: three co-equal methods; WhatsApp OTP deferred | Carried | CF-06, CF-08; D-06 |
+| Suuq = Directory + Map, not commerce | Carried | CF-03 |
+| Reminders: content policy; IP vote; ToS, Privacy and consent; Biometric DPIA | Mixed | Content policy → §13 (still owed). IP vote → superseded (D-08). Legal texts → CF-41. DPIA → superseded by D-06's approval list |
+
+### v1.0 §13: social graph and connectivity
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Follow people, Labs, Ventures and tags; Following tab | Covered | §5, §8, D-01 |
+| 1:1 DMs, request-to-chat, block and report | Covered | §10 |
+| "No group DMs, as it's the same as creating a space" | Superseded | D-03: small group chat is core |
+| @mentions | Carried | CF-12 |
+| Everything linkable, with rich preview chips | Carried | CF-05. The chips were never built |
+| Contact options on profiles | Covered | §7, D-06 |
+
+### v1.0 §14: verification, badges and reputation
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Live, recorded video verification with liveness prompts and 24-month retention | Superseded | D-06 |
+| Standard KYC providers don't cover Somalia | Carried (gate input) | CF-32 |
+| Scaling through trained verifiers, with admin spot-checks | Carried | CF-33 |
+| Distinct tiers: Identity Verified, Community Verified (3 vouches), Verified Business, skill endorsements | Carried, renamed | CF-33 → the D-06 claim labels. Three vouches do not prove uniqueness (§12) |
+| Contribution and Helper scores; streaks; milestone badges (Founding Member, Lab Lead, Top Helper, Early Backer) | Mixed | Scores are Existing but not a first-release target (D-06) → CF-34. Founding Member is truthful history (D-14). Early Backer is retired. Streaks → D-14 |
+| Reputation is not a ledger unit (ruling 5, 6 Aug) | Carried | CF-35. Treating ledger units as economic claims does not carry |
+
+### v1.0 §15: Plaza
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Post types Intro / Ask / Win / Update / Poll | Superseded | D-14: the ordinary Post is the default; the others are optional |
+| Ask lifecycle (Codsi model, 9 Aug) | Carried | CF-11. Open → In progress → Fulfilled is the active flow; the Relook's "open/answered/closed" is generic wording, not a rename (Appendix A.0, F-2) |
+| Chronological feed with no engagement bait | Covered | §8 |
+| Image pipeline | Carried | CF-13 |
+| Video embeds; link allowlist and warning interstitial | Carried | CF-14. The interstitial route was never committed, because a bare `out/` ignore rule hid it; fixed and deployed on 12 Sep 2026 (O-4) |
+
+### v1.0 §16: Labs (rooms model)
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| One entity with a mode flag | Carried | CF-16 |
+| Merit ladder Club → Lab → Venture Candidate, with promotion by charter | Superseded | D-05: independent dimensions, no graduation |
+| System timeout demotion (70-day warning, 84-day demotion, no appeal) | Retired | D-05 and Owner Amendment 01: no automatic transitions triggered by inactivity |
+| Mode toggle with Lab (Warshad) ⇄ Club (Koox) naming | Superseded | D-05 Group and Project templates; D-10 labels. Routes and slugs are unchanged |
+| Space settings UI; disappearing messages deferred | Covered | D-05; D-03 (disappearing messages deferred) |
+| Space History log | Carried | CF-22 |
+| Join modes | Covered | §9, D-05 |
+| Roles Lead / Core / Member / Observer; Operator / Researcher / Advisor | Carried (gate input) | CF-18 |
+| Weekly updates | Superseded | §9: the team chooses its cadence; nothing forces it |
+| Artifacts as links only | Superseded | D-04 |
+| Dormant badge after 4 weeks | Superseded | D-05 private check-in → CF-17 |
+| Directory summary cards | Covered | Discover (D-01) |
+| IP and ownership banner pending a member vote | Superseded | D-08 |
+| Public build-in-public pages as the acquisition loop | Superseded default | D-05 makes private and unlisted the default → CF-52 |
+| Playbooks | Carried | CF-21 |
+| Inter-Lab collaboration | Carried, constrained | CF-20 |
+| Skills-gap alerts | Existing | CF-02 |
+
+### v1.0 §17: Capital
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Region gating, the Maalgeli CTA, investment language, the "Somalia region" definition | Retired | D-08 |
+| Standing securities disclaimer | Covered | §15: say only what is true ("does not currently offer investment") |
+| Candidate workflow Draft → Submitted → In Review → Approved / Parked / Declined | Existing | CF-02. Readiness is contextual (D-05) |
+| Reviewer recusal; per-Candidate visibility; rubric anchors | Carried (gate input) | CF-19 |
+| Interest types "I can help" and Garab / Co-sign | Superseded | D-08 public actions: follow, offer help, contact the team, Support / Taageer |
+| Venture timeline | Covered | §9 "preserve historical milestones" |
+| Fund-first funnel; Investor Path | Retired | D-08 |
+| Supporter governance vote on Candidates | Superseded | D-07. Xidig Plus never buys votes |
+
+### v1.0 §18: Directory and Map
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Manual pin-drop as the primary location input | Carried | CF-27 |
+| Fuzzy search engine (Typesense or Meilisearch) | Carried | CF-28. Postgres search is the current working baseline; Meilisearch is set up but unused, and a future candidate only (Appendix A.0, F-1) |
+| Duplicate detection and the "Claim this listing" flow | Covered | §11 |
+| Curated categories plus member suggestions | Carried | CF-29 |
+| Listing photos; hours, price range, services and the WhatsApp CTA | Carried | CF-30 |
+| List-first, with the map behind MediaSlot | Covered | §11, §17 |
+| Business intelligence layer; monthly report emailed to Supporters | Carried, constrained | CF-31. Any paid "intelligence updates" are a D-02 convenience question |
+| Export readiness score | Carried, constrained | CF-31 |
+| Proximity location, no chapters | Carried | CF-27 |
+| Future-ready taxonomy and location | Carried | CF-55 |
+
+### v1.0 §19: moderation, safety and account policy
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Content policy document | Covered | §13 (still owed) |
+| Impersonation, handle reclaim, protection for notable figures | Carried | CF-36 |
+| Report queue with an SLA, visible outcomes, one appeal to a second mod | Covered | §13. D-09 sets internal targets (24 h / 72 h), not promises |
+| Immutable audit log | Carried | CF-37 |
+| Anti-spam limits; edge rate limiting | Carried | CF-38 |
+| Deactivate, delete (30-day grace), export; content anonymised, not removed | Split | The mechanics are carried (CF-40). The outcome is superseded by D-09's deletion-retention ruling |
+| Transparent governance log | Carried | CF-43. The claim that it "operationalises member ownership" is retired |
+
+### v1.0 §20: onboarding and guidance
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Checklist: profile → lanes → follow 3 → first post; profile-completion meter | Superseded | D-01 and §7: no compulsory follows or intro post; setup is optional and contextual |
+| Set-a-password reminder | Carried, conditional | CF-07 |
+| Tips and teaching empty states | Carried | CF-01 |
+| Invite codes and tracked referrals | Carried | CF-09 |
+| Supporter reminders about the IP vote | Retired | D-08 |
+| Founding Member moment: first 500, live counter, urgency | Split | The badge is truthful history (D-14). The counter and the urgency are retired → CF-09 |
+| "Looking for" matching | Existing | CF-02 |
+| Mentor-in-residence (5 Asks a week) | Existing | CF-02. Helpers carry no pressure to stay available (§4) |
+| Reaction taxonomy | Carried | CF-15 |
+| Lab sprints with public countdowns | Superseded | §9: no charter, countdown or venture pressure |
+| Skill tree as a visual web | Superseded | §16 prefers lists and chips to graphs; §5 excludes complex graph visualisations |
+| Pinned profile content | Existing | Compatible |
+| Community Awards, member-voted | Superseded | D-14: transparent manual criteria, no election infrastructure |
+
+### v1.0 §21: AI and API layer
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Seeding and labelling | Carried | CF-53 |
+| Badged AI accounts that answer Asks, summarise and compile the digest | Constrained | §19: AI is identified, and publishing needs human control → CF-25, CF-53 |
+| REST API, webhooks and a read/write MCP server for external agents | Superseded | D-15 → CF-54 |
+| Weekly digest | Carried | CF-25 |
+
+### v1.0 §22: platform requirements
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Bilingual from day one, with extensible locales | Carried | CF-45 |
+| PWA and its push limits | Carried | CF-50 |
+| API-first so a React Native app can reuse it in v1.2 | Superseded (schedule) | §20. A native app is triggered by evidence → CF-56 |
+| Lite: defer, never disable; MediaSlot; granular controls; data-saved counter | Carried | CF-46, CF-47 |
+| Lite auto-prompt on 3G/2G or in a low-bandwidth region | Split | The connection-based offer is carried. The region trigger is retired → CF-48 |
+| Settings surface | Carried | CF-10 |
+| Low-end Android browsers; accessibility AA basics | Covered | §16, §17, D-11 |
+| Smart notification bundling | Carried | CF-24 |
+| Embed widget for other websites | Not carried | Never built, and every route forbids framing. There is no current evidence of need (§3 principle 10) |
+
+### v1.0 §23: analytics
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Event taxonomy | Carried, filtered | CF-62 |
+| PostHog in the EU or self-hosted; no PII | Carried | CF-61 |
+| Dashboards mapped 1:1 to the §4 metrics | Superseded | §21 scorecards |
+
+### v1.0 §24: infrastructure and media stack
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Recommended stack (search, maps, jobs, email, rate limiting, errors, AI pre-filter) | Carried | CF-59 (what is actually in use differs), CF-39 |
+| One image pipeline | Carried | CF-13 |
+| Video options A, B and C | Carried (gate input) | CF-14 |
+| Environments, nightly backups, PITR | Carried (gate input) | CF-60 |
+
+### v1.0 §25: v1.1+ roadmap
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Paid Supporter tier at about USD 1/month | Superseded | D-02: Xidig Plus, with USD 3/month or 24/year as a PARAMETER |
+| Native video, group video rooms, live sessions | Superseded | Future ideals (§23), deferred (D-15) |
+| "This week in Xidig" shareable card | Carried | CF-51 |
+| Ramadan mode | Not carried | Seasonal rhythms can be proposed later and would stay optional (§10). Sprint clocks are gone |
+| "State of Somali Business" annual report | Carried, constrained | CF-31. It would be a Library item (§18) |
+| Payments: "Stripe where supported" | Flagged | This contradicts §12's "no direct Stripe" → CF-42 |
+| v1.1 candidates (voice intro, offline cache, verified listing photo, read receipts and typing, listing announcements, layout editor, reviews) | Mixed | Voice → CF-26. Offline → CF-49. Read receipts → D-03. Reviews → open decision (O-1). The `page_blocks` schema exists, but the editor is not a target (CF-02). The rest stay unscheduled |
+| v1.2 React Native (Expo) | Superseded | §20: triggered by evidence, with no version schedule |
+| "Free keeps the community core; Supporter unlocks governance, Lab creation, paths" | Superseded | D-02, D-07 |
+
+### v1.0 §25.5, §26, §27, §28
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| §25.5 Future-ready architecture (whole section) | Carried | CF-55, with the capital-gate examples neutralised |
+| §26 Brand guide | Covered | §16, D-10, Owner Amendment 01 |
+| §26 Auth method | Carried | CF-06 |
+| §26 Membership and lanes (Supporter, Builder Path, Investor Path, equity) | Superseded | D-02, D-07, D-08 |
+| §26 "Somalia region" definition | Retired | D-08 |
+| §26 RBAC summary | Carried | CF-33 |
+| §26 Constants | Carried | CF-06, CF-11, CF-13, CF-17, CF-38, CF-40 |
+| §26 Notification matrix | Carried | CF-24 |
+| §26 Seed tags and listing categories | Carried | CF-29 |
+| §26 Required accounts and env vars | Historical | docs/runbook.md, docs/GO-LIVE.md |
+| §26 Human inputs a builder cannot generate | Carried | CF-41 |
+| §26 Future-ready build rule | Carried | CF-55 |
+| §27 Three-question rule; no raw codes | Carried | CF-44 |
+| §27 Strings that promise USD 1 upgrades, Supporter gates, Somalia-region investment, 48-hour review or "3× more contact clicks" | Retired | D-02, D-08, D-09, §11 |
+| §27 Lite / Xawli yar strings | Superseded | D-10: Data Saver in EN and SO. Live copy is in packages/i18n |
+| §28 WhatsApp-first sharing | Carried | CF-51 |
+| §28 Public login-free pages as the acquisition engine | Superseded default | CF-52 |
+| §28 Directory data as a launch PR asset | Carried, constrained | CF-31 |
+| §28 Position explicitly against WhatsApp groups | Carried, reframed | CF-51: the differentiator stands, but public copy names no competitors |
+| §28 Email digest as a primary surface | Carried | CF-25 |
+| §28 "Xidig Verified" as a portable trust brand | Retired | D-06: bounded claims, no blanket badge |

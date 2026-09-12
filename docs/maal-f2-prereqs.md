@@ -24,7 +24,9 @@ These files previously carried the superseded framing and have been corrected in
 The old wording is deliberately not reproduced here: it is refuted, and repeating it invites
 someone to treat it as a live alternative.
 
-- `prd.md` §16 — merit ladder + system-timeout demotion, publicly logged, history-preserving.
+- `prd.md` §16 (the v1.0 PRD, now preserved at `docs/archive/prd-v1.0-standalone.md` §16; the
+  PRD Relook's D-05 later superseded the ladder and the timeout demotion as product direction) —
+  merit ladder + system-timeout demotion, publicly logged, history-preserving.
 - `docs/rls-phase4-labs.md` — invariant restated as: user-initiated demotion forbidden,
   system-role timeout demotion allowed and logged.
 - `packages/db/supabase/migrations/20260706200000_phase4_labs.sql` — comments only (the
