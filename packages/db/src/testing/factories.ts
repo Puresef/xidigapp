@@ -47,7 +47,12 @@ export async function seedAdmin(db: TestDatabase, handle: string): Promise<strin
   return userId;
 }
 
-/** Member on the Supporter tier (holds create_lab / vote_candidate capabilities). */
+/**
+ * Member on the paid tier (tier id `supporter`, "Xidig Plus"). It holds only
+ * the ordinary allowances (elevated_limits, supporter_spaces, …): since
+ * 20260912100100 it holds no Lab, candidate, vote, governance or capital
+ * capability (Xidig Plus doctrine, owner 12 Sep).
+ */
 export async function seedSupporter(db: TestDatabase, handle: string): Promise<string> {
   const userId = await seedMember(db, handle);
   await db.admin.query(`update profiles set membership_tier_id = 'supporter' where user_id = $1`, [

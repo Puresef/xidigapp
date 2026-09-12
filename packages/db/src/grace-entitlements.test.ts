@@ -95,10 +95,12 @@ beforeAll(async () => {
   freeActive = await seedMember(db, 'ge_free_active');
   freeGrace = await seedMember(db, 'ge_free_grace');
 
-  // Positive controls while every Supporter is still active.
+  // Positive controls while every Supporter is still active. has_capability()
+  // is exercised on a capability the paid tier still holds: since
+  // 20260912100100 (Xidig Plus doctrine) it holds NO active-only capability.
   for (const status of STATUSES) {
     expect(await isSupporter(supporter[status])).toBe(true);
-    expect(await hasCapability(supporter[status], 'vote_candidate')).toBe(true);
+    expect(await hasCapability(supporter[status], 'elevated_limits')).toBe(true);
   }
 
   for (const status of STATUSES) await setStatus(supporter[status], status);
@@ -142,12 +144,16 @@ describe.each(STATUSES)('a Supporter whose account is %s', (status) => {
     expect(await readsSupporterSpace(supporter[status])).toBe(ordinary);
   });
 
-  it.each(ACTIVE_ONLY_CAPABILITIES)(
-    `active-only capability %s: ${status === 'active'}`,
-    async (cap) => {
-      expect(await hasCapability(supporter[status], cap)).toBe(status === 'active');
-    },
-  );
+  // Xidig Plus doctrine (owner, 12 Sep; migration 20260912100100): the paid
+  // tier holds NONE of the active-only capabilities, in any status, so none of
+  // them can be bought.
+  it.each(ACTIVE_ONLY_CAPABILITIES)('active-only capability %s: false (held by no tier)', async (cap) => {
+    expect(await hasCapability(supporter[status], cap)).toBe(false);
+  });
+
+  it(`has_capability stays active-only (tier join + status): ${status === 'active'}`, async () => {
+    expect(await hasCapability(supporter[status], 'elevated_limits')).toBe(status === 'active');
+  });
 
   it.each(ACTIVE_ONLY_CAPABILITIES)(
     'has_entitlement never answers for active-only %s',
@@ -201,13 +207,15 @@ describe('cancelling the grace', () => {
       [id],
     );
     await setStatus(id, 'pending_deletion');
-    expect(await hasCapability(id, 'vote_candidate')).toBe(false);
+    expect(await hasCapability(id, 'elevated_limits')).toBe(false);
     expect(await hasEntitlement(id, 'elevated_limits')).toBe(true);
     await db.admin.query(
       `update users set status = 'active', deletion_requested_at = null where id = $1`,
       [id],
     );
-    expect(await hasCapability(id, 'vote_candidate')).toBe(true);
+    expect(await hasCapability(id, 'elevated_limits')).toBe(true);
     expect(await hasEntitlement(id, 'elevated_limits')).toBe(true);
+    // …and still no doctrine-forbidden power, active or not.
+    expect(await hasCapability(id, 'vote_candidate')).toBe(false);
   });
 });

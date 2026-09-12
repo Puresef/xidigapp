@@ -30,14 +30,21 @@ export const ORDINARY_ENTITLEMENTS = [
   'intelligence_updates', // monthly directory-insight email — granted but built nowhere yet
 ] as const satisfies readonly MembershipCapability[];
 
+/**
+ * Xidig Plus doctrine (owner, 12 Sep): the paid tier holds NONE of these.
+ * Migration 20260912100100 removes the five rows from the `supporter` tier
+ * (deploy-order gated), so every one is held by no tier. The paths they used
+ * to key are PAUSED for everyone ("pause, don't broaden") until an approved,
+ * non-paid eligibility model exists. They stay classified here, so a future
+ * rule is active-only by construction.
+ */
 export const ACTIVE_ONLY_CAPABILITIES = [
-  'vote_candidate', // candidate governance vote
-  'governance_rights', // governance — granted but enforced nowhere yet
-  'builder_path', // create a Candidate (capital ladder)
-  'investor_path', // capital — granted but enforced nowhere yet
-  // Lab (Warshad) create/promote. Mixed: Lab mode carries project tooling but
-  // is also the only rung from which a Space hands off to a Candidate or
-  // becomes a Venture. Held active-only pending an owner ruling.
+  'vote_candidate', // candidate vote: paused for everyone
+  'governance_rights', // governance: never enforced; held by no tier
+  'builder_path', // create a Candidate: entrance retired, submission paused
+  'investor_path', // capital: never enforced; held by no tier
+  // Lab (Warshad) create/promote: paused for everyone. Lab mode is the only
+  // rung from which a Space hands off to a Candidate or becomes a Venture.
   'create_lab',
 ] as const satisfies readonly MembershipCapability[];
 

@@ -417,9 +417,13 @@ describe('RLS: membership tiers stay locked; capability gate works', () => {
     expect(caps.rowCount).toBe(0);
   });
 
-  it('free member lacks create_lab; supporter has it', async () => {
+  // The capability-gate mechanics are probed with 'elevated_limits', an
+  // allowance the paid tier still holds. Since 20260912100100 (Xidig Plus
+  // doctrine, owner 12 Sep) the paid tier holds NO Lab, candidate, vote,
+  // governance or capital capability, so create_lab is false for everyone.
+  it('free member lacks the capability; supporter has it — and never create_lab', async () => {
     const before = await h.as('authenticated', erin, (q) =>
-      q(`select public.has_capability('create_lab') as ok`),
+      q(`select public.has_capability('elevated_limits') as ok`),
     );
     expect(before.rows[0].ok).toBe(false);
 
@@ -427,21 +431,25 @@ describe('RLS: membership tiers stay locked; capability gate works', () => {
       erin,
     ]);
     const after = await h.as('authenticated', erin, (q) =>
-      q(`select public.has_capability('create_lab') as ok`),
+      q(`select public.has_capability('elevated_limits') as ok`),
     );
     expect(after.rows[0].ok).toBe(true);
+    const lab = await h.as('authenticated', erin, (q) =>
+      q(`select public.has_capability('create_lab') as ok`),
+    );
+    expect(lab.rows[0].ok).toBe(false);
   });
 
   it('revoking the capability from the tier revokes it from the member', async () => {
     await h.root.query(
-      `delete from tier_capabilities where tier_id = 'supporter' and capability = 'create_lab'`,
+      `delete from tier_capabilities where tier_id = 'supporter' and capability = 'elevated_limits'`,
     );
     const r = await h.as('authenticated', erin, (q) =>
-      q(`select public.has_capability('create_lab') as ok`),
+      q(`select public.has_capability('elevated_limits') as ok`),
     );
     expect(r.rows[0].ok).toBe(false);
     await h.root.query(
-      `insert into tier_capabilities (tier_id, capability) values ('supporter', 'create_lab')`,
+      `insert into tier_capabilities (tier_id, capability) values ('supporter', 'elevated_limits')`,
     );
   });
 
@@ -449,7 +457,7 @@ describe('RLS: membership tiers stay locked; capability gate works', () => {
     await h.root.query(`update membership_tiers set is_active = false where id = 'supporter'`);
 
     const cap = await h.as('authenticated', erin, (q) =>
-      q(`select public.has_capability('create_lab') as ok`),
+      q(`select public.has_capability('elevated_limits') as ok`),
     );
     expect(cap.rows[0].ok).toBe(true);
 
@@ -462,7 +470,7 @@ describe('RLS: membership tiers stay locked; capability gate works', () => {
   it('a suspended supporter fails capability gates', async () => {
     await h.root.query(`update users set status = 'suspended' where id = $1`, [erin]);
     const r = await h.as('authenticated', erin, (q) =>
-      q(`select public.has_capability('create_lab') as ok`),
+      q(`select public.has_capability('elevated_limits') as ok`),
     );
     expect(r.rows[0].ok).toBe(false);
     await h.root.query(`update users set status = 'active' where id = $1`, [erin]);

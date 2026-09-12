@@ -73,12 +73,32 @@ describe('third tier does not inherit Supporter gates', () => {
     expect(await hasCap(member, 'supporter_spaces')).toBe(true);
   });
 
-  it('the supporter tier still holds its gates (behavior unchanged)', async () => {
+  it('the supporter tier keeps its allowances and holds no forbidden power (Xidig Plus doctrine)', async () => {
+    // Owner doctrine (12 Sep; 20260912100100): Xidig Plus is patronage,
+    // resource and convenience only. It keeps its ordinary allowances…
     const supporter = await seedTierMember('cap_supporter', 'supporter');
-    for (const cap of ['create_lab', 'vote_candidate', 'elevated_limits', 'supporter_spaces']) {
+    for (const cap of ['elevated_limits', 'supporter_spaces']) {
       expect(await hasCap(supporter, cap), cap).toBe(true);
     }
     expect(await isSupporterFor(supporter)).toBe(true);
+    // …and holds none of the governance, candidate, Lab or capital powers.
+    for (const cap of [
+      'create_lab',
+      'vote_candidate',
+      'governance_rights',
+      'builder_path',
+      'investor_path',
+    ]) {
+      expect(await hasCap(supporter, cap), cap).toBe(false);
+    }
+  });
+
+  it('no tier holds any doctrine-forbidden capability (catalog contract)', async () => {
+    const res = await db.admin.query(
+      `select tier_id::text as tier, capability::text as cap from tier_capabilities
+        where capability in ('create_lab','vote_candidate','governance_rights','builder_path','investor_path')`,
+    );
+    expect(res.rows).toEqual([]);
   });
 
   it('a supporter-only Space is invisible to the patron tier, and one capability INSERT opens it', async () => {

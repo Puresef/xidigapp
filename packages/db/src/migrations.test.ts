@@ -181,7 +181,18 @@ describe('RBAC / membership helpers', () => {
     const supporter = tiers.rows.find((r: { id: string }) => r.id === 'supporter') as {
       capabilities: string[];
     };
-    expect(supporter.capabilities).toContain('create_lab');
+    // Xidig Plus doctrine (owner, 12 Sep; 20260912100100): the public catalog
+    // lists only patronage/resource/convenience allowances, never a power.
+    expect(supporter.capabilities).toContain('elevated_limits');
+    for (const forbidden of [
+      'create_lab',
+      'vote_candidate',
+      'governance_rights',
+      'builder_path',
+      'investor_path',
+    ]) {
+      expect(supporter.capabilities).not.toContain(forbidden);
+    }
   });
 
   it('membership_tiers and tier_capabilities are not directly readable', async () => {
@@ -194,26 +205,25 @@ describe('RBAC / membership helpers', () => {
 
   it('has_capability follows the tier and requires an active account', async () => {
     const user = await seedMember('cap_check');
+    // Exercised on a capability the paid tier still holds. Since 20260912100100
+    // it holds no doctrine-forbidden power (see the catalog test above).
+    const check = (cap: string) =>
+      db.asUser(user, (tx) =>
+        tx.query(`select public.has_capability($1::public.membership_capability) as ok`, [cap]),
+      );
 
-    const asFree = await db.asUser(user, (tx) =>
-      tx.query(`select public.has_capability('create_lab') as ok`),
-    );
-    expect(asFree.rows[0].ok).toBe(false);
+    expect((await check('elevated_limits')).rows[0].ok).toBe(false);
 
     await db.admin.query(
       `update profiles set membership_tier_id = 'supporter' where user_id = $1`,
       [user],
     );
-    const asSupporter = await db.asUser(user, (tx) =>
-      tx.query(`select public.has_capability('create_lab') as ok`),
-    );
-    expect(asSupporter.rows[0].ok).toBe(true);
+    expect((await check('elevated_limits')).rows[0].ok).toBe(true);
+    // The paid tier no longer buys Lab creation.
+    expect((await check('create_lab')).rows[0].ok).toBe(false);
 
     await db.admin.query(`update users set status = 'suspended' where id = $1`, [user]);
-    const suspended = await db.asUser(user, (tx) =>
-      tx.query(`select public.has_capability('create_lab') as ok`),
-    );
-    expect(suspended.rows[0].ok).toBe(false);
+    expect((await check('elevated_limits')).rows[0].ok).toBe(false);
   });
 
   it('is_admin / is_mod reflect role and require an active account', async () => {

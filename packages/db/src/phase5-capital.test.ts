@@ -59,7 +59,7 @@ async function seedAdmin(handle: string): Promise<string> {
   return userId;
 }
 
-/** A member on the Supporter tier (holds vote_candidate + *_path capabilities). */
+/** A member on the paid tier ("Xidig Plus"). Since 20260912100100 it holds no vote/_path capability. */
 async function seedSupporter(handle: string): Promise<string> {
   const userId = await seedMember(handle);
   await db.admin.query(`update profiles set membership_tier_id = 'supporter' where user_id = $1`, [

@@ -24,6 +24,15 @@ import type { AuthContext } from '@/lib/auth/guards';
  *     ('vote_candidate', 'builder_path', 'create_lab', …). Active accounts
  *     only.
  * The parameter types make crossing the line a compile error.
+ *
+ * Xidig Plus doctrine (owner, 12 Sep): Xidig Plus is patronage, resources and
+ * convenience ONLY. It never decides governance, candidate votes, candidate
+ * submission, Lab/project creation, capital paths, verification, ranking,
+ * trust or professional credibility. No app path calls hasCapability today:
+ * the gates it used to key (Lab creation and promotion, candidate creation
+ * and submission, the candidate vote) are PAUSED for everyone, and the five
+ * active-only rows are removed from the paid tier (migration 20260912100100).
+ * It stays as the active-only boundary for a future NON-paid rule.
  */
 
 export type { ActiveOnlyCapability, OrdinaryEntitlement };
