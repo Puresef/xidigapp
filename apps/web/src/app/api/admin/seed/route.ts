@@ -2,6 +2,7 @@ import { apiError, apiOk, handleApiError } from '@/lib/api';
 import { requireRole } from '@/lib/auth/guards';
 import { writeAudit } from '@/lib/audit';
 import { resetSeed, runSeed } from '@/lib/seed/run';
+import { decideConfiguredSeedTarget, seedTargetRefusedResponse } from '@/lib/seed/target-response';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 import { env } from '@/env';
 
@@ -11,7 +12,14 @@ import { env } from '@/env';
  * Authorised by EITHER an admin session (dashboard button) OR the shared
  * CRON_SECRET bearer (the CLI wrapper / staging automation) — the same
  * service-scope posture as the cron routes. POST runs the idempotent seed;
- * DELETE resets a seed run (local/staging tear-down). Both are audited.
+ * DELETE resets a seed run (tear-down). Both are audited.
+ *
+ * The launch-density seed is labelled platform content and may run against
+ * production (owner-approved). Its DESTRUCTIVE reset may not: it is refused
+ * unless the DATABASE is a verified non-production target
+ * (lib/seed/target-guard.ts) — the production project ref is refused whatever
+ * NODE_ENV says. NODE_ENV alone was never enough: the Supabase project
+ * labelled "Dev Xidig App" is the live production database.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -46,8 +54,11 @@ export async function POST(request: Request): Promise<Response> {
 export async function DELETE(request: Request): Promise<Response> {
   try {
     const { actorUserId } = await authorizeSeed(request);
-    // Guard: never allow a destructive reset in production.
+    // Guard: never allow a destructive reset in production — decided by the
+    // database target, not only by the process mode.
     if (env.NODE_ENV === 'production') return apiError('forbidden', 403);
+    const target = decideConfiguredSeedTarget();
+    if (!target.allowed) return seedTargetRefusedResponse(target);
     const admin = getSupabaseAdmin();
     const summary = await resetSeed(admin);
     await writeAudit(admin, {

@@ -3,9 +3,14 @@
  * job exposed at POST /api/admin/seed, authenticating with the shared
  * CRON_SECRET (service scope). Re-running is safe — the job de-duplicates.
  *
- * Usage (dev server or staging must be running):
+ * Usage (an app server pointed at the target database must be running):
  *   CRON_SECRET=... APP_URL=http://localhost:3000 node apps/web/scripts/seed.mjs
  *   CRON_SECRET=... APP_URL=http://localhost:3000 node apps/web/scripts/seed.mjs --reset
+ *
+ * The Supabase project labelled "Dev Xidig App" is the LIVE production
+ * database: a seed run against it is production work, and --reset is refused
+ * there by the server's database-target guard (lib/seed/target-guard.ts),
+ * whatever NODE_ENV says.
  *
  * Or via pnpm:  pnpm --filter @xidig/web seed   [-- --reset]
  */

@@ -40,3 +40,7 @@ packages/db/supabase/.temp/
 # Old-site salvage crate (temporary; deploy via xidig/DEPLOY-TOURNIQUET.md, delete after port)
 /xidig/
 .superpowers/
+
+# Dev test-community credentials — plaintext shared password + a member roster.
+# Never commit: a bare `git add -A` would otherwise sweep it into history.
+TEST-COMMUNITY-LOGINS.md
