@@ -14,15 +14,21 @@ import { digestWindow } from './period';
  */
 
 type Result = { data: unknown; error: { message: string } | null };
+type Recorded = { table: string; nots: unknown[][] };
+
+const recorded: Recorded[] = [];
 
 function fakeAdmin(queues: Record<string, Result[]>) {
   const admin = {
     from(table: string) {
       const result = queues[table]?.shift() ?? { data: [], error: null };
+      const entry: Recorded = { table, nots: [] };
+      recorded.push(entry);
       const chain: Record<string, unknown> = {};
       for (const method of ['select', 'eq', 'is', 'in', 'gte', 'lt', 'lte', 'order', 'limit']) {
         chain[method] = () => chain;
       }
+      chain.not = (...args: unknown[]) => (entry.nots.push(args), chain);
       chain.then = (resolve: (v: Result) => unknown) => Promise.resolve(result).then(resolve);
       return chain;
     },
@@ -36,7 +42,13 @@ function flags(id: string, isTest: boolean) {
   return { id, status: 'active', is_ai: false, is_test: isTest };
 }
 
-function seededAdmin(users: Result) {
+/**
+ * `users` answers twice, in call order: the quarantined-id lookup (applied
+ * in the Wins/Asks queries, before their limit), then the flags read over
+ * every author, lead, owner and host.
+ */
+function seededAdmin(testIds: Result, users: Result) {
+  recorded.length = 0;
   return fakeAdmin({
     posts: [
       {
@@ -92,13 +104,15 @@ function seededAdmin(users: Result) {
         error: null,
       },
     ],
-    users: [users],
+    users: [testIds, users],
   });
 }
 
+const FIXTURE_IDS: Result = { data: [{ id: 'fixture' }], error: null };
+
 describe('collectDigestCandidates — quarantined test accounts', () => {
   it('drops test-authored Wins/Asks, test-led Spaces, test-owned listings and test-hosted events', async () => {
-    const admin = seededAdmin({
+    const admin = seededAdmin(FIXTURE_IDS, {
       data: [flags('real', false), flags('fixture', true)],
       error: null,
     });
@@ -116,13 +130,47 @@ describe('collectDigestCandidates — quarantined test accounts', () => {
     expect(JSON.stringify(candidates)).not.toMatch(/"(real|fixture)"/);
   });
 
-  it('a failed flags read throws rather than snapshotting unchecked rows', async () => {
-    const admin = seededAdmin({
-      data: null,
-      error: { message: 'column users.is_test does not exist' },
+  it('excludes test authors IN the Wins and open-Asks queries, so fixtures cannot fill the 5 slots', async () => {
+    // Open Asks have no time window and fixture Asks stay open: filtering
+    // only after the limit could leave the broadcast section empty while
+    // older real open Asks exist.
+    const admin = seededAdmin(FIXTURE_IDS, {
+      data: [flags('real', false), flags('fixture', true)],
+      error: null,
     });
 
-    await expect(collectDigestCandidates(admin, WINDOW)).rejects.toThrow(
+    await collectDigestCandidates(admin, WINDOW);
+
+    const postQueries = recorded.filter((entry) => entry.table === 'posts');
+    expect(postQueries).toHaveLength(2);
+    for (const query of postQueries) {
+      expect(query.nots).toContainEqual(['author_user_id', 'in', '(fixture)']);
+    }
+  });
+
+  it('with no test accounts, the Wins/Asks queries carry no author filter', async () => {
+    const admin = seededAdmin(
+      { data: [], error: null },
+      { data: [flags('real', false)], error: null },
+    );
+
+    await collectDigestCandidates(admin, WINDOW);
+
+    for (const query of recorded.filter((entry) => entry.table === 'posts')) {
+      expect(query.nots).toEqual([]);
+    }
+  });
+
+  it('a failed quarantine lookup throws rather than snapshotting unchecked rows', async () => {
+    const failed: Result = {
+      data: null,
+      error: { message: 'column users.is_test does not exist' },
+    };
+
+    await expect(collectDigestCandidates(seededAdmin(failed, failed), WINDOW)).rejects.toThrow(
+      /lookup failed/,
+    );
+    await expect(collectDigestCandidates(seededAdmin(FIXTURE_IDS, failed), WINDOW)).rejects.toThrow(
       /account flags lookup failed/,
     );
   });

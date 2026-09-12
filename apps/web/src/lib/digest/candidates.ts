@@ -2,7 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
-import { isTestAccount, loadAccountFlags } from '@/lib/account-flags';
+import {
+  isTestAccount,
+  loadAccountFlags,
+  loadTestAccountIds,
+  postgrestIdList,
+} from '@/lib/account-flags';
 
 import type { DigestWindow } from './period';
 
@@ -76,28 +81,33 @@ export async function collectDigestCandidates(
 ): Promise<DigestCandidates> {
   const { since, until } = window;
 
+  // Quarantined test authors are excluded IN the post queries (before the
+  // limit): open Asks have no time window and fixture Asks stay open, so a
+  // filter applied only after the limit could leave the section empty while
+  // older real Asks exist. The flags read below re-checks every row.
+  const testIds = await loadTestAccountIds(admin);
+  const testIdList = testIds.length > 0 ? postgrestIdList(testIds) : null;
+
   // Top Wins this week — published, global (not lab-scoped), member content.
-  const winsQuery = admin
+  let winsQuery = admin
     .from('posts')
     .select('id, title, author_user_id')
     .eq('type', 'win')
     .eq('status', 'published')
     .is('lab_id', null)
     .gte('created_at', since)
-    .lt('created_at', until)
-    .order('created_at', { ascending: false })
-    .limit(LIMIT);
+    .lt('created_at', until);
+  if (testIdList) winsQuery = winsQuery.not('author_user_id', 'in', testIdList);
 
   // Currently OPEN Asks (help still wanted) — most recent first.
-  const asksQuery = admin
+  let asksQuery = admin
     .from('posts')
     .select('id, title, author_user_id')
     .eq('type', 'ask')
     .eq('ask_status', 'open')
     .eq('status', 'published')
-    .is('lab_id', null)
-    .order('created_at', { ascending: false })
-    .limit(LIMIT);
+    .is('lab_id', null);
+  if (testIdList) asksQuery = asksQuery.not('author_user_id', 'in', testIdList);
 
   // New PUBLIC Labs — public + listed only (never a private/members-only Lab).
   const labsQuery = admin
@@ -146,8 +156,8 @@ export async function collectDigestCandidates(
     .limit(LIMIT);
 
   const [wins, asks, labs, listings, mentor, events] = await Promise.all([
-    winsQuery,
-    asksQuery,
+    winsQuery.order('created_at', { ascending: false }).limit(LIMIT),
+    asksQuery.order('created_at', { ascending: false }).limit(LIMIT),
     labsQuery,
     listingsQuery,
     mentorQuery,

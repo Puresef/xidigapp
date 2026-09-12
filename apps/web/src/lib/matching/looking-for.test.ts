@@ -112,4 +112,24 @@ describe('findLabsSeekingSkills — quarantined test accounts', () => {
     expect(matches.map((match) => match.labId).sort()).toEqual(['lab-fake', 'lab-real']);
     expect(member.callsOf('labs').some((call) => call.op === 'not')).toBe(false);
   });
+
+  it('a failed test-account lookup suggests nothing, and never throws (member Home stays up)', async () => {
+    // The matcher always tolerated read errors (empty list). The quarantine
+    // lookup keeps that contract and fails CLOSED: no suggestion rather than
+    // an unchecked one — and no 500 for the page or APIs that embed it.
+    adminHolder.client = {
+      from: () => ({
+        select: () => ({
+          eq: async () => ({
+            data: null,
+            error: { message: 'column users.is_test does not exist' },
+          }),
+        }),
+      }),
+    };
+    const member = memberClient();
+
+    await expect(findLabsSeekingSkills(member as never, ['react'])).resolves.toEqual([]);
+    expect(member.queries.some((query) => query.table === 'labs')).toBe(false);
+  });
 });

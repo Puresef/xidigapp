@@ -65,8 +65,22 @@ proof wherever `main`'s app reads.
    - The migration is additive and safe with the currently deployed app, which
      ignores the column.
    - The new app code selects `users.is_test`. Without the column those reads
-     fail closed: profiles, search, awards, the leaderboard, candidates, Space
-     and listing pages, events and the digest error instead of showing fixtures.
+     fail closed, which is a real outage, not a silent fallback. These error
+     instead of showing fixtures:
+     - pages: `/u/[handle]` (page, metadata and OG), `/profile`, `/search`,
+       `/leaderboard`, `/awards`, `/capital`, `/c/[id]`, `/labs/[slug]`,
+       `/l/[id]` and the public events pages;
+     - member lists: Discover (`/api/labs`), the Suuq directory and map
+       (`/api/profiles`, `/api/listings`), @mention autocomplete (it uses
+       `/api/profiles`);
+     - APIs: `GET /api/profiles/[handle]`, `GET /api/candidates`, the awards
+       vote, `GET /api/external/listings`, `GET /api/external/digest/candidates`;
+     - the digest cron;
+     - the front-door counter (it degrades to no counter).
+
+     "Labs seeking you" (member Home, suggested follows,
+     `GET /api/me/looking-for`) is the one exception: it degrades to no
+     suggestions and never fails its page.
 3. **Deploy the app.**
 
 **Caveats:**
@@ -167,6 +181,20 @@ write path is the launch-density seed (`/api/admin/seed`).
   member's reputation may still include credit from test activity. Candidate
   help/support/invest counts are still the RPC's (fixture co-signs sit on the
   fixture candidate, which is no longer projected or listed).
+
+- **App-side counts not ported to `main`:**
+  - the Community Verified threshold in `POST /api/vouches` still counts
+    vouches from test accounts (the displayed vouch count does not). It only
+    matters if fixtures vouched for real members, and the seeded vouches were
+    fixture-to-fixture. Test accounts are auth-banned, so they cannot vouch now;
+  - aggregate RSVP counts on events still count test accounts' RSVPs.
+- **People search** filters test accounts after its bounded fetch, so a fixture
+  could take a slot in the fetch window. The containment's directory opt-out
+  already excludes the fixtures in the query today.
+- **Launch seed `POST /api/admin/seed`** has no production guard, by design (as
+  on the integration line). It writes labelled platform content, and running it
+  against production is explicitly approved production work. Only the
+  destructive reset is target-guarded.
 
 - **Data is untouched:**
   - fixtures keep their badges, verification statuses, reputation, votes and

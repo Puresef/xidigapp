@@ -69,7 +69,16 @@ export async function findLabsSeekingSkills(
   if (skillsByLab.size === 0) return [];
 
   const labIds = [...skillsByLab.keys()];
-  const testIds = await loadTestAccountIds(getSupabaseAdmin());
+  // Fail CLOSED without failing the page: this matcher has always degraded to
+  // an empty list on a read error, and the member Home / suggested-follows /
+  // looking-for callers embed it without a catch. No suggestion is safer than
+  // an unchecked one.
+  let testIds: string[];
+  try {
+    testIds = await loadTestAccountIds(getSupabaseAdmin());
+  } catch {
+    return [];
+  }
   let labsQuery = client
     .from('labs')
     .select('id, slug, name, short_description, stage')
