@@ -11,25 +11,25 @@ describe('createTranslator', () => {
   it('resolves English strings', () => {
     const t = createTranslator('en');
     expect(t('nav.home')).toBe('Home');
-    expect(t('action.garab')).toBe('Co-sign');
+    expect(t('action.garab')).toBe('Support');
   });
 
   it('resolves Somali strings', () => {
     const t = createTranslator('so');
     expect(t('nav.home')).toBe('Hoy');
-    expect(t('action.garab')).toBe('Garab');
+    expect(t('action.garab')).toBe('Taageer');
   });
 
   it('selects plural forms from the count param', () => {
     const t = createTranslator('en');
-    expect(t('action.garabCount', { count: 1 })).toBe('1 co-sign');
-    expect(t('action.garabCount', { count: 142 })).toBe('142 co-signs');
+    expect(t('action.garabCount', { count: 1 })).toBe('1 person supports this');
+    expect(t('action.garabCount', { count: 142 })).toBe('142 people support this');
   });
 
-  it('keeps the invariant Somali plural for garab', () => {
+  it('keeps the invariant Somali support count (provisional, G34)', () => {
     const t = createTranslator('so');
-    expect(t('action.garabCount', { count: 1 })).toBe('1 garab');
-    expect(t('action.garabCount', { count: 142 })).toBe('142 garab');
+    expect(t('action.garabCount', { count: 1 })).toBe('1 qof ayaa taageeray');
+    expect(t('action.garabCount', { count: 142 })).toBe('142 qof ayaa taageeray');
   });
 });
 

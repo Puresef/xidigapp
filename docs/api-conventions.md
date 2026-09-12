@@ -197,14 +197,27 @@ Phase 4.5 conventions worth knowing:
   never leaves the handler (§23). It is listed in `CLIENT_EVENT_NAMES` per spec
   §5 even though this build emits it server-side.
 
-## Phase 5 route table (Capital / Maal — Candidates + intent capture)
+## Phase 5 route table (Capital / Maal — Candidates + non-financial interest)
 
-Base path `/api/candidates` (per-candidate actions) + `/api/capital` (region gate
-+ fund-level intent). All writes are API-only under default-deny RLS; the five
-capital tables have no authenticated write grants. Capital v1 is **intent capture
-only** — no money movement, no pledge ledger. Maalgeli (Invest) is Somalia-region
-gated (geo-IP country AND profile country AND self-attestation — all three);
-Garab (Co-sign) + "I can help" are non-financial and never gated.
+Base path `/api/candidates` (per-candidate actions) + `/api/capital`. All writes
+are API-only under default-deny RLS; the five capital tables have no
+authenticated write grants.
+
+**Investing is not offered on Xidig, and the server refuses it (A2
+containment).** There is no fund, no offering, and no intent capture: every
+invest submission path returns `capital_unavailable` (403) unconditionally,
+without evaluating anything about the caller. This is an **availability**
+refusal, never a geography one — a member's location does not and cannot make
+capital functionality available, and no region unlocks it. Reactivation would
+require the PRD §15/D-08 legal gates plus an explicit code change in these
+routes; there is no flag, header, or configuration that turns it back on.
+
+Support (EN "Support"; legacy name Garab) + "I can help" are non-financial member
+signals and are unaffected. **Retraction is deliberately preserved**: a member who recorded an
+invest intent while the old funnel was live can still delete their own record.
+Existing `interests` rows and the historical `capital_gate_evaluations` log are
+retained untouched pending a separately approved retention policy — they are
+displayed nowhere.
 
 | Method       | Route                              | Auth     | Notes                                                                                             |
 | ------------ | ---------------------------------- | -------- | ------------------------------------------------------------------------------------------------- |
@@ -213,22 +226,30 @@ Garab (Co-sign) + "I can help" are non-financial and never gated.
 | POST         | `/api/candidates/{id}/submit`      | user     | draft→submitted; sets `submitted_at`, opens 7-day vote window (`vote_opens_at`/`vote_closes_at`); creator/lead only; non-draft → `candidate_not_submittable` 409 |
 | POST         | `/api/candidates/{id}/decision`    | reviewer | `can_review_candidate` (mod/admin, recused if lab member); `{status: in_review\|approved\|parked\|declined, statusReason?}`; recusal → `reviewer_conflict` 403, non-reviewer → `not_a_reviewer` 403; sets `decided_at` on terminal |
 | GET/PUT      | `/api/candidates/{id}/reviews`     | user/rev | GET review list (candidate-readable); PUT upserts caller's rubric review (`can_review_candidate`, recusal → `reviewer_conflict`; draft → `candidate_not_submittable`); recomputes + stores aggregate rubric scores (service role) |
-| POST/DELETE  | `/api/candidates/{id}/vote`        | user     | Supporter governance vote (`vote_candidate` capability); only while window open (`vote_closed` 409); POST `{vote: approve\|reject}` upsert, DELETE retracts; response returns tally via `candidate_vote_tally` |
-| POST/DELETE  | `/api/candidates/{id}/interests`   | user     | `type help\|cosign\|invest`. help+cosign: any member, all regions. invest: region-gate evaluated (geo+country+attested); if not granted → `capital_region_gated` notice + informational, no invest interest created; gate logged. Response returns interest counts |
+| POST/DELETE  | `/api/candidates/{id}/vote`        | user     | Candidate vote (`vote_candidate` capability — currently held by the Xidig Plus tier; that gate conflicts with the owner doctrine and is under review); only while window open (`vote_closed` 409); POST `{vote: approve\|reject}` upsert, DELETE retracts; response returns tally via `candidate_vote_tally` |
+| POST/DELETE  | `/api/candidates/{id}/interests`   | user     | POST `type help\|cosign`: any member, upserts the interest, emits `interest_expressed`, returns `counts: {help, cosign}` only (the legacy invest tally is never projected — `lib/capital/interest-counts.ts`). POST `type invest`: **always** `capital_unavailable` 403, refused **before** the candidate lookup (so it leaks nothing about the candidate) — no row, no gate evaluation, no logging. **No interest type awards a badge** (the Early Backer award was removed from this path). DELETE `?type=help\|cosign\|invest` retracts the caller's own row — invest retraction is kept on purpose; DELETE still requires candidate readability (hidden → 404). Response returns interest counts (the `invest` count is still computed and returned, but no surface renders it) |
 | GET/POST     | `/api/candidates/{id}/comments`    | user     | open member comments (§12); reuses the Phase 2 comment service with a candidate target; any member who `can_read_candidate`; `comment_limit` 429 |
-| POST         | `/api/capital/gate`                | user     | evaluate + persist region gate for the session `{attested:boolean}`; returns `{granted, reason}`; drives whether Maalgeli UI shows. Reads profile country + geo header; always logs a `capital_gate_evaluations` row |
-| POST/DELETE  | `/api/capital/fund-interest`       | user     | fund-first funnel: standing fund-level invest intent (`interests`, `candidate_id` null). Region-gate required; not granted → `capital_region_gated` notice, no intent created. POST `{message?, attested}`; one per user; DELETE retracts |
+| POST         | `/api/capital/gate`                | user     | **Refuses unconditionally**: `capital_unavailable` 403 for any signed-in caller (401 when signed out). No body is read, no gate is evaluated, no `capital_gate_evaluations` row is written — the append-only log records real evaluations only. There is nothing left to gate |
+| POST/DELETE  | `/api/capital/fund-interest`       | user     | POST **refuses unconditionally**: `capital_unavailable` 403 (401 signed out); no body read, no row created, no badge. DELETE is kept: removes the caller's own standing fund-level record (`interests` with `candidate_id` null, `type invest`) and returns `{registered:false}` — idempotent, and scoped to the caller |
 
 Phase 5 conventions worth knowing:
 
-- **Region gate is compliance-critical and append-only** — `evaluateCapitalGate`
-  grants iff `lower(profileCountry)==='so'` AND `lower(geoCountry)==='so'` AND
-  `attested===true`, and **always** inserts a `capital_gate_evaluations` row
-  (reason ∈ `granted`/`country_mismatch`/`geo_mismatch`/`no_attestation`/
-  `unknown_geo`). Geo country comes from `x-vercel-ip-country`; **the IP is never
-  stored**. Non-Somalia invest attempts return the `capital_region_gated` **notice**
-  (an `apiNotice`, not an error) and fall back to the informational view — no invest
-  language, no Maalgeli action.
+- **The region gate is retired, not merely closed** — no route evaluates it. The
+  pure decision functions in `lib/capital/region-gate.ts` and their tests are
+  retained (unreferenced by any route) so a future, separately approved
+  activation does not have to be rewritten from scratch, and the
+  `capital_gate_evaluations` table plus its historical rows are retained as
+  truthful record. Nothing calls `evaluateCapitalGate`, no new evaluation rows
+  are written, and no geo header is read. **Do not document capital as
+  "available in some regions" or "region-gated" anywhere: it is available in no
+  region.** The `capital_region_gated` notice code and its copy keys were
+  removed with the funnel; the current refusal is the `capital_unavailable`
+  **error**, not a notice.
+- **The invest UI is gone, not hidden** — the Maalgeli CTA, region-attestation
+  modal and fund modal components were deleted; `InterestBar` renders only the
+  Support (interest type `cosign`) and help halves. A client cannot reach
+  an invest surface, and a client bypassing the UI hits the server refusals
+  above.
 - **Reviewer set for v1.0 = mod/admin, with recusal** — no dedicated reviewer
   role exists pre-Phase-6, so `can_review_candidate` = `is_mod() OR is_admin()`
   AND NOT a member of the Candidate's Lab (§17 fairness). `not_a_reviewer` (403)

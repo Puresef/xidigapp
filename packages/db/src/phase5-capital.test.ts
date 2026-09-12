@@ -349,7 +349,10 @@ describe('interests are own-row-only; counts via candidate_interest_counts()', (
     expect(await countVisible(helper, 'interests', helpId)).toBe(1); // own
     expect(await countVisible(cosigner, 'interests', helpId)).toBe(0); // not theirs
 
-    const counts = await db.asUser(helper, (tx) =>
+    // Counts are server-only since 20260911001000 (a member calling the
+    // SECURITY DEFINER function directly could read any candidate's counts);
+    // the app reads them with the service role.
+    const counts = await db.withRole('service_role', null, (tx) =>
       tx.query(`select * from candidate_interest_counts($1)`, [cand]),
     );
     const row = counts.rows[0] as { help: number; cosign: number; invest: number };

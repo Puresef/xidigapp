@@ -16,17 +16,13 @@ export interface AnigaBadge {
   slug: string;
   labelKey: MessageKey;
   badgeClass: BadgeClass;
-  /** Garab threshold as a bare number label; every tier renders identically. */
+  /** `user_badges.tier`, passed through. No displayed badge interpolates a
+   *  tier today — the only tiered label (the Garab milestone) is retired. */
   tier: string | null;
   tooltipKey: MessageKey | null;
 }
 
-/**
- * slug → label key. Extends the map profile-view-card has carried since Phase 7
- * with the Garab milestone, which rides ONE definition and takes its threshold
- * from `user_badges.tier`: three definitions would invite three treatments, and
- * ruling 10c wants ×5/×25/×100 indistinguishable.
- */
+/** slug → label key (the map profile-view-card has carried since Phase 7). */
 export const ANIGA_BADGE_LABEL_KEYS: Record<string, MessageKey> = {
   'founding-member': 'profile.badgeFoundingMember',
   'lab-lead': 'profile.badgeLabLead',
@@ -36,7 +32,21 @@ export const ANIGA_BADGE_LABEL_KEYS: Record<string, MessageKey> = {
   'identity-verified': 'profile.badgeIdentityVerified',
   'community-verified': 'profile.badgeCommunityVerified',
   'verified-business': 'profile.badgeVerifiedBusiness',
-  'garab-milestone': 'profile.badgeGarabMilestone',
+};
+
+/**
+ * Badges whose definition row stays in the database but which the profile
+ * must never display. slug → why. A retired slug renders nothing even if a
+ * `user_badges` row appears — the DB row and any history are untouched.
+ */
+export const RETIRED_BADGE_SLUGS: Record<string, string> = {
+  // Packet B follow-up (PRD Relook §24 / D-10): named "Garab" (the support
+  // signal) but defined as "verified thanks from askers" — resolved-Ask helper
+  // credit. Neither reading is honest on a profile: support never verifies
+  // anything, and helper credit already has its own badge (Top Helper). No
+  // production path ever granted it (0 holders on Dev), so it is retired
+  // rather than renamed into a new badge system.
+  'garab-milestone': 'mixed support/verified-helper-credit meaning; never granted',
 };
 
 /**
@@ -46,13 +56,9 @@ export const ANIGA_BADGE_LABEL_KEYS: Record<string, MessageKey> = {
  * get one: an invented criterion would be worse than none.
  */
 export const ANIGA_BADGE_TOOLTIP_KEYS: Record<string, MessageKey> = {
-  'garab-milestone': 'profile.badgeGarabTooltip',
   'top-helper': 'profile.badgeTopHelperTooltip',
   'founding-member': 'profile.badgeFoundingMemberTooltip',
 };
-
-/** Labels that interpolate the tier, so a tier-less row can never render `×{count}`. */
-const TIER_LABEL_SLUGS = new Set(['garab-milestone']);
 
 /**
  * Build a renderable badge from a `user_badges` row joined to its definition.
@@ -67,9 +73,9 @@ export function toAnigaBadge(
   badgeClass: BadgeClass,
   tier: string | null = null,
 ): AnigaBadge | null {
+  if (slug in RETIRED_BADGE_SLUGS) return null;
   const labelKey = ANIGA_BADGE_LABEL_KEYS[slug];
   if (!labelKey) return null;
-  if (TIER_LABEL_SLUGS.has(slug) && !tier) return null;
 
   return {
     slug,

@@ -475,18 +475,17 @@ describe('badge provenance — no event, no badge (A12)', () => {
       entity_id: string;
     };
 
+    // Fixture moved off garab-milestone when that badge was retired
+    // (20260911001000); top-helper is the live earned badge for helper credit.
     const granted = await db.withRole('service_role', null, (tx) =>
-      tx.query(`select award_badge($1, 'garab-milestone', null, $2, '25') as ok`, [
-        member,
-        eventId,
-      ]),
+      tx.query(`select award_badge($1, 'top-helper', '2026-08', $2) as ok`, [member, eventId]),
     );
     expect((granted.rows[0] as { ok: boolean }).ok).toBe(true);
 
     const row = await db.admin.query(
-      `select ub.reputation_event_id, ub.source_entity_type, ub.source_entity_id, ub.tier
+      `select ub.reputation_event_id, ub.source_entity_type, ub.source_entity_id, ub.context
        from user_badges ub join badge_definitions bd on bd.id = ub.badge_id
-       where ub.user_id = $1 and bd.slug = 'garab-milestone'`,
+       where ub.user_id = $1 and bd.slug = 'top-helper'`,
       [member],
     );
     expect(row.rows[0]).toEqual({
@@ -495,7 +494,7 @@ describe('badge provenance — no event, no badge (A12)', () => {
       // ledger row is later cascaded away by an anonymisation.
       source_entity_type: 'post',
       source_entity_id: entityId,
-      tier: '25',
+      context: '2026-08',
     });
   });
 

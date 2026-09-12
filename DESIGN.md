@@ -63,7 +63,7 @@ is orientation.
   primary buttons, focus rings, active states all use it.
 - **Trust orange is reserved.** `--x-trust` (#FF8C00 family) marks trust and
   celebration ONLY: Verified (avatar ring/check, listing chip), Wins, Founding
-  Member, Garab/Co-sign, Capital entry. Anywhere else it is a violation.
+  Member, Support (legacy Garab), Capital entry. Anywhere else it is a violation.
   #FF8C00 on white is 2.33:1 — as *text* use `--x-trust-fg` (`#a85700` light —
   the softer `#b35f00` fails AA at 4.15:1 on the trust-soft chip tint — /
   `#ffa733` dark); pure #FF8C00 only as ring/border or fill-with-ink

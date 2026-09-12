@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Enums } from '@xidig/db';
 
 import { CANDIDATE_LIST_PAGE_SIZE } from '@/lib/capital/constants';
+import { toInterestCounts, type InterestCounts } from '@/lib/capital/interest-counts';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 import { keysetBefore, type Cursor } from '@/lib/pagination';
 
@@ -141,11 +142,7 @@ export interface VoteTally {
   total: number;
 }
 
-export interface InterestCounts {
-  help: number;
-  cosign: number;
-  invest: number;
-}
+export type { InterestCounts } from '@/lib/capital/interest-counts';
 
 /** The viewer's own signals (RLS reads — own-row-only on votes/interests). */
 export interface ViewerSignals {
@@ -241,10 +238,7 @@ async function fetchInterestCounts(admin: Admin, candidateId: string): Promise<I
     cand: candidateId,
   } as never);
   if (error) throw new Error(`interest counts failed: ${error.message}`);
-  const row = (Array.isArray(data) ? data[0] : data) as
-    | { help: number; cosign: number; invest: number }
-    | undefined;
-  return { help: row?.help ?? 0, cosign: row?.cosign ?? 0, invest: row?.invest ?? 0 };
+  return toInterestCounts(data);
 }
 
 function buildTimeline(cand: CandidateRow): TimelineMilestone[] {

@@ -39,7 +39,13 @@ export const en = {
   // Canonical product terms used inside sentences and on buttons
   'term.lab': 'Lab',
   'term.club': 'Club',
-  'term.garab': 'Co-sign',
+  // The non-financial support action (key name `garab` is a legacy internal
+  // identifier). EN label "Support" / SO provisional "Taageer" — owner-edited
+  // PRD Relook §24 (supersedes the interim "Show support" and the bare "Garab").
+  // (PRD Relook §24 / D-10, owner ruling Packet B). It is encouragement only:
+  // never an investment, a vote, a verification, a review or a ranking, and
+  // it unlocks nothing — counts are visible to everyone either way.
+  'term.garab': 'Support',
   'term.maalgeli': 'Invest',
 
   // Seeded / AI content labels (§21) — shown on cards for non-member content.
@@ -73,8 +79,15 @@ export const en = {
 
   // Core actions
   'action.getStarted': 'Get started',
-  'action.garab': 'Co-sign',
-  'action.garabCount': { one: '{count} co-sign', other: '{count} co-signs' },
+  // One support vocabulary for every surface that carries the control (the
+  // fulfilled-Ask GarabButton and the candidate InterestBar):
+  // Support → Supporting → Remove support · "{count} people support this".
+  'action.garab': 'Support',
+  'action.garabActive': 'Supporting',
+  'action.garabRemove': 'Remove support',
+  'action.garabCount': { one: '{count} person supports this', other: '{count} people support this' },
+  'action.garabNote':
+    'Support is encouragement only — not an investment, a vote, a rating, or a check of anyone’s work.',
   'action.canHelp': 'I can help',
   'action.save': 'Save',
   'action.cancel': 'Cancel',
@@ -258,7 +271,8 @@ export const en = {
     'This message request hasn’t been accepted yet. You’ll be able to chat once they accept.',
 
   // --- Labs / Warshad (§27 Labs block) ---
-  'error.notSupporter': 'Creating a Lab requires a Supporter membership.',
+  // Paid tier = "Xidig Plus" (owner-edited PRD Relook §24; formerly "Supporter").
+  'error.notSupporter': 'Creating a Lab requires Xidig Plus.',
   'error.capitalUnavailable': "Investing isn't offered on Xidig right now.",
   'error.charterIncomplete':
     'Your Lab charter needs a few more fields before it can go live. Complete them here.',
@@ -291,7 +305,7 @@ export const en = {
   'error.reportDuplicate':
     "You've already reported this — our team is on it. Thanks for looking out for the community.",
   'error.appealAlreadySubmitted':
-    "You've already appealed this decision. There's one appeal per action, and a senior moderator will respond within 72 hours.",
+    "You've already appealed this decision. There's one appeal per action, and a moderator who was not involved in it will review yours.",
   'error.appealNotEligible':
     "There's nothing to appeal here, or this action isn't yours to appeal.",
   'error.appealSelfReview':
@@ -418,7 +432,7 @@ export const en = {
 
   // Home screen
   'home.welcome': 'Welcome to Xidig.',
-  'home.communityProof': 'Builders back each other here:',
+  'home.communityProof': 'Builders support each other here:',
 
   // Auth flows (Phase 1: three co-equal sign-in methods, §9/§26)
   'auth.signInTitle': 'Sign in to Xidig',
@@ -672,7 +686,7 @@ export const en = {
   // Phase 6 (§19) member appeal form (replaces the mailto stub).
   'settings.appealTitle': 'Appeal a moderation decision',
   'settings.appealIntro':
-    'If you think a decision was wrong, tell us what happened. A different moderator than the one who made the decision will review your appeal within 72 hours.',
+    'If you think a decision was wrong, tell us what happened. A different moderator than the one who made the decision will review your appeal.',
   'settings.appealEmpty': 'You have no moderation decisions to appeal right now.',
   'settings.appealActionLabel': 'Decision',
   'settings.appealReasonLabel': 'Why should we reconsider?',
@@ -750,7 +764,7 @@ export const en = {
   // Phase 2 AI-escalation queue above). Off the launch floor — internal tooling.
   'admin.reportsTitle': 'Member reports',
   'admin.reportsIntro':
-    'Reports members filed, oldest first. Claim one to review, then decide. The 48-hour SLA badge turns red when a report is overdue.',
+    'Reports members filed, oldest first. Claim one to review, then decide. The badge turns red past our internal 24-hour first-review target (a planning target, not a promise made to members).',
   'admin.reportsEmpty': 'No reports in this view.',
   'admin.reportStatusOpen': 'Open',
   'admin.reportStatusInReview': 'In review',
@@ -762,7 +776,7 @@ export const en = {
   'admin.reportReason': 'Reason',
   'admin.reportSnapshot': 'Captured evidence',
   'admin.reportAgeHours': '{hours}h old',
-  'admin.reportSlaBreached': 'SLA overdue',
+  'admin.reportSlaBreached': 'Past target',
   'admin.reportClaim': 'Claim',
   'admin.reportNoViolation': 'No violation',
   'admin.reportDismiss': 'Dismiss report',
@@ -777,7 +791,7 @@ export const en = {
   // Admin — Phase 6 appeals review queue (§19 second-mod review).
   'admin.appealsTitle': 'Appeals',
   'admin.appealsIntro':
-    'Members appealing a moderation action. You cannot review an appeal of your own action — those are hidden. The 72-hour SLA badge turns red when an appeal is overdue.',
+    'Members appealing a moderation action. You cannot review an appeal of your own action — those are hidden. The badge turns red past our internal 72-hour first-review target (a planning target, not a promise made to members).',
   'admin.appealsEmpty': 'No appeals to review.',
   'admin.appealAppellant': 'Appeal from',
   'admin.appealOriginalAction': 'Action under appeal',
@@ -791,7 +805,7 @@ export const en = {
   // Admin — Phase 6 verification queue (§14 verifier tooling).
   'admin.verifyTitle': 'Verification queue',
   'admin.verifyIntro':
-    'Identity and business verification requests, oldest first. The 7-day SLA badge turns red when a request is overdue. Opening a recording is logged.',
+    'Identity and business verification requests, oldest first. The badge turns red past our internal 7-day first-review target. Opening a recording is logged.',
   'admin.verifyEmpty': 'No verification requests waiting.',
   'admin.verifyTypeIdentity': 'Identity',
   'admin.verifyTypeBusiness': 'Business',
@@ -918,12 +932,10 @@ export const en = {
   'profile.badgeIdentityVerified': 'Identity Verified',
   'profile.badgeCommunityVerified': 'Community Verified',
   'profile.badgeVerifiedBusiness': 'Verified Business',
-  // Aniga v3 Badge Canon (ruling 10). Garab rides one definition with the
-  // threshold as a param — ×5/×25/×100 are the same badge, never a ladder.
-  // Tooltips carry the full earning criterion the short chip label cannot.
-  'profile.badgeGarabMilestone': 'Co-sign ×{count}',
-  'profile.badgeGarabTooltip':
-    '{count} verified thanks, given by the askers whose Asks this member resolved. It cannot be bought and cannot be removed.',
+  // Aniga v3 Badge Canon (ruling 10): tooltips carry the full earning
+  // criterion the short chip label cannot. (The Garab milestone badge and its
+  // two keys were retired in the Packet B follow-up — see lib/aniga/badges.ts
+  // RETIRED_BADGE_SLUGS.)
   'profile.badgeTopHelperTooltip':
     'Last month’s most-verified helper. Chosen by member vote — one vote per member.',
   'profile.badgeFoundingMemberTooltip': 'One of the first 500 members who built this community.',
@@ -1177,7 +1189,6 @@ export const en = {
   'plaza.guulPromptCta': 'Write the Win',
   'plaza.guulPromptDismiss': 'No, thanks',
   'plaza.guulPromptClose': 'Dismiss this suggestion',
-  'plaza.garabHelperNote': 'You stood with them. The count shows only after you take part.',
   'plaza.timelineTitle': 'Ask timeline',
   'plaza.detailsTitle': 'Details',
   'plaza.detailsCategory': 'Category',
@@ -1339,10 +1350,10 @@ export const en = {
   'messages.requestSent':
     'Your message request has been sent. They’ll see it when they next open Xidig.',
   'messages.reportSubmitted':
-    'Thanks for the report. We review all reports within 48 hours and will update you on the outcome.',
+    'Thanks for the report. A person reviews every report, and we will update you on the outcome.',
   // Phase 6 (§27 Moderation + §19 account lifecycle) success notices
   'messages.appealSubmitted':
-    "Your appeal has been sent to a senior moderator. We'll respond within 72 hours.",
+    'Your appeal has been sent to a moderator who was not involved in the original decision. We will come back to you with the outcome.',
   'messages.verificationRequested':
     "Your verification request is in. We'll be in touch to schedule your video call.",
   'messages.accountDeactivated':
@@ -1431,8 +1442,8 @@ export const en = {
   'lab.modeClub': 'Club',
   'lab.modeClubHint': 'Casual — gather people around a topic. Free to start.',
   'lab.modeLab': 'Lab',
-  'lab.modeLabHint': 'Serious — a charter-backed venture track. Needs a Supporter membership.',
-  'lab.createSupporterNote': 'Creating a Lab requires a Supporter membership.',
+  'lab.modeLabHint': 'Serious — a charter-backed venture track. Needs Xidig Plus.',
+  'lab.createSupporterNote': 'Creating a Lab requires Xidig Plus.',
   'lab.fieldName': 'Name',
   'lab.fieldSlug': 'Address',
   'lab.fieldSlugHint':
@@ -1681,11 +1692,14 @@ export const en = {
   'search.crossTabCta': 'See {count} in {label}',
 
   // Capital / Maal (§6/§17/§27). New launch-floor namespace — a trust surface.
-  // Canonical terms Maalgeli (Invest) / Garab (Co-sign) are NOT redefined here;
-  // reuse term.maalgeli / term.garab / action.garab*.
+  // Canonical terms Maalgeli (Invest) / Support (key garab) are NOT redefined
+  // here; reuse term.maalgeli / term.garab / action.garab*.
+  // "Back/backing/community-backed" is reserved for a future, legally reviewed
+  // capital context. Encouragement says "support"; the Candidate process (open
+  // review + member vote) says "review" — never "support", which is not a vote.
   // Index + entry
   'capital.indexTitle': 'Capital',
-  'capital.indexSubtitle': 'Ventures the community is building and backing.',
+  'capital.indexSubtitle': 'Ventures the community is building and supporting.',
   'capital.labsEntryLink': 'Explore Capital',
   // The Phase-5 candidate board's own name. /capital is the Maal index (D1),
   // so the board moved to /capital/candidates and needs a title that is not
@@ -1695,7 +1709,7 @@ export const en = {
   'capital.fromLab': 'From',
   'capital.emptyTitle': 'No Candidates yet',
   'capital.emptyBody':
-    'A Candidate is a venture a Lab has put forward for backing. When Labs submit theirs, they show up here.',
+    'A Candidate is a venture a Lab has put forward for open review. When Labs submit theirs, they show up here.',
   'capital.emptyLabsLink': 'Browse Labs',
   // Status badges
   'capital.statusDraft': 'Draft',
@@ -1722,7 +1736,12 @@ export const en = {
   'capital.reviewersOnlyHint':
     "Hide this Candidate from members until it's decided; only reviewers and your Lab can see it.",
   'capital.submitCta': 'Submit for review',
-  'capital.submitHint': 'Submitting opens a 7-day Supporter vote and sends it to reviewers.',
+  // Owner ruling (12 Sep): the candidate vote is NOT a paid-tier benefit. The
+  // mechanics still gate it on the paid tier today, so copy states that as a
+  // temporary eligibility constraint — never as a value proposition. The
+  // mechanics conflict is a separate gated issue (reconciliation record).
+  'capital.submitHint':
+    'Submitting opens a 7-day candidate vote and sends it to reviewers. Eligibility is under review; current voting access requires Xidig Plus.',
   // Rubric / reviews
   'capital.rubricHeading': 'Review scores',
   'capital.rubricTeam': 'Team',
@@ -1744,22 +1763,25 @@ export const en = {
   'capital.decisionDecline': 'Decline',
   'capital.decisionReasonLabel': 'Reason (shown to the Lab)',
   'capital.decisionReasonHint': 'A short, fair note the Lab will see.',
-  // Supporter governance vote
-  'capital.voteHeading': 'Supporter vote',
+  // Candidate vote (formerly "Supporter vote" — never "Xidig Plus vote").
+  'capital.voteHeading': 'Candidate vote',
+  'capital.voteEligibilityNote': 'Eligibility is under review. Current access requires Xidig Plus.',
+  'capital.voteNotEligible': 'Not currently eligible',
   'capital.voteSignalNote': "A non-binding community signal — it guides, it doesn't decide.",
   'capital.voteApprove': 'Approve',
   'capital.voteReject': 'Reject',
   // Ballot option-card descriptions (brand-rethink adoption): signal
   // language only — mirrors voteSignalNote, never decision/invest language.
-  'capital.voteApproveDesc': 'Signal your support for putting this venture before the community.',
+  // "Support" is the non-financial support action; a ballot option must not
+  // borrow its word.
+  'capital.voteApproveDesc': 'Signal that this venture should go before the community.',
   'capital.voteRejectDesc': 'Signal that this one isn’t ready yet.',
   'capital.voteRetract': 'Retract vote',
   'capital.voteTally': '{approve} approve · {reject} reject · {total} total',
-  // Interests bar (Garab / help / Maalgeli)
-  'capital.interestHeading': 'Back this venture',
-  'capital.signInToEngage': 'Sign in to back this venture',
-  'capital.cosignCount': { one: '{count} co-sign', other: '{count} co-signs' },
-  'capital.cosignDone': 'Co-signed',
+  // Interests bar (Support / help). "Back" read as financial backing on
+  // a surface where investing is not offered — the control says support.
+  'capital.interestHeading': 'Support this venture',
+  'capital.signInToEngage': 'Sign in to support or offer help',
   'capital.canHelp': 'I can help',
   'capital.canHelpDone': 'Offered to help',
   // A2 containment: invest/fund promotional keys removed with their surfaces —
@@ -1771,7 +1793,7 @@ export const en = {
   // Venture timeline
   'capital.timelineHeading': 'Venture timeline',
   'capital.timelineCreated': 'Created',
-  'capital.timelineSubmitted': 'Submitted for backing',
+  'capital.timelineSubmitted': 'Submitted for review',
   'capital.timelineDecided': 'Reviewed',
   'capital.timelineFunded': 'Funded',
   // Open member comments (§12)
@@ -1794,7 +1816,7 @@ export const en = {
   // the casual visitor comes for the social home; Labs/Capital reveal deeper.
   'marketing.heroTitle': 'The Somali social app for connection, discovery, and building.',
   'marketing.heroSub':
-    'Post wins, ask for help, find people and businesses, follow Labs, message members, and back what the community is building — in one bilingual, low-data app.',
+    'Post wins, ask for help, find people and businesses, follow Labs, message members, and support what the community is building — in one bilingual, low-data app.',
   'marketing.seeProduct': 'Explore what’s inside',
   'marketing.groupsTitle': 'Everything your groups are missing',
   'marketing.groupsBody':
@@ -1816,9 +1838,9 @@ export const en = {
   'marketing.blockLabsTitle': 'Turn ideas into rooms',
   'marketing.blockLabsBody':
     'Start a casual Club; promote it to a Lab when it gets serious. Updates, decisions, links, and members stay in one place.',
-  'marketing.blockCapitalTitle': 'Back what’s being built',
+  'marketing.blockCapitalTitle': 'Support what’s being built',
   'marketing.blockCapitalBody':
-    'Co-sign promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
+    'Support promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
   'marketing.blockLiteTitle': 'Built for our internet',
   'marketing.blockLiteBody':
     'Somali and English from day one. Lite mode for slow connections — images, maps, and embeds load only when you tap.',
@@ -1839,7 +1861,7 @@ export const en = {
   // a report count into copy (it would go stale into a fake number).
   'marketing.reportsTeaserCount': 'Read all {count} reports',
   'marketing.membershipTeaserBody':
-    'Free to join. Supporter membership — around $1/month — unlocks Lab creation and governance votes.',
+    'Free to join. Xidig Plus — around $1/month — helps keep Xidig running and raises your daily posting and comment allowances. Xidig Plus does not buy trust, verification, ranking, governance rights or capital access.',
 
   // Homepage "next up" event card (extras item 8) — renders only when a real
   // upcoming public event exists.
@@ -1861,7 +1883,7 @@ export const en = {
   // Meta description for /product (search snippet + share card) — standalone
   // copy; productIntro's "Everything below" is deictic and reads wrong there.
   'marketing.productDescription':
-    'The live product tour: a purposeful feed, member profiles, a searchable directory of people and businesses, DMs with boundaries, Labs, and community-backed ventures.',
+    'The live product tour: a purposeful feed, member profiles, a searchable directory of people and businesses, DMs with boundaries, Labs, and community-supported ventures.',
   'marketing.productTrustTitle': 'Trust & verification',
   'marketing.productTrustBody':
     'Identity, community, and business verification badges; human moderation with appeals; and a low-bandwidth Lite mode that respects every connection.',
@@ -1875,16 +1897,16 @@ export const en = {
     'A Lab is a small team building openly: a charter, weekly updates, milestones, and an honest dormant flag when life happens. Strong Labs can put a venture candidate before the community.',
   'marketing.labsTeaserNote':
     'Every public Lab already has a shareable page. The full Lab directory opens here soon.',
-  'marketing.capitalTeaserTitle': 'Capital — community-backed ventures',
+  'marketing.capitalTeaserTitle': 'Capital — community-supported ventures',
   'marketing.capitalTeaserBody':
-    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Today Xidig captures intent only — there are no live financial flows.',
+    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Investing is not offered on Xidig and there are no financial flows — what you can do is offer help or support the work.',
 
   // /about
   'marketing.aboutTitle': 'About Xidig',
   'marketing.aboutStory1':
     'Xidig means star. We are building the place where the Somali nation’s builders — at home and across the diaspora — find each other and build together.',
   'marketing.aboutStory2':
-    'Talent is everywhere in our community; trust and discovery are not. Xidig is community-led infrastructure for both: a public square, build-in-public workshops, a business directory, and a community that backs its own.',
+    'Talent is everywhere in our community; trust and discovery are not. Xidig is community-led infrastructure for both: a public square, build-in-public workshops, a business directory, and a community that supports its own.',
   'marketing.aboutStory3':
     'We build in public, we don’t fake numbers, and we design for a 2G connection in Mogadishu first.',
   'marketing.aboutCapitalTitle': 'How Capital works',
@@ -1903,9 +1925,9 @@ export const en = {
   'marketing.memberFreeTitle': 'Member — free',
   'marketing.memberFreeBody':
     'A profile and business listing, the Plaza, the directory, messages, and joining Clubs. Free stays free.',
-  'marketing.memberSupporterTitle': 'Supporter — around $1/month',
+  'marketing.memberSupporterTitle': 'Xidig Plus — around $1/month',
   'marketing.memberSupporterBody':
-    'Everything in free, plus creating Labs, putting candidates forward, and voting in community governance.',
+    'Everything in free, plus higher daily posting and comment allowances — and it helps keep Xidig running. Xidig Plus does not buy trust, verification, ranking, governance rights or capital access.',
   'marketing.memberBillingNote':
     'Billing isn’t live yet. The exact price is confirmed with members before anyone is charged.',
 
@@ -1922,9 +1944,9 @@ export const en = {
   // (Xidig, Somalia) are the ONLY facts the
   // founder must fill; every other statement matches a shipped app capability.
   'marketing.privacyUpdatedNotice':
-    'Last updated 10 July 2026. We may update this policy; members are notified before any material change takes effect.',
+    'Last updated 10 July 2026. We may update this policy; the current version is always the one published here.',
   'marketing.termsUpdatedNotice':
-    'Last updated 10 July 2026. We may update these terms; members are notified before any material change takes effect.',
+    'Last updated 10 July 2026. We may update these terms; the current version is always the one published here.',
   'marketing.legalEntityNote':
     'Xidig is operated from Somalia, and these terms and policies are governed by Somali law.',
 
@@ -1982,7 +2004,7 @@ export const en = {
     'Be honest, be lawful, and keep Xidig safe. Don’t harass, deceive, impersonate, spam, or post unlawful or harmful content, and don’t abuse or attack the platform. The full standards live in our Community Guidelines, which form part of these terms. Content that breaks them can be removed.',
   'marketing.termsFeesTitle': 'Membership and fees',
   'marketing.termsFeesBody':
-    'Joining and core membership are free, and free stays free. Supporter membership — which unlocks creating Labs, putting candidates forward, and voting in community governance — will cost around $1 per month once billing goes live. Billing is not active yet; the confirmed price is announced to members before anyone is charged, and nothing is billed without your agreement.',
+    'Joining and core membership are free, and free stays free. Xidig Plus membership — which unlocks creating Labs, putting candidates forward, and voting in community governance — will cost around $1 per month once billing goes live. Billing is not active yet; the confirmed price is announced to members before anyone is charged, and nothing is billed without your agreement.',
   'marketing.termsCapitalTitle': 'Capital',
   // A3: conservative post-A2 wording — investment is not offered and intent is
   // no longer captured. Placeholder pending exact legal-reviewed ToS text.

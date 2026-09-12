@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { useT } from '@xidig/i18n/react';
 
@@ -13,20 +13,28 @@ import { createReceiptGuard, gatesOpen, motionFor } from '@/lib/motion-policy';
 import { PlainErrorBanner } from '../../auth/plain-error';
 
 /**
- * Garab on a resolved Codsi (D3 dabqaad — never a like/heart). Exists ONLY
- * post-fulfilled (the RLS with-check is the law; this component is the UI
- * half). Lit state stays Somali Blue per D3 — no bronze, no orange. The
- * count renders only after the viewer takes part ("Tiradu waxay muuqataa oo
- * keliya markaad ka qaybqaadato"), and activating earns the one-shot mark
- * receipt.
+ * Support (legacy internal name Garab) on a resolved Codsi (D3 dabqaad — never
+ * a like/heart).
+ * Exists ONLY post-fulfilled (the RLS with-check is the law; this component is
+ * the UI half). Lit state stays Somali Blue per D3 — no bronze, no orange.
+ *
+ * Support is a non-financial encouragement signal and unlocks nothing:
+ * the count is visible to every viewer before, during and after taking part
+ * (PRD Relook G1 — support counts are visible), and removing your own support
+ * updates the number but never hides it. The note under the button says what
+ * support is NOT (investment, vote, rating, check of the work) before the
+ * first tap.
+ *
+ * States: "Support" (aria-pressed=false) → "Supporting" (aria-pressed=
+ * true, described by "Remove support" — pressing again takes it back).
  *
  * Motion: `garab_given` is a 260 ms FLAP, not a celebration — the G3 locked
  * table reserves celebrate for once-ever moments. The receipt goes through a
- * shared 1.2 s frequency guard so a member co-signing down a thread, or a
+ * shared 1.2 s frequency guard so a member supporting down a thread, or a
  * retry after a failed call, collapses into one beat instead of a stutter.
  */
 /** Module-scoped on purpose: the guard is per-viewer, not per-button, so
- *  co-signing several posts in a row still reads as one beat. */
+ *  supporting several posts in a row still reads as one beat. */
 const receiptGuard = createReceiptGuard(1200);
 
 export function GarabButton({
@@ -41,6 +49,7 @@ export function GarabButton({
   initialMine: boolean;
 }) {
   const t = useT();
+  const removeHintId = useId();
   const [count, setCount] = useState(initialCount);
   const [mine, setMine] = useState(initialMine);
   const [pending, setPending] = useState(false);
@@ -56,6 +65,7 @@ export function GarabButton({
       setPending(true);
       setError(null);
       try {
+        // API contract keeps its identifiers (route /cosign, field `cosigned`).
         const res = active
           ? await apiDelete<{ cosigned: boolean; count: number }>(`/api/posts/${postId}/cosign`)
           : await apiPut<{ cosigned: boolean; count: number }>(`/api/posts/${postId}/cosign`);
@@ -75,14 +85,16 @@ export function GarabButton({
 
   return (
     <div className="xidig-codsi-garab">
+      <p className="xidig-codsi-garab__count">{t('action.garabCount', { count })}</p>
       <button
         type="button"
         className="xidig-button xidig-button--secondary xidig-codsi-garab__button"
         aria-pressed={mine}
+        aria-describedby={mine ? removeHintId : undefined}
         disabled={pending}
         onClick={toggle}
       >
-        {/* Outline = unlit; co-signed = lit (filled) with the smoke wisps
+        {/* Outline = unlit; supporting = lit (filled) with the smoke wisps
             (CSS double-gated). Decorative — the label carries the meaning. */}
         <XidigIcon
           name="garab"
@@ -92,7 +104,7 @@ export function GarabButton({
           animateSmoke={mine}
           className="x-ic--lead"
         />
-        {mine ? t('action.garabCount', { count }) : t('action.garab')}
+        {mine ? t('action.garabActive') : t('action.garab')}
         {receipt > 0 ? (
           <AnimatedMark
             key={receipt}
@@ -103,7 +115,12 @@ export function GarabButton({
           />
         ) : null}
       </button>
-      {mine ? <p className="xidig-codsi-garab__note">{t('plaza.garabHelperNote')}</p> : null}
+      {mine ? (
+        <span id={removeHintId} className="xidig-visually-hidden">
+          {t('action.garabRemove')}
+        </span>
+      ) : null}
+      <p className="xidig-codsi-garab__note">{t('action.garabNote')}</p>
       {error ? <PlainErrorBanner error={error} /> : null}
     </div>
   );

@@ -52,7 +52,9 @@ vi.mock('@/lib/supabase/server', () => ({
   getSupabaseAdmin: () => ({
     rpc: async (name: string) => {
       dbCalls.rpc.push(name);
-      return { data: [{ help: 1, cosign: 2, invest: 0 }], error: null };
+      // A non-zero legacy invest tally, as Dev really holds: the projection
+      // must drop it, not merely happen to see a zero.
+      return { data: [{ help: 1, cosign: 2, invest: 7 }], error: null };
     },
     from: (table: string) => {
       if (table !== 'interests') throw new Error(`unexpected table ${table}`);
@@ -150,6 +152,17 @@ describe('help / cosign stay never-gated, badge-free', () => {
     expect(badgeCalls.awards).toHaveLength(0);
   });
 
+  it('returns only help + support counts — never the legacy invest tally', async () => {
+    authHolder.ctx = ctxOf();
+
+    const res = await POST(postReq({ type: 'cosign' }), routeCtx());
+    const text = await res.text();
+    const body = JSON.parse(text) as { data: { counts: Record<string, number> } };
+
+    expect(body.data.counts).toEqual({ help: 1, cosign: 2 });
+    expect(text).not.toMatch(/invest/i);
+  });
+
   it('help records the interest and awards NO badge', async () => {
     authHolder.ctx = ctxOf();
 
@@ -174,5 +187,8 @@ describe('DELETE retraction kept (invest included)', () => {
 
     expect(res.status).toBe(200);
     expect(dbCalls.deletes[0]).toEqual({ candidate_id: CAND, user_id: USER, type: 'invest' });
+    // The retraction still works; its response still carries no invest count.
+    const body = (await res.json()) as { data: { counts: Record<string, number> } };
+    expect(Object.keys(body.data.counts).sort()).toEqual(['cosign', 'help']);
   });
 });

@@ -14,6 +14,8 @@ import { XIDIG_ICONS, XIDIG_POST_TYPE_ICON, type XidigIconName } from './paths';
 
 interface GlyphEntry {
   key: string;
+  so?: string;
+  en?: string;
   post_type: string | null;
   legacy_post_type?: string;
   /** product slug for glyphs that name a surface rather than a post type (maal) */
@@ -39,6 +41,13 @@ function entry(key: string): GlyphEntry {
   if (!found) throw new Error(`glyph "${key}" missing from glyphs.map.json`);
   return found;
 }
+
+describe('glyphs.map.json — display labels', () => {
+  it('the support glyph (key garab) records the EN label "Support" and the provisional SO "Taageer"', () => {
+    expect(entry('garab').en).toBe('Support');
+    expect(entry('garab').so).toBe('Taageer');
+  });
+});
 
 describe('glyphs.map.json — P1 dictionary migration record', () => {
   it('codsi carries the new product slug with weydiin as its legacy trace', () => {

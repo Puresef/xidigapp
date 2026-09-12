@@ -70,7 +70,7 @@ export async function AnigaFacts({ facts }: AnigaFactsProps) {
 
       {/* Self-declared facts are a definition list, NEVER `.xidig-tag` pills:
           in this product a pill is the typography of attested evidence —
-          endorsement counts, badges, verification, Garab tiers — so a
+          endorsement counts, badges, verification — so a
           ticked-checkbox lane wearing one would quietly tell the reader that a
           stranger vouched for it. The demotion IS the epistemic signal, and it
           fixes a real defect on the way: the chips it replaces carried no

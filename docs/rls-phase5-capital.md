@@ -10,11 +10,18 @@ role, after explicit authz) — no client `insert/update/delete` policy exists o
 any Capital table.
 
 Locked scope (§17 + Warya 7 Jul): Capital v1 is a **listing/intro service +
-intent capture + manual ops**. NO money movement, NO pledge ledger, NO payout
-states, NO tokens. Maalgeli (Invest) = intent capture only, Somalia-region gated
-(geo-IP AND profile country AND self-attestation — **all three**, enforced at the
-**app layer**; the `capital_gate_evaluations` log here is the compliance audit
-trail). Garab/Co-sign + "I can help" are non-financial and **never gated**.
+manual ops**. NO money movement, NO pledge ledger, NO payout states, NO tokens.
+Support (EN "Support", SO provisional "Taageer"; interest type `cosign`) + "I can help" are
+non-financial and **never gated**.
+
+> **Superseded 10 Sep 2026 (A2 containment).** Intent capture is gone:
+> **investing is not offered on Xidig, in any region.** Every invest submission
+> path now returns `capital_unavailable` (403) without evaluating anything, and
+> the app-layer region gate is no longer called by any route. The RLS model
+> below is unchanged and still accurate — the tables, policies and API-only
+> write posture all remain — but read it as describing the *permission* model,
+> not an available product feature. `capital_gate_evaluations` retains its
+> historical rows and gains no new ones.
 
 ## Visibility predicates (SECURITY DEFINER, empty `search_path`)
 
@@ -57,7 +64,7 @@ the exact `poll_results()` precedent (Seq 14 anonymous ballots):
 | Function | Returns | Readability |
 |---|---|---|
 | `candidate_vote_tally(cand)` | `(approve int, reject int, total int)` | enforced by the **caller** (see below), not re-checked internally |
-| `candidate_interest_counts(cand)` | `(help int, cosign int, invest int)` | enforced by the caller; per-candidate only — fund-level (candidate_id null) intent is tallied server-side |
+| `candidate_interest_counts(cand)` | `(help int, cosign int, invest int)` | enforced by the caller; per-candidate only — fund-level (candidate_id null) intent is tallied server-side. **Server-only since `20260911001000_packet_b_quarantine`**: EXECUTE revoked from `authenticated`/`anon`/`public` (it has no visibility check, so members could read any candidate's counts, drafts included); `service_role` keeps it. The app projects `{help, cosign}` only (`lib/capital/interest-counts.ts`) |
 
 Both are `revoke all ... from public, anon` then `grant execute to authenticated,
 service_role`, matching every other Phase 1–4 helper.
@@ -70,7 +77,7 @@ blocked), and always **after** the candidate has been loaded under RLS
 `lib/capital/views.ts`). An internal `and can_read_candidate(cand)` guard would
 be actively wrong here: under the admin client `auth.uid()` is NULL, so that
 predicate is FALSE for every candidate and would permanently zero every tally
-(vote panel, "142 co-signs", the vote/interests API responses). The guard was
+(vote panel, "142 people support this", the vote/interests API responses). The guard was
 therefore dropped — access control lives at the caller's RLS candidate load.
 
 ## Per-table SELECT policies (all `to authenticated`)
@@ -89,13 +96,18 @@ reasons are meant to be visible, §17), rather than a separate reviewer-only
 scope. Write authz — `can_review_candidate` + recusal + aggregate recomputation
 of `venture_candidates.rubric_*_score` — is an API obligation (service role).
 
-`capital_gate_evaluations` is the **compliance audit log** (Seq 6 / §17). Every
-gate evaluation is written server-side with its three inputs
+`capital_gate_evaluations` is the **compliance audit log** (Seq 6 / §17). Each
+historical row records a gate evaluation with its three inputs
 (`profile_country`, `geo_ip_country` — derived country only, never the raw IP —
 and `attested`) and the decision (`granted`, `reason`). It is append-only and
-persists through anonymisation; no client role can update or delete it.
+persists through anonymisation; no client role can update or delete it. **Since
+A2 (10 Sep 2026) no route writes to it** — no gate is evaluated anywhere, so the
+table holds historical rows only and gains none.
 
-**Trusted geo header (compliance trust boundary).** `getGeoCountry`
+**Trusted geo header (compliance trust boundary) — retained, currently
+unreached.** No route calls this code today; it is documented because the lib is
+retained for a possible separately approved future activation, and because the
+trust reasoning must not be lost. `getGeoCountry`
 (`lib/capital/region-gate.ts`) reads the request country from **one** header:
 `x-vercel-ip-country`. On the Vercel deployment target this header is
 set-and-overwritten by the platform edge on every request, so a client cannot

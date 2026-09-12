@@ -132,7 +132,7 @@ describe('generated-content CSS contract (front.css)', () => {
 
   it('odometer digits ride data-d attributes', () => {
     const html = render('capital', labels);
-    // Co-sign odometer n=7 → digits 0..7 as EMPTY spans with data-d only.
+    // Show-support (Garab) odometer n=7 → digits 0..7 as EMPTY spans with data-d only.
     for (let digit = 0; digit <= 7; digit += 1) {
       expect(html).toContain(`data-d="${digit}"`);
     }

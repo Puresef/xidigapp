@@ -19,7 +19,7 @@ Legend: 🖥️ can be done locally/in-repo · 🌐 needs a provider account/liv
 | 2 | Plaza (posts/asks/polls/reactions/HITL) | ✅ | API-only writes; hourly sweep = external cron |
 | 3 | DMs · notifications · push (VAPID) | ✅ | realtime, no polling; push optional |
 | 4 / 4.5 | Labs/Spaces · media identity · settings · social · search | ✅ | playbooks seeded; Lite/MediaSlot normative |
-| 5 | Capital/Maal (candidates · intent) | ✅ | intent-only, region-gated; no money movement |
+| 5 | Capital/Maal (candidates · non-financial interest) | ✅ | investing not offered — every invest path refuses (`capital_unavailable`); Support/help only; no money movement |
 | 6 | Admin · mod · verification · account lifecycle | ✅ | verifier grants; DPIA gate for recording |
 | 7 | Reputation · badges · onboarding · matching · awards · mentor · analytics | ✅ | decay recompute now on cron |
 | 8 | AI seeding · REST API · MCP · weekly digest | ✅ | all gates green |

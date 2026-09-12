@@ -46,7 +46,7 @@ there). Reseed / refresh with
 - **Login:** `ayaan_dev`.
 - **URL:** `/plaza` → open **"Xawilaad Sandbox v0.1 is live"** (Ayaan's win).
 - **Shot:** the thread with its long comment chain, reactions, and mentions.
-- **Shows:** replies/co-signs (garab), an elder's story-comment, a sceptic's
+- **Shows:** replies/Support, an elder's story-comment, a sceptic's
   civil challenge — real social texture. (Also try the Somali Ask **"Sidee ku
   bartaa React?"** for a credited-answer + AI-helper reply.)
 
@@ -65,7 +65,7 @@ there). Reseed / refresh with
   variant (images collapse to blurhash placeholders).
 - **Shows:** §22 bilingual UX + the low-bandwidth path real members will use.
 
-## 7. Labs — the public / private / supporter split
+## 7. Labs — the public / private / Xidig Plus split
 
 - **Login:** `ayaan_dev`.
 - **URL:** `/labs`
@@ -76,7 +76,7 @@ there). Reseed / refresh with
   - **Iskaashato Hooyo** (public Lab, promoted from a club),
   - **Beeraha iyo Biyaha** / **Caafimaadka Hooyada** (members-only clubs),
   - **Suuq Nadiifin** (_dormant/abandoned_ — 28-day sweep state),
-  - **Golaha Maalgashiga** (Supporter-only — locked unless you're a Supporter),
+  - **Golaha Maalgashiga** (Xidig Plus–only — locked unless you're on Xidig Plus; tier id `supporter`),
   - **Barasho Online** (private — not listed; invite-only).
 
 ## 8. A Lab build-log (evidence / proof-of-work)
@@ -97,13 +97,15 @@ there). Reseed / refresh with
 
 ## 10. Capital — a venture with live governance
 
-- **Login:** `ifrah_invest` (Supporter, SO region → invest-eligible).
+- **Login:** `ifrah_invest` (Xidig Plus).
 - **URL:** `/capital`, then open **Xawilaad Sandbox** (submitted candidate).
-- **Shot:** the candidate page — pitch, rubric scores, the **Supporter vote
-  panel** (live 7-day window), interest bar (help / co-sign / **Maalgeli**).
-- **Shows:** §17 governance. Contrast with `abshir_maal` (US profile) where the
-  Maalgeli invest CTA is region-gated shut. Draft candidate **Hooyo Made** is
-  visible only to Iskaashato Hooyo members.
+- **Shot:** the candidate page — pitch, rubric scores, the **Candidate vote
+  panel** (live 7-day window; eligibility note "Eligibility is under review. Current access
+  requires Xidig Plus."), interest bar (help / Support only).
+- **Shows:** §17 governance, and that the candidate pipeline carries **no invest
+  surface for any member in any region** — investing is not offered on Xidig
+  (A2 containment). Draft candidate **Hooyo Made** is visible only to Iskaashato
+  Hooyo members.
 
 ## 11. Community Awards
 

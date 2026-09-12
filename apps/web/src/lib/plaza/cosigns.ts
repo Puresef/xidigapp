@@ -5,8 +5,9 @@ import type { Database } from '@xidig/db';
 /**
  * Garab on a resolved Codsi (P1). post_cosigns is own-rows-only under RLS
  * (§13-style aggregates without enumeration), so the count comes from the
- * service role — and the VIEW layer shows it only after the viewer takes
- * part ("Tiradu waxay muuqataa oo keliya markaad ka qaybqaadato").
+ * service role. The count is shown to every viewer who can read the ask —
+ * Support unlocks nothing (Packet B; the retired rule hid it until the
+ * viewer took part).
  */
 export interface PostCosignView {
   count: number;
