@@ -28,14 +28,17 @@ live-LLM-generated, so it is reproducible and safe to re-run).
 ## How to run
 
 Seeding runs inside the app (so it reuses the labelled content builders + env).
-Start the dev/staging server, then drive the job with the CLI (authenticated by
-`CRON_SECRET`, service scope):
+Start the app server pointed at the target database, then drive the job with
+the CLI (authenticated by `CRON_SECRET`, service scope). Remember the Supabase
+project labelled "Dev Xidig App" (`tbdryvhxxiqadseuxclm`) is the **live
+production database**: running this seed against it is production work.
 
 ```bash
 # Run (idempotent — re-running is a no-op):
 CRON_SECRET=... APP_URL=http://localhost:3000 pnpm --filter @xidig/web seed
 
-# Reset a run (local/staging only; blocked in production):
+# Reset a run (verified non-production DB only; refused for the production
+# project whatever NODE_ENV says — see "Safe environments"):
 CRON_SECRET=... APP_URL=http://localhost:3000 pnpm --filter @xidig/web seed -- --reset
 ```
 
@@ -63,8 +66,16 @@ chip on its profile. Admins review seeded content at **`/admin/seed`**.
 
 ## Safe environments
 
-- Reset is **blocked in production** (`DELETE /api/admin/seed` returns 403 when
-  `NODE_ENV=production`).
+- Reset is refused unless the **database** is a verified non-production target
+  (`apps/web/src/lib/seed/target-guard.ts`): `DELETE /api/admin/seed` returns
+  403 for the production project ref (`tbdryvhxxiqadseuxclm`, "Dev Xidig App"),
+  for an undeterminable target (fails closed) and for any hosted project not on
+  the reviewed allowlist (empty today — no non-production rehearsal database is
+  verified; a local stack is allowed). `NODE_ENV=production` is still refused
+  too. The old guard was `NODE_ENV` only, which a local server pointed at
+  production passes; it was insufficient.
+- The seed run itself (`POST`) creates labelled platform content and may run
+  against production only as explicitly approved production work.
 - Seeding requires a real Supabase (GoTrue) to provision the AI account; it
   fails with a clear error otherwise (it does not crash the app).
 
@@ -88,9 +99,10 @@ ceilings), so expanding the dataset without honoring the manifest fails CI.
 **Retirement plan.** Feeds are chronological with no ranking, so seeded posts
 age out mechanically as organic content arrives — a seed can never resurface
 above a newer member post. Seeded listings persist as *claimable* rows (a real
-owner claiming one converts it into real content, which is the goal). Staging
-tears down via `seed -- --reset`; in production (reset blocked) seeds simply
-stay labelled and sink — never delete member replies by removing a seeded
+owner claiming one converts it into real content, which is the goal). A
+verified non-production database tears down via `seed -- --reset`; on
+production (reset refused by the target guard) seeds simply stay labelled and
+sink — never delete member replies by removing a seeded
 parent. **Never top up density post-launch**: raising the ceilings in
 `data.test.ts` is a product decision that happens in this document first.
 
