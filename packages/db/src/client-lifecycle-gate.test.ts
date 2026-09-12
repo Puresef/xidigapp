@@ -255,14 +255,14 @@ describe.each(BLOCKED)('a %s account with a still-valid token', (status) => {
           (await tx.query(`select * from public.candidate_vote_tally($1)`, [candidate])).rows[0],
       ),
     ).toEqual({ approve: 0, reject: 0, total: 0 });
-    expect(
-      await db.asUser(
-        c().member,
-        async (tx) =>
-          (await tx.query(`select * from public.candidate_interest_counts($1)`, [candidate]))
-            .rows[0],
+    // Packet B (20260911001000) revoked EXECUTE on the interest counts from
+    // every client role, so a blocked account is refused outright. That is
+    // stronger than the zero-row lifecycle guard, which it composes with.
+    await expect(
+      db.asUser(c().member, (tx) =>
+        tx.query(`select * from public.candidate_interest_counts($1)`, [candidate]),
       ),
-    ).toEqual({ help: 0, cosign: 0, invest: 0 });
+    ).rejects.toThrow(/permission denied/);
     expect(
       await scalar(
         c().member,
