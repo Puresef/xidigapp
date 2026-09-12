@@ -1,3 +1,5 @@
+> **Historical reference — superseded; moved here 12 Sep 2026.** This is the repo copy of the v1.0 PRD, preserved for history. The canonical product direction is now the PRD Relook in [`/prd.md`](../../prd.md); implementing any of it still requires a bounded owner dispatch (Relook §2, §24.0). The Notion v1.0 PRD page is retained, not archived or deleted, for implementation history, prior assumptions and lessons learned. Nothing below is a current requirement unless the Relook preserves it. The learnings worth keeping are carried into the Relook's **Appendix A** as items CF-01 to CF-62, filtered for its direction. Section numbers here are unchanged, so older citations of `PRD §N` or `prd.md §N` without a D-ID still resolve to this file. **Before relying on any section, check the [archive crosswalk](#archive-crosswalk--what-happened-to-each-v10-section) at the end.** The "single source of truth" claim in the box below is historical.
+
 # PRD — Xidig App v1.0 (Standalone)
 
 <aside>
@@ -797,3 +799,265 @@ High-leverage, low-cost moves identified during reassessment. Each maps to the s
 - **'Xidig Verified' as a portable trust brand (strengthens §14):** position verification tiers as a credential members can display off-platform — a moat, not just a badge.
 
 [Xidig v1.0 — UI Spec & Canonical Screens](https://app.notion.com/p/Xidig-v1-0-UI-Spec-Canonical-Screens-885fa5570d19450e8d46306a39aa14a4?pvs=21)
+
+---
+
+## Archive crosswalk — what happened to each v1.0 section
+
+Added 12 Sep 2026, when this repo copy moved to `docs/archive/` at the owner's request and the PRD Relook ([`/prd.md`](../../prd.md)) became the canonical product direction. Each row says where a v1.0 rule stands now. "CF-nn" points to the Relook's Appendix A, which holds the carried learnings in their filtered form. "§n" and "D-nn" without "v1.0" refer to the Relook.
+
+| Disposition | Meaning |
+| --- | --- |
+| **Carried** | The learning is kept, filtered for the new direction, as a CF item. |
+| **Covered** | The Relook already says it, often more strictly. |
+| **Superseded** | The Relook replaces it. Do not reinstate it. |
+| **Retired** | Withdrawn for capital-containment, truthfulness or legal reasons. Do not reinstate it. |
+| **Existing** | A shipped capability outside the Relook's core. Under Relook §5 it is audited, then preserved, simplified, isolated or retired. It is neither deleted for being absent nor a target for being present. |
+| **Historical** | A build-method or process record only. |
+
+### v1.0 §1–§10: summary, goals, principles, entities, journeys, IA, feature list, data fields
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| §1 One-liner ("member-owned platform where Somali builders … build ventures, and fund them") | Superseded | §1 ("connect, share, and build together"). Say "member-owned" only when the rights exist (§14). Funding is gated (D-08) |
+| §2 Goals | Superseded | §5. The venture pipeline is no longer a goal; readiness is contextual (D-05) |
+| §3 Non-goals | Covered, one superseded | §5 "Not required". "Lab file uploads" is superseded: bounded attachments are core (D-04) |
+| §4 Success metrics (WAU, weekly Wins/Asks, Labs created, contact clicks) | Superseded | §21 and D-12 separate the scorecards. Volume is not value, and contact clicks are not job or revenue claims → CF-62 |
+| §5 Principles | Superseded | §3. "Helpful everywhere" → CF-01. "Execution beats vibes" and "Pipeline clarity" are retired: belonging is an outcome |
+| §6 Core entities, §10 Data fields | Historical | §20 logical domain model. The migrations are the schema of record. The split between display fields and logic fields → CF-55 |
+| §7 Journeys (profile + lanes + first post; Lab → Candidate graduation) | Superseded | §4, §7 lightweight entry and the D-01 journey audit. There is no graduation (D-05) |
+| §8 IA (Home, Plaza, Labs, Capital, Directory, Map, Messages…) | Superseded | §6 and D-01: Home · Spaces · Discover · Messages |
+| §9 Feature list | Mixed | See the rows below. Required profile fields are superseded (§7). Settings → CF-10. Social hygiene → CF-12 |
+
+### v1.0 §11: prompt pack and Phases 0–8
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| One phase per session; fixed header and footer; "schema first — changing a column in Phase 4 breaks Phase 1" | Historical | D-16 replaces this with reviewed vertical slices and no whole-future schema freeze. Kept: RLS negative tests for every table → CF-57; honest migrations → CF-58 |
+| Phase acceptance criteria | Historical | Many describe retired behaviour: Supporter gates, the region-gated Maalgeli CTA, the Dormant badge and the region-triggered Lite prompt. Audit against the Relook, not these |
+| Realtime note (Phase 3) | Carried | CF-23 |
+| Seeding instruction (Phase 8) | Carried | CF-53 |
+
+### v1.0 §12: decisions log
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| DMs in scope | Covered | §10. Small group chat is now core as well (D-03) |
+| Verification by a recorded video call (face + ID) with 24-month retention; Biometric DPIA reminder | Superseded | D-06: no routine recorded calls, approvals before any sensitive collection, and a 30-day raw-evidence cap as a PARAMETER. The KYC coverage gap → CF-32 |
+| Capital investment language gated to Somalia; 2 Jul launch gating (geo-IP + profile country + attestation) | Retired | D-08 and §15: no invest CTA switched on by geography. Geo-IP, profile country and attestation do not prove compliance |
+| Cold start through AI-seeded content and AI participation | Superseded | §19 and D-15: the platform does not simulate a population. Seed labelling → CF-53 |
+| Labs share links only; Dormant after 4 weeks | Superseded | D-04 bounded attachments. D-05 private 28-day check-in → CF-17 |
+| IP and ownership to be decided later by member vote, with a recurring reminder | Superseded | D-08: members accept project terms before contributing. A vote does not replace consent |
+| Media: embed-first, 5 MB images | Carried | CF-13, CF-14 |
+| Lab creation for Supporters, with the charter as the quality gate | Superseded | D-02 free meaningful collaboration. D-05 minimal brief; templates are configurations |
+| Candidate reviews: role-based reviewers with recusal, plus open comments | Carried (gate input) | CF-19 |
+| Invite-only beta with a waitlist | Carried | CF-09 |
+| Video Option A (embeds only) | Covered | D-04 and D-15 defer native video. The cost notes → CF-14 |
+| Plaza feed: chronological + filters + pinned highlights | Covered | §8 and D-01: Following is reverse-chronological; Community has transparent filters and labelled editorial highlights |
+| v1.1 video uploads and rooms for a paid tier | Superseded | D-15 defers native video and live. Paid status never gates basic participation (D-02) |
+| Seed tags and listing categories approved | Carried | CF-29. The lists stay in §26 below; the database is the source of truth |
+| "Supporter+" renamed "Supporter" | Superseded | D-02 and D-10: Xidig Plus. "Supporter" is a superseded paid-tier label |
+| Fund-first funnel to the Xidig Venture Fund | Retired | D-08: no compulsory fund-first route |
+| Naming direction (owner, 12 Sep 2026): a decisions-log entry kept on `claude/naming-direction-12sep`, pending review, and not in this copy | Covered | D-10 sets the target labels; the naming branch applies them → CF-45 |
+| Governance note: a living document; its caution language is advisory | Split | The engineering half is carried (CF-58). "Wins override stale PRD text" does not carry: under the Relook, product changes need an explicit owner ruling (§2, §24.0) |
+| Phase 4.5: Lite v2 (defer, never disable) + media identity | Carried | CF-46, CF-47; §17 and D-11 |
+| Phase 4.5 exclusions: listing reviews, voice intros, offline cache, verified-photo badge, DM read receipts and typing, image polls, listing announcements | Mixed | The reviews exclusion is not carried; reviews are an open decision (Relook A.0, O-1; CF-04 withdrawn). Offline cache → CF-49. Read receipts → D-03 (off by default). Voice → CF-26. The rest stay unscheduled ideas, not targets |
+| "Co-sign" / Garab as the backing-button label | Superseded | D-10: Support / Taageer, which is non-financial |
+| Formerly schema-blocking decisions: lookup tables vs enums; unified Spaces; reputation formulas (30 pt/day caps, 90-day decay, the AI-account helper rule); Supporter governance vote (quorum 5 or 20%, 60% approval, 7 days); poll mechanics; "Looking for" matching; proximity location with no chapters; cosmetic streaks; full Somali scope with trust surfaces as the floor; design tokens and StateView; Capital nav inside Labs | Mixed | Lookups → CF-55. Unified Spaces → CF-16. Formulas → CF-34 (gate input, not target). The Supporter vote is superseded by D-07. Polls are not votes (§8, D-14). Matching is Existing → CF-02. Location → CF-27. Streaks → D-14. Somali scope → §16 acceptance, CF-45. Tokens → §16. Capital nav → D-01 |
+| Capital v1: no financial flows through the platform | Covered | D-08, more strictly: no intent capture either |
+| Payments: Paddle or Lemon Squeezy, EVC Plus and Zaad, no direct Stripe | Carried (gate input) | CF-42 |
+| Auth: three co-equal methods; WhatsApp OTP deferred | Carried | CF-06, CF-08; D-06 |
+| Suuq = Directory + Map, not commerce | Carried | CF-03 |
+| Reminders: content policy; IP vote; ToS, Privacy and consent; Biometric DPIA | Mixed | Content policy → §13 (still owed). IP vote → superseded (D-08). Legal texts → CF-41. DPIA → superseded by D-06's approval list |
+
+### v1.0 §13: social graph and connectivity
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Follow people, Labs, Ventures and tags; Following tab | Covered | §5, §8, D-01 |
+| 1:1 DMs, request-to-chat, block and report | Covered | §10 |
+| "No group DMs, as it's the same as creating a space" | Superseded | D-03: small group chat is core |
+| @mentions | Carried | CF-12 |
+| Everything linkable, with rich preview chips | Carried | CF-05. The chips were never built |
+| Contact options on profiles | Covered | §7, D-06 |
+
+### v1.0 §14: verification, badges and reputation
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Live, recorded video verification with liveness prompts and 24-month retention | Superseded | D-06 |
+| Standard KYC providers don't cover Somalia | Carried (gate input) | CF-32 |
+| Scaling through trained verifiers, with admin spot-checks | Carried | CF-33 |
+| Distinct tiers: Identity Verified, Community Verified (3 vouches), Verified Business, skill endorsements | Carried, renamed | CF-33 → the D-06 claim labels. Three vouches do not prove uniqueness (§12) |
+| Contribution and Helper scores; streaks; milestone badges (Founding Member, Lab Lead, Top Helper, Early Backer) | Mixed | Scores are Existing but not a first-release target (D-06) → CF-34. Founding Member is truthful history (D-14). Early Backer is retired. Streaks → D-14 |
+| Reputation is not a ledger unit (ruling 5, 6 Aug) | Carried | CF-35. Treating ledger units as economic claims does not carry |
+
+### v1.0 §15: Plaza
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Post types Intro / Ask / Win / Update / Poll | Superseded | D-14: the ordinary Post is the default; the others are optional |
+| Ask lifecycle (Codsi model, 9 Aug) | Carried | CF-11. Open → In progress → Fulfilled is the active flow; the Relook's "open/answered/closed" is generic wording, not a rename (Appendix A.0, F-2) |
+| Chronological feed with no engagement bait | Covered | §8 |
+| Image pipeline | Carried | CF-13 |
+| Video embeds; link allowlist and warning interstitial | Carried | CF-14. The interstitial route was never committed, because a bare `out/` ignore rule hid it; fixed and deployed on 12 Sep 2026 (O-4) |
+
+### v1.0 §16: Labs (rooms model)
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| One entity with a mode flag | Carried | CF-16 |
+| Merit ladder Club → Lab → Venture Candidate, with promotion by charter | Superseded | D-05: independent dimensions, no graduation |
+| System timeout demotion (70-day warning, 84-day demotion, no appeal) | Retired | D-05 and Owner Amendment 01: no automatic transitions triggered by inactivity |
+| Mode toggle with Lab (Warshad) ⇄ Club (Koox) naming | Superseded | D-05 Group and Project templates; D-10 labels. Routes and slugs are unchanged |
+| Space settings UI; disappearing messages deferred | Covered | D-05; D-03 (disappearing messages deferred) |
+| Space History log | Carried | CF-22 |
+| Join modes | Covered | §9, D-05 |
+| Roles Lead / Core / Member / Observer; Operator / Researcher / Advisor | Carried (gate input) | CF-18 |
+| Weekly updates | Superseded | §9: the team chooses its cadence; nothing forces it |
+| Artifacts as links only | Superseded | D-04 |
+| Dormant badge after 4 weeks | Superseded | D-05 private check-in → CF-17 |
+| Directory summary cards | Covered | Discover (D-01) |
+| IP and ownership banner pending a member vote | Superseded | D-08 |
+| Public build-in-public pages as the acquisition loop | Superseded default | D-05 makes private and unlisted the default → CF-52 |
+| Playbooks | Carried | CF-21 |
+| Inter-Lab collaboration | Carried, constrained | CF-20 |
+| Skills-gap alerts | Existing | CF-02 |
+
+### v1.0 §17: Capital
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Region gating, the Maalgeli CTA, investment language, the "Somalia region" definition | Retired | D-08 |
+| Standing securities disclaimer | Covered | §15: say only what is true ("does not currently offer investment") |
+| Candidate workflow Draft → Submitted → In Review → Approved / Parked / Declined | Existing | CF-02. Readiness is contextual (D-05) |
+| Reviewer recusal; per-Candidate visibility; rubric anchors | Carried (gate input) | CF-19 |
+| Interest types "I can help" and Garab / Co-sign | Superseded | D-08 public actions: follow, offer help, contact the team, Support / Taageer |
+| Venture timeline | Covered | §9 "preserve historical milestones" |
+| Fund-first funnel; Investor Path | Retired | D-08 |
+| Supporter governance vote on Candidates | Superseded | D-07. Xidig Plus never buys votes |
+
+### v1.0 §18: Directory and Map
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Manual pin-drop as the primary location input | Carried | CF-27 |
+| Fuzzy search engine (Typesense or Meilisearch) | Carried | CF-28. Postgres search is the current working baseline; Meilisearch is set up but unused, and a future candidate only (Appendix A.0, F-1) |
+| Duplicate detection and the "Claim this listing" flow | Covered | §11 |
+| Curated categories plus member suggestions | Carried | CF-29 |
+| Listing photos; hours, price range, services and the WhatsApp CTA | Carried | CF-30 |
+| List-first, with the map behind MediaSlot | Covered | §11, §17 |
+| Business intelligence layer; monthly report emailed to Supporters | Carried, constrained | CF-31. Any paid "intelligence updates" are a D-02 convenience question |
+| Export readiness score | Carried, constrained | CF-31 |
+| Proximity location, no chapters | Carried | CF-27 |
+| Future-ready taxonomy and location | Carried | CF-55 |
+
+### v1.0 §19: moderation, safety and account policy
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Content policy document | Covered | §13 (still owed) |
+| Impersonation, handle reclaim, protection for notable figures | Carried | CF-36 |
+| Report queue with an SLA, visible outcomes, one appeal to a second mod | Covered | §13. D-09 sets internal targets (24 h / 72 h), not promises |
+| Immutable audit log | Carried | CF-37 |
+| Anti-spam limits; edge rate limiting | Carried | CF-38 |
+| Deactivate, delete (30-day grace), export; content anonymised, not removed | Split | The mechanics are carried (CF-40). The outcome is superseded by D-09's deletion-retention ruling |
+| Transparent governance log | Carried | CF-43. The claim that it "operationalises member ownership" is retired |
+
+### v1.0 §20: onboarding and guidance
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Checklist: profile → lanes → follow 3 → first post; profile-completion meter | Superseded | D-01 and §7: no compulsory follows or intro post; setup is optional and contextual |
+| Set-a-password reminder | Carried, conditional | CF-07 |
+| Tips and teaching empty states | Carried | CF-01 |
+| Invite codes and tracked referrals | Carried | CF-09 |
+| Supporter reminders about the IP vote | Retired | D-08 |
+| Founding Member moment: first 500, live counter, urgency | Split | The badge is truthful history (D-14). The counter and the urgency are retired → CF-09 |
+| "Looking for" matching | Existing | CF-02 |
+| Mentor-in-residence (5 Asks a week) | Existing | CF-02. Helpers carry no pressure to stay available (§4) |
+| Reaction taxonomy | Carried | CF-15 |
+| Lab sprints with public countdowns | Superseded | §9: no charter, countdown or venture pressure |
+| Skill tree as a visual web | Superseded | §16 prefers lists and chips to graphs; §5 excludes complex graph visualisations |
+| Pinned profile content | Existing | Compatible |
+| Community Awards, member-voted | Superseded | D-14: transparent manual criteria, no election infrastructure |
+
+### v1.0 §21: AI and API layer
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Seeding and labelling | Carried | CF-53 |
+| Badged AI accounts that answer Asks, summarise and compile the digest | Constrained | §19: AI is identified, and publishing needs human control → CF-25, CF-53 |
+| REST API, webhooks and a read/write MCP server for external agents | Superseded | D-15 → CF-54 |
+| Weekly digest | Carried | CF-25 |
+
+### v1.0 §22: platform requirements
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Bilingual from day one, with extensible locales | Carried | CF-45 |
+| PWA and its push limits | Carried | CF-50 |
+| API-first so a React Native app can reuse it in v1.2 | Superseded (schedule) | §20. A native app is triggered by evidence → CF-56 |
+| Lite: defer, never disable; MediaSlot; granular controls; data-saved counter | Carried | CF-46, CF-47 |
+| Lite auto-prompt on 3G/2G or in a low-bandwidth region | Split | The connection-based offer is carried. The region trigger is retired → CF-48 |
+| Settings surface | Carried | CF-10 |
+| Low-end Android browsers; accessibility AA basics | Covered | §16, §17, D-11 |
+| Smart notification bundling | Carried | CF-24 |
+| Embed widget for other websites | Not carried | Never built, and every route forbids framing. There is no current evidence of need (§3 principle 10) |
+
+### v1.0 §23: analytics
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Event taxonomy | Carried, filtered | CF-62 |
+| PostHog in the EU or self-hosted; no PII | Carried | CF-61 |
+| Dashboards mapped 1:1 to the §4 metrics | Superseded | §21 scorecards |
+
+### v1.0 §24: infrastructure and media stack
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Recommended stack (search, maps, jobs, email, rate limiting, errors, AI pre-filter) | Carried | CF-59 (what is actually in use differs), CF-39 |
+| One image pipeline | Carried | CF-13 |
+| Video options A, B and C | Carried (gate input) | CF-14 |
+| Environments, nightly backups, PITR | Carried (gate input) | CF-60 |
+
+### v1.0 §25: v1.1+ roadmap
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| Paid Supporter tier at about USD 1/month | Superseded | D-02: Xidig Plus, with USD 3/month or 24/year as a PARAMETER |
+| Native video, group video rooms, live sessions | Superseded | Future ideals (§23), deferred (D-15) |
+| "This week in Xidig" shareable card | Carried | CF-51 |
+| Ramadan mode | Not carried | Seasonal rhythms can be proposed later and would stay optional (§10). Sprint clocks are gone |
+| "State of Somali Business" annual report | Carried, constrained | CF-31. It would be a Library item (§18) |
+| Payments: "Stripe where supported" | Flagged | This contradicts §12's "no direct Stripe" → CF-42 |
+| v1.1 candidates (voice intro, offline cache, verified listing photo, read receipts and typing, listing announcements, layout editor, reviews) | Mixed | Voice → CF-26. Offline → CF-49. Read receipts → D-03. Reviews → open decision (O-1). The `page_blocks` schema exists, but the editor is not a target (CF-02). The rest stay unscheduled |
+| v1.2 React Native (Expo) | Superseded | §20: triggered by evidence, with no version schedule |
+| "Free keeps the community core; Supporter unlocks governance, Lab creation, paths" | Superseded | D-02, D-07 |
+
+### v1.0 §25.5, §26, §27, §28
+
+| v1.0 | Disposition | Now |
+| --- | --- | --- |
+| §25.5 Future-ready architecture (whole section) | Carried | CF-55, with the capital-gate examples neutralised |
+| §26 Brand guide | Covered | §16, D-10, Owner Amendment 01 |
+| §26 Auth method | Carried | CF-06 |
+| §26 Membership and lanes (Supporter, Builder Path, Investor Path, equity) | Superseded | D-02, D-07, D-08 |
+| §26 "Somalia region" definition | Retired | D-08 |
+| §26 RBAC summary | Carried | CF-33 |
+| §26 Constants | Carried | CF-06, CF-11, CF-13, CF-17, CF-38, CF-40 |
+| §26 Notification matrix | Carried | CF-24 |
+| §26 Seed tags and listing categories | Carried | CF-29 |
+| §26 Required accounts and env vars | Historical | docs/runbook.md, docs/GO-LIVE.md |
+| §26 Human inputs a builder cannot generate | Carried | CF-41 |
+| §26 Future-ready build rule | Carried | CF-55 |
+| §27 Three-question rule; no raw codes | Carried | CF-44 |
+| §27 Strings that promise USD 1 upgrades, Supporter gates, Somalia-region investment, 48-hour review or "3× more contact clicks" | Retired | D-02, D-08, D-09, §11 |
+| §27 Lite / Xawli yar strings | Superseded | D-10: Data Saver in EN and SO. Live copy is in packages/i18n |
+| §28 WhatsApp-first sharing | Carried | CF-51 |
+| §28 Public login-free pages as the acquisition engine | Superseded default | CF-52 |
+| §28 Directory data as a launch PR asset | Carried, constrained | CF-31 |
+| §28 Position explicitly against WhatsApp groups | Carried, reframed | CF-51: the differentiator stands, but public copy names no competitors |
+| §28 Email digest as a primary surface | Carried | CF-25 |
+| §28 "Xidig Verified" as a portable trust brand | Retired | D-06: bounded claims, no blanket badge |
