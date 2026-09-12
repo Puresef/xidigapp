@@ -48,6 +48,7 @@ function makeFakeAdmin(resultsByTable: Record<string, QueryResult[]>) {
       gte: rec('gte'),
       in: rec('in'),
       not: rec('not'),
+      or: rec('or'),
       order: rec('order'),
       limit: rec('limit'),
       then: (onFulfilled: (v: QueryResult) => unknown, onRejected?: (e: unknown) => unknown) =>
@@ -147,6 +148,45 @@ describe('getFeaturedUpcomingPublicEvent (merged featured-else-soonest)', () => 
 
     const item = await getFeaturedUpcomingPublicEvent(NOW);
     expect(item?.slug).toBe('organic');
+  });
+
+  // Test-account quarantine (users.is_test, migration 20260912050000).
+  it('asks for AI OR quarantined test hosts, and drops a test-hosted row', async () => {
+    const { admin, queries } = makeFakeAdmin({
+      events: [
+        {
+          data: [
+            eventRow({ slug: 'fixture', host_user_id: 'test-1' }),
+            eventRow({ slug: 'organic', host_user_id: 'human-1' }),
+          ],
+          error: null,
+        },
+      ],
+      // The DB answers the host lookup with the hosts matching the filter.
+      users: [{ data: [{ id: 'test-1' }], error: null }],
+    });
+    holder.admin = admin;
+
+    const item = await getFeaturedUpcomingPublicEvent(NOW);
+
+    expect(item?.slug).toBe('organic');
+    const hostLookup = queries.find((q) => q.table === 'users');
+    expect(hostLookup?.calls).toContainEqual({
+      method: 'or',
+      args: ['is_ai.eq.true,is_test.eq.true'],
+    });
+  });
+
+  it('a failed host lookup throws instead of letting rows through unchecked', async () => {
+    const { admin } = makeFakeAdmin({
+      events: [{ data: [eventRow()], error: null }],
+      users: [{ data: null, error: { message: 'column users.is_test does not exist' } }],
+    });
+    holder.admin = admin;
+
+    await expect(getFeaturedUpcomingPublicEvent(NOW)).rejects.toThrow(
+      /event host flags lookup failed/,
+    );
   });
 
   it('throws on a query error (the caller degrades, not this helper)', async () => {

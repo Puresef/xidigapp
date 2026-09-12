@@ -110,7 +110,14 @@ function makeFakeAdmin(seed: Partial<FakeTables> = {}) {
 }
 
 function user(id: string, overrides: Row = {}): Row {
-  return { id, email: `${id}@example.so`, status: 'active', is_ai: false, ...overrides };
+  return {
+    id,
+    email: `${id}@example.so`,
+    status: 'active',
+    is_ai: false,
+    is_test: false,
+    ...overrides,
+  };
 }
 
 function payload(overrides: Partial<DigestCandidates> = {}): DigestCandidates {
@@ -146,6 +153,19 @@ function edition(overrides: Partial<Tables<'digest_editions'>> = {}): Tables<'di
 const APP_URL = 'https://app.xidig.net';
 
 describe('selectDigestRecipients', () => {
+  // Test-account quarantine (users.is_test, migration 20260912050000).
+  it('never selects a quarantined test account, even one opted in to the digest', async () => {
+    const { admin } = makeFakeAdmin({
+      users: [user('real'), user('fixture', { is_test: true })],
+      user_settings: [{ user_id: 'fixture', digest_frequency: 'weekly' }],
+      notification_prefs: [],
+    });
+
+    const recipients = await selectDigestRecipients(admin);
+
+    expect(recipients).toEqual([{ userId: 'real', email: 'real@example.so' }]);
+  });
+
   it('selects active human members and honors every opt-out', async () => {
     const { admin } = makeFakeAdmin({
       users: [

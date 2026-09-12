@@ -14,7 +14,9 @@ import { renderDigestEmail } from './render';
  * Weekly digest BULK email channel (extras plan item 6).
  *
  * Recipients = active human members who are opted into the digest:
- *   * users.status = 'active', users.is_ai = false, email on file;
+ *   * users.status = 'active', users.is_ai = false, users.is_test = false (a
+ *     quarantined seeded/test account is not a member and is never emailed),
+ *     email on file;
  *   * user_settings.digest_frequency ≠ 'off' (absent row = the 'weekly'
  *     default — the §26 cadence switch);
  *   * no notification_prefs override turning weekly_digest/email off
@@ -86,6 +88,7 @@ export async function selectDigestRecipients(
       .select('id, email')
       .eq('status', 'active')
       .eq('is_ai', false)
+      .eq('is_test', false)
       .not('email', 'is', null)
       .order('id', { ascending: true })
       .range(offset, offset + PAGE_SIZE - 1);

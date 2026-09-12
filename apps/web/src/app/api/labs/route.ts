@@ -1,3 +1,4 @@
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { emitServer } from '@/lib/analytics/emit';
 import { event } from '@/lib/analytics/events';
@@ -52,6 +53,11 @@ export async function GET(request: Request): Promise<Response> {
       query = query.in('id', ids);
     } else {
       query = query.eq('is_listed', true);
+      // Discover never lists a Space led by a quarantined test account
+      // (users.is_test): excluded in the query, before the page limit, so a
+      // page stays full and the keyset cursor stays exact.
+      const testIds = await loadTestAccountIds(admin);
+      if (testIds.length > 0) query = query.not('lead_user_id', 'in', postgrestIdList(testIds));
     }
 
     if (params.mode) query = query.eq('space_mode', params.mode);

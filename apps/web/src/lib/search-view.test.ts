@@ -143,8 +143,8 @@ function person(id: string, extra: Row = {}): Row {
   };
 }
 
-function account(id: string, status: string, isAi = false): Row {
-  return { id, status, is_ai: isAi };
+function account(id: string, status: string, isAi = false, isTest = false): Row {
+  return { id, status, is_ai: isAi, is_test: isTest };
 }
 
 function listing(id: string, ownerId: string | null): Row {
@@ -306,8 +306,10 @@ describe('searchListings — member', () => {
 
     expect(member.queryFor('business_listings').has('eq', ['status', 'published'])).toBe(true);
     // Suspended-owner hiding is RLS's job on this path (author_is_active);
-    // no service-role fetch happens at all.
-    expect(admin.queryCount()).toBe(0);
+    // the service role answers only the payload-free test-account id lookup —
+    // never a listing query.
+    expect(admin.queryCount()).toBe(1);
+    expect(admin.queryCount('users')).toBe(1);
     expect(results).toHaveLength(1);
   });
 
@@ -429,8 +431,81 @@ describe('searchPosts', () => {
     const query = member.queryFor('posts');
     expect(query.has('eq', ['status', 'published'])).toBe(true);
     expect(query.has('is', ['lab_id', null])).toBe(true);
-    expect(admin.queryCount()).toBe(0);
+    // The service role answers only the payload-free test-account id lookup.
+    expect(admin.queryCount()).toBe(1);
+    expect(admin.queryCount('users')).toBe(1);
+    expect(admin.queryCount('posts')).toBe(0);
     expect(results.map((row) => row.id)).toEqual(['p1']);
+  });
+});
+
+// --- test-account quarantine (users.is_test, 20260912050000) ---------------
+
+describe('search — quarantined test accounts never surface, for any caller', () => {
+  it('people: a test account is dropped for members and for anonymous callers', async () => {
+    const member = new FakeClient({ profiles: [[person('u-real'), person('u-test')]] });
+    const memberAdmin = new FakeClient({
+      users: [[account('u-real', 'active'), account('u-test', 'active', false, true)]],
+    });
+    const asMember = await searchPeople(clientsOf(member, memberAdmin), 'person');
+    expect(asMember.map((row) => row.handle)).toEqual(['h-u-real']);
+
+    const anonAdmin = new FakeClient({
+      profiles: [[person('u-real'), person('u-test')]],
+      users: [[account('u-real', 'active'), account('u-test', 'active', false, true)]],
+    });
+    const asAnon = await searchPeople(clientsOf(null, anonAdmin), 'person');
+    expect(asAnon.map((row) => row.handle)).toEqual(['h-u-real']);
+  });
+
+  it('listings (member): test owners are excluded in the query; owner-less rows stay', async () => {
+    const member = new FakeClient({ business_listings: [[]] });
+    const admin = new FakeClient({ users: [[{ id: 't1' }, { id: 't2' }]] });
+    await searchListings(clientsOf(member, admin), 'biz');
+    expect(
+      member
+        .queryFor('business_listings')
+        .has('or', ['owner_user_id.is.null,owner_user_id.not.in.(t1,t2)']),
+    ).toBe(true);
+    expect(admin.queryFor('users').has('eq', ['is_test', true])).toBe(true);
+  });
+
+  it('listings (member): no test accounts → no owner filter (never an empty `in ()`)', async () => {
+    const member = new FakeClient({ business_listings: [[]] });
+    const admin = new FakeClient({ users: [[]] });
+    await searchListings(clientsOf(member, admin), 'biz');
+    const ors = member
+      .queryFor('business_listings')
+      .recorded.filter((entry) => entry.op === 'or')
+      .map((entry) => String(entry.args[0]));
+    expect(ors.some((pattern) => pattern.includes('owner_user_id'))).toBe(false);
+  });
+
+  it("listings (anonymous): a test owner's listing is dropped after the fetch", async () => {
+    const admin = new FakeClient({
+      business_listings: [[listing('l-real', 'u-ok'), listing('l-test', 'u-test')]],
+      users: [[account('u-ok', 'active'), account('u-test', 'active', false, true)]],
+    });
+    const results = await searchListings(clientsOf(null, admin), 'biz');
+    expect(results.map((row) => row.id)).toEqual(['l-real']);
+  });
+
+  it('Spaces: a Space a test account leads is excluded in the query (member and anonymous)', async () => {
+    const member = new FakeClient({ labs: [[]] });
+    const memberAdmin = new FakeClient({ lab_members: [[]], users: [[{ id: 't1' }]] });
+    await searchLabs(clientsOf(member, memberAdmin), 'fintech');
+    expect(member.queryFor('labs').has('not', ['lead_user_id', 'in', '(t1)'])).toBe(true);
+
+    const anonAdmin = new FakeClient({ labs: [[]], users: [[{ id: 't1' }]] });
+    await searchLabs(clientsOf(null, anonAdmin), 'fintech');
+    expect(anonAdmin.queryFor('labs').has('not', ['lead_user_id', 'in', '(t1)'])).toBe(true);
+  });
+
+  it('posts: a post a test account wrote is excluded in the query', async () => {
+    const member = new FakeClient({ posts: [[]] });
+    const admin = new FakeClient({ users: [[{ id: 't1' }]] });
+    await searchPosts(clientsOf(member, admin), 'topic');
+    expect(member.queryFor('posts').has('not', ['author_user_id', 'in', '(t1)'])).toBe(true);
   });
 });
 

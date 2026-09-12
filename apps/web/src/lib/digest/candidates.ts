@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
+import { isTestAccount, loadAccountFlags } from '@/lib/account-flags';
+
 import type { DigestWindow } from './period';
 
 /**
@@ -19,6 +21,11 @@ import type { DigestWindow } from './period';
  *
  * Runs as the service role, but every query hard-codes the same predicates RLS
  * would enforce, so nothing leaks.
+ *
+ * Test-account quarantine (users.is_test, migration 20260912050000): nothing
+ * written, led, owned or hosted by a quarantined test account is a digest
+ * candidate — the digest is broadcast community proof. The author / lead /
+ * owner / host ids are read for that check only and never snapshotted.
  */
 
 const LIMIT = 5;
@@ -72,7 +79,7 @@ export async function collectDigestCandidates(
   // Top Wins this week — published, global (not lab-scoped), member content.
   const winsQuery = admin
     .from('posts')
-    .select('id, title')
+    .select('id, title, author_user_id')
     .eq('type', 'win')
     .eq('status', 'published')
     .is('lab_id', null)
@@ -84,7 +91,7 @@ export async function collectDigestCandidates(
   // Currently OPEN Asks (help still wanted) — most recent first.
   const asksQuery = admin
     .from('posts')
-    .select('id, title')
+    .select('id, title, author_user_id')
     .eq('type', 'ask')
     .eq('ask_status', 'open')
     .eq('status', 'published')
@@ -95,7 +102,7 @@ export async function collectDigestCandidates(
   // New PUBLIC Labs — public + listed only (never a private/members-only Lab).
   const labsQuery = admin
     .from('labs')
-    .select('id, name, slug')
+    .select('id, name, slug, lead_user_id')
     .eq('visibility', 'public')
     .eq('is_listed', true)
     .gte('created_at', since)
@@ -106,7 +113,7 @@ export async function collectDigestCandidates(
   // New listings — published only.
   const listingsQuery = admin
     .from('business_listings')
-    .select('id, business_name, city')
+    .select('id, business_name, city, owner_user_id')
     .eq('status', 'published')
     .gte('created_at', since)
     .lt('created_at', until)
@@ -129,7 +136,7 @@ export async function collectDigestCandidates(
   // rule; the event page does its own reveal folding).
   const eventsQuery = admin
     .from('events')
-    .select('slug, title, starts_at')
+    .select('slug, title, starts_at, host_user_id')
     .eq('visibility', 'public')
     .eq('status', 'published')
     .eq('moderation_status', 'published')
@@ -151,20 +158,43 @@ export async function collectDigestCandidates(
     if (r.error) throw new Error(`digest candidate query failed: ${r.error.message}`);
   }
 
-  const winRows = (wins.data ?? []).map((p) => ({ id: p.id, title: p.title }));
-  const askRows = (asks.data ?? []).map((p) => ({ id: p.id, title: p.title }));
-  const labRows = (labs.data ?? []).map((l) => ({ id: l.id, name: l.name, slug: l.slug }));
-  const listingRows = (listings.data ?? []).map((l) => ({
-    id: l.id,
-    name: l.business_name,
-    city: l.city,
-  }));
+  // Quarantined test accounts: one service-role flags read over every
+  // author, Space lead, listing owner and event host (owner-less listings
+  // have nothing to check). A filtered candidate is simply dropped, not
+  // replaced. Throws on a failed read rather than snapshotting unchecked rows.
+  const flags = await loadAccountFlags(admin, [
+    ...(wins.data ?? []).map((p) => p.author_user_id),
+    ...(asks.data ?? []).map((p) => p.author_user_id),
+    ...(labs.data ?? []).map((l) => l.lead_user_id),
+    ...(listings.data ?? []).map((l) => l.owner_user_id).filter((id): id is string => id !== null),
+    ...(events.data ?? []).map((e) => e.host_user_id),
+  ]);
+  const notTest = (userId: string | null) => userId === null || !isTestAccount(flags, userId);
+
+  const winRows = (wins.data ?? [])
+    .filter((p) => notTest(p.author_user_id))
+    .map((p) => ({ id: p.id, title: p.title }));
+  const askRows = (asks.data ?? [])
+    .filter((p) => notTest(p.author_user_id))
+    .map((p) => ({ id: p.id, title: p.title }));
+  const labRows = (labs.data ?? [])
+    .filter((l) => notTest(l.lead_user_id))
+    .map((l) => ({ id: l.id, name: l.name, slug: l.slug }));
+  const listingRows = (listings.data ?? [])
+    .filter((l) => notTest(l.owner_user_id))
+    .map((l) => ({
+      id: l.id,
+      name: l.business_name,
+      city: l.city,
+    }));
   const mentorRow = (mentor.data ?? [])[0] ?? null;
-  const eventRows = (events.data ?? []).map((e) => ({
-    slug: e.slug,
-    title: e.title,
-    startsAt: e.starts_at,
-  }));
+  const eventRows = (events.data ?? [])
+    .filter((e) => notTest(e.host_user_id))
+    .map((e) => ({
+      slug: e.slug,
+      title: e.title,
+      startsAt: e.starts_at,
+    }));
 
   return {
     periodKey: window.periodKey,

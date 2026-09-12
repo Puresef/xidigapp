@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { formatDate, type MessageKey } from '@xidig/i18n';
+import { formatDate, type MessageKey, type Translator } from '@xidig/i18n';
 
 import { Avatar } from '@/components/media/avatar';
 import { MediaSlot } from '@/components/media/media-slot';
@@ -78,6 +78,31 @@ function contactHref(channel: string, value: string): string | null {
   return null;
 }
 
+/**
+ * What a signed-in reader (owner included) meets on a quarantined test
+ * account's profile (users.is_test), IN PLACE of the profile: a title, the
+ * test-account chip, one sentence. No avatar, name, badges (founding-member
+ * included), verification chip, counts, reputation, contact row or controls:
+ * a fake person's page must not read as a member's, and nothing on it may
+ * count as community proof.
+ *
+ * Synchronous with the caller's translator so a page can render it without
+ * mounting the profile card at all.
+ */
+export function TestAccountNotice({ t }: { t: Translator }) {
+  return (
+    <>
+      <h1 className="xidig-auth__title">{t('profile.testAccountTitle')}</h1>
+      <p>
+        <span className="xidig-tag xidig-tag--seeded" title={t('content.testAccountTooltip')}>
+          {t('content.testAccount')}
+        </span>
+      </p>
+      <p className="xidig-card__meta">{t('profile.testAccountBody')}</p>
+    </>
+  );
+}
+
 export async function ProfileViewCard({
   view,
   viewer,
@@ -91,6 +116,18 @@ export async function ProfileViewCard({
   prefs?: LitePrefs;
 }) {
   const t = await getT();
+
+  // Structural, not only the pages' early returns: a test account's
+  // projection mounted here by any caller renders the notice and nothing
+  // else — none of the header, counts, badges or the actions slot.
+  if (view.isTest) {
+    return (
+      <article className="xidig-section">
+        <TestAccountNotice t={t} />
+      </article>
+    );
+  }
+
   const locale = await getLocale();
   const { profile, badges, counts, reputation, media, openTo, pins, isAi } = view;
   const litePrefs = prefs ?? LITE_BUNDLES.everything;

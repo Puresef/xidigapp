@@ -48,6 +48,7 @@ function candidate(overrides: Partial<PersonCandidate> & { userId: string }): Pe
     country: null,
     openTo: [],
     isAi: false,
+    isTest: false,
     accountStatus: 'active',
     discoverable: true,
     locationGranularity: 'city',
@@ -205,6 +206,18 @@ describe('buildPersonSuggestions — privacy exclusions', () => {
         candidate({ userId: 'suspended', ...matcher, accountStatus: 'suspended' }),
         candidate({ userId: 'deactivated', ...matcher, accountStatus: 'deactivated' }),
         candidate({ userId: 'optout', ...matcher, discoverable: false }),
+        candidate({ userId: 'ok', ...matcher }),
+      ],
+      exclusions(),
+    );
+    expect(result.map((s) => s.candidate.userId)).toEqual(['ok']);
+  });
+
+  it('never suggests a quarantined test account (users.is_test), even a discoverable one', () => {
+    const result = buildPersonSuggestions(
+      me,
+      [
+        candidate({ userId: 'fixture', ...matcher, isTest: true }),
         candidate({ userId: 'ok', ...matcher }),
       ],
       exclusions(),

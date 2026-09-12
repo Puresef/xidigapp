@@ -26,7 +26,8 @@ import { EMBEDDED_EVENTS_LIMIT, EVENTS_INDEX_LIMIT, RSVP_COUNT_FLOOR } from './c
  *   * attendee NAMES: host sees all; members see only opted-in
  *     (show_publicly) names; the login-free surface sees none;
  *   * organic-proof invariant: every signed-out surface filters
- *     source='member' AND drops rows hosted by AI accounts (users.is_ai).
+ *     source='member' AND drops rows hosted by AI accounts (users.is_ai) or
+ *     by quarantined test accounts (users.is_test) — dropAiOrTestHosted.
  */
 
 /**
@@ -145,17 +146,25 @@ export function foldEventReveal(
 
 /**
  * Organic-proof invariant for signed-out surfaces: drop rows hosted by AI
- * accounts. (source='member' is filtered SQL-side; is_ai needs the users join.)
+ * accounts or by quarantined test accounts (users.is_test, migration
+ * 20260912050000). source='member' is filtered SQL-side; the account flags
+ * need the users lookup. A failed lookup throws rather than letting the rows
+ * through unchecked (callers already treat a query error as a failure).
  */
-async function dropAiHosted<T extends { host_user_id: string }>(
+async function dropAiOrTestHosted<T extends { host_user_id: string }>(
   admin: AnyClient,
   rows: T[],
 ): Promise<T[]> {
   if (rows.length === 0) return rows;
   const hostIds = [...new Set(rows.map((row) => row.host_user_id))];
-  const { data } = await admin.from('users').select('id').in('id', hostIds).eq('is_ai', true);
-  const aiIds = new Set((data ?? []).map((row) => row.id));
-  return rows.filter((row) => !aiIds.has(row.host_user_id));
+  const { data, error } = await admin
+    .from('users')
+    .select('id')
+    .in('id', hostIds)
+    .or('is_ai.eq.true,is_test.eq.true');
+  if (error) throw new Error(`event host flags lookup failed: ${error.message}`);
+  const excludedIds = new Set((data ?? []).map((row) => row.id));
+  return rows.filter((row) => !excludedIds.has(row.host_user_id));
 }
 
 async function loadCategory(
@@ -358,7 +367,7 @@ export async function getPublicEventView(slug: string): Promise<EventView | null
   if (error) throw new Error(`public event lookup failed: ${error.message}`);
   if (!row) return null;
 
-  const [event] = await dropAiHosted(admin, [row as unknown as EventViewRow]);
+  const [event] = await dropAiOrTestHosted(admin, [row as unknown as EventViewRow]);
   if (!event) return null;
 
   const [host, category, container, aggregates] = await Promise.all([
@@ -425,7 +434,7 @@ export async function listPublicEvents(
   if (options.category) query = query.eq('category_id', options.category);
   const { data, error } = await query;
   if (error) throw new Error(`public events query failed: ${error.message}`);
-  return dropAiHosted(admin, (data ?? []) as unknown as EventViewRow[]);
+  return dropAiOrTestHosted(admin, (data ?? []) as unknown as EventViewRow[]);
 }
 
 /**
@@ -466,7 +475,7 @@ export async function listUpcomingEventsFor(
   const { data, error } = await query;
   if (error) throw new Error(`upcoming events query failed: ${error.message}`);
   let rows = (data ?? []) as unknown as (EventViewRow & { source: string })[];
-  if (options.publicOnly) rows = await dropAiHosted(admin, rows);
+  if (options.publicOnly) rows = await dropAiOrTestHosted(admin, rows);
   return rows.map((row) => ({
     slug: row.slug,
     title: row.title,
@@ -505,7 +514,7 @@ export async function getFeaturedUpcomingPublicEvent(
     .order('starts_at', { ascending: true })
     .limit(12);
   if (result.error) throw new Error(`upcoming event query failed: ${result.error.message}`);
-  const rows = await dropAiHosted(admin, (result.data ?? []) as unknown as EventViewRow[]);
+  const rows = await dropAiOrTestHosted(admin, (result.data ?? []) as unknown as EventViewRow[]);
 
   const row = rows[0];
   if (!row) return null;

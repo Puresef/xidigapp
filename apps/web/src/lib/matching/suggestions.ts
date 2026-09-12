@@ -67,6 +67,11 @@ export interface PersonCandidate extends DeclaredFields {
   userId: string;
   /** users.is_ai — AI accounts are never suggested (§21 organic-proof). */
   isAi: boolean;
+  /**
+   * users.is_test — quarantined seeded/test accounts are never suggested
+   * (migration 20260912050000): a fake member is not someone to follow.
+   */
+  isTest: boolean;
   /** users.status — only 'active' accounts are suggested. */
   accountStatus: string;
   /** user_settings.discoverable_directory (absent row = true). */
@@ -177,6 +182,7 @@ export function buildPersonSuggestions<T extends PersonCandidate>(
 
     if (candidate.userId === exclusions.viewerId) continue;
     if (candidate.isAi) continue;
+    if (candidate.isTest) continue;
     if (candidate.accountStatus !== 'active') continue;
     if (!candidate.discoverable) continue;
     if (exclusions.followedUserIds.has(candidate.userId)) continue;

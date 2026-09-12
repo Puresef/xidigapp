@@ -178,7 +178,7 @@ export async function GET(): Promise<Response> {
     const ids = [...pool.keys()];
     const [{ data: userRows }, { data: settingsRows }, { data: openToRows }] = await Promise.all([
       ids.length > 0
-        ? admin.from('users').select('id, is_ai, status').in('id', ids)
+        ? admin.from('users').select('id, is_ai, is_test, status').in('id', ids)
         : Promise.resolve({ data: [] }),
       ids.length > 0
         ? admin
@@ -212,6 +212,7 @@ export async function GET(): Promise<Response> {
         country: row.location_country,
         openTo: (openToByUser.get(row.user_id) ?? []).sort(),
         isAi: flag?.is_ai ?? true, // unknown account ⇒ fail closed
+        isTest: flag?.is_test ?? true, // quarantined test account ⇒ never suggested
         accountStatus: flag?.status ?? 'suspended',
         discoverable: setting?.discoverable_directory ?? true,
         locationGranularity: setting?.location_granularity ?? 'city',

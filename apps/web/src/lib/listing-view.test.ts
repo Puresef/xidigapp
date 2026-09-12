@@ -43,6 +43,9 @@ class FakeQuery implements PromiseLike<{ data: Row[]; error: null }> {
   eq(column: string, value: unknown) {
     return this.chain('eq', [column, value]);
   }
+  in(column: string, values: unknown[]) {
+    return this.chain('in', [column, values]);
+  }
   order(column: string, options?: unknown) {
     return this.chain('order', [column, options]);
   }
@@ -229,6 +232,33 @@ describe('getPublicListingView — anonymous (service-role projection)', () => {
     // Unclaimed surfacing: the null owner_user_id survives into the view so
     // the page can render its "unclaimed" tag.
     expect(view?.listing.owner_user_id).toBeNull();
+  });
+
+  // Test-account quarantine (users.is_test, migration 20260912050000).
+  it('returns null for a listing owned by a quarantined test account (page 404s, OG falls back)', async () => {
+    const admin = new FakeClient({
+      business_listings: [[publishedListing()]],
+      users: [[{ id: OWNER_ID, status: 'active', is_ai: false, is_test: true }]],
+    });
+    adminHolder.client = admin;
+
+    const view = await getPublicListingView(LISTING_ID);
+
+    expect(view).toBeNull();
+    expect(admin.queryFor('users').has('in', ['id', [OWNER_ID]])).toBe(true);
+    // Nothing is decorated for a suppressed listing.
+    expect(admin.queryCount('profiles')).toBe(0);
+    expect(admin.queryCount('listing_photos')).toBe(0);
+  });
+
+  it("still serves a real owner's published listing (control)", async () => {
+    const admin = new FakeClient({
+      business_listings: [[publishedListing()]],
+      users: [[{ id: OWNER_ID, status: 'active', is_ai: false, is_test: false }]],
+    });
+    adminHolder.client = admin;
+
+    expect((await getPublicListingView(LISTING_ID))?.listing.id).toBe(LISTING_ID);
   });
 });
 

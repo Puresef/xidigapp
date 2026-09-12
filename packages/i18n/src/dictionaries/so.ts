@@ -55,6 +55,10 @@ export const so = {
   'content.aiTooltip':
     'Waxaa sameeyay Xidig AI. Waa la calaamadeeyay si aad uga kala saarto nuxurka xubnaha.',
   'content.aiAccountTooltip': 'Akoon kaaliye AI ah oo si cad loo calaamadeeyay, maaha xubin bini-aadam ah.',
+  // Test-account quarantine (12 Sep 2026). PROVISIONAL — native review.
+  'content.testAccount': 'Akoon tijaabo ah',
+  'content.testAccountTooltip':
+    'Akoon tijaabo ah oo la sameeyay ka hor furitaanka, maaha xubin dhab ah. Kuma xisaabtamo tirooyinka bulshada, kaalinta ama kalsoonida.',
 
   // Maamul — dib u eegista nuxurka la beeray (§21) — SO drafts, native review
   'admin.seedTitle': 'Nuxurka la beeray',
@@ -704,6 +708,10 @@ export const so = {
   'profile.badgeIdentityVerified': 'Aqoonsi La Xaqiijiyay',
   'profile.badgeCommunityVerified': 'Bulsho La Xaqiijiyay',
   'profile.badgeVerifiedBusiness': 'Ganacsi La Xaqiijiyay',
+  // Test-account quarantine. PROVISIONAL — native review.
+  'profile.testAccountTitle': 'Akoon tijaabo ah',
+  'profile.testAccountBody':
+    'Kani waa akoon tijaabo ah oo la sameeyay ka hor furitaanka. Maaha xubin dhab ah, calaamadihiisa, xaqiijintiisa iyo waxqabadkiisuna kuma xisaabtamaan tirooyinka bulshada Xidig.',
   'profile.verifStatusUnverified': 'Aan la xaqiijin',
   'profile.verifStatusPending': 'Xaqiijin socota',
   'profile.verifStatusCommunity': 'Bulsho la xaqiijiyay',

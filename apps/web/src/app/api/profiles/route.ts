@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { apiOk, handleApiError } from '@/lib/api';
 import { requireUser } from '@/lib/auth/guards';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
@@ -73,9 +74,17 @@ export async function GET(request: Request): Promise<Response> {
 
     // Directory opt-outs are excluded server-side — hiding in the client
     // would still ship the rows (§ privacy: exclusion is data, not CSS).
-    const optOutIds = await directoryOptOutIds();
+    // Quarantined test accounts (users.is_test) are never listed either:
+    // excluded in the query so a page still fills and the cursor stays exact.
+    const [optOutIds, testIds] = await Promise.all([
+      directoryOptOutIds(),
+      loadTestAccountIds(getSupabaseAdmin()),
+    ]);
     if (optOutIds.length > 0) {
       query = query.not('user_id', 'in', `(${optOutIds.join(',')})`);
+    }
+    if (testIds.length > 0) {
+      query = query.not('user_id', 'in', postgrestIdList(testIds));
     }
 
     // "Open to" chip filter: resolve the member set first (profile_open_to is

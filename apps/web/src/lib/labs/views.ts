@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database, Enums } from '@xidig/db';
 
+import { loadTestAccountIds } from '@/lib/account-flags';
 import { DORMANCY_DAYS } from '@/lib/labs/constants';
 import { derivedThumbPath, publicMediaUrl } from '@/lib/media/storage';
 
@@ -146,6 +147,10 @@ async function fetchAuthors(
  * Hydrate lab rows into view models. `viewerId` drives viewerRelation (the
  * caller's role or pending-request state). Aggregation is JS-side over the page
  * (≤20 labs) — fine at beta scale.
+ *
+ * Test-account quarantine (users.is_test): a quarantined test member is not
+ * counted in memberCount — a headcount is community proof. Filtered in JS
+ * against the (small) test-id set, fetched alongside the roster.
  */
 export async function hydrateLabs(
   admin: SupabaseClient<Database>,
@@ -158,7 +163,7 @@ export async function hydrateLabs(
   const labIds = rows.map((r) => r.id);
   const leadIds = [...new Set(rows.map((r) => r.lead_user_id))];
 
-  const [authors, membersResult, tagsResult, skillsResult, mineResult] = await Promise.all([
+  const [authors, membersResult, tagsResult, skillsResult, mineResult, testIds] = await Promise.all([
     fetchAuthors(admin, leadIds),
     admin.from('lab_members').select('lab_id, user_id, role').in('lab_id', labIds).eq('status', 'active'),
     admin.from('lab_tags').select('lab_id, tags ( id, name )').in('lab_id', labIds),
@@ -168,14 +173,18 @@ export async function hydrateLabs(
       .in('lab_id', labIds)
       .is('filled_at', null),
     admin.from('lab_members').select('lab_id, role, status').in('lab_id', labIds).eq('user_id', viewerId),
+    loadTestAccountIds(admin),
   ]);
   if (membersResult.error) throw new Error(`member count failed: ${membersResult.error.message}`);
   if (tagsResult.error) throw new Error(`lab tags failed: ${tagsResult.error.message}`);
   if (skillsResult.error) throw new Error(`skill needs failed: ${skillsResult.error.message}`);
   if (mineResult.error) throw new Error(`viewer membership failed: ${mineResult.error.message}`);
 
+  const testIdSet = new Set(testIds);
   const memberCounts = new Map<string, number>();
   for (const row of membersResult.data ?? []) {
+    // Quarantined test members are not counted.
+    if (testIdSet.has(row.user_id)) continue;
     memberCounts.set(row.lab_id, (memberCounts.get(row.lab_id) ?? 0) + 1);
   }
 

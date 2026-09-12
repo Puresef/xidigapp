@@ -7,14 +7,16 @@ import { FOUNDING_MEMBER_CAP } from '@/lib/auth/constants';
 /**
  * Organic-proof invariant helpers (docs/front-door-plan.md §4, extras plan
  * item 7). NON-NEGOTIABLE: every front-door count and projection excludes
- * seeded/AI content — seed data is never laundered into social proof. In-app,
+ * seeded/AI content and quarantined test accounts (`users.is_test`) — seed
+ * data is never laundered into social proof. In-app,
  * seeded content is fine (it wears ContentSourceBadge); on the front door,
  * presenting it as organic proof is fabrication.
  *
  * Every front-door query module MUST route its filters through this module.
  * That is not a convention — `organic.test.ts` source-scans the front-door
  * surfaces (`lib/front`, `components/front`, `app/(front)`, the home and
- * waitlist pages) and FAILS the suite if a query touches `users` or a
+ * waitlist pages) and FAILS the suite if a query touches `users` without BOTH
+ * the `is_ai` and `is_test` exclusions (or the shared counter helper), or a
  * `source`-carrying table without the organic filter.
  *
  * This module is deliberately pure (no `@/env`, no `next/headers`): callers
@@ -54,17 +56,24 @@ export function applyOrganicContentFilter<Q extends Filterable<Q>>(query: Q): Q 
 }
 
 /**
- * The founding-member count query: real people only — AI/system accounts
- * (`users.is_ai`) never occupy a founding spot.
+ * The founding-member count query: real people only. AI/system accounts
+ * (`users.is_ai`) and quarantined seeded/test accounts (`users.is_test`,
+ * migration 20260912050000) never occupy a founding spot — a fixture account
+ * counted here would be fabricated front-door proof.
  */
 export function foundingMembersCountQuery(admin: SupabaseClient<Database>) {
-  return admin.from('users').select('id', { count: 'exact', head: true }).eq('is_ai', false);
+  return admin
+    .from('users')
+    .select('id', { count: 'exact', head: true })
+    .eq('is_ai', false)
+    .eq('is_test', false);
 }
 
 /**
  * Founding spots remaining out of `FOUNDING_MEMBER_CAP` — the one live number
  * on the front door. Shared by `/waitlist` and the signed-out home so the two
- * counters can never disagree or drop the `is_ai` exclusion independently.
+ * counters can never disagree or drop the `is_ai` / `is_test` exclusions
+ * independently.
  *
  * Resilience rule (front-door-plan §4): a failed count returns `null` (render
  * no counter), never an error.

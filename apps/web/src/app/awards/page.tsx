@@ -4,8 +4,10 @@ import type { Enums } from '@xidig/db';
 import type { MessageKey } from '@xidig/i18n';
 
 import { AwardVoteControl, type VoteTargetOption } from '@/components/awards/award-vote-control';
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getT } from '@/lib/locale';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,10 +100,17 @@ export default async function AwardsPage() {
   const voteByCategory = new Map<AwardCategory, CastVote>(votes.map((v) => [v.category, v]));
 
   // --- Bounded, RLS-visible option lists per category -----------------------
+  // Quarantined seeded/test accounts (users.is_test) are never ballot options:
+  // no Space a test account leads, no Win one wrote, no test member. Each
+  // exclusion runs IN its query, before the limit, so the bounded list still
+  // fills with real options. The vote API refuses the same targets.
+  const testIds = await loadTestAccountIds(getSupabaseAdmin());
+  const testIdList = testIds.length > 0 ? postgrestIdList(testIds) : null;
+
   // Best Lab → Labs the member can read (RLS scopes the fetch).
-  const { data: labRows } = await supabase
-    .from('labs')
-    .select('id, name')
+  let labQuery = supabase.from('labs').select('id, name');
+  if (testIdList) labQuery = labQuery.not('lead_user_id', 'in', testIdList);
+  const { data: labRows } = await labQuery
     .order('last_activity_at', { ascending: false })
     .limit(TARGET_LIMIT);
   const labOptions: VoteTargetOption[] = (labRows ?? []).map((l) => ({
@@ -111,11 +120,13 @@ export default async function AwardsPage() {
   }));
 
   // Best Win → recent Win posts (RLS scopes visibility).
-  const { data: winRows } = await supabase
+  let winQuery = supabase
     .from('posts')
     .select('id, title, body')
     .eq('type', 'win')
-    .eq('status', 'published')
+    .eq('status', 'published');
+  if (testIdList) winQuery = winQuery.not('author_user_id', 'in', testIdList);
+  const { data: winRows } = await winQuery
     .order('created_at', { ascending: false })
     .limit(TARGET_LIMIT);
   const winOptions: VoteTargetOption[] = (winRows ?? []).map((p) => ({
@@ -125,12 +136,13 @@ export default async function AwardsPage() {
   }));
 
   // Most Helpful / Rising Builder → members the viewer follows.
-  const { data: followRows } = await supabase
+  let followQuery = supabase
     .from('follows')
     .select('target_id')
     .eq('follower_user_id', ctx.appUser.id)
-    .eq('target_type', 'user')
-    .limit(TARGET_LIMIT);
+    .eq('target_type', 'user');
+  if (testIdList) followQuery = followQuery.not('target_id', 'in', testIdList);
+  const { data: followRows } = await followQuery.limit(TARGET_LIMIT);
   const followedIds = (followRows ?? []).map((f) => f.target_id);
   let memberOptions: VoteTargetOption[] = [];
   if (followedIds.length > 0) {

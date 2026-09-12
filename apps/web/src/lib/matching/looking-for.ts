@@ -1,6 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@xidig/db';
 
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
+
 /**
  * "Looking for" matching (§20): Labs actively seeking a skill the member has.
  *
@@ -15,6 +18,12 @@ import type { Database } from '@xidig/db';
  *
  * RLS-scoped: `client` MUST be the member's session client so lab_skill_needs
  * and labs are filtered by can_read_lab — a private Lab never leaks a need.
+ *
+ * Test-account quarantine (users.is_test, migration 20260912050000): a Space
+ * led by a quarantined seeded/test account is never suggested. The test-id
+ * list is a payload-free service-role read; the labs query still rides the
+ * member's client. Every caller (member Home, GET /api/me/looking-for,
+ * suggested-follows) goes through here.
  */
 
 export interface LabMatch {
@@ -60,10 +69,13 @@ export async function findLabsSeekingSkills(
   if (skillsByLab.size === 0) return [];
 
   const labIds = [...skillsByLab.keys()];
-  const { data: labs } = await client
+  const testIds = await loadTestAccountIds(getSupabaseAdmin());
+  let labsQuery = client
     .from('labs')
     .select('id, slug, name, short_description, stage')
     .in('id', labIds);
+  if (testIds.length > 0) labsQuery = labsQuery.not('lead_user_id', 'in', postgrestIdList(testIds));
+  const { data: labs } = await labsQuery;
   if (!labs) return [];
 
   const matches: LabMatch[] = labs.map((lab) => {

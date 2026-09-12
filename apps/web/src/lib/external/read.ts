@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { decodeCursor, encodeCursor, keysetBefore } from '@/lib/pagination';
 
 /**
@@ -83,6 +84,15 @@ export async function queryExternalListings(
 
   const cursor = decodeCursor(filters.cursor);
   if (cursor) query = query.or(keysetBefore(cursor, 'id'));
+
+  // Never a listing owned by a quarantined test account (users.is_test,
+  // migration 20260912050000). Owner-less (imported, unclaimed) listings stay
+  // — a bare `not in` would drop their NULL owner too. Separate `or` params
+  // are ANDed by PostgREST, so this composes with the cursor filter.
+  const testIds = await loadTestAccountIds(admin);
+  if (testIds.length > 0) {
+    query = query.or(`owner_user_id.is.null,owner_user_id.not.in.${postgrestIdList(testIds)}`);
+  }
 
   const { data, error } = await query;
   if (error) throw new Error(`external listings query failed: ${error.message}`);

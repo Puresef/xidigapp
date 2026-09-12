@@ -3,8 +3,10 @@ import { redirect } from 'next/navigation';
 
 import { formatNumber } from '@xidig/i18n';
 
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getLocale, getT } from '@/lib/locale';
+import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +16,7 @@ export const dynamic = 'force-dynamic';
  * reputation_scores is member-readable (RLS `select_all`) and the score is a
  * public/aggregate figure (same class as follower counts), so this reads under
  * the caller's own RLS client. Only positive scores rank; the list caps at ~20.
+ * Quarantined test accounts (users.is_test) never rank (see below).
  */
 
 const LIMIT = 20;
@@ -33,10 +36,19 @@ export default async function LeaderboardPage() {
   const t = await getT();
   const locale = await getLocale();
 
-  const { data: scores } = await ctx.supabase
+  // Quarantined seeded/test accounts (users.is_test) never take a rank. They
+  // are excluded IN the query, before the limit, so a fixture account with a
+  // top score can neither appear nor push a real member off the list — the 20
+  // slots still fill with real members when there are 20.
+  const testIds = await loadTestAccountIds(getSupabaseAdmin());
+  let scoresQuery = ctx.supabase
     .from('reputation_scores')
     .select('user_id, helper_score')
-    .gt('helper_score', 0)
+    .gt('helper_score', 0);
+  if (testIds.length > 0) {
+    scoresQuery = scoresQuery.not('user_id', 'in', postgrestIdList(testIds));
+  }
+  const { data: scores } = await scoresQuery
     .order('helper_score', { ascending: false })
     .limit(LIMIT);
 

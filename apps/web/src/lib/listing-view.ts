@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '@xidig/db';
 
+import { isTestAccount, loadAccountFlags } from '@/lib/account-flags';
 import { publicMediaUrl } from '@/lib/media/storage';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
@@ -137,7 +138,12 @@ export async function getMemberListingView(
   return decorate(supabase, listing as unknown as ListingViewRow);
 }
 
-/** Login-free view (§28): published listings only, service role. */
+/**
+ * Login-free view (§28): published listings only, service role. A listing
+ * owned by a quarantined test account (users.is_test) is never public either
+ * (the page 404s and the OG card falls back); owner-less listings are
+ * unaffected.
+ */
 export async function getPublicListingView(id: string): Promise<ListingView | null> {
   const admin = getSupabaseAdmin();
   const { data: listing, error } = await admin
@@ -148,5 +154,10 @@ export async function getPublicListingView(id: string): Promise<ListingView | nu
     .maybeSingle();
   if (error) throw new Error(`public listing lookup failed: ${error.message}`);
   if (!listing) return null;
-  return decorate(admin, listing as unknown as ListingViewRow);
+  const row = listing as unknown as ListingViewRow;
+  if (row.owner_user_id) {
+    const flags = await loadAccountFlags(admin, [row.owner_user_id]);
+    if (isTestAccount(flags, row.owner_user_id)) return null;
+  }
+  return decorate(admin, row);
 }

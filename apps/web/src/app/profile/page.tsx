@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { CompletionMeter } from '@/components/profile/completion-meter';
-import { ProfileViewCard } from '@/components/profile/profile-view-card';
+import { ProfileViewCard, TestAccountNotice } from '@/components/profile/profile-view-card';
 import { ShareActions } from '@/components/share-actions';
 import { getAuthContext } from '@/lib/auth/guards';
 import { getT } from '@/lib/locale';
@@ -47,6 +47,17 @@ export default async function OwnProfilePage() {
   // OTHER members' views).
   const view = await getMemberProfileView(ctx.supabase, row.handle, ctx.appUser.id);
   if (!view) redirect('/settings/profile');
+
+  // Test-account quarantine (users.is_test): a test account's own page is the
+  // notice, the same as on /u/[handle] — no completion meter, card or
+  // edit/share actions.
+  if (view.isTest) {
+    return (
+      <main className="xidig-section">
+        <TestAccountNotice t={t} />
+      </main>
+    );
+  }
 
   // Owner-only completion nudge — this page is always the signed-in member's
   // own profile (viewer id passed above), so there is no leak surface. Mirrors

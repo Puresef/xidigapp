@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import type { Database, Enums } from '@xidig/db';
 
+import { loadTestAccountIds, postgrestIdList } from '@/lib/account-flags';
 import { ApiError } from '@/lib/api';
 import type { AuthContext } from '@/lib/auth/guards';
 import {
@@ -113,6 +114,10 @@ export async function requireLabContributor(
  * Public Space projection for anonymous SSR (build-in-public / SEO). Uses the
  * service role with a NARROW column set and only returns a row when the Space
  * is genuinely public — anon has no RLS read, so this is the only public path.
+ *
+ * Test-account quarantine (users.is_test): a Space LED by a quarantined test
+ * account is not publicly projectable (null → the page 404s and the OG card
+ * falls back), and the public member count never counts test members.
  */
 export async function getPublicLabView(slug: string): Promise<{
   lab: Partial<LabRow>;
@@ -121,12 +126,15 @@ export async function getPublicLabView(slug: string): Promise<{
   media: LabMediaView;
 } | null> {
   const admin = getSupabaseAdmin();
-  const { data, error } = await admin
-    .from('labs')
-    .select(LAB_PUBLIC_COLUMNS)
-    .eq('slug', slug)
-    .eq('visibility', 'public')
-    .maybeSingle();
+  const [{ data, error }, testIds] = await Promise.all([
+    admin
+      .from('labs')
+      .select(LAB_PUBLIC_COLUMNS)
+      .eq('slug', slug)
+      .eq('visibility', 'public')
+      .maybeSingle(),
+    loadTestAccountIds(admin),
+  ]);
   if (error) throw new Error(`public lab lookup failed: ${error.message}`);
   if (!data) return null;
 
@@ -137,13 +145,19 @@ export async function getPublicLabView(slug: string): Promise<{
     cover_path: string | null;
     cover_blurhash: string | null;
   };
+  if (testIds.includes(lab.lead_user_id)) return null;
+
+  let memberCountQuery = admin
+    .from('lab_members')
+    .select('*', { count: 'exact', head: true })
+    .eq('lab_id', lab.id as string)
+    .eq('status', 'active');
+  if (testIds.length > 0) {
+    memberCountQuery = memberCountQuery.not('user_id', 'in', postgrestIdList(testIds));
+  }
   const [{ data: lead }, { count }] = await Promise.all([
     admin.from('profiles').select('display_name, handle').eq('user_id', lab.lead_user_id).maybeSingle(),
-    admin
-      .from('lab_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('lab_id', lab.id as string)
-      .eq('status', 'active'),
+    memberCountQuery,
   ]);
 
   return { lab, lead: lead ?? null, memberCount: count ?? 0, media: labMediaView(lab) };

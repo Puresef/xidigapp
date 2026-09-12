@@ -8,7 +8,7 @@ import { LiteShowAll } from '@/components/media/lite-show-all';
 import { FollowButton } from '@/components/profile/follow-button';
 import { StartDmButton } from '@/components/messages/start-dm-button';
 import { CompletionMeter } from '@/components/profile/completion-meter';
-import { ProfileViewCard } from '@/components/profile/profile-view-card';
+import { ProfileViewCard, TestAccountNotice } from '@/components/profile/profile-view-card';
 import { ShareActions } from '@/components/share-actions';
 import { getAuthContext, type AuthContext } from '@/lib/auth/guards';
 import { canReceiveDms } from '@/lib/dm/service';
@@ -18,6 +18,7 @@ import {
   getMemberProfileView,
   getPublicProfileView,
   isProfileIndexable,
+  isTestAccountHandle,
   type ProfileView,
 } from '@/lib/profile-view';
 import { HANDLE_REGEX } from '@/lib/profiles';
@@ -35,6 +36,12 @@ export const dynamic = 'force-dynamic';
  * chips + pins (in the card), owner-only completion meter, and privacy
  * settings honored server-side — location granularity in the public
  * projection and `discoverable_search_engines=false` → robots noindex.
+ *
+ * Quarantined test accounts (users.is_test) are not real members: anon and
+ * blocked viewers get a 404 (no public projection, brand OG card), every
+ * signed-in viewer — the account's own owner included — gets the test-account
+ * notice instead of a profile, and the metadata is noindex/nofollow for
+ * everyone.
  */
 
 async function loadView(handle: string): Promise<{
@@ -70,7 +77,19 @@ export async function generateMetadata({
   const { handle } = await params;
   if (!HANDLE_REGEX.test(handle)) return {};
   const view = await getPublicProfileView(handle);
-  if (!view) return {};
+  if (!view) {
+    // A test account has no public projection, but its URL still answers
+    // signed-in members (with the notice). Ask crawlers to stay out whoever
+    // is asking — the check is service-role, not the viewer's.
+    if (await isTestAccountHandle(handle)) {
+      const t = await getT();
+      return {
+        title: t('profile.testAccountTitle'),
+        robots: { index: false, follow: false },
+      };
+    }
+    return {};
+  }
   // §privacy: discoverable_search_engines=false → noindex (server-side; the
   // page still renders for direct links, it just asks crawlers to stay out).
   const indexable = await isProfileIndexable(view.profile.user_id);
@@ -91,6 +110,20 @@ export default async function ProfilePermalinkPage({
   if (!view) notFound();
 
   const t = await getT();
+
+  // Test-account quarantine: the projection is already stripped
+  // (testAccountProfileView), and the page renders only the notice — no
+  // badge or verification chips, no counts, no follow / message / share
+  // controls, no completion meter, no hosted events. Owner included. Anon
+  // and blocked viewers never get here (the public projection is null → 404).
+  if (view.isTest) {
+    return (
+      <main className="xidig-section">
+        <TestAccountNotice t={t} />
+      </main>
+    );
+  }
+
   const litePrefs = await getLitePrefs();
 
   // Own-edge check under RLS (follows_select_own) — only meaningful for
