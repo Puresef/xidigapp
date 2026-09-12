@@ -951,7 +951,7 @@ export const so = {
   'plaza.typeAsk': 'Codsi',
   'plaza.typeWin': 'Guul',
   'plaza.typeUpdate': 'War',
-  'plaza.typePoll': 'Codbixin',
+  'plaza.typePoll': 'Cod',
   'plaza.typeIntroHint': 'Bulshada isu soo bandhig.',
   'plaza.typeAskHint':
     'Caawimaad codso — kuwa ku caawin karaa si gaar ah ayay kuula soo xiriirayaan.',

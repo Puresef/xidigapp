@@ -442,6 +442,8 @@ Build Xidig v1.0 exactly as described in this PRD. Include auth + RBAC (member /
 
 **Decided**
 
+- **Naming direction (owner, 12 Sep 2026)** — three-tier vocabulary posture, recorded in docs/i18n.md §Canonical vocabulary: (1) direct UI terms confirmed as provisional pending native review (Codsi, Salaan, Guul, War, Cod, Taageer, Muuji khariidadda, Digniino, Fariimo); (2) meaning-review terms where no literal translation may be minted (Space/Group/Project, Discover, Data Saver SO, Xidig Plus SO, Identity checked, Community vouched); (3) superseded terms — Garab/Co-sign/Show support → **Support**, Supporter/Supporter+ → **Xidig Plus**, Lite/Xawli yar → **Data Saver** (EN live; SO term owed), Plaza-as-main-nav → **Community** (EN; SO under review), Lab-as-default → **Project/Group** ("Lab" only in approved programme context), Maal never primary nav (contextual readiness/funding only — already structurally true). Internal identifiers (keys, routes, DB slugs) never move with display renames.
+
 - DMs are in scope (old "no real-time chat" non-goal removed)
 - Verification: live admin video call (face + ID), recorded with consent — see section 14
 - Capital: investment language gated to Somalia region; informational view elsewhere — see section 17

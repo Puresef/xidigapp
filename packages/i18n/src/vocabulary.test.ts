@@ -10,10 +10,14 @@ import { DEFAULT_LOCALE, LOCALE_NAMES, LOCALES } from './locales';
  * naming-review decision — update the PRD/naming doc first, then this test.
  */
 describe('canonical navigation names', () => {
+  // EN nav follows the 12 Sep owner naming direction (Plaza-as-nav and
+  // Lab-as-default retired). The SO side deliberately does NOT mirror it
+  // (no-bleed doctrine, 23 Aug): Madal/Warshad stay until the Space/Group/
+  // Project + Community meaning review picks the SO terms.
   const canonical = [
     ['nav.home', 'Home', 'Hoy'],
-    ['nav.plaza', 'Plaza', 'Madal'],
-    ['nav.labs', 'Labs', 'Warshad'],
+    ['nav.plaza', 'Community', 'Madal'],
+    ['nav.labs', 'Projects', 'Warshad'],
     ['nav.suuq', 'Directory & Map', 'Suuq'],
     ['nav.messages', 'Messages', 'Fariimo'],
     ['nav.capital', 'Capital', 'Maal'],
@@ -198,11 +202,30 @@ describe('canonical product terms', () => {
     );
   });
 
-  it('Space modes: Lab (Warshad) ⇄ Club (Koox) — naming review of 27 Jun (PRD §16)', () => {
-    expect(en['term.lab']).toBe('Lab');
+  it('Space modes: EN Project ⇄ Group (12 Sep direction — "Lab" reserved for approved programme context); SO Warshad ⇄ Koox pending meaning review', () => {
+    expect(en['term.lab']).toBe('Project');
     expect(so['term.lab']).toBe('Warshad');
-    expect(en['term.club']).toBe('Club');
+    expect(en['term.club']).toBe('Group');
     expect(so['term.club']).toBe('Koox');
+  });
+
+  it('post types: Win/Guul · Update/War · Poll/Cod (12 Sep direction; SO Cod is provisional — the cod/codbixin vote-vocabulary collision is a flagged native-review item)', () => {
+    expect(en['plaza.typeWin']).toBe('Win');
+    expect(so['plaza.typeWin']).toBe('Guul');
+    expect(en['plaza.typeUpdate']).toBe('Update');
+    expect(so['plaza.typeUpdate']).toBe('War');
+    expect(en['plaza.typePoll']).toBe('Poll');
+    expect(so['plaza.typePoll']).toBe('Cod');
+  });
+
+  it('the low-bandwidth mode is named "Data Saver" in EN — never "Lite" (12 Sep direction; SO term pending native review, Xawli yar remains SO-side until then)', () => {
+    expect(en['settings.liteTitle']).toBe('Data Saver');
+    expect(en['consent.liteLabel']).toBe('Data Saver');
+    for (const [key, value] of Object.entries(en)) {
+      const text = typeof value === 'string' ? value : Object.values(value).join(' ');
+      // Internal key names keep "lite"; user-facing EN copy must not say it.
+      expect(text.includes('Lite'), `${key} still says "Lite"`).toBe(false);
+    }
   });
 
   it('Maalgeli is the invest action (Somalia-region gated at render time, PRD §17)', () => {

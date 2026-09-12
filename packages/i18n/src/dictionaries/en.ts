@@ -20,8 +20,8 @@ export const en = {
   // own (PRD decision log: entry lives inside Labs), but its label is here for
   // every place the surface is named.
   'nav.home': 'Home',
-  'nav.plaza': 'Plaza',
-  'nav.labs': 'Labs',
+  'nav.plaza': 'Community',
+  'nav.labs': 'Projects',
   'nav.suuq': 'Directory & Map',
   'nav.messages': 'Messages',
   'nav.capital': 'Capital',
@@ -37,8 +37,8 @@ export const en = {
   'nav.leaderboard': 'Top Helpers',
 
   // Canonical product terms used inside sentences and on buttons
-  'term.lab': 'Lab',
-  'term.club': 'Club',
+  'term.lab': 'Project',
+  'term.club': 'Group',
   // The non-financial support action (key name `garab` is a legacy internal
   // identifier). EN label "Support" / SO provisional "Taageer" — owner-edited
   // PRD Relook §24 (supersedes the interim "Show support" and the bare "Garab").
@@ -544,7 +544,7 @@ export const en = {
   'settings.hubAppearanceBody': 'Theme, text size, and motion.',
   'settings.hubLanguage': 'Language',
   'settings.hubLanguageBody': 'Somali or English — switch anytime.',
-  'settings.hubData': 'Data & Lite mode',
+  'settings.hubData': 'Data Saver',
   'settings.hubDataBody': 'Save data, export your data, manage your account.',
   'settings.saved': 'Saved.',
   // Privacy & safety
@@ -638,8 +638,8 @@ export const en = {
   'settings.motionSystem': 'Match device',
   'settings.motionOff': 'Reduce motion',
   // Data & Lite mode
-  'settings.dataTitle': 'Data & Lite mode',
-  'settings.liteTitle': 'Lite mode',
+  'settings.dataTitle': 'Data Saver',
+  'settings.liteTitle': 'Data Saver',
   'settings.liteIntro':
     'Nothing is removed — heavy images, videos, and maps wait behind a Show button until you ask for them.',
   'settings.liteImages': 'Load images automatically',
@@ -647,13 +647,13 @@ export const en = {
   'settings.liteMaps': 'Load maps automatically',
   'settings.liteAnimations': 'Play animations',
   'settings.liteSmallAvatars': 'Load tiny profile photos',
-  'settings.liteBundlesAria': 'Lite mode shortcuts',
+  'settings.liteBundlesAria': 'Data Saver shortcuts',
   'settings.liteBundleText': 'Text only',
   'settings.liteBundleEssentials': 'Essentials',
   'settings.liteBundleEverything': 'Everything',
-  'settings.liteSaved': 'Lite mode saved you about {amount} this week.',
+  'settings.liteSaved': 'Data Saver saved you about {amount} this week.',
   'settings.liteSavedNone': 'No data saved yet this week.',
-  'settings.liteMoreLink': 'More data-saving controls in Data & Lite mode',
+  'settings.liteMoreLink': 'More data-saving controls in Data Saver',
   'settings.exportTitle': 'Export your data',
   'settings.exportBody':
     'Download a copy of your profile, posts, comments, listings, bookmarks, and drafts as one file.',
@@ -1623,8 +1623,8 @@ export const en = {
   'lite.embedLabel': 'Video',
   'lite.mapLabel': 'Map',
   'lite.promptTitle': 'Slow connection?',
-  'lite.promptBody': 'Switch to Lite to save data — images and maps load only when you tap Show.',
-  'lite.promptAccept': 'Use Lite',
+  'lite.promptBody': 'Switch to Data Saver — images and maps load only when you tap Show.',
+  'lite.promptAccept': 'Use Data Saver',
   'lite.promptDismiss': 'Not now',
 
   // Saved — bookmarks (§13 social). New launch-floor namespace.
@@ -1843,7 +1843,7 @@ export const en = {
     'Support promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
   'marketing.blockLiteTitle': 'Built for our internet',
   'marketing.blockLiteBody':
-    'Somali and English from day one. Lite mode for slow connections — images, maps, and embeds load only when you tap.',
+    'Somali and English from day one. Data Saver for slow connections — images, maps, and embeds load only when you tap.',
   // A3 claims containment: ownership/governance wording must reflect rights
   // that actually exist (owner ruling). "Community-led" and "member
   // participation" replace ownership/governance claims until a legal
@@ -1886,7 +1886,7 @@ export const en = {
     'The live product tour: a purposeful feed, member profiles, a searchable directory of people and businesses, DMs with boundaries, Labs, and community-supported ventures.',
   'marketing.productTrustTitle': 'Trust & verification',
   'marketing.productTrustBody':
-    'Identity, community, and business verification badges; human moderation with appeals; and a low-bandwidth Lite mode that respects every connection.',
+    'Identity, community, and business verification badges; human moderation with appeals; and a low-bandwidth Data Saver mode that respects every connection.',
   'marketing.productBetaNote':
     'Xidig is in private beta. Request access and we’ll save your founding spot.',
 
@@ -2052,7 +2052,7 @@ export const en = {
   'consent.errorMonitoringLabel': 'Error-monitoring extras',
   'consent.errorMonitoringHint':
     'Session replays and performance traces that help us fix problems faster. Basic error reports stay on — they keep Xidig running.',
-  'consent.liteLabel': 'Low-data mode (Xawli yar)',
+  'consent.liteLabel': 'Data Saver',
   'consent.liteHint': 'Heavy images and media wait behind a tap.',
   'consent.liteCta': 'Turn on',
   'consent.settingsTitle': 'Privacy choices',
@@ -2365,7 +2365,7 @@ export const en = {
   'profile.showcaseEmptyBody': 'Pin a Win, Lab artwork, or an Update photo — you choose.',
   'profile.showcaseErrorTitle': 'The showcase didn’t load',
   'profile.showcaseErrorBody': 'Something went wrong while loading it. Try again.',
-  'profile.showcaseLiteNote': 'Lite: images wait. The layout is the same.',
+  'profile.showcaseLiteNote': 'Data Saver: images wait. The layout is the same.',
   'profile.retryShort': 'Retry',
   'profile.pinQueuedTitle': 'New Win — waiting',
 
@@ -2532,7 +2532,7 @@ export const en = {
   'profile.queuedEditBody': 'Your edit is saved — it will send when the internet comes back.',
   'profile.queuedEditView': 'See the change',
   'profile.litePhotoSize': 'photo ~{size}',
-  'profile.liteFooterNote': 'Lite: photos are paused. Your avatar is initials — nothing downloads.',
+  'profile.liteFooterNote': 'Data Saver: photos are paused. Your avatar is initials — nothing downloads.',
 
   // Badge canon (b1–b4 + ruling 10). The identity / earned / tenure labels and
   // the three long tooltips already live in the `profile.badge*` block above —
