@@ -1,11 +1,17 @@
 # Retention implementation plan — R1a class map, R1b reversible suppression
 
-**Status:** plan only (12 Sep 2026). Nothing here is implemented. This branch
-(`claude/retention-doctrine`) is the doctrine document on top of
-retained-content `7162c1c`; its code is identical to `7162c1c`. **Partial
-containment only. Deletion compliance is NOT claimed**, and it will not be
-until R2, a provider path for GoTrue phone numbers and legal review are all
-complete.
+**Status (12 Sep 2026):**
+
+- **R1a is implemented** on `claude/integration-plus-retention` (`c55417b`):
+  `packages/db/src/retention.ts` (`@xidig/db/retention`) and its contract
+  test. It is configuration only, and no behaviour changed.
+- **R1b and R2 are plans**, updated with the owner's third-pass rulings
+  (`docs/retention-doctrine.md` §1b). Nothing in them is implemented.
+- The plan was first written on `claude/retention-doctrine`, which is the
+  doctrine document on top of retained-content `7162c1c`. **Partial
+  containment only. Deletion compliance is NOT claimed**, and it will not be
+  until R2, a provider path for GoTrue phone numbers and legal review are all
+  complete.
 
 **Authority:** the owner-edited PRD §24 and the owner rulings in
 `docs/retention-doctrine.md` §1a (12 Sep). The class map is in the same
@@ -102,7 +108,7 @@ terms or Space-ownership acceptance exists that could override it.
 - data export (no counterparty messages);
 - the upcoming sole-deleted-host discovery rules.
 
-## 2. R1a — class map + config (C0: no migration, no behaviour change)
+## 2. R1a — class map + config (C0: no migration, no behaviour change) — IMPLEMENTED (`c55417b`)
 
 1. **`packages/db/src/retention.ts`**, exported as the subpath
    `@xidig/db/retention` so a large map stays out of the browser bundle. This
@@ -356,20 +362,33 @@ So every event with `lab_id` null is one of two kinds:
 - a **verified business's listing event**.
 
 The "sole deleted host" case therefore arises when a **staff member or a
-verified business owner** deletes their account. Under C2 either may count as
-"independently organisation-owned". Today a departing mod's official events
-are delisted (upcoming) and, under this slice, would be shelled (past).
-**Owner question (§5):** do official community events and business-listing
-events keep their body under C2? Listing events would follow the listing,
-which is already suppressed when its owner is not live. Until ruled, the shell
-applies, which is the conservative reading.
+verified business owner** deletes their account.
+
+**Owner ruling (12 Sep; `docs/retention-doctrine.md` §1b):**
+
+- A staff event is organisation/platform-owned only where it is **clearly
+  recorded** as official/platform content.
+- A business event is organisation-owned only where business ownership is
+  clear **and** the deleted member acted as an authorised representative
+  under accepted terms.
+- Otherwise, the description, agenda, cover/media, links and contact are
+  personal UGC and are suppressed.
+- The shell keeps title, date, status and the tombstone host, or
+  organisation attribution when that is clearly non-personal.
+
+The schema records neither an official-content marker nor accepted
+representative terms, so **every existing sole-host event is ambiguous and is
+shelled**. Adding such a marker is a separate, prospective owner/legal slice.
+Listing events already follow their listing, which is suppressed when its
+owner is not live.
 
 **Space-hosted events created by a deleted member:** the schema cannot tell
-Space content from the creator's personal UGC. Default proposal (the
-listings precedent): withhold the creator-authored description, agenda,
-cover, venue and online URL. Keep the title, date, status and Space. Whether
-the event keeps running (RSVPs, reminders) is an owner question: no Space
-lead can edit, cancel or re-host it today.
+Space content from the creator's personal UGC. That makes them ambiguous, and
+under the ruling they are suppressed. Withhold the creator-authored
+description, agenda, cover, venue and online URL; keep the title, date,
+status and Space. Whether the event keeps running (RSVPs, reminders) is still
+an owner question, because no Space lead can edit, cancel or re-host it
+today.
 
 **Also in this PR:**
 
@@ -470,6 +489,19 @@ redaction of a derived copy, and only the few affected posts change.
     hardening, not deletion.
   - Rollback: re-grant table SELECT. Add a `has_column_privilege` test that
     `captured_body` and `content_excerpt` are unreadable by `authenticated`.
+- **Reviewer notes (`candidate_reviews.notes`)** — owner ruling, 12 Sep:
+  notes containing deleted-member personal data are restricted metadata.
+  - Today they are readable wherever the candidate is readable
+    (`candidate_reviews_select_visible` → `can_read_candidate`), including
+    over PostgREST.
+  - R1b: revoke table SELECT, then re-grant every column except `notes`.
+  - Serve notes through the service-role review projection. Withhold them
+    from member surfaces when the reviewer is deleted, and when the candidate
+    creator is deleted (the notes may describe them).
+  - Reviewers and mods keep restricted read. Live reviewers' decline/park
+    reasons (`status_reason`, the §17 transparency) are unchanged.
+  - Tests: `has_column_privilege` false for `notes`; the projection's
+    deleted-reviewer and deleted-creator cases.
 - **Venture ledger (`work_events.note`):** an append-only side table
   `work_event_suppressions(work_event_id, reason, created_by, created_at)`,
   **outside** the hash chain.
@@ -508,8 +540,16 @@ and a legal-hold check.
   member's Plaza images, listing photos, event covers, Space icon/cover and
   candidate logo/cover stay fetchable at raw URLs that embed the uploader's
   id. Add `dm-media` voice. R1b cannot suppress objects (no object
-  mutation), so the owner must **explicitly accept this residual exposure**
-  until A5b/R2.
+  mutation).
+  - **Owner ruling (12 Sep):** this is accepted **only as an explicitly
+    recorded residual risk** — **KNOWN RESIDUAL LEAK, not complete until the
+    purge or access-control change is done**, and never described as
+    deletion-compliant.
+  - It is recorded in code as `PUBLIC_MEDIA_RESIDUAL`.
+  - R1b removes or suppresses normal UI/API references and stops new
+    surfacing where feasible.
+  - The purge itself needs an inventory, rollback/impact notes and legal
+    review.
 - Hash the plaintext identifiers: `signup_grants`, `waitlist_entries`,
   `digest_email_sends`, `email_suppressions`.
 - A day-365 purge job with a legal-hold flag. This is **in-place
@@ -536,11 +576,8 @@ and a legal-hold check.
    hard-deleting them, or defer to the ≤365-day restricted class?
 4. May a counterparty report a suppressed message after deletion? That
    starts a new immutable copy.
-5. **Events:**
-   - "sole host" events are staff community/official events or
-     verified-business listing events (plain members cannot create them).
-     Are either "independently organisation-owned" under C2, keeping their
-     body when that staff member or owner deletes their account?
+5. **Events:** organisation-owned events were ruled on 12 Sep (§3.4): only
+   when clearly recorded; ambiguous events are suppressed. Still open:
    - which shell fields beyond title/date/status/tombstone host (category,
      mode, attended count)?
    - past shells listed, or permalink-only?
@@ -567,9 +604,10 @@ and a legal-hold check.
 13. **Counts:** should reactions, support, poll, endorsement, vouch,
     follower, award-vote and attestation counts exclude deleted members?
     (Each count is gated separately.)
-14. **Reviewer notes:** may a deleted reviewer's `candidate_reviews.notes`
-    stay member-readable under the §17 transparency lock, or become
-    restricted like the rest of their UGC?
-15. **Public media:** do you explicitly accept that a deleted member's
-    non-identity media stays fetchable at raw public URLs until A5b/R2?
-    R1b does not mutate objects.
+14. **Reviewer notes** were ruled on 12 Sep: notes with deleted-member
+    personal data are restricted metadata. Still open: the R1b mechanism
+    (withhold a deleted reviewer's notes from member projections, and a
+    column scope on `candidate_reviews.notes`) must be squared with the §17
+    decline/park-reason transparency, which stays for live reviewers.
+15. **Public media** was ruled on 12 Sep: accepted only as a recorded KNOWN
+    RESIDUAL LEAK until the purge or access-control change.

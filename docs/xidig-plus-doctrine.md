@@ -1,10 +1,25 @@
 # Xidig Plus doctrine — owner rulings, mechanics conflict, smallest safe slice
 
-**Status:** a rulings record and an implementation **plan** (12 Sep 2026).
-Nothing here is implemented. This branch
-(`claude/packet-b-support-taageer-xidig-plus`, `384b840`) changes names and
-copy only: **the mechanics in §2 are unchanged and still conflict with the
-doctrine.**
+**Status (12 Sep 2026, second pass):** P1 is **implemented on
+`claude/integration-plus-retention`**, following the owner's second-pass
+rulings (§1C).
+
+- `383f6c3`: steps 1–4 and step 6. The paused paths refuse neutrally, the
+  tier is never consulted, and live tallies leave the API. Includes migration
+  `20260912100000` (the tally is server-only).
+- `5b5e808`: step 5, migration `20260912100100` (the five rows removed).
+  **Deploy-order gated**: apply it only after the app is deployed. It is not
+  applied to Dev.
+
+**Still gated:** the non-paid eligibility model (P3), ordinary-project parity
+(P2), legal wording and the `TERMS_VERSION` bump for the ToS clause, and
+native Somali review of every new string.
+
+§2 and §3 below describe the pre-P1 state (`384b840`) and are kept as the
+audit record.
+
+The original branch (`claude/packet-b-support-taageer-xidig-plus`, `8749ba0`)
+still carries names and copy only.
 
 **Authority:** the owner-edited Notion PRD "PRD Relook — Xidig: Social &
 Collaboration Platform", §24 (updated 12 Sep). Where it conflicts with older
@@ -84,7 +99,48 @@ Rulings for the future mechanics:
 **Constraint:** do not broaden candidate, governance or capital access without
 an approved non-paid eligibility model.
 
-## 2. Where the paid tier still decides a forbidden power
+### C. Second-pass rulings (12 Sep 2026): the P1 questions answered
+
+- **Final policy (unchanged):** Xidig Plus must not gate governance,
+  candidate votes, candidate submission, Lab/project creation, capital paths,
+  verification, ranking, trust or professional credibility. It provides only
+  patronage, resource and convenience benefits.
+- **"Pause, don't broaden" is the first slice.** Do not simply open Lab
+  creation to free users while Lab is entangled with Candidate/Venture/capital
+  escalation.
+- **Lab creation and promotion:** paused wherever they function as an
+  escalation, capital or candidate lane. **Implemented:** paused for everyone,
+  admins included. No admin carve-out was ruled.
+- **Existing Labs** keep ordinary management and collaboration continuity
+  only. **Existing Lab leads do NOT keep special candidate, Venture or capital
+  escalation rights** by virtue of the old Plus mechanics. Implemented: the
+  handoff and Venture promotion are paused for every lead (question 2
+  answered).
+- **Candidate voting:** paused and neutralised as "eligibility under review"
+  until a non-paid model is approved. Implemented.
+- **Candidate submission:** move toward review submission by an active
+  Space/project owner or admin under platform criteria, not paid status. If
+  that cannot be done safely in the first slice, pause it. **Implemented as a
+  pause**, because no platform criteria exist. `POST /api/candidates` is
+  retired (question 3 answered).
+- **Live tallies:** strip them from the normal API/UI at the same time the
+  vote is paused, and close the direct tally function. Implemented (question
+  4 answered): `candidate_vote_tally` is server-only, and `service_role` is
+  the one narrowly scoped path. No app route reads it while the vote is
+  paused.
+- **Row deletion:** only after the app no longer depends on the rows.
+  Implemented as a separate, deploy-order-gated commit and migration.
+- **ToS and legal copy:** product-facing and public tier-list copy uses
+  neutral interim language. For ToS clauses, use the smallest interim
+  placeholder that stops promising forbidden powers, mark it for legal review
+  and versioning, and claim no final legal wording. Implemented (questions 5
+  and 6 answered): only the "which unlocks …" claim was removed, the clause
+  is marked LEGAL REVIEW PENDING, and `TERMS_VERSION` is unchanged pending
+  legal.
+- Native Somali and legal review remain required, and nothing is claimed
+  final.
+
+## 2. Where the paid tier still decides a forbidden power (pre-P1 audit record)
 
 Read-only audit of `384b840`, 12 Sep. Each finding was re-checked at file:line
 by an independent verifier. Tier id `supporter` = Xidig Plus. The `free` tier
@@ -168,7 +224,7 @@ ordinary-project gaps are UI, not paid gates: no UI to accept requests,
 invite, set roles or remove members; no lead transfer; no close/complete
 control; the task board only runs in Venture mode.
 
-## 3. Copy that sells or states the paid gate
+## 3. Copy that sells or states the paid gate (pre-P1 audit record)
 
 Class **A** sells a forbidden power as a Plus benefit. Class **B** states the
 current paid gate as a requirement rather than neutrally as "under review".
@@ -197,12 +253,23 @@ $1/month →", and `:742`.
 `docs/phase-0-schema-notes.md:151` says RLS gates on `has_capability`; no
 policy does.
 
-## 4. Smallest safe slice — P1 "take Plus out of the decision: pause, don't broaden"
+## 4. Smallest safe slice — P1 "take Plus out of the decision: pause, don't broaden" (implemented; see Status)
 
 **Principle:** remove the paid tier as the determinant. Where an approved
 non-paid rule exists and it **narrows** access, use it. Everywhere else,
 **pause** with neutral "under review" copy. Nothing becomes broader, and
 every intermediate or rolled-back state gives at most today's access.
+
+> **As implemented (owner rulings, §1C).** Two recommendations below were
+> superseded:
+>
+> - Lab creation and promotion are paused for **everyone**. There is no
+>   active-admin interim.
+> - Leads of existing Labs **do not** keep the candidate handoff or Venture
+>   promotion; every `/promote` target is paused.
+>
+> Everything else below shipped as written. On the base: the integration
+> branch holds the retention line, Packet B and naming, as recommended here.
 
 **Base (owner call; merges are gated).** Build P1 on **one integration
 branch** shared with the retention work (`docs/retention-implementation-plan.md`
@@ -406,27 +473,19 @@ windows, 2 candidates (1 draft, 1 in review), 3 Labs (all with free leads),
 
 ## 5. Open owner questions
 
-1. Lab entry: an active-admin-only interim (recommended), or a full pause for
-   everyone? Either way Plus members lose self-service Lab creation. That is
-   the only way to decouple without broadening.
-2. Existing active Lab leads keep the handoff and Venture promotion by
-   default (a non-paid rule). Should leads whose Plus has lapsed be
-   re-checked, or should escalation go admin-only until P3?
-3. Retire `POST /api/candidates` outright?
-4. Revoke the live tally now? The PRD-relook audit (the untracked
-   `docs/prd-relook-audit.md` in the main checkout) says two things. Line 77
-   recommends service-role-only, as for `award_vote_tally`. Line 157 lists
-   `candidate_vote_tally()` among "protected mechanisms, unchanged by R-01
-   (locked §17)". **Recommendation:** treat it as needing explicit owner
-   approval. B1's "hidden live tallies" direction supports the revoke.
-5. Does ruling B supersede the 12 Sep wording "Current access requires Xidig
-   Plus"? Recommended: yes, once P1 pauses the vote.
-6. ToS fees clause: may a conservative interim placeholder ship before legal
-   signs off?
-7. Q4 Plus-only Spaces, and whether `intelligence_updates` (an email perk, never
-   built) is a convenience or an information advantage.
-8. Does "Koox is social-only" (ruling 4) still stand now that the Club is
-   mechanically the free ordinary project?
-9. Should ballots from deleted accounts keep counting?
-10. Native review: "Hadda xaq uma lihid" (disabled vote state) may read as a
-    rights denial rather than a neutral status.
+Questions 1–6 were answered on 12 Sep (§1C). Still open:
+
+1. Q4 Plus-only Spaces (`supporter_spaces`, DB-enforced), and whether
+   `intelligence_updates` (an email perk, never built) is a convenience or an
+   information advantage.
+2. Does "Koox is social-only" (ruling 4) still stand now that the Club is
+   mechanically the free ordinary project? This is P2.
+3. Should ballots from deleted accounts keep counting? They are restricted
+   records now, and no tally is shown.
+4. P3: the approved non-paid eligibility model for the advisory vote, and the
+   platform criteria for review submission. Until then both stay paused.
+5. Native review of every new provisional SO string ("waa la hakiyay inta
+   xaq-u-yeelashada dib loo eegayo" and the rest). `capital.voteNotEligible`
+   ("Hadda xaq uma lihid") was removed.
+6. Legal review: the ToS fees clause wording and the `TERMS_VERSION` bump with
+   a re-acceptance path, bundled with the content-licence and deletion copy.

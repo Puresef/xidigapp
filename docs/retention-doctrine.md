@@ -3,9 +3,10 @@
 **Status:** audit/design only (12 Sep 2026). No migration, no data change. It
 implements nothing destructive; it records the owner's new doctrine and maps
 what it means for this codebase. **The owner accepted it as a design-only
-doctrine mapping (12 Sep) and it was pushed**; the owner's rulings on its open
-points are in §1a, and the implementation plan is
-`docs/retention-implementation-plan.md`. **Partial containment only. Deletion
+doctrine mapping (12 Sep) and it was pushed**. The owner's rulings on its open
+points are in §1a–§1b, the implementation plan is
+`docs/retention-implementation-plan.md`, and the class map in code (R1a) is
+`@xidig/db/retention`. **Partial containment only. Deletion
 compliance is NOT claimed**: implementation, legal review and a provider
 erasure path for GoTrue phone numbers are all incomplete.
 
@@ -88,6 +89,53 @@ slice for DMs, Space decisions/updates, event bodies, old digests and stored
 snapshots. **No destructive data deletion** until the class map, rollback,
 audit trail and legal review path are clear. The plan is
 `docs/retention-implementation-plan.md`.
+
+### 1b. Owner rulings, third pass (12 Sep 2026): interpretations and residuals
+
+1. **C2, organisation-owned events.**
+   - A staff "official" event counts as organisation/platform-owned only
+     where it is **clearly recorded** as official/platform-owned content,
+     rather than personal UGC by the deleted staff member.
+   - A verified-business event counts as organisation-owned only where the
+     business's ownership is clear **and** the deleted member was acting as
+     an authorised representative under accepted terms.
+   - **If ownership is ambiguous**, the deleted member's description, agenda,
+     cover/media, links and contact are personal UGC and are suppressed from
+     normal surfaces.
+   - Keep a minimal historical shell where appropriate: title, date, status,
+     and the tombstone host, or organisation attribution if clearly
+     non-personal.
+   - No official-content marker and no accepted representative terms exist
+     in the schema today. So **every** existing sole-host event is ambiguous,
+     and suppression applies.
+2. **Public images/media.**
+   - Some public media may stay directly reachable until a media purge or
+     storage migration, **only as an explicitly recorded residual risk**.
+     This state is **not** deletion-compliant.
+   - The first reversible slice removes or suppresses normal UI/API
+     references and prevents new surfacing where feasible.
+   - The public-bucket purge is a separate, gated destructive/removal slice,
+     with an inventory, rollback/impact notes and legal review.
+   - Label: **KNOWN RESIDUAL LEAK — not complete until the purge or
+     access-control change is done.** Recorded as `PUBLIC_MEDIA_RESIDUAL` in
+     `@xidig/db/retention`.
+3. **Space decisions, reviewer notes, permanent records.**
+   - Deleted-member-authored full bodies are suppressed from normal surfaces
+     by default. Minimal metadata and restricted evidence are kept for up to
+     1 year.
+   - A full body is kept only where it is clearly Space-owned/project-continuity
+     material under accepted project terms; ambiguous cases are suppressed or
+     redacted.
+   - **Reviewer notes containing deleted-member personal data are restricted
+     metadata**, not normal public/product history.
+   - Tamper-proof chains: append-only suppression/redaction events, never
+     destructive mutation that breaks integrity.
+4. **Native and legal review** are still required for retention wording,
+   deletion copy and the content licence. Nothing here claims finality.
+
+**R1a is implemented** on `claude/integration-plus-retention` (`c55417b`):
+`@xidig/db/retention` (`RETENTION_WINDOW_DAYS = 365`, the full class map)
+plus a schema-enumerating contract test. It is configuration only.
 
 ## 2. What final deletion does today (branch `claude/retained-content-projection` @ `7162c1c`)
 
