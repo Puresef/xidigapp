@@ -8,8 +8,11 @@ rulings (§1C).
   tier is never consulted, and live tallies leave the API. Includes migration
   `20260912100000` (the tally is server-only).
 - `5b5e808`: step 5, migration `20260912100100` (the five rows removed).
-  **Deploy-order gated**: apply it only after the app is deployed. It is not
-  applied to Dev.
+  **Deploy-order gated**: apply it only after the app is deployed. Neither it
+  nor `20260912100000` is applied to Dev, the Supabase project labelled "Dev
+  Xidig App" (`tbdryvhxxiqadseuxclm`), which is the live production database
+  for `xidig.net`. Applying either is production work and needs explicit
+  approval.
 
 - `1aa147f`: the §1D follow-up. Declaring a Venture's capital need and the
   automatic Venture → Lab timeout demotion are both paused. No migration.
@@ -543,7 +546,8 @@ capability in ('create_lab','vote_candidate','governance_rights','builder_path',
   - the `seedSupporter` docstring (`testing/factories.ts:50`);
   - the Dev seed test that requires every seeded voter to be on the
     `supporter` tier (`apps/web/src/lib/seed/test-community/data.test.ts:183`).
-    Seeded Dev text still says "Supporter".
+    Seeded Dev text (on the live production database) still says
+    "Supporter".
 - Flip from the deletion lineage:
   - `grace-entitlements.test.ts:101` (a suite-level positive control),
     `:148` and `:210`;
@@ -555,7 +559,8 @@ migration header lists the removed rows and cites ruling B. The applied
 `20260912000000` is left unedited.
 
 **Blast radius:** billing is not live (the ToS clause says so), so no paying
-member loses anything. On Dev: 15 active Plus members, 9 ballots, 0 open vote
+member loses anything. On Dev (the live production database, so these are
+live counts): 15 active Plus members, 9 ballots, 0 open vote
 windows, 2 candidates (1 draft, 1 in review), 3 Labs (all with free leads),
 3 Ventures.
 

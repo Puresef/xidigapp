@@ -19,7 +19,8 @@ document (§3).
 
 **Evidence:** a read-only audit of this branch (12 Sep). Each finding was
 re-checked at file:line by an independent verifier. Dev (read-only counts,
-12 Sep):
+12 Sep; "Dev" is the live production database, see §3 Environments, so
+these are live production counts):
 
 - 19 deleted accounts;
 - 1 DM message from a deleted sender (1 thread, no voice);
@@ -199,12 +200,25 @@ own.
   repo's "fix-forward only" convention.
 - **Live checks before relying on Realtime:** that Realtime applies
   per-subscriber RLS to `messages`, and that it drops a revoked column. This
-  was not observable statically, and a Dev observation proved a similar
-  assumption wrong for read-state. `pg_graphql` exposure is unknown
+  was not observable statically, and an observation on Dev (the live
+  production database) proved a similar assumption wrong for read-state. `pg_graphql` exposure is unknown
   (`config.toml` lists `graphql_public`); if enabled, it uses the same grants
   and RLS.
-- **Environments.** Dev is touched only on owner instruction; Staging and
-  production never.
+- **Environments.**
+  - The Supabase project labelled "Dev Xidig App" (`tbdryvhxxiqadseuxclm`)
+    is currently the live production database for `xidig.net`. Treat any
+    access to it as production access. No smoke test, migration, data check
+    or "Dev" operation is safe unless explicitly approved as production work.
+  - Staging is paused/unverified and must not be assumed to match
+    production.
+  - Any reference to Dev counts or Dev migration state in this plan refers to
+    live production data/state, unless a separate non-production project is
+    explicitly confirmed.
+  - The live ledger records its 19 most recent entries (`20260901000000`
+    onward) under apply-time versions, not the file versions, so
+    `supabase db push` does not line up with this directory as-is. Use the
+    same application method as those entries, or reconcile the ledger first,
+    as an approved production step.
 
 ### 3.1 Prerequisite (in the first PR)
 
@@ -468,7 +482,7 @@ redaction of a derived copy, and only the few affected posts change.
   and sent emails cannot be recalled.
 - **Owner question:** are Win/Ask titles bodies (doctrine §4) or existence
   metadata? If they are metadata, this item drops out.
-- Dev has 0 editions, so a fixture is needed.
+- Dev (live production) has 0 editions, so a fixture is needed.
 
 ### 3.6 Stored snapshots and permanent tables (C4)
 
