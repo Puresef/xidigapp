@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { detectLink, interstitialHref } from './embeds';
+import { detectLink, interstitialHref, resolveInterstitialTarget } from './embeds';
 
 /**
  * §15 embed-first video: whitelisted providers get an in-app player, our own
@@ -173,5 +173,114 @@ describe('interstitialHref', () => {
   it('URL-encodes the target', () => {
     const target = 'https://example.com/a b?c=d&e=f';
     expect(interstitialHref(target)).toBe(`/out?url=${encodeURIComponent(target)}`);
+  });
+});
+
+/**
+ * /out's `url` param is attacker-controlled: anyone can craft an /out link and
+ * post it anywhere. Only an absolute http(s) destination on a host that is not
+ * Xidig ever becomes a Continue link (PRD Relook §8: an unsupported embed must
+ * stay a usable link — behind a warning, never a silent redirect).
+ */
+describe('resolveInterstitialTarget', () => {
+  it('accepts an absolute https destination and names its host', () => {
+    expect(resolveInterstitialTarget('https://example.org/menu?day=fri#top')).toEqual({
+      href: 'https://example.org/menu?day=fri#top',
+      host: 'example.org',
+    });
+  });
+
+  it('accepts plain http too', () => {
+    expect(resolveInterstitialTarget('http://shop.example.so/')).toEqual({
+      href: 'http://shop.example.so/',
+      host: 'shop.example.so',
+    });
+  });
+
+  it('normalises the destination: lowercase host, default port dropped, spaces encoded', () => {
+    expect(resolveInterstitialTarget('HTTPS://Example.COM:443/a b?x=1')).toEqual({
+      href: 'https://example.com/a%20b?x=1',
+      host: 'example.com',
+    });
+  });
+
+  it.each([
+    'javascript:alert(1)',
+    'JavaScript:alert(1)',
+    'java\tscript:alert(1)',
+    'data:text/html,<script>alert(1)</script>',
+    'vbscript:msgbox(1)',
+    'file:///etc/passwd',
+    'ftp://example.com/file',
+    'mailto:someone@example.com',
+  ])('refuses the non-http(s) scheme in %j', (raw) => {
+    expect(resolveInterstitialTarget(raw)).toBeNull();
+  });
+
+  it.each(['/signin', '//evil.example/phish', 'example.com', 'https://', 'not a url', ''])(
+    'refuses relative or malformed input %j',
+    (raw) => {
+      expect(resolveInterstitialTarget(raw)).toBeNull();
+    },
+  );
+
+  it('refuses a missing param', () => {
+    expect(resolveInterstitialTarget(null)).toBeNull();
+    expect(resolveInterstitialTarget(undefined)).toBeNull();
+  });
+
+  it('refuses credentials in the URL (the "xidig.net@evil" disguise)', () => {
+    expect(resolveInterstitialTarget('https://xidig.net@evil.example/')).toBeNull();
+    expect(resolveInterstitialTarget('https://user:pass@example.com/')).toBeNull();
+  });
+
+  it.each([
+    'https://xidig.net/auth/callback?next=/admin',
+    'https://www.xidig.net/signin',
+    'https://APP.XIDIG.NET/reset-password',
+  ])('refuses our own hosts — /out never fronts a Xidig page (%s)', (raw) => {
+    expect(resolveInterstitialTarget(raw)).toBeNull();
+  });
+
+  it('refuses the host serving this request (preview and local deployments)', () => {
+    expect(
+      resolveInterstitialTarget('https://xidig-git-x.vercel.app/signin', 'xidig-git-x.vercel.app'),
+    ).toBeNull();
+    expect(resolveInterstitialTarget('http://localhost:3000/signin', 'localhost:3000')).toBeNull();
+    expect(resolveInterstitialTarget('https://example.org/', 'localhost:3000')).toEqual({
+      href: 'https://example.org/',
+      host: 'example.org',
+    });
+  });
+
+  it('does not mistake a look-alike host for ours', () => {
+    expect(resolveInterstitialTarget('https://xidig.net.evil.example/signin')).toEqual({
+      href: 'https://xidig.net.evil.example/signin',
+      host: 'xidig.net.evil.example',
+    });
+  });
+
+  it('shows internationalised hosts in punycode, so a homograph cannot pass as a familiar name', () => {
+    // Cyrillic "а" (U+0430) followed by "pple.com".
+    expect(resolveInterstitialTarget('https://аpple.com/login')?.host).toBe('xn--pple-43d.com');
+    expect(resolveInterstitialTarget('https://müller.de/')).toEqual({
+      href: 'https://xn--mller-kva.de/',
+      host: 'xn--mller-kva.de',
+    });
+  });
+
+  it('refuses overlong destinations', () => {
+    const base = 'https://example.com/';
+    expect(resolveInterstitialTarget(base + 'a'.repeat(2048 - base.length))).not.toBeNull();
+    expect(resolveInterstitialTarget(base + 'a'.repeat(2049 - base.length))).toBeNull();
+  });
+
+  it('round-trips through interstitialHref and query-string decoding', () => {
+    const target = 'https://example.com/a?b=1&c=two words#frag';
+    const param = new URL(interstitialHref(target), 'https://xidig.net').searchParams.get('url');
+    expect(resolveInterstitialTarget(param)).toEqual({
+      href: 'https://example.com/a?b=1&c=two%20words#frag',
+      host: 'example.com',
+    });
   });
 });

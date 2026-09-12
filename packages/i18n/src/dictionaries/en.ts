@@ -217,6 +217,8 @@ export const en = {
   'error.rateLimited': 'You’ve tried that a lot just now. Wait a minute and try again.',
   'error.invalidRequest':
     'Something about that request didn’t look right. Refresh the page and try again.',
+  'error.linkInvalid':
+    'We can’t open that link — it isn’t a complete web address to another site, so we can’t safely send you there. Ask whoever shared it to check it.',
 
   // --- External API / MCP keys (§21/§27) — returned to trusted integrations ---
   'error.invalidApiKey':
