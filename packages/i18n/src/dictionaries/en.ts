@@ -238,7 +238,7 @@ export const en = {
 
   // --- Plaza (§27 Plaza block + §15/§26 mechanics) ---
   'error.postLimit':
-    'You’ve posted a lot today — free members can post {max} times per day. Come back tomorrow or upgrade for higher limits.',
+    'You’ve posted a lot today — free members can post {max} times per day. Come back tomorrow.',
   'error.commentLimit':
     'You’ve commented a lot today — free members can comment {max} times per day. Come back tomorrow.',
   'error.imageTooLarge':
@@ -1724,7 +1724,7 @@ export const en = {
   'capital.fromLab': 'From',
   'capital.emptyTitle': 'No Candidates yet',
   'capital.emptyBody':
-    'A Candidate is a venture a Lab has put forward for open review. When Labs submit theirs, they show up here.',
+    'A Candidate is a venture a Lab has put forward for open review. Putting new candidates forward is paused while eligibility is under review.',
   'capital.emptyLabsLink': 'Browse Labs',
   // Status badges
   'capital.statusDraft': 'Draft',
@@ -1735,7 +1735,8 @@ export const en = {
   'capital.statusDeclined': 'Declined',
   // Editor / pitch fields
   'capital.editTitle': 'Edit Candidate',
-  'capital.editSubtitle': 'Fill in the pitch, then submit for review.',
+  'capital.editSubtitle':
+    'Fill in the pitch. Putting candidates forward is paused while eligibility is under review.',
   'capital.editorSaved': 'Saved.',
   'capital.fieldName': 'Name',
   'capital.fieldOneLiner': 'One-liner',
@@ -1750,7 +1751,6 @@ export const en = {
   'capital.reviewersOnlyLabel': 'Reviewers only',
   'capital.reviewersOnlyHint':
     "Hide this Candidate from members until it's decided; only reviewers and your Lab can see it.",
-  'capital.submitCta': 'Submit for review',
   // Xidig Plus doctrine (owner, 12 Sep): candidate submission and the candidate
   // vote are not paid-tier benefits, and both are PAUSED until a non-paid
   // eligibility model is approved. Neutral copy only; the paid tier is never
@@ -1781,6 +1781,8 @@ export const en = {
   // Candidate vote (formerly "Supporter vote" — never "Xidig Plus vote").
   'capital.voteHeading': 'Candidate vote',
   'capital.voteEligibilityNote': 'Candidate voting is paused while eligibility is under review.',
+  'capital.voteKeptNote':
+    'You voted before the pause. Your ballot is private and is not counted in any shown result. You can withdraw it.',
   'capital.voteSignalNote': "A non-binding community signal — it guides, it doesn't decide.",
   'capital.voteApprove': 'Approve',
   'capital.voteReject': 'Reject',
@@ -1851,7 +1853,7 @@ export const en = {
     'Message requests, blocks, reports, and calm notifications keep conversations useful — without group-chat chaos.',
   'marketing.blockLabsTitle': 'Turn ideas into rooms',
   'marketing.blockLabsBody':
-    'Start a casual Club; promote it to a Lab when it gets serious. Updates, decisions, links, and members stay in one place.',
+    'Start a Club to gather people and build together. Updates, decisions, links, and members stay in one place.',
   'marketing.blockCapitalTitle': 'Support what’s being built',
   'marketing.blockCapitalBody':
     'Support promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
@@ -2580,14 +2582,14 @@ export const en = {
 
   // 7a — the Maal index. Koox is never listed here (ruling 4).
   'maal.indexSubtitle':
-    'Labs and ventures. Join one, or grow your Lab into a Venture once it has a purpose and a structure.',
+    'Labs and ventures. Join one. Opening new Labs and moving to the Venture stage are paused while eligibility is under review.',
   // Signed-out teaser + page metadata for /capital. Since F2 §5 this route is the
   // Maal index, not the candidate board — marketing.capitalTeaser* stayed with the
   // board at /capital/candidates, where it is still true. No invest language here
   // either: this describes work organisations, and Xidig moves no money.
   'maal.teaserTitle': 'Capital — work organisations you can join',
   'maal.teaserBody':
-    'Labs and ventures in one place: a stated purpose, workstreams with named owners, a decision log, and an open contribution ledger. Stage is earned by work, never awarded — and no money moves through Xidig.',
+    'Labs and ventures in one place: a stated purpose, workstreams with named owners, a decision log, and an open contribution ledger. Moving to the Venture stage is paused while eligibility is under review — and no money moves through Xidig.',
   'maal.newLab': 'New Lab',
   'maal.chipAll': 'All · {count}',
   'maal.chipVentures': 'Ventures · {count}',
@@ -2629,7 +2631,7 @@ export const en = {
   // The footer law. One key: it is a single statement of what the stage is and
   // how it is lost, and a split would let one half ship without the other.
   'maal.indexLaw':
-    'Venture is a stage, not a reward. A Lab becomes a Venture when it writes a purpose, names a lead, and takes on the structure of work — and it returns to being a Lab if inactivity passes the timeout limit — automatically, with notice in advance and a public log. Nothing is lost in the return: the charter, the ledger and the decisions all stay, and it becomes a Venture again once the conditions are met. Both live in the same place so nobody’s real stage is hidden.',
+    'Venture is a stage, not a reward. A Venture returns to being a Lab if inactivity passes the timeout limit — automatically, with notice in advance and a public log. Nothing is lost in the return: the charter, the ledger and the decisions all stay. Moving a Lab to the Venture stage is paused while eligibility is under review. Both live in the same place so nobody’s real stage is hidden.',
 
   // 7b — the venture overview. The tab row is the frames' own register: it says
   // Guud / Wada-hadal / Lifaaqyo where the Warshad row says Guudmar /
@@ -2892,7 +2894,7 @@ export const en = {
   'maal.loadingAria': 'Loading',
   'maal.emptyTitle': 'No ventures yet',
   'maal.emptyBody':
-    'Big things start as a Lab — an idea, a group, a purpose. When they are ready, they show up here.',
+    'Labs and ventures appear here. Opening new Labs and moving to the Venture stage are paused while eligibility is under review.',
   'maal.emptyCta': 'Open Labs',
   'maal.emptyFooter': {
     one: '{count} Lab is working right now. None of them is required to become a Venture.',
@@ -2907,7 +2909,7 @@ export const en = {
   'maal.resumePostUpdate': 'Write an update',
   'maal.resumeCallMembers': 'Call the members in',
   'maal.dormantFooter':
-    'Dormancy is a marker and an early warning. Further time out returns the stage to a Lab automatically — a clear rule, notice in advance, and a public log. The work stays where it is: when the conditions are met again, it returns to being a Venture.',
+    'Dormancy is a marker and an early warning. Further time out returns the stage to a Lab automatically — a clear rule, notice in advance, and a public log. The work stays where it is. Moving back to the Venture stage is paused while eligibility is under review.',
   'maal.ledgerErrorNotice':
     'The detailed ledger could not be loaded. The totals above are the last verified ones — nothing is missing from the ledger itself. Try again.',
   'maal.ledgerErrorFooter':
@@ -2960,7 +2962,7 @@ export const en = {
   'error.attestationRecusal':
     'You cannot witness your own contribution. Ask a member or a lead to co-sign it.',
   'error.ledgerLocked':
-    'This space is a Lab right now, so its ledger takes no new entries. Nothing was lost — everything recorded is still there, and it reopens if the space becomes a Venture again.',
+    'This space is a Lab right now, so its ledger takes no new entries. Nothing was lost — everything recorded is still there. Moving back to the Venture stage is paused while eligibility is under review.',
   'error.contributionAlreadyReversed':
     'That entry has already been corrected. The ledger keeps both the original and the correction — a correction is not corrected again.',
 
@@ -2976,7 +2978,7 @@ export const en = {
   'notif.ventureDemotionWarning':
     '{name} returns to Lab stage unless something happens — one contribution or update is enough. The change is logged publicly and nothing is lost',
   'notif.ventureDemoted':
-    '{name} returned to Lab stage after the timeout. Its work, ledger, decisions and history are untouched — promote it again when the work restarts',
+    '{name} returned to Lab stage after the timeout. Its work, ledger, decisions and history are untouched. Moving back to the Venture stage is paused while eligibility is under review.',
 } as const satisfies Record<string, Message>;
 
 /** Every valid message key, derived from the English dictionary. */

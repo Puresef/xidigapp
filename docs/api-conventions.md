@@ -221,12 +221,12 @@ displayed nowhere.
 
 | Method       | Route                              | Auth     | Notes                                                                                             |
 | ------------ | ---------------------------------- | -------- | ------------------------------------------------------------------------------------------------- |
-| GET/POST     | `/api/candidates`                  | user     | GET keyset list of readable Candidates (`?labId` `?status`); POST creates a draft (requires `builder_path` capability + lab membership/lead; `not_supporter`/`forbidden`) |
+| GET/POST     | `/api/candidates`                  | user     | GET keyset list of readable Candidates (`?labId` `?status`); POST is **retired while candidate submission is paused** (Xidig Plus doctrine, 12 Sep): every caller gets `put_forward_under_review` 403, no body read |
 | GET/PATCH/DELETE | `/api/candidates/{id}`         | user     | GET RLS-scoped view; PATCH content fields on draft/submitted (creator or lab lead; `post_not_editable` when frozen) incl. `logoMediaId`/`coverMediaId` attach (kind candidate_logo/candidate_cover, `media_not_ready` 409); DELETE draft only (creator/lead/admin) |
-| POST         | `/api/candidates/{id}/submit`      | user     | draft→submitted; sets `submitted_at`, opens 7-day vote window (`vote_opens_at`/`vote_closes_at`); creator/lead only; non-draft → `candidate_not_submittable` 409 |
+| POST         | `/api/candidates/{id}/submit`      | user     | **PAUSED** (Xidig Plus doctrine, 12 Sep): after the manager check, `put_forward_under_review` 403 for every manager; nothing written (no `submitted_at`, no vote window) |
 | POST         | `/api/candidates/{id}/decision`    | reviewer | `can_review_candidate` (mod/admin, recused if lab member); `{status: in_review\|approved\|parked\|declined, statusReason?}`; recusal → `reviewer_conflict` 403, non-reviewer → `not_a_reviewer` 403; sets `decided_at` on terminal |
 | GET/PUT      | `/api/candidates/{id}/reviews`     | user/rev | GET review list (candidate-readable); PUT upserts caller's rubric review (`can_review_candidate`, recusal → `reviewer_conflict`; draft → `candidate_not_submittable`); recomputes + stores aggregate rubric scores (service role) |
-| POST/DELETE  | `/api/candidates/{id}/vote`        | user     | Candidate vote (`vote_candidate` capability — currently held by the Xidig Plus tier; that gate conflicts with the owner doctrine and is under review); only while window open (`vote_closed` 409); POST `{vote: approve\|reject}` upsert, DELETE retracts; response returns tally via `candidate_vote_tally` |
+| POST/DELETE  | `/api/candidates/{id}/vote`        | user     | Candidate vote **PAUSED** (Xidig Plus doctrine, 12 Sep): POST → `vote_eligibility_under_review` 403 for everyone, before any lookup; the tier is never consulted. DELETE withdraws the caller's OWN ballot (data control; no window or status gate; candidate must be readable → 404) and returns `{ myVote: null }` — no response carries a tally; `candidate_vote_tally` is server-only |
 | POST/DELETE  | `/api/candidates/{id}/interests`   | user     | POST `type help\|cosign`: any member, upserts the interest, emits `interest_expressed`, returns `counts: {help, cosign}` only (the legacy invest tally is never projected — `lib/capital/interest-counts.ts`). POST `type invest`: **always** `capital_unavailable` 403, refused **before** the candidate lookup (so it leaks nothing about the candidate) — no row, no gate evaluation, no logging. **No interest type awards a badge** (the Early Backer award was removed from this path). DELETE `?type=help\|cosign\|invest` retracts the caller's own row — invest retraction is kept on purpose; DELETE still requires candidate readability (hidden → 404). Response returns interest counts (the `invest` count is still computed and returned, but no surface renders it) |
 | GET/POST     | `/api/candidates/{id}/comments`    | user     | open member comments (§12); reuses the Phase 2 comment service with a candidate target; any member who `can_read_candidate`; `comment_limit` 429 |
 | POST         | `/api/capital/gate`                | user     | **Refuses unconditionally**: `capital_unavailable` 403 for any signed-in caller (401 when signed out). No body is read, no gate is evaluated, no `capital_gate_evaluations` row is written — the append-only log records real evaluations only. There is nothing left to gate |
@@ -254,9 +254,11 @@ Phase 5 conventions worth knowing:
   role exists pre-Phase-6, so `can_review_candidate` = `is_mod() OR is_admin()`
   AND NOT a member of the Candidate's Lab (§17 fairness). `not_a_reviewer` (403)
   is for a plain member; `reviewer_conflict` (403) is for a recused mod/admin.
-- **Governance vote is a non-binding signal** — tallies come only from
-  `candidate_vote_tally` (ballot privacy, like polls); individual votes are
-  own-row-only. The 7-day window opens at submit.
+- **Candidate vote: PAUSED** (Xidig Plus doctrine, owner 12 Sep) — no route
+  casts, submit opens no window, and no API/UI returns a tally.
+  `candidate_vote_tally` is server-only (20260912100000); individual votes stay
+  own-row-only. The vote was a non-binding signal; a non-paid advisory model
+  (P3) must be approved before it returns.
 - **No analytics in Phase 5** — the §23 Capital events
   (`candidate_submitted`/`candidate_reviewed`/`interest_expressed`/
   `venture_timeline_viewed`) are **Phase 7**; these routes leave a
@@ -273,7 +275,7 @@ a missing check is a hole rather than a style question.
 
 | Method       | Route                                          | Auth      | Notes                                                                                                            |
 | ------------ | ---------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------- |
-| POST         | `/api/labs/{id}/promote`                       | lead      | extended with `target: 'venture'` (Warshad → Maal). Preconditions in `promoteToVenture`: complete charter, declared goal, ≥1 workstream with a named owner. Seeds the weight scheme only if the venture never had one |
+| POST         | `/api/labs/{id}/promote`                       | lead      | **PAUSED for every target** (Xidig Plus doctrine, 12 Sep): after the manager check, `lab` → `lab_eligibility_under_review`, `candidate` → `put_forward_under_review`, `venture` → `venture_promotion_under_review` (all 403, no CTA). `promoteToVenture` (charter, goal, a named workstream owner) is kept but unreachable |
 | GET/PATCH    | `/api/labs/{id}/venture`                       | user/lead | GET = the 7b/7e overview model. PATCH = goal meter + the two visibility toggles in one flat body (lead/admin); no `space_mode` — ever |
 | GET/POST     | `/api/labs/{id}/workstreams`                   | user/lead | GET is `can_read_lab` (7e shows structure before you join). POST is leadership (lead/core/admin); a named owner must be an active member |
 | PATCH/DELETE | `/api/labs/{id}/workstreams/{wsId}`            | lead      | rename / re-order / hand over / open the seat (`ownerUserId: null`) / remove. Removal keeps the tasks (`ON DELETE SET NULL`) |

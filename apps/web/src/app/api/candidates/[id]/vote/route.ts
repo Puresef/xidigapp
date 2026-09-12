@@ -1,12 +1,7 @@
 import { ApiError, apiOk, handleApiError } from '@/lib/api';
 import { requireActiveUser, requireUser } from '@/lib/auth/guards';
 import { loadCandidateForViewer, parseCandidateId } from '@/lib/capital/candidates-api';
-import { voteWindow } from '@/lib/capital/tally';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
-import type { CandidateRow } from '@/lib/capital/views';
-
-/** Statuses whose (old) vote window a ballot may still be withdrawn from. */
-const VOTABLE_STATUSES = new Set<CandidateRow['status']>(['submitted', 'in_review']);
 
 /**
  * Candidate vote (§12/§17). PAUSED (Xidig Plus doctrine, owner 12 Sep: "pause,
@@ -17,8 +12,11 @@ const VOTABLE_STATUSES = new Set<CandidateRow['status']>(['submitted', 'in_revie
  *   - POST (cast) refuses EVERY caller with vote_eligibility_under_review,
  *     before any lookup. The tier is never consulted.
  *   - DELETE (withdraw your own ballot) stays open as data control, like the
- *     A2 retraction precedent, for a still-open window on a votable candidate.
- *     No tier check: it can only remove the caller's own row.
+ *     A2 retraction precedent (the interests DELETE has no window or status
+ *     gate either). Every stored ballot was cast under the old paid gate, and
+ *     no new window can open while submission is paused, so withdrawal must not
+ *     depend on a window. No tier check: it removes only the caller's own row,
+ *     and the candidate must still be readable to them (RLS load → 404).
  *
  * No response carries a tally. Live counts are hidden while the vote is
  * paused, and candidate_vote_tally is server-only (migration 20260912100000).
@@ -44,19 +42,8 @@ export async function DELETE(_request: Request, context: Ctx): Promise<Response>
     const id = parseCandidateId((await context.params).id);
     const admin = getSupabaseAdmin();
 
-    const cand = await loadCandidateForViewer(ctx, id);
-    // Withdrawal follows the window it was cast in: a decided candidate, or
-    // one whose window has closed, keeps its record unchanged.
-    if (!VOTABLE_STATUSES.has(cand.status) || !cand.vote_opens_at) {
-      throw new ApiError('vote_closed', 409);
-    }
-    const now = new Date();
-    const closes = cand.vote_closes_at
-      ? new Date(cand.vote_closes_at)
-      : voteWindow(cand.vote_opens_at).closesAt;
-    if (!(now >= new Date(cand.vote_opens_at) && now < closes)) {
-      throw new ApiError('vote_closed', 409);
-    }
+    // RLS-scoped load: a candidate the caller cannot read is a plain 404.
+    await loadCandidateForViewer(ctx, id);
 
     const { error } = await admin
       .from('candidate_votes')

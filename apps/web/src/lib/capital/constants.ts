@@ -31,7 +31,9 @@ export const INTEREST_MESSAGE_MAX = 500;
 export const RUBRIC_SCORE_MIN = 1;
 export const RUBRIC_SCORE_MAX = 5;
 
-// --- Supporter governance vote (§12/§17) ------------------------------------
+// --- Candidate vote (§12/§17) — PAUSED (Xidig Plus doctrine, owner 12 Sep) ---
+// The quorum below counts the OLD paid-tier electorate; it has no live caller
+// and must be redesigned for a non-paid advisory vote (P3) before any returns.
 // Quorum = QUORUM_MIN votes OR QUORUM_FRACTION of eligible Supporters; the
 // signal passes when quorum is met AND approval ≥ APPROVAL_THRESHOLD. Window is
 // VOTE_WINDOW_DAYS from vote_opens_at.

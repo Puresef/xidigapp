@@ -179,10 +179,12 @@ describe('spaces + lab content', () => {
       expect(['mod', 'admin'].includes(persona.role), r.reviewerHandle).toBe(true);
       expect(memberHandles.has(r.reviewerHandle), `${r.reviewerHandle} recusal`).toBe(false);
     }
+    // Xidig Plus must not decide voting eligibility (owner doctrine, 12 Sep),
+    // and the candidate vote is PAUSED. The seeded ballots are historical
+    // fixtures — restricted records, never tallied on any surface — so no
+    // tier requirement applies; each voter only has to be a real persona.
     for (const v of CANDIDATE_META.xawilaad.votes) {
-      expect(PERSONAS_BY_HANDLE.get(v.handle)?.membershipTier, `${v.handle} vote needs supporter`).toBe(
-        'supporter',
-      );
+      expect(PERSONAS_BY_HANDLE.has(v.handle), `${v.handle} is a seeded persona`).toBe(true);
     }
     expect(CANDIDATE_COPY.xawilaad.ask.length).toBeGreaterThan(50);
     expect(CANDIDATE_COPY.hooyo.ask.length).toBeGreaterThan(50);

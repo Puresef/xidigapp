@@ -16,8 +16,9 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * A single Capital candidate (§10/§17).
  *
  * GET returns the full hydrated view (lab, creator, rubric aggregate, reviews,
- * vote tally, interest counts, viewer's own signals, media, timeline) under the
- * caller's RLS — a candidate they can't read is a plain 404.
+ * interest counts, viewer's own signals, media, timeline) under the caller's
+ * RLS — a candidate they can't read is a plain 404. It carries NO vote tally:
+ * the candidate vote is paused (Xidig Plus doctrine, owner 12 Sep).
  *
  * PATCH edits content fields + logo/cover art + visibility. Only the creator or
  * a Lab lead/core (or admin) may edit, and only while the candidate is still

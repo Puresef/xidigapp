@@ -14,11 +14,11 @@ import { CandidateVotePaused } from './vote-paused';
  *   - no ballot button, no upgrade prompt, no tally.
  */
 
-function render(locale: 'en' | 'so'): string {
+function render(locale: 'en' | 'so', hasBallot = false): string {
   return renderToStaticMarkup(
     createElement(LocaleProvider, {
       initialLocale: locale,
-      children: createElement(CandidateVotePaused),
+      children: createElement(CandidateVotePaused, { candidateId: 'c1', hasBallot }),
     }),
   );
 }
@@ -39,5 +39,13 @@ describe('CandidateVotePaused', () => {
     expect(html).toContain('waa la hakiyay');
     expect(html).not.toMatch(/Xidig Plus|Taageer(e|aha)\b/);
     expect(html).not.toContain('<button');
+  });
+
+  it('a member who voted before the pause can withdraw it (data control) — still no tally', () => {
+    const html = render('en', true);
+    expect(html).toContain('You voted before the pause.');
+    expect(html).toContain('Retract vote');
+    expect(html.match(/<button/g)?.length).toBe(1); // withdraw only — no ballot
+    expect(html).not.toMatch(/\d+\s*(approve|reject)|total/i);
   });
 });

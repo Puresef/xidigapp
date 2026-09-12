@@ -368,7 +368,7 @@ export const SEED_COLLABORATION = {
 
 /** Candidate lifecycle metadata (copy lives in content.ts). */
 export const CANDIDATE_META = {
-  /** Submitted 3 days ago → the 7-day Supporter vote window is live. */
+  /** Submitted 3 days ago (a historical candidate-vote window; voting is paused). */
   xawilaad: {
     labSlug: 'xawilaad-sandbox',
     createdByHandle: 'ayaan_dev',

@@ -59,5 +59,8 @@ describe('capital teaser says investing is not offered', () => {
       /\b(soon|later|coming|will (open|launch|activate)|eligib\w*|returns?|due diligence|vetted)\b/,
     );
     expect(text).not.toMatch(/dhawaan|hadhow|mustaqbal/);
+    // The English stems above cannot match Somali text, so SO gets its own:
+    // no eligibility, no returns/profit, no "coming back".
+    expect(text).not.toMatch(/xaq-u-yeelash|faa'iido|macaash|soo celin/);
   });
 });

@@ -131,6 +131,11 @@ With the key set, events fire **per-member after that member consents**:
 - **Structurally can't fire** (Phase 7 finding — wiring, not consent; do NOT
   fake them): `signup_completed`, `invite_accepted`, `lab_revived`. Consent
   capture does not unblock these.
+- **Paused, so can't fire** (Xidig Plus doctrine, owner 12 Sep — the flows are
+  paused for everyone): `governance_log_viewed` (its only emitter was the
+  removed candidate vote panel), `candidate_submitted` (submit refused),
+  `venture_promoted` (Venture promotion refused). No funnel claim may use them
+  until an approved non-paid rule re-enables the flows.
 
 ## Debt / open items
 

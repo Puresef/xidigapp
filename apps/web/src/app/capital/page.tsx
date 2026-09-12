@@ -118,7 +118,9 @@ export default async function MaalIndexPage({
           >
             <path d="M12 5.5v13M5.5 12h13" />
           </svg>
-          {t('maal.newLab')}
+          {/* Opening a new Lab is paused (Xidig Plus doctrine, owner 12 Sep);
+              the CTA offers what the form allows — a Space (a Club). */}
+          {t('lab.createCta')}
         </Link>
       </header>
 

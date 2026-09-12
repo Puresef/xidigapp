@@ -26,6 +26,7 @@ const h = vi.hoisted(() => ({
   loads: 0,
   managerChecks: 0,
   writes: [] as string[],
+  filters: [] as string[],
   capabilityCalls: 0,
   cand: {
     id: 'cand-1',
@@ -102,7 +103,10 @@ vi.mock('@/lib/supabase/server', () => ({
           h.writes.push(`delete:${table}`);
           return chain;
         },
-        eq: () => chain,
+        eq: (col: string, val: unknown) => {
+          h.filters.push(`${col}=${String(val)}`);
+          return chain;
+        },
         select: () => chain,
         single: async () => ({ data: null, error: null }),
         then: (resolve: (v: { error: null }) => unknown) =>
@@ -145,6 +149,7 @@ beforeEach(() => {
   h.loads = 0;
   h.managerChecks = 0;
   h.writes = [];
+  h.filters = [];
   h.capabilityCalls = 0;
   h.cand = { id: 'cand-1', status: 'submitted', vote_opens_at: null, vote_closes_at: null };
 });
@@ -192,21 +197,27 @@ describe('paused paths refuse everyone, neutrally, with no write and no tier loo
 });
 
 describe('withdrawing your own ballot stays open (data control) and returns no tally', () => {
-  it('open window: deletes only the caller’s row; the response carries no tally', async () => {
-    const now = Date.now();
-    h.cand.vote_opens_at = new Date(now - 60_000).toISOString();
-    h.cand.vote_closes_at = new Date(now + 60_000).toISOString();
+  // The A2 retraction precedent: no window or status gate. Every stored ballot
+  // was cast under the old paid gate, and no new window can open while
+  // submission is paused, so withdrawal must never depend on one.
+  it.each([
+    ['an open window', 60_000],
+    ['a long-closed window', -30 * 86_400_000],
+    ['no window at all', null],
+  ])('with %s: deletes only the caller’s own ballot, no tally', async (_label, offset) => {
+    if (offset !== null) {
+      const at = Date.now() + (offset as number);
+      h.cand.vote_opens_at = new Date(at - 120_000).toISOString();
+      h.cand.vote_closes_at = new Date(at).toISOString();
+    }
     const r = await call(vote.DELETE(json({}), candParams as never));
     expect(r.status).toBe(200);
     expect(r.body.data).toEqual({ myVote: null });
     expect(h.writes).toEqual(['delete:candidate_votes']);
+    // The service role bypasses RLS: these two filters are the only thing
+    // limiting the delete to the caller's own row.
+    expect(h.filters).toEqual(['candidate_id=cand-1', 'voter_user_id=user-1']);
+    expect(h.loads).toBe(1); // the candidate must still be readable (RLS → 404)
     expect(h.capabilityCalls).toBe(0);
-  });
-
-  it('closed window or no window: 409 vote_closed, nothing written', async () => {
-    const r = await call(vote.DELETE(json({}), candParams as never));
-    expect(r.status).toBe(409);
-    expect(r.body.error?.code).toBe('vote_closed');
-    expect(h.writes).toEqual([]);
   });
 });

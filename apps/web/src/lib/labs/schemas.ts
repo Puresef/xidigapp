@@ -100,9 +100,12 @@ const charterFields = {
 };
 
 /**
- * A Space is created as a Club (casual, free) or a Lab (charter-backed). A Lab
- * requires the three charter fields up front AND the create_lab capability
- * (enforced in the route); a Club needs neither.
+ * A Space is created as a Club (the free ordinary project) or a Lab
+ * (charter-backed; the three charter fields up front). Opening a Lab is PAUSED
+ * for everyone (Xidig Plus doctrine, owner 12 Sep): the route refuses
+ * mode='lab' with lab_eligibility_under_review and never consults a tier
+ * capability. The Lab branch stays in the schema for a future approved,
+ * non-paid rule.
  */
 export const labCreateSchema = z.discriminatedUnion('mode', [
   z.object({ mode: z.literal('club'), ...createBase }),

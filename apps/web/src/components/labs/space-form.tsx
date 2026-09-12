@@ -63,6 +63,9 @@ export function SpaceForm({
   const [error, setError] = useState<PlainError | null>(null);
 
   useEffect(() => {
+    // Playbook starters belong to the Lab charter. While Lab creation is paused
+    // (or unavailable) the picker can never render, so skip the round-trip.
+    if (labPaused || !allowLab) return;
     let active = true;
     void (async () => {
       const supabase = createClient();
@@ -76,7 +79,7 @@ export function SpaceForm({
     return () => {
       active = false;
     };
-  }, []);
+  }, [labPaused, allowLab]);
 
   /**
    * Apply a playbook's charter template. NON-DESTRUCTIVE: only fills fields the

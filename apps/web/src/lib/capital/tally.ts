@@ -6,10 +6,13 @@ import {
 } from '@/lib/capital/constants';
 
 /**
- * Supporter governance-vote tallying (§12/§17). PURE — no I/O. The raw ballots
- * live in candidate_votes; the API sums them (via candidate_vote_tally, a
- * SECURITY DEFINER count so individual ballots stay private, like Plaza polls)
- * and hands the counts here. The rule (Warya 7 Jul):
+ * Candidate-vote tallying (§12/§17). PURE — no I/O, and NO LIVE CALLER: the
+ * candidate vote is PAUSED (Xidig Plus doctrine, owner 12 Sep), no app route
+ * reads candidate_vote_tally (server-only since 20260912100000), and no
+ * surface shows a count. The "eligible Supporters" denominator below is the
+ * OLD paid-tier electorate, which the doctrine forbids. A future non-paid
+ * advisory vote (P3) must replace it before any caller returns. The rule as
+ * written (Warya 7 Jul), kept for that redesign:
  *   quorum  = total ≥ QUORUM_MIN (5) OR total ≥ 20% of eligible Supporters
  *   approval= approve / (approve + reject), guarded against /0
  *   passed  = quorum met AND approval ≥ 60%

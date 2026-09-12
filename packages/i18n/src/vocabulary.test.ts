@@ -111,10 +111,26 @@ describe('canonical product terms', () => {
     const EN_DISCLAIMER =
       'does not buy trust, verification, ranking, governance rights or capital access';
     const SO_DISCLAIMER = 'ma iibsato kalsooni, xaqiijin, kaalin, xuquuq maamul, ama helitaan maal';
+    // Power nouns AND gating verbs: "Current access requires Xidig Plus" or
+    // "Needs Xidig Plus" must fail just as "unlocks Labs" does.
     const EN_FORBIDDEN =
-      /\b(Labs?|candidates?|vot(e|es|ing)|governance|capital|trust|verif\w*|ranking|unlock\w*|credib\w*)\b/i;
+      /\b(Labs?|candidates?|vot(e|es|ing)|governance|capital|trust|verif\w*|ranking|unlock\w*|credib\w*|requires?|needs?|eligib\w*|access)\b/i;
     const SO_FORBIDDEN =
-      /(Warshad|musharax|codbixin|\bcod\b|maamul|maalgash|kalsooni|xaqiijin|furta)/i;
+      /(Warshad|musharax|codbixin|\bcod\b|maamul|maalgash|kalsooni|xaqiijin|furta|u baahan|xaq-u-yeelash|helitaan)/i;
+    // Guard the guard: the pre-slice texts this lock exists to stop must fail it.
+    for (const old of [
+      'Eligibility is under review. Current access requires Xidig Plus.',
+      'Serious — a charter-backed venture track. Needs Xidig Plus.',
+      'Xidig Plus membership — which unlocks creating Labs, putting candidates forward',
+    ]) {
+      expect(old).toMatch(EN_FORBIDDEN);
+    }
+    for (const old of [
+      'Abuurista Warshad waxay u baahan tahay Xidig Plus.',
+      'Helitaanka hadda wuxuu u baahan yahay Xidig Plus.',
+    ]) {
+      expect(old).toMatch(SO_FORBIDDEN);
+    }
     let checked = 0;
     for (const [key, value] of Object.entries(en)) {
       const text = flatten(value);
@@ -156,6 +172,11 @@ describe('canonical product terms', () => {
       'error.putForwardUnderReview',
       'error.venturePromotionUnderReview',
       'error.voteEligibilityUnderReview',
+      'maal.indexSubtitle',
+      'notif.ventureDemoted',
+      'error.ledgerLocked',
+      'capital.emptyBody',
+      'capital.editSubtitle',
     ] as const;
     for (const key of PAUSED_KEYS) {
       expect(en[key], key).toMatch(/paused while eligibility is under review/);
@@ -168,6 +189,23 @@ describe('canonical product terms', () => {
     expect('error.notSupporter' in en).toBe(false);
     // A ballot option must not borrow the support action's word.
     expect(en['capital.voteApproveDesc']).not.toMatch(/support/i);
+  });
+
+  it('no copy promises a paused flow (Lab promotion, re-promotion, submission, member vote)', () => {
+    // Paused for everyone (owner, 12 Sep). A surface may describe the pause,
+    // never invite the paused action.
+    const EN_PROMISES =
+      /promote it (again|to a Lab)|grow your Lab into a Venture|submit for review|When Labs submit|reopens if the space|face a member vote|Strong Labs can put|upgrade for higher limits|returns to being a Venture|When they are ready, they show up here/i;
+    const SO_PROMISES =
+      /mar kale u dallaci|u dallacsii Warshad|ka dibna u gudbi dib-u-eegis|u kordhi Maal|heerkaaga kor u qaad|kor u qaad \$1|dib u noqonaysaa Maal/i;
+    for (const [key, value] of Object.entries(en)) {
+      const text = typeof value === 'string' ? value : Object.values(value).join(' ');
+      expect(text, key).not.toMatch(EN_PROMISES);
+    }
+    for (const [key, value] of Object.entries(so)) {
+      const text = typeof value === 'string' ? value : Object.values(value).join(' ');
+      expect(text, key).not.toMatch(SO_PROMISES);
+    }
   });
 
   it('the ToS fees clause no longer promises forbidden powers (interim wording, legal review pending)', () => {

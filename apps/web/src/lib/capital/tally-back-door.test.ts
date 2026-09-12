@@ -45,6 +45,41 @@ describe('no tally back door, no tier gate on a paused power', () => {
     expect(offenders.map((f) => f.p)).toEqual([]);
   });
 
+  it('no app code aggregates ballots another way (a service-role read of candidate_votes)', () => {
+    // Service role bypasses RLS, so a plain select over candidate_votes would
+    // rebuild the tally without the function. Only three places may touch the
+    // table: the viewer's OWN ballot (views.ts, RLS client), the withdraw
+    // DELETE (vote route, own row), and the Dev seeder's inserts.
+    const ALLOWED = [
+      'lib/capital/views.ts',
+      'app/api/candidates/[id]/vote/route.ts',
+      'lib/seed/test-community/run.ts',
+    ];
+    const offenders = files.filter(
+      ({ p, src }) =>
+        /from\(\s*['"]candidate_votes['"]\s*\)|['"]candidate_votes['"]\s*,/.test(src) &&
+        !ALLOWED.includes(p),
+    );
+    expect(offenders.map((f) => f.p)).toEqual([]);
+    // …and the vote route's only use of it is the own-row delete.
+    const route = files.find((f) => f.p === 'app/api/candidates/[id]/vote/route.ts')!;
+    expect(route.src).toMatch(/\.delete\(\)[\s\S]*\.eq\('voter_user_id', ctx\.appUser\.id\)/);
+    expect(route.src).not.toMatch(/\.select\(/);
+  });
+
+  it('nothing outside the membership boundary calls has_capability, and no app path calls hasCapability', () => {
+    // lib/membership.ts documents that no app path consults an active-only
+    // capability while the paused powers stay paused. Pin it.
+    const direct = files.filter(
+      ({ p, src }) => /rpc\(\s*['"]has_capability['"]/.test(src) && p !== 'lib/membership.ts',
+    );
+    expect(direct.map((f) => f.p)).toEqual([]);
+    const calls = files.filter(
+      ({ p, src }) => /\bhasCapability\(/.test(src) && p !== 'lib/membership.ts',
+    );
+    expect(calls.map((f) => f.p)).toEqual([]);
+  });
+
   it('no app code asks the tier for a paused power', () => {
     const offenders = files.filter(({ src }) =>
       /has(Capability|Entitlement)\(\s*[^,]+,\s*['"](create_lab|vote_candidate|builder_path|governance_rights|investor_path)['"]/.test(

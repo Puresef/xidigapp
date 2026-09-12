@@ -147,9 +147,12 @@ describe.each(STATUSES)('a Supporter whose account is %s', (status) => {
   // Xidig Plus doctrine (owner, 12 Sep; migration 20260912100100): the paid
   // tier holds NONE of the active-only capabilities, in any status, so none of
   // them can be bought.
-  it.each(ACTIVE_ONLY_CAPABILITIES)('active-only capability %s: false (held by no tier)', async (cap) => {
-    expect(await hasCapability(supporter[status], cap)).toBe(false);
-  });
+  it.each(ACTIVE_ONLY_CAPABILITIES)(
+    'active-only capability %s: false (held by no tier)',
+    async (cap) => {
+      expect(await hasCapability(supporter[status], cap)).toBe(false);
+    },
+  );
 
   it(`has_capability stays active-only (tier join + status): ${status === 'active'}`, async () => {
     expect(await hasCapability(supporter[status], 'elevated_limits')).toBe(status === 'active');
@@ -159,6 +162,33 @@ describe.each(STATUSES)('a Supporter whose account is %s', (status) => {
     'has_entitlement never answers for active-only %s',
     async (cap) => {
       expect(await hasEntitlement(supporter[status], cap)).toBe(false);
+    },
+  );
+});
+
+describe('has_entitlement cannot be a back door, even if a tier held an active-only row', () => {
+  // Since 20260912100100 no tier holds any active-only capability, so the
+  // per-status 'never answers' assertions above would pass even without the
+  // ORDINARY allowlist inside has_entitlement(). Here, in this test's private
+  // database only, the paid tier is TEMPORARILY granted one active-only row, so
+  // the allowlist itself is what keeps has_entitlement false.
+  it.each(ACTIVE_ONLY_CAPABILITIES)(
+    '%s: has_capability sees the row; has_entitlement never does',
+    async (cap) => {
+      await db.admin.query(
+        `insert into tier_capabilities (tier_id, capability) values ('supporter', $1)`,
+        [cap],
+      );
+      try {
+        expect(await hasCapability(supporter.active, cap)).toBe(true); // the row is live
+        expect(await hasEntitlement(supporter.active, cap)).toBe(false);
+        expect(await hasEntitlement(supporter.pending_deletion, cap)).toBe(false);
+      } finally {
+        await db.admin.query(
+          `delete from tier_capabilities where tier_id = 'supporter' and capability = $1`,
+          [cap],
+        );
+      }
     },
   );
 });

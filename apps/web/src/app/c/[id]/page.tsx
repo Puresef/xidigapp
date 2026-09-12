@@ -155,7 +155,9 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
 
         <RubricDisplay rubric={view.rubric} reviews={view.reviews} />
 
-        {showVoteSection ? <CandidateVotePaused /> : null}
+        {showVoteSection ? (
+          <CandidateVotePaused candidateId={id} hasBallot={view.viewer.vote !== null} />
+        ) : null}
 
         {/* Reviewer console */}
         {isConflicted ? (

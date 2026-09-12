@@ -251,6 +251,9 @@ describe('privileged reach stays ACTIVE-ONLY during the grace', () => {
     expect(await fn(graceVerifier, `select public.is_verifier() as v`)).toBe(true);
     expect(await fn(graceAdvisor, `select public.is_advisor() as v`)).toBe(true);
     expect(await fn(graceSupporter, `select public.is_supporter() as v`)).toBe(true);
+    expect(await fn(graceSupporter, `select public.has_capability('elevated_limits') as v`)).toBe(
+      true,
+    );
 
     for (const id of [graceMod, graceAdmin, graceVerifier, graceAdvisor, graceSupporter]) {
       await setStatus(id, 'pending_deletion');
@@ -275,19 +278,21 @@ describe('privileged reach stays ACTIVE-ONLY during the grace', () => {
     expect(await fn(graceAdvisor, `select public.is_advisor() as v`)).toBe(false);
   });
 
-  it('supporter: governance/capital capabilities stay active-only; paid entitlements continue (20260911000600)', async () => {
-    expect(await fn(graceSupporter, `select public.has_capability('vote_candidate') as v`)).toBe(
-      false,
-    );
-    expect(await fn(graceSupporter, `select public.has_capability('builder_path') as v`)).toBe(
+  it('supporter: has_capability stays active-only; paid entitlements continue (20260911000600)', async () => {
+    // Probed with a capability the paid tier still holds. Since 20260912100100
+    // (Xidig Plus doctrine) no tier holds vote_candidate/builder_path, so those
+    // would be false for EVERY account and prove nothing about the grace; the
+    // "no tier holds a forbidden power" contract lives in
+    // supporter-capability.test.ts.
+    expect(await fn(graceSupporter, `select public.has_capability('elevated_limits') as v`)).toBe(
       false,
     );
     // Ordinary paid entitlements follow ordinary membership (owner ruling;
     // the full matrix lives in grace-entitlements.test.ts).
     expect(await fn(graceSupporter, `select public.is_supporter() as v`)).toBe(true);
-    expect(
-      await fn(graceSupporter, `select public.has_entitlement('elevated_limits') as v`),
-    ).toBe(true);
+    expect(await fn(graceSupporter, `select public.has_entitlement('elevated_limits') as v`)).toBe(
+      true,
+    );
     expect(await rows(graceSupporter, `select 1 from labs where id = $1`, [supporterLab])).toBe(1);
   });
 

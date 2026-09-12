@@ -229,7 +229,7 @@ export const so = {
 
   // Madal / Plaza (PRD §27 qaybta Plaza + §15/§26)
   'error.postLimit':
-    'Maanta wax badan ayaad faafisay — xubnaha bilaashka ahi waxay faafin karaan {max} jeer maalintii. Berri soo noqo, ama heerkaaga kor u qaad si aad xad dheeraad ah u hesho.',
+    'Maanta wax badan ayaad faafisay — xubnaha bilaashka ahi waxay faafin karaan {max} jeer maalintii. Berri soo noqo.',
   'error.commentLimit':
     'Maanta faallooyin badan ayaad qortay — xubnaha bilaashka ahi waxay qori karaan {max} faallo maalintii. Berri soo noqo.',
   'error.imageTooLarge':
@@ -1635,7 +1635,7 @@ export const so = {
   // PROVISIONAL (G34), Packet B follow-up: a Candidate is put forward for open
   // review (+ member vote), not "to be supported" — support is not a vote.
   'capital.emptyBody':
-    'Musharaxu waa mashruuc Warshad u soo bandhigtay dib-u-eegis furan. Marka Warshadaha ay soo gudbiyaan, halkan ayay ka muuqan doonaan.',
+    'Musharaxu waa mashruuc Warshad u soo bandhigtay dib-u-eegis furan. Hor-dhigista musharaxiin cusub waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   'capital.emptyLabsLink': 'Fiiri Warshadaha',
   // Status badges
   'capital.statusDraft': 'Qabyo',
@@ -1646,7 +1646,8 @@ export const so = {
   'capital.statusDeclined': 'La diiday',
   // Editor / pitch fields
   'capital.editTitle': 'Wax ka beddel Musharaxa',
-  'capital.editSubtitle': 'Buuxi bandhigga, ka dibna u gudbi dib-u-eegis.',
+  'capital.editSubtitle':
+    'Buuxi bandhigga. Hor-dhigista musharaxiinta waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   'capital.editorSaved': 'La kaydiyay.',
   'capital.fieldName': 'Magaca',
   'capital.fieldOneLiner': 'Hal sadar',
@@ -1661,7 +1662,6 @@ export const so = {
   'capital.reviewersOnlyLabel': 'Dib-u-eegayaasha oo keliya',
   'capital.reviewersOnlyHint':
     'Ka qari Musharaxan xubnaha ilaa la go’aamiyo; kaliya dib-u-eegayaasha iyo Warshaddaadu way arki karaan.',
-  'capital.submitCta': 'U gudbi dib-u-eegis',
   'capital.submitHint':
     'Hor-dhigista musharaxiinta dib-u-eegis waa la hakiyay inta xaq-u-yeelashada dib loo eegayo. Qabyadaadu way kaydsan tahay, waadna wax ka beddeli kartaa.',
   // Rubric / reviews
@@ -1690,6 +1690,8 @@ export const so = {
   'capital.voteHeading': 'Codka Musharaxa',
   'capital.voteEligibilityNote':
     'Codbixinta musharaxa waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
+  'capital.voteKeptNote':
+    'Waad codaysay ka hor hakinta. Codkaagu waa qarsoodi, laguma darin tiro la muujiyay. Waad ka noqon kartaa.',
   'capital.voteSignalNote': "Calaamad bulsho oo aan qasab ahayn — way hagtaa, ma go'aamiso.",
   'capital.voteApprove': 'Ansixi',
   'capital.voteReject': 'Diid',
@@ -1752,7 +1754,7 @@ export const so = {
     'Codsiyada fariimaha, xannibaadda, warbixinta, iyo digniino deggan ayaa wadahadalka faa’iido ku haya — buuqa grupyada la’aantiis.',
   'marketing.blockLabsTitle': 'Fikradaha ka dhig qolal',
   'marketing.blockLabsBody':
-    'Ku bilow Koox fudud; u dallacsii Warshad marka ay fikraddu culus noqoto. Warbixinno, go’aanno, xiriiriyayaal, iyo xubno — hal meel ayay ku wada jiraan.',
+    'Ku bilow Koox si aad dad u soo ururiso oo aad wax wada dhistaan. Warbixinno, go’aanno, xiriiriyayaal, iyo xubno — hal meel ayay ku wada jiraan.',
   'marketing.blockCapitalTitle': 'Taageer waxa la dhisayo',
   'marketing.blockCapitalBody':
     'Taageer mashaariicda mustaqbalka leh, caawimaad fidi, raacna jadwallada si furan loo dhisayo. Maalgashi hadda laguma bixiyo Xidig.',
@@ -2446,10 +2448,10 @@ export const so = {
 
   // 7a — tusmada Maal
   'maal.indexSubtitle':
-    'Warshado iyo ventures. Ku biir mid, ama Warshaddaada u kordhi Maal marka ay yeelato ujeeddo iyo qaab-dhismeed.',
+    'Warshado iyo ventures. Ku biir mid. Furitaanka Warshado cusub iyo u dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   'maal.teaserTitle': 'Maal — ururrada shaqada ee aad ku biiri karto',
   'maal.teaserBody':
-    "Warshado iyo ventures hal meel: ujeeddo la qoray, qaybo shaqo oo mid kastaa mas'uul leeyahay, diiwaan go'aanno, iyo diiwaan wax-ku-darsi oo furan. Heerku waa shaqo la qabtay, ma aha abaalmarin — lacagna Xidig kama dhex marto.",
+    "Warshado iyo ventures hal meel: ujeeddo la qoray, qaybo shaqo oo mid kastaa mas'uul leeyahay, diiwaan go'aanno, iyo diiwaan wax-ku-darsi oo furan. U dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo — lacagna Xidig kama dhex marto.",
   'maal.newLab': 'Warshad cusub',
   'maal.chipAll': 'Dhammaan · {count}',
   'maal.chipVentures': 'Maal · {count}',
@@ -2484,7 +2486,7 @@ export const so = {
   // gaari waynin).
   'maal.candidatesLink': 'Guddiga musharaxiinta Maalka',
   'maal.indexLaw':
-    "Maal-nimadu waa heer, ma aha abaalmarin. Warshad waxay noqotaa Maal marka ay qorto ujeeddo, magacowdo hoggaan, oo qaadato qaab-dhismeedka shaqada — waxayna ku noqotaa Warshad haddii firfircooni-la'aantu dhaafto xadka waqti-dhaafka — si toos ah, ogeysiis hore, iyo diiwaan guud. Celintu waxba ma lumiso: axdiga, diiwaanka iyo go'aannadu way sii jiraan, waxayna dib u noqonaysaa Maal marka shuruudaha dib loo buuxiyo. Labadooduba isku meel ayay ku jiraan si aan qofna u qarsoodin heerka dhabta ah.",
+    "Maal-nimadu waa heer, ma aha abaalmarin. Maal waxay ku noqotaa Warshad haddii firfircooni-la'aantu dhaafto xadka waqti-dhaafka — si toos ah, ogeysiis hore, iyo diiwaan guud. Celintu waxba ma lumiso: axdiga, diiwaanka iyo go'aannadu way sii jiraan. U dallacaadda Warshad heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo. Labadooduba isku meel ayay ku jiraan si aan qofna u qarsoodin heerka dhabta ah.",
 
   // 7b — guudmarka Maalka. Safka tab-yadu waa kan frame-ka: Guud / Wada-hadal /
   // Lifaaqyo, halka Warshaddu tiraahdo Guudmar / Warbixino / Wax-soo-saar.
@@ -2717,7 +2719,7 @@ export const so = {
   'maal.loadingAria': 'Waa la soo rarayaa',
   'maal.emptyTitle': 'Wali ventures ma jiraan',
   'maal.emptyBody':
-    'Kuwa waaweyn waxay ka bilaabmaan Warshad — fikrad, koox, ujeeddo. Marka ay diyaar noqdaan, halkan ayay ka muuqdaan.',
+    'Warshadaha iyo ventures-ka halkan ayay ka muuqdaan. Furitaanka Warshado cusub iyo u dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   'maal.emptyCta': 'Fur Warshadaha',
   'maal.emptyFooter': {
     one: '{count} Warshad ayaa hadda shaqeynaya. Midkoodna kuma khasbana inuu Maal noqdo.',
@@ -2732,7 +2734,7 @@ export const so = {
   'maal.resumePostUpdate': 'Qor cusboonaysiin',
   'maal.resumeCallMembers': 'U yeedh xubnaha',
   'maal.dormantFooter':
-    'Hurdadu waa calaamad iyo digniin hore. Waqti-dhaaf dheeri ah ayaa heerka si toos ah u celinaya Warshad — qaanuun cad, ogeysiis hore, iyo diiwaan guud. Shaqadu meesheeda way ku sii jirtaa: marka shuruudaha dib loo buuxiyo, waxay dib u noqonaysaa Maal.',
+    'Hurdadu waa calaamad iyo digniin hore. Waqti-dhaaf dheeri ah ayaa heerka si toos ah u celinaya Warshad — qaanuun cad, ogeysiis hore, iyo diiwaan guud. Shaqadu meesheeda way ku sii jirtaa. Dib ugu dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   'maal.ledgerErrorNotice':
     'Diiwaanka faahfaahsan lama soo rari karin. Wadarrada kor ku qoran waa kuwii ugu dambeeyay ee la xaqiijiyay — diiwaanka laftiisa waxba kama maqna. Isku day mar kale.',
   'maal.ledgerErrorFooter':
@@ -2782,7 +2784,7 @@ export const so = {
   'error.attestationRecusal':
     'Wax-ku-darsigaaga ma marag furi kartid. Weydiiso xubin ama hoggaamiye inuu co-sign kuu sameeyo.',
   'error.ledgerLocked':
-    'Meeshan hadda waa Warshad, sidaas darteed diiwaankeedu ma qaadanayo gelin cusub. Waxba ma lumin — wixii la qoray weli way jiraan, wuuna furmayaa haddii ay mar kale Maal noqoto.',
+    'Meeshan hadda waa Warshad, sidaas darteed diiwaankeedu ma qaadanayo gelin cusub. Waxba ma lumin — wixii la qoray weli way jiraan. Dib ugu dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   'error.contributionAlreadyReversed':
     'Gelintaas horey ayaa loo saxay. Diiwaanku wuxuu hayaa labadaba — tii asalka ahayd iyo saxitaanka — saxitaanna mar labaad lama saxo.',
 
@@ -2792,5 +2794,5 @@ export const so = {
   'notif.ventureDemotionWarning':
     '{name} waxay ku noqonaysaa Warshad haddii aan wax dhicin — hal wax-ku-darsi ama hal cusboonaysiin ayaa ku filan. Isbeddelka diiwaanka guud ayaa lagu qorayaa, waxbana ma lumayaan',
   'notif.ventureDemoted':
-    '{name} waxay ku noqotay Warshad waqti-dhaaf awgeed. Shaqadeeda, diiwaankeeda, go’aannadeeda iyo taariikhdeeda waxba kama beddelmin — mar kale u dallaci marka shaqadu dib u bilaabato',
+    '{name} waxay ku noqotay Warshad waqti-dhaaf awgeed. Shaqadeeda, diiwaankeeda, go’aannadeeda iyo taariikhdeeda waxba kama beddelmin. Dib ugu dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
 } satisfies SomaliDictionary;

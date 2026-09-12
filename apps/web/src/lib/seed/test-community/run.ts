@@ -581,7 +581,9 @@ async function seedLabContent(
 }
 
 async function seedCandidates(ctx: Ctx): Promise<void> {
-  // Candidate 1: submitted, live Supporter vote window.
+  // Candidate 1: submitted, with a historical vote window. Candidate voting is
+  // PAUSED (Xidig Plus doctrine, 12 Sep): its seeded ballots are restricted
+  // records that no surface tallies.
   const meta = CANDIDATE_META.xawilaad;
   const copy = CANDIDATE_COPY.xawilaad;
   const submittedAt = iso(ctx, meta.submittedDaysAgo);

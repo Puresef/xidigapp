@@ -99,9 +99,10 @@ there). Reseed / refresh with
 
 - **Login:** `ifrah_invest` (Xidig Plus).
 - **URL:** `/capital`, then open **Xawilaad Sandbox** (submitted candidate).
-- **Shot:** the candidate page — pitch, rubric scores, the **Candidate vote
-  panel** (live 7-day window; eligibility note "Eligibility is under review. Current access
-  requires Xidig Plus."), interest bar (help / Support only).
+- **Shot:** the candidate page — pitch, rubric scores, the **Candidate vote**
+  section, now a paused notice ("Candidate voting is paused while eligibility is
+  under review."; no ballot, no tally; a pre-pause voter sees "Retract vote"),
+  interest bar (help / Support only).
 - **Shows:** §17 governance, and that the candidate pipeline carries **no invest
   surface for any member in any region** — investing is not offered on Xidig
   (A2 containment). Draft candidate **Hooyo Made** is visible only to Iskaashato
