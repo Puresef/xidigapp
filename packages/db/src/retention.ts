@@ -105,7 +105,9 @@ export interface TableRule {
   /**
    * Every signed-in member can read every row (a permissive SELECT policy
    * using(true) for `authenticated`). The contract test requires this flag to
-   * match the database, so blanket exposure is never implicit.
+   * match the database, so blanket exposure is never implicit. It detects
+   * LITERAL using(true) only: broader predicates (e.g. user_badges'
+   * "revoked_at is null or own row") are recorded in the entry's status/note.
    */
   memberReadable?: true;
   /** The plan step that addresses a conflict (docs/retention-implementation-plan.md). */
@@ -177,6 +179,8 @@ export const RETENTION_CLASS_MAP = {
       location_city: PII_REMOVED,
       location_country: PII_REMOVED,
       location_country_code: c('derived', 'remove', 'recomputed from the cleared country'),
+      latitude: c('pii', 'remove', 'pinned location; cleared by anonymise_user'),
+      longitude: c('pii', 'remove', 'pinned location; cleared by anonymise_user'),
       timezone: PII_REMOVED,
       skills: UGC_REMOVED,
       lanes: UGC_REMOVED,
@@ -192,9 +196,9 @@ export const RETENTION_CLASS_MAP = {
     },
     mutability: 'mutable',
     anchor: 'anonymised_at',
-    status: 'aligned',
+    status: 'owner',
     memberReadable: true,
-    note: 'Scrubbed to the tombstone and frozen at final deletion; column contract in account-deletion-privacy.test.ts.',
+    note: 'Scrubbed to the tombstone and frozen at final deletion (column contract: account-deletion-privacy.test.ts). membership_tier_id is kept and stays member-readable on the tombstone — owner call whether to reset it.',
   },
   auth_email_tokens: {
     class: 'restricted',
@@ -687,7 +691,12 @@ export const RETENTION_CLASS_MAP = {
   lab_playbooks: {
     class: 'platform',
     memberLink: ['created_by_user_id'],
-    allColumns: 'platform',
+    columns: {
+      slug: c('structural', 'platform'),
+      name: c('structural', 'platform'),
+      venture_type: c('structural', 'platform'),
+      template: c('structural', 'platform', 'platform-authored template'),
+    },
     mutability: 'mutable',
     anchor: 'none',
     status: 'n/a',
@@ -718,7 +727,7 @@ export const RETENTION_CLASS_MAP = {
     class: 'review',
     memberLink: [],
     linkedVia: 'labs (no declaring column)',
-    columns: { purpose: c('ugc', 'review', 'unattributable to an author') },
+    columns: { purpose: c('ugc', 'review', 'unattributable to an author'), currency: STRUCT },
     mutability: 'mutable',
     anchor: 'none',
     status: 'owner',
@@ -769,7 +778,11 @@ export const RETENTION_CLASS_MAP = {
       traction: UGC_REVIEW,
       team: UGC_REVIEW,
       ask: UGC_REVIEW,
-      status_reason: c('ugc', 'legal', 'reviewer-written decision reason'),
+      status_reason: c(
+        'ugc',
+        'restricted',
+        'reviewer-written decision reason (restricted, not legal)',
+      ),
       notes: UGC_REVIEW,
       logo_path: MEDIA_PUBLIC,
       logo_blurhash: MEDIA_PUBLIC,
@@ -794,7 +807,7 @@ export const RETENTION_CLASS_MAP = {
     mutability: 'mutable',
     anchor: 'anonymised_at',
     status: 'conflict',
-    plan: R1B_SPACE,
+    plan: R1B_SNAPSHOTS,
     note: 'Member-readable wherever the candidate is readable (§17 transparency lock) — conflicts with the ruling.',
   },
   candidate_votes: {
@@ -863,6 +876,16 @@ export const RETENTION_CLASS_MAP = {
       primary_photo_path: MEDIA_PUBLIC,
       primary_photo_blurhash: MEDIA_PUBLIC,
       primary_photo_alt: UGC_SUPPRESS,
+      latitude: c(
+        'pii',
+        'suppress',
+        'manual pin-drop location; remove with the listing contact in R2',
+      ),
+      longitude: c(
+        'pii',
+        'suppress',
+        'manual pin-drop location; remove with the listing contact in R2',
+      ),
     },
     mutability: 'mutable',
     anchor: 'anonymised_at',
@@ -901,9 +924,10 @@ export const RETENTION_CLASS_MAP = {
     columns: {},
     mutability: 'mutable',
     anchor: 'none',
-    status: 'aligned',
+    status: 'conflict',
+    plan: 'R1b (listing_tags must follow business_listings visibility)',
     memberReadable: true,
-    note: 'Bare listing↔tag ids (no member text); follows its listing.',
+    note: 'Bare listing↔tag ids (no member text), but the using(true) policy does NOT follow the listing, so a suppressed listing’s tags stay readable.',
   },
   listing_claims: {
     class: 'restricted',
@@ -971,8 +995,8 @@ export const RETENTION_CLASS_MAP = {
     columns: { tier: STRUCT, context: STRUCT, metadata: DERIVED_RESTRICTED },
     mutability: 'mutable',
     anchor: 'anonymised_at',
-    status: 'aligned',
-    note: 'Never ranking; the tombstone hides chips.',
+    status: 'owner',
+    note: 'Never ranking; the tombstone hides chips. But the policy (revoked_at is null or own row) lets any member read a deleted member’s badge rows directly over PostgREST — not literal using(true), so memberReadable does not flag it.',
   },
   reputation_events: {
     class: 'restricted',
@@ -1015,13 +1039,18 @@ export const RETENTION_CLASS_MAP = {
     class: 'legal',
     memberLink: ['user_id', 'verifier_user_id'],
     columns: {
-      recording_url: c('media', 'legal', 'nulled on its own expiry (time-based, not deletion)'),
+      recording_url: c(
+        'media',
+        'legal',
+        'declared expiry NOT enforced: nothing writes recording_expires_at, so the sweep never nulls it',
+      ),
       decision_notes: UGC_LEGAL,
       booking_url: PII_LEGAL,
     },
     mutability: 'mutable',
     anchor: 'anonymised_at',
-    status: 'aligned',
+    status: 'conflict',
+    plan: 'R2 (legal-gated) — biometric recording retention (DPIA)',
   },
   verification_access_log: {
     class: 'legal',
@@ -1167,7 +1196,7 @@ export const RETENTION_CLASS_MAP = {
       mime_type: STRUCT,
       scan_verdict: DERIVED_RESTRICTED,
       kind: STRUCT,
-      alt_text: c('ugc', 'suppress', 'cleared for avatar/cover only'),
+      alt_text: c('ugc', 'remove', 'cleared for avatar/cover only; other kinds kept until R2'),
       blurhash: c('media', 'restricted'),
       thumb_path: c('media', 'restricted'),
     },
@@ -1200,7 +1229,7 @@ export const RETENTION_CLASS_MAP = {
     columns: {
       email: c('pii', 'restricted', 'plaintext recipient address; hash in R2'),
       status: STRUCT,
-      error: STRUCT,
+      error: c('derived', 'restricted', 'raw provider error text; may echo the recipient'),
     },
     mutability: 'mutable',
     anchor: 'anonymised_at',
@@ -1210,7 +1239,10 @@ export const RETENTION_CLASS_MAP = {
   seed_runs: {
     class: 'platform',
     memberLink: ['actor_user_id'],
-    allColumns: 'platform',
+    columns: {
+      label: c('structural', 'platform', 'admin-authored run label'),
+      description: c('structural', 'platform', 'admin-authored run description'),
+    },
     mutability: 'mutable',
     anchor: 'none',
     status: 'n/a',
@@ -1337,25 +1369,36 @@ export const RETENTION_CLASS_MAP = {
     anchor: 'none',
     status: 'n/a',
     memberReadable: true,
+    note: 'Shared vocabulary with no member link; a zero-count term is not attributable to anyone.',
   },
   lanes: {
     class: 'platform',
     memberLink: ['created_by'],
-    allColumns: 'platform',
+    columns: {
+      slug: c('structural', 'platform'),
+      name_en: c('structural', 'platform'),
+      name_so: c('structural', 'platform'),
+    },
     mutability: 'mutable',
     anchor: 'none',
     status: 'n/a',
     memberReadable: true,
   },
   tags: {
-    class: 'platform',
+    class: 'review',
     memberLink: ['created_by_user_id'],
-    allColumns: 'platform',
+    columns: {
+      name: c(
+        'ugc',
+        'review',
+        'members instant-create tags; a term coined by a deleted member outlives them',
+      ),
+      description: UGC_REVIEW,
+    },
     mutability: 'mutable',
     anchor: 'none',
-    status: 'n/a',
+    status: 'owner',
     memberReadable: true,
-    note: 'Shared taxonomy; the creator link is metadata.',
   },
 } as const satisfies Record<string, TableRule>;
 
@@ -1434,13 +1477,47 @@ export const PROVIDER_METADATA = {
     class: 'restricted',
     windowDays: RETENTION_WINDOW_DAYS,
     providerErasure: 'unavailable',
+    enforcedBy: 'declared_not_enforced',
     complianceClaim: false,
     note: 'Owner ruling 12 Sep: the GoTrue phone is restricted provider/auth metadata for up to 1 year while supported erasure is unavailable. Classification only — not a compliance claim.',
   },
+  gotrueEmail: {
+    class: 'restricted',
+    windowDays: RETENTION_WINDOW_DAYS,
+    providerErasure: 'pseudonymised at final deletion (deleted-<uuid>@deleted.invalid)',
+    enforcedBy: 'declared_not_enforced',
+    complianceClaim: false,
+    note: 'Kept indefinitely today; no 1-year step (doctrine §3 conflict).',
+  },
 } as const;
+
+/**
+ * Member data outside the public schema. The contract test enumerates only
+ * `public`; these are registered here so they are never silently ignored.
+ * All are conflicts until an R2 step exists.
+ */
+export const NON_PUBLIC_REGISTER = {
+  'auth.users': {
+    class: 'restricted',
+    note: 'GoTrue identity: banned + email pseudonymised at deletion; the phone cannot be cleared (PROVIDER_METADATA).',
+  },
+  'auth.identities': { class: 'restricted', note: 'provider identity rows; no 1-year step' },
+  'auth.sessions': { class: 'restricted', note: 'device/session indicators; no 1-year step' },
+  'auth.refresh_tokens': { class: 'restricted', note: 'revoked by the ban; rows kept' },
+  'auth.audit_log_entries': {
+    class: 'restricted',
+    note: 'GoTrue auth audit trail; no 1-year step',
+  },
+  'storage.objects': {
+    class: 'suppress',
+    note: 'owner = the member id, paths embed it; public-bucket objects are the KNOWN RESIDUAL LEAK (MEDIA_KINDS)',
+  },
+} as const satisfies Record<string, { class: RetentionClass; note: string }>;
 
 /** Copies that leave our control and cannot be recalled. */
 export const EXTERNAL_COPIES = [
+  'AI moderation provider requests (post, comment and event text sent for scanning; provider retention applies)',
+  'PostHog analytics events (distinct_id = the member UUID; consented members only; no deletion call at anonymise)',
   'Sentry events (server init attaches local variables; no beforeSend scrubbing)',
   'email provider logs (suppressions, deliveries)',
   'delivered digest and DM-request emails',

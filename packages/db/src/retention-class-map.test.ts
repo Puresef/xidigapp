@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   LEGAL_HOLD,
   MEDIA_KINDS,
+  NON_PUBLIC_REGISTER,
   PROVIDER_METADATA,
   PUBLIC_MEDIA_RESIDUAL,
   RETENTION_CLASS_MAP,
@@ -82,8 +83,12 @@ describe('(b) member links are exactly the FKs to public.users', () => {
     const byTable = new Map<string, Set<string>>();
     for (const { t, col } of fks) byTable.set(t, (byTable.get(t) ?? new Set()).add(col));
     for (const [table, rule] of Object.entries(MAP)) {
-      // users.id references auth.users; the row IS the member.
-      const expected = table === 'users' ? ['id'] : sorted(byTable.get(table) ?? []);
+      // users.id references auth.users; the row IS the member. Any real
+      // self-FK on users (e.g. a future suspended_by) is still required.
+      const expected =
+        table === 'users'
+          ? sorted(['id', ...(byTable.get('users') ?? [])])
+          : sorted(byTable.get(table) ?? []);
       expect(sorted(rule.memberLink), table).toEqual(expected);
     }
   });
@@ -105,8 +110,12 @@ describe('(c) every text-like column on member data is classified', () => {
          join pg_namespace n on n.oid = c.relnamespace
         where n.nspname = 'public' and c.relkind in ('r', 'p')
           and a.attnum > 0 and not a.attisdropped
-          and format_type(a.atttypid, a.atttypmod)
-              ~ '^(text|citext|jsonb|json|character varying(\\(\\d+\\))?)(\\[\\])?$'`,
+          and (
+            format_type(a.atttypid, a.atttypmod)
+              ~ '^(text|citext|jsonb|json|character varying(\\(\\d+\\))?|character(\\(\\d+\\))?|inet|bytea)(\\[\\])?$'
+            -- Non-text PII: precise location is PII whatever its type.
+            or a.attname in ('latitude', 'longitude')
+          )`,
     );
     const byTable = new Map<string, string[]>();
     for (const { t, col } of cols) byTable.set(t, [...(byTable.get(t) ?? []), col]);
@@ -114,6 +123,11 @@ describe('(c) every text-like column on member data is classified', () => {
       if (rule.allColumns === 'platform') {
         expect(rule.class, `${table}: allColumns 'platform' needs class 'platform'`).toBe(
           'platform',
+        );
+        // The shorthand hides columns, so it is only for tables with NO member
+        // link: a member-linked table must classify every column.
+        expect(rule.memberLink, `${table}: allColumns 'platform' on a member-linked table`).toEqual(
+          [],
         );
         continue;
       }
@@ -163,11 +177,16 @@ describe('(e) blanket member readability is always declared', () => {
     expect(declared).toEqual(inDb);
   });
 
-  it('no restricted or legal record is blanket member-readable without an owner flag', () => {
+  it('no restricted, legal or suppressed data is blanket member-readable unless flagged', () => {
     for (const [table, rule] of Object.entries(MAP)) {
       if (!rule.memberReadable) continue;
       if (rule.class === 'restricted' || rule.class === 'legal') {
         expect(rule.status, `${table}: blanket-readable restricted data`).toBe('owner');
+      }
+      // "Suppressed" and readable by everyone is a contradiction: it must be
+      // a recorded conflict with a plan.
+      if (rule.class === 'suppress') {
+        expect(rule.status, `${table}: blanket-readable suppressed data`).toBe('conflict');
       }
     }
   });
@@ -195,12 +214,19 @@ describe('(f) media kinds and the purge scope', () => {
     expect(purged).toEqual(inIndex);
   });
 
-  it('the public-media residual is recorded explicitly (KNOWN RESIDUAL LEAK)', () => {
-    expect(PUBLIC_MEDIA_RESIDUAL.length).toBeGreaterThan(0);
-    for (const kind of PUBLIC_MEDIA_RESIDUAL) {
-      const k = MEDIA_KINDS[kind as keyof typeof MEDIA_KINDS];
-      expect(k.public && !k.purgedOnDeletion, kind).toBe(true);
-    }
+  it('the public-media residual is pinned explicitly (KNOWN RESIDUAL LEAK)', () => {
+    // A literal list, so a kind moving in or out of the known leak is a
+    // deliberate edit here — never a silent side effect of the flags.
+    expect(sorted(PUBLIC_MEDIA_RESIDUAL)).toEqual([
+      'block',
+      'candidate_cover',
+      'candidate_logo',
+      'event_cover',
+      'listing_photo',
+      'post',
+      'space_cover',
+      'space_icon',
+    ]);
   });
 });
 
@@ -218,6 +244,20 @@ describe('(g) the policy is declared honestly', () => {
       expect(w.enforcedBy.length).toBeGreaterThan(5);
   });
 
+  it('member data outside the public schema is registered, never silently ignored', async () => {
+    const res = await rows<{ t: string }>(
+      `select n.nspname || '.' || c.relname as t from pg_class c join pg_namespace n on n.oid = c.relnamespace
+        where n.nspname in ('auth', 'storage') and c.relkind in ('r', 'p')
+          and c.relname in ('users', 'identities', 'sessions', 'refresh_tokens', 'audit_log_entries', 'objects')`,
+    );
+    // Whatever subset the harness models must be registered; the register
+    // also covers the hosted tables the harness does not create.
+    for (const { t } of res) expect(Object.keys(NON_PUBLIC_REGISTER), t).toContain(t);
+    for (const key of ['auth.users', 'auth.identities', 'auth.sessions', 'storage.objects']) {
+      expect(Object.keys(NON_PUBLIC_REGISTER)).toContain(key);
+    }
+  });
+
   it('there is no legal-hold mechanism yet, and the map says so', () => {
     expect(LEGAL_HOLD).toBe('not_implemented');
   });
@@ -226,6 +266,8 @@ describe('(g) the policy is declared honestly', () => {
     expect(PROVIDER_METADATA.gotruePhone.class).toBe('restricted');
     expect(PROVIDER_METADATA.gotruePhone.windowDays).toBe(RETENTION_WINDOW_DAYS);
     expect(PROVIDER_METADATA.gotruePhone.complianceClaim).toBe(false);
+    expect(PROVIDER_METADATA.gotruePhone.enforcedBy).toBe('declared_not_enforced');
+    expect(PROVIDER_METADATA.gotrueEmail.complianceClaim).toBe(false);
   });
 
   it('every conflict names its plan step; platform data is n/a and nothing else is', () => {
