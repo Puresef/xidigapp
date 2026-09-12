@@ -2,7 +2,10 @@
 
 **Status:** audit/design only (12 Sep 2026). No migration, no data change. It
 implements nothing destructive; it records the owner's new doctrine and maps
-what it means for this codebase. **Partial containment only. Deletion
+what it means for this codebase. **The owner accepted it as a design-only
+doctrine mapping (12 Sep) and it was pushed**; the owner's rulings on its open
+points are in §1a, and the implementation plan is
+`docs/retention-implementation-plan.md`. **Partial containment only. Deletion
 compliance is NOT claimed**: implementation, legal review and a provider
 erasure path for GoTrue phone numbers are all incomplete.
 
@@ -44,6 +47,48 @@ This **supersedes** earlier retained-content assumptions wherever they
 preserved a deleted member's full authored content as normal tombstone
 history.
 
+## 1a. Owner rulings on this doctrine (12 Sep 2026, second pass)
+
+The owner **accepted this document as a design-only doctrine mapping**. It was
+pushed on 12 Sep as a normal new-branch push. The doctrine in §1 **supersedes
+the earlier full tombstone-history assumptions** (§7). Nothing here is a
+deletion-compliance claim; that needs the implementation, legal review and
+provider treatment to be complete.
+
+- **GoTrue phone:** classified as **restricted provider/auth metadata, kept
+  for up to 1 year**, while supported erasure is unavailable. This is a
+  classification, not a compliance claim.
+
+1. **DMs.** After final deletion, the deleted member's message bodies and
+   media are suppressed from normal thread UI and API. Thread continuity is
+   kept with metadata and placeholders, e.g. "Message removed — account
+   deleted." Restricted metadata is kept for up to 1 year. Old messages are
+   **not** deleted blindly without a migration and rollback plan.
+2. **Past events.** For events whose **sole** host is a deleted member, keep
+   only a minimal historical shell where appropriate: title, date, status and
+   the tombstone host. Suppress the deleted host's description, agenda,
+   cover/media, links and contact details. For Space-hosted or independently
+   organisation-owned events, preserve only content that is clearly not the
+   deleted member's personal UGC.
+3. **Space decisions.** Full decision bodies authored by a deleted member are
+   **not** kept as normal history by default. Keep minimal decision metadata
+   and restricted evidence. Keep the full body only where it is clearly
+   Space-owned/project-continuity material under accepted project terms;
+   otherwise suppress or redact. (No project-terms acceptance exists in schema
+   or code today, so the default applies to every existing row.)
+4. **Permanent tables** (audit logs, report snapshots, the venture ledger):
+   keep restricted metadata for up to 1 year and minimise or redact PII and
+   full bodies where feasible. For tamper-proof chains, prefer **append-only
+   redaction/suppression events** over destructive mutation that breaks
+   integrity.
+
+**Order of work (owner):** first a non-destructive class map/config with
+`RETENTION_WINDOW_DAYS = 365`. Then a first reversible suppression/redaction
+slice for DMs, Space decisions/updates, event bodies, old digests and stored
+snapshots. **No destructive data deletion** until the class map, rollback,
+audit trail and legal review path are clear. The plan is
+`docs/retention-implementation-plan.md`.
+
 ## 2. What final deletion does today (branch `claude/retained-content-projection` @ `7162c1c`)
 
 - `anonymise_user` scrubs the **profile** to the tombstone ("Deleted member",
@@ -84,18 +129,18 @@ Keys:
 
 ### Identity & auth
 
-| Data                                                                                                                     | Doctrine class                                      | Today                                                   | Status                                                                                              |
-| ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `profiles` presentation (name, handle, bio, links, avatar/cover paths)                                                   | R                                                   | scrubbed to tombstone + frozen                          | aligned                                                                                             |
-| profile satellites (open-to, pins, modules, showcase, link meta)                                                         | R                                                   | rows deleted                                            | aligned                                                                                             |
-| `users` row (id, status, role, suspension/deletion history, auth-cleanup state)                                          | M (1y), then further anonymise                      | kept indefinitely                                       | ✗ no 1-year step                                                                                    |
-| GoTrue identity: pseudonymised email                                                                                     | M                                                   | kept indefinitely                                       | ✗ no 1-year step                                                                                    |
-| **GoTrue phone number**                                                                                                  | **M (restricted), pending a provider erasure path** | **retained**: null/empty/omit all no-op at the provider | **classified as restricted metadata**; ? whether a hard `deleteUser` at day 365 is acceptable/works |
-| `signup_grants` / `waitlist_entries` plaintext email/phone                                                               | M as **hash/pseudonym**, not plaintext              | plaintext kept (the admin view withholds it)            | ✗                                                                                                   |
-| `email_suppressions` (email PK), `digest_email_sends.email`                                                              | M/L (deliverability/legal) as hash where possible   | plaintext                                               | ? / ✗                                                                                               |
-| `consent_records`                                                                                                        | L (legal record)                                    | kept                                                    | ? retention period                                                                                  |
-| `api_keys` (revoked; member-chosen `name`), `push_subscriptions` (revoked; endpoint + key material), `webhook_endpoints` | M; purge key material/endpoint                      | revoked, material kept                                  | ✗ material not purged                                                                               |
-| `auth_email_tokens`                                                                                                      | M                                                   | purged after 24h                                        | aligned                                                                                             |
+| Data                                                                                                                     | Doctrine class                                      | Today                                                                            | Status                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `profiles` presentation (name, handle, bio, links, avatar/cover paths)                                                   | R                                                   | scrubbed to tombstone + frozen                                                   | aligned                                                                                                                                                                                               |
+| profile satellites (open-to, pins, modules, showcase, link meta)                                                         | R                                                   | rows deleted                                                                     | aligned                                                                                                                                                                                               |
+| `users` row (id, status, role, suspension/deletion history, auth-cleanup state)                                          | M (1y), then further anonymise                      | kept indefinitely                                                                | ✗ no 1-year step                                                                                                                                                                                      |
+| GoTrue identity: pseudonymised email                                                                                     | M                                                   | kept indefinitely                                                                | ✗ no 1-year step                                                                                                                                                                                      |
+| **GoTrue phone number**                                                                                                  | **M (restricted), pending a provider erasure path** | **retained**: null/empty/omit all no-op at the provider                          | **RULED 12 Sep (§1a):** restricted provider/auth metadata ≤ 1 year (not a compliance claim); ? whether a hard `deleteUser` at day 365 is acceptable/works (NO ACTION FKs block hard-deleting `users`) |
+| `signup_grants` / `waitlist_entries` plaintext email/phone                                                               | M as **hash/pseudonym**, not plaintext              | plaintext kept (the admin view withholds it)                                     | ✗                                                                                                                                                                                                     |
+| `email_suppressions` (email PK), `digest_email_sends.email`                                                              | M/L (deliverability/legal) as hash where possible   | plaintext                                                                        | ? / ✗                                                                                                                                                                                                 |
+| `consent_records`                                                                                                        | L (legal record)                                    | kept                                                                             | ? retention period                                                                                                                                                                                    |
+| `api_keys` (revoked; member-chosen `name`), `push_subscriptions` (revoked; endpoint + key material), `webhook_endpoints` | M; purge key material/endpoint                      | revoked, material kept                                                           | ✗ material not purged                                                                                                                                                                                 |
+| `auth_email_tokens`                                                                                                      | M                                                   | purged after 24h, opportunistically (on the next token write, not on a schedule) | aligned in intent                                                                                                                                                                                     |
 
 ### Plaza
 
@@ -111,37 +156,37 @@ Keys:
 
 ### DMs
 
-| Data                                                                  | Class                                              | Today                                                                                    | Status                                                                          |
-| --------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `messages.body` **sent by the deleted member**                        | S → R (the counterparty's own messages are theirs) | **the counterparty still reads the full history**; `dm_inbox.last_message_body` shows it | **✗ conflicts with the 12 Sep ruling "preserve existing DM history"** — ? owner |
-| DM voice notes (private `dm-media`)                                   | R                                                  | counterparty can still play them (signed URL)                                            | ✗                                                                               |
-| `conversations`, `dm_read_states`, declines, blocks                   | M                                                  | kept                                                                                     | aligned (1-year step missing)                                                   |
-| notification payload previews (DM excerpts in OTHER members' inboxes) | S → R                                              | kept                                                                                     | ✗                                                                               |
+| Data                                                                  | Class                                              | Today                                                                                                                  | Status                                                                                              |
+| --------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `messages.body` **sent by the deleted member**                        | S → R (the counterparty's own messages are theirs) | **the counterparty still reads the full history** (also directly via PostgREST); `dm_inbox.last_message_body` shows it | **✗ — RULED C1 (§1a): suppress with a placeholder, keep continuity metadata** (plan §3.2, DB-level) |
+| DM voice notes (private `dm-media`)                                   | R                                                  | counterparty can still play them (signed URL)                                                                          | ✗ — C1 (plan §3.2); object purge = R2                                                               |
+| `conversations`, `dm_read_states`, declines, blocks                   | M                                                  | kept                                                                                                                   | aligned (1-year step missing)                                                                       |
+| notification payload previews (DM excerpts in OTHER members' inboxes) | S → R                                              | kept; directly readable, streamed over Realtime, serialized into `/notifications`                                      | ✗ — C1 (plan §3.2)                                                                                  |
 
 ### Spaces / ventures / capital
 
-| Data                                                                 | Class                                                                | Today                                                                                   | Status                                                                       |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `lab_updates` title/body                                             | S → R; M = existence (type, time, Space)                             | **visible to the Space audience and on the public page** (998f991 `author_is_retained`) | **✗ conflicts with 998f991**                                                 |
-| `lab_decisions` (title/context/decision)                             | ? — a Space governance record may justify L                          | visible (998f991)                                                                       | **✗ / ? owner**                                                              |
-| `lab_artifacts` (title/url/description)                              | S → R                                                                | visible (998f991)                                                                       | **✗**                                                                        |
-| Spaces the deleted member **led** (name, descriptions, icon/cover)   | ? — collective Space content vs personal UGC                         | kept; the lead stays the tombstone; no transfer exists                                  | ? (gated: lead transfer)                                                     |
-| `lab_members` rows                                                   | M                                                                    | kept `active`; rosters and counts include them                                          | ? (gated: roster/count)                                                      |
-| `work_events.note` (≤ 400 chars), attestations                       | ? — **append-only hash chain; update/delete refused for every role** | kept                                                                                    | **✗ needs a redaction overlay design** (never break the chain) — owner/legal |
-| `venture_tasks.title`                                                | S → R                                                                | kept                                                                                    | ✗                                                                            |
-| `venture_candidates` pitch fields + logo/cover                       | S → R (?)                                                            | kept; `can_read_candidate` has no creator check                                         | ✗ / ?                                                                        |
-| `candidate_reviews.notes` (reviewer), `candidate_votes`, `interests` | M (review/governance/intent records)                                 | kept; tallies count them                                                                | ? (Q2 excluded)                                                              |
-| `capital_gate_evaluations`                                           | L (compliance log, immutable)                                        | kept                                                                                    | Q2b — out of scope                                                           |
+| Data                                                                 | Class                                                                                                              | Today                                                                                   | Status                                                                      |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `lab_updates` title/body                                             | S → R; M = existence (type, time, Space)                                                                           | **visible to the Space audience and on the public page** (998f991 `author_is_retained`) | **✗ conflicts with 998f991** — plan §3.3                                    |
+| `lab_decisions` (title/context/decision)                             | **S by default (C3)**: minimal metadata + restricted evidence; body only under accepted project terms (none exist) | visible (998f991)                                                                       | **✗ — RULED C3 (§1a)**; plan §3.3                                           |
+| `lab_artifacts` (title/url/description)                              | S → R                                                                                                              | visible (998f991)                                                                       | **✗** — plan §3.3                                                           |
+| Spaces the deleted member **led** (name, descriptions, icon/cover)   | ? — collective Space content vs personal UGC                                                                       | kept; the lead stays the tombstone; no transfer exists                                  | ? (gated: lead transfer)                                                    |
+| `lab_members` rows                                                   | M                                                                                                                  | kept `active`; rosters and counts include them                                          | ? (gated: roster/count)                                                     |
+| `work_events.note` (≤ 400 chars), attestations                       | **M ≤ 1y via an append-only suppression overlay (C4)** — hash chain; update/delete refused for every role          | kept; members read `note` directly                                                      | **✗ — RULED C4 (§1a): overlay outside the chain, never mutate** (plan §3.6) |
+| `venture_tasks.title`                                                | S → R                                                                                                              | kept                                                                                    | ✗                                                                           |
+| `venture_candidates` pitch fields + logo/cover                       | S → R (?)                                                                                                          | kept; `can_read_candidate` has no creator check                                         | ✗ / ?                                                                       |
+| `candidate_reviews.notes` (reviewer), `candidate_votes`, `interests` | M (review/governance/intent records)                                                                               | kept; tallies count them                                                                | ? (Q2 excluded)                                                             |
+| `capital_gate_evaluations`                                           | L (compliance log, immutable)                                                                                      | kept                                                                                    | Q2b — out of scope                                                          |
 
 ### Listings & events
 
-| Data                                                               | Class                    | Today                                                                                        | Status                                                             |
-| ------------------------------------------------------------------ | ------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| listing text fields + **`contact_links`** (member-derived contact) | S (done) → R for contact | suppressed everywhere; rows kept; mods read                                                  | S aligned; ✗ contact retained                                      |
-| listing photos (public `post-media`)                               | R                        | **publicly fetchable**                                                                       | ✗ → **A5b**                                                        |
-| `listing_claims.evidence`                                          | M (trust evidence)       | kept                                                                                         | aligned                                                            |
-| `events` description/agenda/venue/online URL/cover                 | S → R                    | **the detail page still renders them** for upcoming (delisted) AND past events; cover public | **✗ conflicts with 998f991 "past events keep a tombstone record"** |
-| `event_rsvps`                                                      | M                        | kept; host list and counts include them                                                      | ? (gated)                                                          |
+| Data                                                               | Class                                                    | Today                                                                                                                      | Status                            |
+| ------------------------------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| listing text fields + **`contact_links`** (member-derived contact) | S (done) → R for contact                                 | suppressed everywhere; rows kept; mods read                                                                                | S aligned; ✗ contact retained     |
+| listing photos (public `post-media`)                               | R                                                        | **publicly fetchable**                                                                                                     | ✗ → **A5b**                       |
+| `listing_claims.evidence`                                          | M (trust evidence)                                       | kept                                                                                                                       | aligned                           |
+| `events` description/agenda/venue/online URL/cover                 | S → R; **shell = title/date/status/tombstone host (C2)** | **the detail page still renders them** for upcoming (delisted) AND past events; cover public; directly readable by members | **✗ — RULED C2 (§1a)**; plan §3.4 |
+| `event_rsvps`                                                      | M                                                        | kept; host list and counts include them                                                                                    | ? (gated)                         |
 
 ### Awards, reputation, trust
 
@@ -156,11 +201,11 @@ Keys:
 
 ### Moderation, audit, security
 
-| Data                                                                                               | Class                                                                                            | Today                  | Status                                                                 |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------- | ---------------------------------------------------------------------- |
-| `reports`, `mod_actions`, `appeals` (incl. appellant text), `moderation_reviews` (content excerpt) | M/L (safety/dispute record)                                                                      | kept                   | aligned in intent; the 1-year/hold step is missing                     |
-| **`report_snapshots.captured_body`** (full bodies)                                                 | L only while a safety/dispute purpose exists — **the justified exception** for restricted bodies | kept; update forbidden | ? a sanctioned purge path is needed (immutability)                     |
-| `audit_logs` (immutable; **email address inside email-suppression metadata**)                      | M/L                                                                                              | kept; immutable        | ✗ plaintext email in metadata; needs a sanctioned purge/redaction path |
+| Data                                                                                               | Class                                                                                            | Today                                                                   | Status                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `reports`, `mod_actions`, `appeals` (incl. appellant text), `moderation_reviews` (content excerpt) | M/L (safety/dispute record)                                                                      | kept                                                                    | aligned in intent; the 1-year/hold step is missing                                                                                         |
+| **`report_snapshots.captured_body`** (full bodies)                                                 | L only while a safety/dispute purpose exists — **the justified exception** for restricted bodies | kept; update forbidden; mod-readable raw; service-role DELETE unguarded | **RULED C4 (§1a):** restricted ≤ 1y, minimise where feasible — column-scope + admin projection + DELETE guard (plan §3.6); purge path = R2 |
+| `audit_logs` (immutable; **email address inside email-suppression metadata**)                      | M/L                                                                                              | kept; immutable                                                         | ✗ — **RULED C4:** forward-only minimisation now (plan §3.6); append-only overlay for existing rows = R2                                    |
 
 ### Media, derived copies
 
@@ -175,16 +220,32 @@ Keys:
 
 ## 4. Conflicts with shipped retained-content behaviour (explicit)
 
-| Shipped                                                                                                                                               | New doctrine                                                    | Needed                                                                                                                                                                                          |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **998f991** `author_is_retained`: a deleted member's Space updates, decisions and artifacts stay visible to the Space audience and on the public page | bodies removed or suppressed                                    | reverse to suppression, keeping **existence metadata** (e.g. "An update by a deleted member was removed", with date) — a reversible policy + projection change. Decisions need an owner ruling. |
-| **7162c1c / 12 Sep ruling** "preserve existing DM history with tombstone attribution"                                                                 | a deleted member's DM bodies and voice notes suppressed/removed | **owner ruling**: suppress the deleted member's messages in the counterparty's thread (placeholder + time) while keeping the counterparty's own messages?                                       |
-| **998f991** past member-hosted events keep a tombstone record (description, agenda, cover)                                                            | bodies/media suppressed                                         | suppress description/agenda/cover; keep title? date? — owner ruling on how much counts as "existence metadata"                                                                                  |
-| **82daa4c** award result posts redacted to the tombstone                                                                                              | aligned                                                         | none                                                                                                                                                                                            |
-| old digest editions                                                                                                                                   | titles of deleted members' content are bodies                   | gated decision (rewrite vs projection on read)                                                                                                                                                  |
-| listing photos / public media                                                                                                                         | media removed                                                   | **A5b**                                                                                                                                                                                         |
+| Shipped                                                                                                                                               | New doctrine                                                    | Needed                                                                                                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **998f991** `author_is_retained`: a deleted member's Space updates, decisions and artifacts stay visible to the Space audience and on the public page | bodies removed or suppressed                                    | reverse to suppression, keeping **existence metadata** (e.g. "An update by a deleted member was removed", with date) — a fix-forward policy migration + service-role shells. **Decisions RULED C3 (§1a):** suppress by default. Plan §3.3. |
+| **7162c1c / 12 Sep ruling** "preserve existing DM history with tombstone attribution"                                                                 | a deleted member's DM bodies and voice notes suppressed/removed | **RULED C1 (§1a):** suppress the deleted member's messages in the counterparty's thread (placeholder + time), keep the counterparty's own messages and thread metadata. DB-level (plan §3.2).                                              |
+| **998f991** past member-hosted events keep a tombstone record (description, agenda, cover)                                                            | bodies/media suppressed                                         | **RULED C2 (§1a):** shell = title, date, status, tombstone host; suppress description, agenda, cover/media, links, contact. Plan §3.4 (field-level questions in its §5).                                                                   |
+| **82daa4c** award result posts redacted to the tombstone                                                                                              | aligned                                                         | none                                                                                                                                                                                                                                       |
+| old digest editions                                                                                                                                   | titles of deleted members' content are bodies                   | gated decision (rewrite vs projection on read)                                                                                                                                                                                             |
+| listing photos / public media                                                                                                                         | media removed                                                   | **A5b**                                                                                                                                                                                                                                    |
 
 ## 5. Proposed first safe slice — R1: class map + non-destructive suppression
+
+> **Superseded in detail by `docs/retention-implementation-plan.md` (12 Sep).**
+> The audit behind that plan corrects three points below:
+>
+> 1. DMs, notification previews, Space history and events need **DB**
+>    changes. Their raw columns are readable directly (PostgREST, Realtime,
+>    EXECUTE-granted SECURITY DEFINER RPCs), so "redaction at read time" is not
+>    enough on its own.
+> 2. "One revert undoes it" holds only for the no-migration class map (R1a).
+>    Every R1b migration rolls back through a **pre-written inverse
+>    migration**. Reverting 998f991/82daa4c would re-open the signed-out
+>    public-Space inversion.
+> 3. The class map lives in `@xidig/db` (`packages/db` cannot import
+>    `apps/web`), following `entitlements.ts`.
+>
+> The text below is kept as the original proposal.
 
 **Goal:** make the doctrine true on normal product surfaces **without
 destroying data**. Everything in R1 is a projection/policy change that one
