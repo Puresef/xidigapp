@@ -9,3 +9,5 @@ next-env.d.ts
 
 # Product requirements doc — external input, not ours to reformat.
 prd.md
+# Archived documents are frozen history.
+docs/archive/
