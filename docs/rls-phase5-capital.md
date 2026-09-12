@@ -11,7 +11,7 @@ any Capital table.
 
 Locked scope (§17 + Warya 7 Jul): Capital v1 is a **listing/intro service +
 manual ops**. NO money movement, NO pledge ledger, NO payout states, NO tokens.
-Garab (EN label "Show support"; interest type `cosign`) + "I can help" are
+Support (EN "Support", SO provisional "Taageer"; interest type `cosign`) + "I can help" are
 non-financial and **never gated**.
 
 > **Superseded 10 Sep 2026 (A2 containment).** Intent capture is gone:

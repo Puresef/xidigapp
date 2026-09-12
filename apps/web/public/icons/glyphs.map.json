@@ -62,8 +62,8 @@
     },
     {
       "key": "garab",
-      "so": "Garab",
-      "en": "Show support",
+      "so": "Taageer",
+      "en": "Support",
       "post_type": null,
       "action": true,
       "outline": "garab-outline.svg",

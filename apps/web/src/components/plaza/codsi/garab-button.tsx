@@ -13,18 +13,19 @@ import { createReceiptGuard, gatesOpen, motionFor } from '@/lib/motion-policy';
 import { PlainErrorBanner } from '../../auth/plain-error';
 
 /**
- * Garab / Show support on a resolved Codsi (D3 dabqaad — never a like/heart).
+ * Support (legacy internal name Garab) on a resolved Codsi (D3 dabqaad — never
+ * a like/heart).
  * Exists ONLY post-fulfilled (the RLS with-check is the law; this component is
  * the UI half). Lit state stays Somali Blue per D3 — no bronze, no orange.
  *
- * Show support is a non-financial encouragement signal and unlocks nothing:
+ * Support is a non-financial encouragement signal and unlocks nothing:
  * the count is visible to every viewer before, during and after taking part
  * (PRD Relook G1 — support counts are visible), and removing your own support
  * updates the number but never hides it. The note under the button says what
  * support is NOT (investment, vote, rating, check of the work) before the
  * first tap.
  *
- * States: "Show support" (aria-pressed=false) → "Supporting" (aria-pressed=
+ * States: "Support" (aria-pressed=false) → "Supporting" (aria-pressed=
  * true, described by "Remove support" — pressing again takes it back).
  *
  * Motion: `garab_given` is a 260 ms FLAP, not a celebration — the G3 locked

@@ -50,7 +50,7 @@ export interface AnalyticsEventMap {
   ask_offer_sent: Record<string, never>;
   ask_offer_accepted: Record<string, never>;
   ask_reopened: Record<string, never>;
-  // Garab / Show support on a resolved ask (post-scoped; candidate support stays
+  // Support (legacy name Garab) on a resolved ask (post-scoped; candidate support stays
   // interest_expressed type 'cosign'). Stable analytics identity — the event
   // name did not move with the EN display label.
   post_cosigned: Record<string, never>;

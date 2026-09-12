@@ -28,27 +28,107 @@ describe('canonical navigation names', () => {
 });
 
 describe('canonical product terms', () => {
-  it('Garab is "Show support" in English (PRD Relook §24 / D-10 — supersedes Tracker Seq 51 "Co-sign")', () => {
-    expect(en['term.garab']).toBe('Show support');
-    expect(so['term.garab']).toBe('Garab');
-    expect(en['action.garab']).toBe('Show support');
-    expect(so['action.garab']).toBe('Garab');
+  it('the support action is "Support" / provisional "Taageer" (owner-edited PRD Relook §24, 12 Sep)', () => {
+    // Supersedes the interim "Show support" (Packet B) and the bare "Garab" of
+    // the 23 Aug naming review. `garab` survives only as the internal key name.
+    expect(en['term.garab']).toBe('Support');
+    expect(en['action.garab']).toBe('Support');
+    expect(so['term.garab']).toBe('Taageer');
+    expect(so['action.garab']).toBe('Taageer');
   });
 
-  it('the support control has one three-state vocabulary: Show support → Supporting → Remove support', () => {
-    expect(en['action.garab']).toBe('Show support');
+  it('the support control has one three-state vocabulary: Support → Supporting → Remove support', () => {
+    expect(en['action.garab']).toBe('Support');
     expect(en['action.garabActive']).toBe('Supporting');
     expect(en['action.garabRemove']).toBe('Remove support');
-    // SO: "La garbeeyay" moved over from the retired capital.cosignDone; the
-    // remove phrase is PROVISIONAL pending the native review (G34).
-    expect(so['action.garabActive']).toBe('La garbeeyay');
-    expect(so['action.garabRemove']).toBeTruthy();
+    // SO active/remove are PROVISIONAL pending the native review (G34).
+    expect(so['action.garabActive']).toBe('La taageeray');
+    expect(so['action.garabRemove']).toBe('Ka noqo taageerada');
   });
 
-  it('support counts read as people, not a score ("12 people support this" / "12 garab")', () => {
+  it('support counts read as people, not a score ("12 people support this" / "12 qof ayaa taageeray")', () => {
     expect(en['action.garabCount'].one).toBe('{count} person supports this');
     expect(en['action.garabCount'].other).toBe('{count} people support this');
-    expect(so['action.garabCount']?.other).toBe('{count} garab');
+    expect(so['action.garabCount']?.other).toBe('{count} qof ayaa taageeray');
+  });
+
+  it('no current user-facing string uses the interim "Show support" or Garab as the support label', () => {
+    for (const [dict, name] of [
+      [en, 'en'],
+      [so, 'so'],
+    ] as const) {
+      for (const [key, value] of Object.entries(dict)) {
+        const texts = typeof value === 'string' ? [value] : Object.values(value as object);
+        for (const text of texts) {
+          if (typeof text !== 'string') continue;
+          expect(text, `${name} ${key}`).not.toMatch(/show support/i);
+        }
+      }
+    }
+    // "Garab" as a word is gone from the Somali support cluster; the only
+    // survivor is the idiom "isu garab istaagaan" (stand shoulder to
+    // shoulder) in a sentence — not a label.
+    const garabKeys = Object.entries(so)
+      .filter(([, v]) => typeof v === 'string' && /\bgarab/i.test(v))
+      .map(([k]) => k);
+    expect(garabKeys).toEqual(['home.communityProof']);
+  });
+
+  it('the paid tier is "Xidig Plus" — "Supporter" is gone from both locales', () => {
+    // Owner-edited PRD Relook §24: Xidig Plus = paid patronage + resource/
+    // convenience allowances. Not "Taageere" in Somali (that now reads as the
+    // support ACTION; native paid-tier naming is gated).
+    for (const [dict, name] of [
+      [en, 'en'],
+      [so, 'so'],
+    ] as const) {
+      for (const [key, value] of Object.entries(dict)) {
+        const texts = typeof value === 'string' ? [value] : Object.values(value as object);
+        for (const text of texts) {
+          if (typeof text !== 'string') continue;
+          expect(text, `${name} ${key}`).not.toMatch(/\bsupporters?\b/i);
+          // Early Backer is legal/historical capital territory (owner ruling:
+          // leave it unchanged); its SO "Taageere Hore" is not the paid tier.
+          // Flagged: it now collides with the support action's word.
+          if (name === 'so' && key !== 'profile.badgeEarlyBacker') {
+            expect(text, `so ${key}`).not.toMatch(/taageer(e|aha|uhu)\b/i);
+          }
+        }
+      }
+    }
+    expect(en['marketing.memberSupporterTitle']).toContain('Xidig Plus');
+    expect(so['marketing.memberSupporterTitle']).toContain('Xidig Plus');
+  });
+
+  it('Xidig Plus copy never sells trust, verification, ranking, governance, candidates, Labs or capital', () => {
+    // Owner ruling 12 Sep: value-proposition copy may name only real,
+    // allowed benefits, and says what Plus does NOT buy.
+    for (const key of [
+      'marketing.membershipTeaserBody',
+      'marketing.memberSupporterBody',
+    ] as const) {
+      const text = en[key];
+      expect(text).not.toMatch(
+        /governance vot|voting in|putting candidates|creating Labs|Lab creation|unlocks/i,
+      );
+      expect(text).toContain(
+        'does not buy trust, verification, ranking, governance rights or capital access',
+      );
+    }
+    // Where mechanics still gate a governance action, copy states a temporary
+    // eligibility constraint — never "Xidig Plus vote".
+    expect(en['capital.voteHeading']).toBe('Candidate vote');
+    expect(en['capital.voteEligibilityNote']).toBe(
+      'Eligibility is under review. Current access requires Xidig Plus.',
+    );
+    expect(en['capital.voteNotEligible']).toBe('Not currently eligible');
+    expect(en['capital.submitHint']).toContain('Eligibility is under review');
+    // A ballot option must not borrow the support action's word.
+    expect(en['capital.voteApproveDesc']).not.toMatch(/support/i);
+  });
+
+  it('the ToS fees clause is renamed only — its legal meaning is left for legal review', () => {
+    expect(en['marketing.termsFeesBody']).toContain('Xidig Plus membership — which unlocks');
   });
 
   it('the support note says what support is NOT — never an investment, vote, rating or check of work', () => {
@@ -152,14 +232,12 @@ describe('canonical product terms', () => {
     expect(en['capital.candidatesTitle']).toBe('Venture Candidates');
   });
 
-  it('Garab ships bare — the long forms were retired, tooltips carry the meaning', () => {
-    // Naming review 23 Aug: "Garab istaag" / "Waad garab taagan tahay" are NOT
-    // shipped. The word stays one syllable and the explanation lives in the
-    // support note.
-    expect(so['action.garab']).toBe('Garab');
-    expect(so['action.garab']).not.toContain('istaag');
-    expect(en['action.garabNote'], 'the note must explain Show support').toBeTruthy();
-    expect(so['action.garabNote'], 'the note must explain Garab').toBeTruthy();
+  it('the short label is explained by the support note in both locales', () => {
+    // The 23 Aug "Garab ships bare" rule is superseded (owner-edited PRD §24);
+    // what survives is its principle: a short label, meaning in the note.
+    expect(so['action.garab']).toBe('Taageer');
+    expect(en['action.garabNote'], 'the note must explain Support').toBeTruthy();
+    expect(so['action.garabNote'], 'the note must explain Taageer').toContain('Taageer');
   });
 
   it('the Garab milestone badge copy is retired in both locales (Packet B follow-up)', () => {
@@ -202,11 +280,12 @@ describe('the two label sets stay separate (naming review 23 Aug)', () => {
    * over only if it has no equivalent, is a brand in its own right, or simply
    * suits the copy — and then it goes on ALLOWED below, with a reason.
    * Everything else uses its own set's word: EN says Lab / Plaza / Directory /
-   * Capital / Messages / Ask / Win / Show support / Verified, SO says Warshad /
-   * Madal / Suuq / Maal / Fariimo / Codsi / Guul / Garab / Xaqiiq.
+   * Capital / Messages / Ask / Win / Support / Verified, SO says Warshad /
+   * Madal / Suuq / Maal / Fariimo / Codsi / Guul / Taageer / Xaqiiq. The paid
+   * tier "Xidig Plus" is a brand in its own right and reads the same in both.
    */
   const SOMALI_NOUNS =
-    /\b(Warshad\w*|Madal\w*|Suuq|Fariimo|Maal|Aniga|Digniino|Koox|Garab|Guul\w*|Codsi\w*|Xaqiiq\w*|Xawli)\b/;
+    /\b(Warshad\w*|Madal\w*|Suuq|Fariimo|Maal|Aniga|Digniino|Koox|Garab|Taageer\w*|Guul\w*|Codsi\w*|Xaqiiq\w*|Xawli)\b/;
   const ENGLISH_NOUNS = /\b(Labs?|Plaza|Directory|Capital|Messages|Notifications)\b/;
 
   /** key → why the crossover earns its place. */

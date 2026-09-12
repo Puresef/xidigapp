@@ -39,11 +39,13 @@ export const en = {
   // Canonical product terms used inside sentences and on buttons
   'term.lab': 'Lab',
   'term.club': 'Club',
-  // Garab = the non-financial support signal. EN display label "Show support"
+  // The non-financial support action (key name `garab` is a legacy internal
+  // identifier). EN label "Support" / SO provisional "Taageer" — owner-edited
+  // PRD Relook §24 (supersedes the interim "Show support" and the bare "Garab").
   // (PRD Relook §24 / D-10, owner ruling Packet B). It is encouragement only:
   // never an investment, a vote, a verification, a review or a ranking, and
   // it unlocks nothing — counts are visible to everyone either way.
-  'term.garab': 'Show support',
+  'term.garab': 'Support',
   'term.maalgeli': 'Invest',
 
   // Seeded / AI content labels (§21) — shown on cards for non-member content.
@@ -79,8 +81,8 @@ export const en = {
   'action.getStarted': 'Get started',
   // One support vocabulary for every surface that carries the control (the
   // fulfilled-Ask GarabButton and the candidate InterestBar):
-  // Show support → Supporting → Remove support · "{count} people support this".
-  'action.garab': 'Show support',
+  // Support → Supporting → Remove support · "{count} people support this".
+  'action.garab': 'Support',
   'action.garabActive': 'Supporting',
   'action.garabRemove': 'Remove support',
   'action.garabCount': { one: '{count} person supports this', other: '{count} people support this' },
@@ -269,7 +271,8 @@ export const en = {
     'This message request hasn’t been accepted yet. You’ll be able to chat once they accept.',
 
   // --- Labs / Warshad (§27 Labs block) ---
-  'error.notSupporter': 'Creating a Lab requires a Supporter membership.',
+  // Paid tier = "Xidig Plus" (owner-edited PRD Relook §24; formerly "Supporter").
+  'error.notSupporter': 'Creating a Lab requires Xidig Plus.',
   'error.capitalUnavailable': "Investing isn't offered on Xidig right now.",
   'error.charterIncomplete':
     'Your Lab charter needs a few more fields before it can go live. Complete them here.',
@@ -1427,8 +1430,8 @@ export const en = {
   'lab.modeClub': 'Club',
   'lab.modeClubHint': 'Casual — gather people around a topic. Free to start.',
   'lab.modeLab': 'Lab',
-  'lab.modeLabHint': 'Serious — a charter-backed venture track. Needs a Supporter membership.',
-  'lab.createSupporterNote': 'Creating a Lab requires a Supporter membership.',
+  'lab.modeLabHint': 'Serious — a charter-backed venture track. Needs Xidig Plus.',
+  'lab.createSupporterNote': 'Creating a Lab requires Xidig Plus.',
   'lab.fieldName': 'Name',
   'lab.fieldSlug': 'Address',
   'lab.fieldSlugHint':
@@ -1678,7 +1681,7 @@ export const en = {
   'search.crossTabCta': 'See {count} in {label}',
 
   // Capital / Maal (§6/§17/§27). New launch-floor namespace — a trust surface.
-  // Canonical terms Maalgeli (Invest) / Garab (Show support) are NOT redefined
+  // Canonical terms Maalgeli (Invest) / Support (key garab) are NOT redefined
   // here; reuse term.maalgeli / term.garab / action.garab*.
   // "Back/backing/community-backed" is reserved for a future, legally reviewed
   // capital context. Encouragement says "support"; the Candidate process (open
@@ -1722,7 +1725,12 @@ export const en = {
   'capital.reviewersOnlyHint':
     "Hide this Candidate from members until it's decided; only reviewers and your Lab can see it.",
   'capital.submitCta': 'Submit for review',
-  'capital.submitHint': 'Submitting opens a 7-day Supporter vote and sends it to reviewers.',
+  // Owner ruling (12 Sep): the candidate vote is NOT a paid-tier benefit. The
+  // mechanics still gate it on the paid tier today, so copy states that as a
+  // temporary eligibility constraint — never as a value proposition. The
+  // mechanics conflict is a separate gated issue (reconciliation record).
+  'capital.submitHint':
+    'Submitting opens a 7-day candidate vote and sends it to reviewers. Eligibility is under review; current voting access requires Xidig Plus.',
   // Rubric / reviews
   'capital.rubricHeading': 'Review scores',
   'capital.rubricTeam': 'Team',
@@ -1744,21 +1752,25 @@ export const en = {
   'capital.decisionDecline': 'Decline',
   'capital.decisionReasonLabel': 'Reason (shown to the Lab)',
   'capital.decisionReasonHint': 'A short, fair note the Lab will see.',
-  // Supporter governance vote
-  'capital.voteHeading': 'Supporter vote',
+  // Candidate vote (formerly "Supporter vote" — never "Xidig Plus vote").
+  'capital.voteHeading': 'Candidate vote',
+  'capital.voteEligibilityNote': 'Eligibility is under review. Current access requires Xidig Plus.',
+  'capital.voteNotEligible': 'Not currently eligible',
   'capital.voteSignalNote': "A non-binding community signal — it guides, it doesn't decide.",
   'capital.voteApprove': 'Approve',
   'capital.voteReject': 'Reject',
   // Ballot option-card descriptions (brand-rethink adoption): signal
   // language only — mirrors voteSignalNote, never decision/invest language.
-  'capital.voteApproveDesc': 'Signal your support for putting this venture before the community.',
+  // "Support" is the non-financial support action; a ballot option must not
+  // borrow its word.
+  'capital.voteApproveDesc': 'Signal that this venture should go before the community.',
   'capital.voteRejectDesc': 'Signal that this one isn’t ready yet.',
   'capital.voteRetract': 'Retract vote',
   'capital.voteTally': '{approve} approve · {reject} reject · {total} total',
-  // Interests bar (Show support / help). "Back" read as financial backing on
+  // Interests bar (Support / help). "Back" read as financial backing on
   // a surface where investing is not offered — the control says support.
   'capital.interestHeading': 'Support this venture',
-  'capital.signInToEngage': 'Sign in to show support or offer help',
+  'capital.signInToEngage': 'Sign in to support or offer help',
   'capital.canHelp': 'I can help',
   'capital.canHelpDone': 'Offered to help',
   // A2 containment: invest/fund promotional keys removed with their surfaces —
@@ -1817,7 +1829,7 @@ export const en = {
     'Start a casual Club; promote it to a Lab when it gets serious. Updates, decisions, links, and members stay in one place.',
   'marketing.blockCapitalTitle': 'Support what’s being built',
   'marketing.blockCapitalBody':
-    'Show support for promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
+    'Support promising ventures, offer help, and follow build-in-public timelines. Investing is not currently offered on Xidig.',
   'marketing.blockLiteTitle': 'Built for our internet',
   'marketing.blockLiteBody':
     'Somali and English from day one. Lite mode for slow connections — images, maps, and embeds load only when you tap.',
@@ -1838,7 +1850,7 @@ export const en = {
   // a report count into copy (it would go stale into a fake number).
   'marketing.reportsTeaserCount': 'Read all {count} reports',
   'marketing.membershipTeaserBody':
-    'Free to join. Supporter membership — around $1/month — unlocks Lab creation and governance votes.',
+    'Free to join. Xidig Plus — around $1/month — helps keep Xidig running and raises your daily posting and comment allowances. Xidig Plus does not buy trust, verification, ranking, governance rights or capital access.',
 
   // Homepage "next up" event card (extras item 8) — renders only when a real
   // upcoming public event exists.
@@ -1876,7 +1888,7 @@ export const en = {
     'Every public Lab already has a shareable page. The full Lab directory opens here soon.',
   'marketing.capitalTeaserTitle': 'Capital — community-supported ventures',
   'marketing.capitalTeaserBody':
-    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Investing is not offered on Xidig and there are no financial flows — what you can do is offer help or show support for the work.',
+    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Investing is not offered on Xidig and there are no financial flows — what you can do is offer help or support the work.',
 
   // /about
   'marketing.aboutTitle': 'About Xidig',
@@ -1902,9 +1914,9 @@ export const en = {
   'marketing.memberFreeTitle': 'Member — free',
   'marketing.memberFreeBody':
     'A profile and business listing, the Plaza, the directory, messages, and joining Clubs. Free stays free.',
-  'marketing.memberSupporterTitle': 'Supporter — around $1/month',
+  'marketing.memberSupporterTitle': 'Xidig Plus — around $1/month',
   'marketing.memberSupporterBody':
-    'Everything in free, plus creating Labs, putting candidates forward, and voting in community governance.',
+    'Everything in free, plus higher daily posting and comment allowances — and it helps keep Xidig running. Xidig Plus does not buy trust, verification, ranking, governance rights or capital access.',
   'marketing.memberBillingNote':
     'Billing isn’t live yet. The exact price is confirmed with members before anyone is charged.',
 
@@ -1981,7 +1993,7 @@ export const en = {
     'Be honest, be lawful, and keep Xidig safe. Don’t harass, deceive, impersonate, spam, or post unlawful or harmful content, and don’t abuse or attack the platform. The full standards live in our Community Guidelines, which form part of these terms. Content that breaks them can be removed.',
   'marketing.termsFeesTitle': 'Membership and fees',
   'marketing.termsFeesBody':
-    'Joining and core membership are free, and free stays free. Supporter membership — which unlocks creating Labs, putting candidates forward, and voting in community governance — will cost around $1 per month once billing goes live. Billing is not active yet; the confirmed price is announced to members before anyone is charged, and nothing is billed without your agreement.',
+    'Joining and core membership are free, and free stays free. Xidig Plus membership — which unlocks creating Labs, putting candidates forward, and voting in community governance — will cost around $1 per month once billing goes live. Billing is not active yet; the confirmed price is announced to members before anyone is charged, and nothing is billed without your agreement.',
   'marketing.termsCapitalTitle': 'Capital',
   // A3: conservative post-A2 wording — investment is not offered and intent is
   // no longer captured. Placeholder pending exact legal-reviewed ToS text.

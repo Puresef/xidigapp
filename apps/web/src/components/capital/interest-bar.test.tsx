@@ -14,9 +14,9 @@ import { InterestBar } from './interest-bar';
 /**
  * Packet B — the /c/[id] support control (Garab, interest_type 'cosign').
  *
- * Owner ruling: the English label is "Show support" (never "Co-sign"), with
- * one three-state vocabulary — Show support → Supporting → Remove support —
- * and a count that reads as people. Show support is encouragement only: it is
+ * Owner ruling: the English label is "Support" (never "Co-sign"), with
+ * one three-state vocabulary — Support → Supporting → Remove support —
+ * and a count that reads as people. Support is encouragement only: it is
  * not an investment, a vote, a review or a verification, and it unlocks
  * nothing, so the count is identical for supporters and non-supporters and
  * taking support back updates the number without hiding it.
@@ -121,9 +121,10 @@ function text(): string {
 }
 
 describe('InterestBar — default state', () => {
-  it('names the control "Show support", never "Co-sign"', () => {
+  it('names the control "Support", never "Support" or "Co-sign"', () => {
     mount({ cosign: 3 });
-    expect(accessibleName(supportButton())).toBe('Show support');
+    expect(accessibleName(supportButton())).toBe('Support');
+    expect(text()).not.toMatch(/show support/i);
     expect(supportButton().getAttribute('aria-pressed')).toBe('false');
     expect(supportButton().hasAttribute('aria-describedby')).toBe(false);
     expect(text()).not.toMatch(/co-?sign/i);
@@ -173,7 +174,7 @@ describe('InterestBar — supporting and removal (the count never hides)', () =>
     expect(asSupporter).toBe(asViewer);
   });
 
-  it('Show support → Supporting (described by "Remove support") → Show support, count updating but always visible', async () => {
+  it('Support → Supporting (described by "Remove support") → Support, count updating but always visible', async () => {
     mount({ cosign: 3 });
 
     apiPost.mockResolvedValueOnce({ counts: counts(4) });
@@ -193,7 +194,7 @@ describe('InterestBar — supporting and removal (the count never hides)', () =>
       supportButton().click();
     });
     expect(apiDelete).toHaveBeenCalledWith(`/api/candidates/${CANDIDATE}/interests?type=cosign`);
-    expect(accessibleName(supportButton())).toBe('Show support');
+    expect(accessibleName(supportButton())).toBe('Support');
     expect(supportButton().getAttribute('aria-pressed')).toBe('false');
     expect(supportButton().hasAttribute('aria-describedby')).toBe(false);
     // Removing your own support updates the number — it never hides it.
@@ -213,18 +214,18 @@ describe('InterestBar — supporting and removal (the count never hides)', () =>
   });
 });
 
-describe('InterestBar — Somali keeps the bare Garab (native review pending)', () => {
-  it('renders Garab / La garbeeyay and the invariant "{count} garab"', async () => {
+describe('InterestBar — Somali uses the provisional Taageer (native review pending)', () => {
+  it('renders the provisional Taageer / La taageeray and "{count} qof ayaa taageeray" — never Garab', async () => {
     mount({ cosign: 3, locale: 'so' });
-    expect(accessibleName(supportButton())).toBe('Garab');
-    expect(text()).toContain('3 garab');
+    expect(accessibleName(supportButton())).toBe('Taageer');
+    expect(text()).toContain('3 qof ayaa taageeray');
     apiPost.mockResolvedValueOnce({ counts: counts(4) });
     await act(async () => {
       supportButton().click();
     });
-    expect(accessibleName(supportButton())).toBe('La garbeeyay');
+    expect(accessibleName(supportButton())).toBe('La taageeray');
     expect(accessibleDescription(supportButton())).toBeTruthy();
-    expect(text()).toContain('4 garab');
+    expect(text()).toContain('4 qof ayaa taageeray');
   });
 });
 

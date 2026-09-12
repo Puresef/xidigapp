@@ -15,12 +15,12 @@ import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
  * Interest bar. Two signals, both non-financial and NEVER gated:
- *  - Garab / Show support: a visible count ("142 people support this") + a
- *    toggle. Show support is encouragement only — it is not an investment,
+ *  - Support (legacy internal name Garab): a visible count ("142 people support this") + a
+ *    toggle. Support is encouragement only — it is not an investment,
  *    a vote, a review, a readiness check or a verification of the venture,
  *    and it unlocks nothing: the count is the same for every viewer whether
  *    or not they support, and the note under the actions says so.
- *    States: "Show support" → "Supporting" (described by "Remove support").
+ *    States: "Support" → "Supporting" (described by "Remove support").
  *  - "I can help": a concrete non-financial offer toggle.
  *
  * The invest slot (Maalgeli CTA → fund modal) was removed under A2
@@ -90,7 +90,7 @@ export function InterestBar({
       <h2 className="xidig-section__title">{t('capital.interestHeading')}</h2>
       {error ? <PlainErrorBanner error={error} /> : null}
 
-      {/* Garab / Show support count — visible to every viewer, supported or not.
+      {/* Support count — visible to every viewer, supported or not.
           The interest_type slug stays 'cosign' (schema + analytics identity). */}
       <p className="xidig-card__body">
         {t('action.garabCount', { count: counts.cosign })}

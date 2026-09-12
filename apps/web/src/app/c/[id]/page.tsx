@@ -44,7 +44,7 @@ export const dynamic = 'force-dynamic';
  * mod/admin who is NOT a member of the candidate's Lab (recusal §17). There is
  * no invest surface: investing is not currently offered on Xidig (A2
  * containment) — InterestBar carries only the non-financial help and
- * Show support (Garab, interest_type 'cosign') signals, and the API refuses
+ * Support (interest_type 'cosign') signals, and the API refuses
  * invest intents server-side.
  */
 
@@ -163,6 +163,21 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
             initialTally={view.voteTally}
             initialVote={view.viewer.vote}
           />
+        ) : windowOpen ? (
+          // Owner ruling (12 Sep): the paid-tier gate on this vote conflicts
+          // with the doctrine (Xidig Plus buys no governance) and is under
+          // review. A non-eligible member sees the constraint stated plainly —
+          // not a sales pitch — and no tally, exactly as before.
+          <section
+            className="xidig-section xidig-capital-vote"
+            aria-label={t('capital.voteHeading')}
+          >
+            <h2 className="xidig-section__title">{t('capital.voteHeading')}</h2>
+            <p className="xidig-card__meta">{t('capital.voteEligibilityNote')}</p>
+            <button type="button" className="xidig-button xidig-button--secondary" disabled>
+              {t('capital.voteNotEligible')}
+            </button>
+          </section>
         ) : null}
 
         {/* Reviewer console */}

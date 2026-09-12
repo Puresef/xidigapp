@@ -13,11 +13,11 @@ import { so } from './dictionaries/so';
  * Xidig does not offer investment, does not capture investment intent, and
  * makes no promise about activating it later. The only member actions the
  * copy may point at are the ones that exist on a candidate: "I can help" and
- * the support signal — whose locked ENGLISH label is "Show support" (G1), and
- * whose locked SOMALI label stays the bare "Garab". Since Packet B the
- * control itself says "Show support" too (term.garab / action.garab, pinned by
- * vocabulary.test.ts), so prose and button agree; the assertion below is what
- * stops the retired "co-sign" coming back into this copy.
+ * the support action — ENGLISH "Support", provisional SOMALI "Taageer"
+ * (owner-edited PRD Relook §24, 12 Sep; supersedes the interim "Show support"
+ * and the bare "Garab"). The control says the same (term.garab /
+ * action.garab, pinned by vocabulary.test.ts), so prose and button agree; the
+ * assertions below stop the retired "co-sign" and "show support" returning.
  *
  * The route-coupling half of this pin — that /capital/candidates still reads
  * this ONE key for both its hero and its <meta description>, so a dictionary
@@ -33,7 +33,8 @@ describe('capital teaser says investing is not offered', () => {
     const text = String(en[KEY]);
     expect(text).toContain('Investing is not offered on Xidig');
     expect(text).toContain('offer help');
-    expect(text).toContain('show support');
+    expect(text).toContain('support the work');
+    expect(text).not.toMatch(/show support/i);
     expect(text).not.toContain('co-sign');
   });
 
@@ -41,7 +42,7 @@ describe('capital teaser says investing is not offered', () => {
     const text = String(so[KEY]);
     expect(text).toContain('Maalgashi laguma bixiyo Xidig');
     expect(text).toContain('caawin');
-    expect(text).toContain('garab');
+    expect(text).toContain('taageer');
   });
 
   it.each([

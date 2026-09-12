@@ -9,11 +9,11 @@ import { LocaleProvider } from '@xidig/i18n/react';
 import { GarabButton } from './garab-button';
 
 /**
- * Packet B — Show support on a resolved Codsi, live DOM. The count is visible
+ * Packet B — Support on a resolved Codsi, live DOM. The count is visible
  * before, during and after taking part (the retired rule hid it until the
  * viewer co-signed — a reveal reward the owner ruling removes), and the
- * control walks Show support → Supporting (described by "Remove support") →
- * Show support. The route and response field keep their `cosign` identity.
+ * control walks Support → Supporting (described by "Remove support") →
+ * Support. The route and response field keep their `cosign` identity.
  */
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -74,10 +74,10 @@ function count(): string {
   return container.querySelector('.xidig-codsi-garab__count')?.textContent ?? '';
 }
 
-describe('GarabButton (live) — Show support → Supporting → Remove support', () => {
+describe('GarabButton (live) — Support → Supporting → Remove support', () => {
   it('round-trips with the count visible in every state', async () => {
     mount(9);
-    expect(accessibleName(button())).toBe('Show support');
+    expect(accessibleName(button())).toBe('Support');
     expect(count()).toBe('9 people support this');
 
     apiPut.mockResolvedValueOnce({ cosigned: true, count: 10 });
@@ -95,7 +95,7 @@ describe('GarabButton (live) — Show support → Supporting → Remove support'
       button().click();
     });
     expect(apiDelete).toHaveBeenCalledWith('/api/posts/p1/cosign');
-    expect(accessibleName(button())).toBe('Show support');
+    expect(accessibleName(button())).toBe('Support');
     expect(button().getAttribute('aria-pressed')).toBe('false');
     expect(button().hasAttribute('aria-describedby')).toBe(false);
     expect(count()).toBe('9 people support this');

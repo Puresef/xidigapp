@@ -25,7 +25,7 @@ vi.mock('next/navigation', () => ({
  * Codsi detail family (P1 frames 1a–3b + DESIGN.md §4). The acceptance rules
  * these lock: asker-only lifecycle controls, offer = private DM (privacy note
  * always beside the CTA), the helper strip as the only public offer artifact,
- * Garab (Show support) existing only post-fulfilled with its count visible to
+ * Garab (Support) existing only post-fulfilled with its count visible to
  * everyone,
  * and zero trust-orange before fulfilment.
  */
@@ -90,7 +90,7 @@ describe('HelperStrip (in progress — system chrome, cold accent)', () => {
     expect(html).not.toContain('trust');
   });
 
-  it("gives the asker their own grammar and the door to the DM", () => {
+  it('gives the asker their own grammar and the door to the DM', () => {
     const html = render(
       createElement(HelperStrip, {
         helper,
@@ -107,7 +107,7 @@ describe('HelperStrip (in progress — system chrome, cold accent)', () => {
   });
 });
 
-describe('GarabButton — exists only post-fulfilled; Show support unlocks nothing', () => {
+describe('GarabButton — exists only post-fulfilled; Support unlocks nothing', () => {
   const base: ComponentProps<typeof GarabButton> = {
     postId: 'p1',
     fulfilled: true,
@@ -121,7 +121,7 @@ describe('GarabButton — exists only post-fulfilled; Show support unlocks nothi
 
   it('shows the count to a viewer who has not taken part (no reveal reward)', () => {
     const html = render(createElement(GarabButton, base));
-    expect(html).toContain('Show support');
+    expect(html).toContain('>Support<');
     expect(html).toContain('9 people support this');
     expect(html).toContain('aria-pressed="false"');
     expect(html).not.toMatch(/co-?sign/i);
@@ -178,7 +178,12 @@ describe('OfferCta — offer is a private DM', () => {
 
   it('open ask: primary CTA with the privacy promise', () => {
     const html = render(
-      createElement(OfferCta, { postId: 'p1', askStatus: 'open', isAsker: false, askerName: 'Cali' }),
+      createElement(OfferCta, {
+        postId: 'p1',
+        askStatus: 'open',
+        isAsker: false,
+        askerName: 'Cali',
+      }),
     );
     expect(html).toContain('I can help');
     expect(html).toContain('A private message goes to Cali');

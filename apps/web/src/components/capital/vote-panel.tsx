@@ -14,11 +14,15 @@ import type { PlainError } from '@/lib/errors';
 import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
- * Supporter governance vote panel (§12/§17). Rendered ONLY when the viewer holds
+ * Candidate vote panel (§12/§17; formerly "Supporter vote"). Rendered ONLY when the viewer holds
  * the vote_candidate capability AND the 7-day window is open (the page decides
  * both — this component just casts/retracts and shows the running tally). The
  * vote is a non-binding SIGNAL; v1.0 attaches no execution flow. Ballots are
  * private — only aggregate counts are ever shown.
+ *
+ * Owner ruling (12 Sep): the vote is not a paid-tier benefit. Mechanics still
+ * gate it on the paid tier, so the panel states that as a temporary
+ * eligibility constraint ("Eligibility is under review…"), never as a perk.
  */
 
 type VoteChoice = Enums<'vote_choice'>;
@@ -95,6 +99,7 @@ export function VotePanel({
     <section className="xidig-section xidig-capital-vote" aria-label={t('capital.voteHeading')}>
       <h2 className="xidig-section__title">{t('capital.voteHeading')}</h2>
       <p className="xidig-card__meta">{t('capital.voteSignalNote')}</p>
+      <p className="xidig-card__meta">{t('capital.voteEligibilityNote')}</p>
       {error ? <PlainErrorBanner error={error} /> : null}
 
       {/* Split bar (brand-rethink adoption): the approve share of REAL cast

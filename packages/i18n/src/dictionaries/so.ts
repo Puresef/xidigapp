@@ -44,7 +44,10 @@ export const so = {
   // Canonical product terms
   'term.lab': 'Warshad',
   'term.club': 'Koox',
-  'term.garab': 'Garab',
+  // Support action — PROVISIONAL "Taageer" (owner-edited PRD Relook §24; the
+  // bare "Garab" of the 23 Aug ruling is superseded as the primary label).
+  // Native review pending (G34) for every string in this cluster.
+  'term.garab': 'Taageer',
   'term.maalgeli': 'Maalgeli',
 
   // Calaamadaha nuxurka la beeray / AI (§21) — SO drafts, need native review
@@ -77,17 +80,17 @@ export const so = {
 
   // Core actions
   'action.getStarted': 'Bilow',
-  'action.garab': 'Garab',
-  'action.garabActive': 'La garbeeyay',
+  'action.garab': 'Taageer',
+  'action.garabActive': 'La taageeray',
   // PROVISIONAL wording pending the native SO review (G34) — mirrors
-  // capital.voteRetract ("Ka noqo codka"). Garab itself stays bare.
-  'action.garabRemove': 'Ka noqo garabka',
-  'action.garabCount': { one: '{count} garab', other: '{count} garab' },
-  // PROVISIONAL wording pending the native SO review (G34): what Garab is NOT
+  // capital.voteRetract ("Ka noqo codka").
+  'action.garabRemove': 'Ka noqo taageerada',
+  'action.garabCount': { one: '{count} qof ayaa taageeray', other: '{count} qof ayaa taageeray' },
+  // PROVISIONAL wording pending the native SO review (G34): what support is NOT
   // (investment / vote / rating / check of work). Replaces the retired
   // count-after-you-take-part note — counts are now visible to everyone.
   'action.garabNote':
-    'Garabku waa dhiirrigelin keliya — maaha maalgashi, cod, qiimayn, ama hubinta shaqada qofna.',
+    'Taageeradu waa dhiirrigelin keliya — maaha maalgashi, cod, qiimayn, ama hubinta shaqada qofna.',
   'action.canHelp': 'Waan caawin karaa',
   'action.save': 'Kaydi',
   'action.cancel': 'Ka noqo',
@@ -1114,7 +1117,10 @@ export const so = {
     'Codsigan fariinta weli lama aqbalin. Waad la sheekaysan doontaa marka la aqbalo.',
 
   // Labs / Warshad errors (§27)
-  'error.notSupporter': 'Abuurista Warshad waxay u baahan tahay xubinnimo Taageere.',
+  // Paid tier = the brand "Xidig Plus" in both locales (owner-edited PRD §24);
+  // "Taageere" now reads as the support ACTION, and native paid-tier naming is
+  // gated — so no Somali tier noun is invented here.
+  'error.notSupporter': 'Abuurista Warshad waxay u baahan tahay Xidig Plus.',
   // PROVISIONAL wording pending the native SO review (G34) — neutral status only.
   'error.capitalUnavailable': 'Maalgashi hadda laguma bixiyo Xidig.',
   'error.charterIncomplete':
@@ -1347,8 +1353,8 @@ export const so = {
   'lab.modeClub': 'Koox',
   'lab.modeClubHint': 'Fudud — dad ku soo ururso mawduuc. Bilaash ah.',
   'lab.modeLab': 'Warshad',
-  'lab.modeLabHint': 'Dhab ah — jid ganacsi oo axdi leh. Waxay u baahan tahay xubinnimo Taageere.',
-  'lab.createSupporterNote': 'Abuurista Warshad waxay u baahan tahay xubinnimo Taageere.',
+  'lab.modeLabHint': 'Dhab ah — jid ganacsi oo axdi leh. Waxay u baahan tahay Xidig Plus.',
+  'lab.createSupporterNote': 'Abuurista Warshad waxay u baahan tahay Xidig Plus.',
   'lab.fieldName': 'Magac',
   'lab.fieldSlug': 'Ciwaan',
   'lab.fieldSlugHint':
@@ -1597,7 +1603,7 @@ export const so = {
   'search.crossTabCta': 'Fiiri {count} ee {label}',
 
   // Capital / Maal (§6/§17/§27). Launch-floor — trust surface, full SO.
-  // Maalgeli (Invest) / Garab (Show support) reuse term.maalgeli / term.garab /
+  // Maalgeli (Invest) / Taageer (Support; key garab) reuse term.maalgeli / term.garab /
   // action.garab* — NOT redefined here (vocabulary lock).
   // Index + entry
   'capital.indexTitle': 'Maal',
@@ -1640,7 +1646,7 @@ export const so = {
     'Ka qari Musharaxan xubnaha ilaa la go’aamiyo; kaliya dib-u-eegayaasha iyo Warshaddaadu way arki karaan.',
   'capital.submitCta': 'U gudbi dib-u-eegis',
   'capital.submitHint':
-    'Gudbintu waxay furaysaa cod Taageere 7-maalmood ah, waxayna u dirtaa dib-u-eegayaasha.',
+    'Gudbintu waxay furaysaa cod musharax 7-maalmood ah, waxayna u dirtaa dib-u-eegayaasha. Xaq-u-yeelashada waa la dib-u-eegayaa; codbixinta hadda waxay u baahan tahay Xidig Plus.',
   // Rubric / reviews
   'capital.rubricHeading': 'Dhibcaha dib-u-eegista',
   'capital.rubricTeam': 'Kooxda',
@@ -1663,16 +1669,20 @@ export const so = {
   'capital.decisionReasonLabel': 'Sababta (Warshadda ayaa la tusi doonaa)',
   'capital.decisionReasonHint': 'Qoraal gaaban oo cadaalad ah oo Warshaddu arki doonto.',
   // Supporter governance vote
-  'capital.voteHeading': 'Codka Taageeraha',
+  // PROVISIONAL (G34) — "Candidate vote"; eligibility stated as a temporary constraint.
+  'capital.voteHeading': 'Codka Musharaxa',
+  'capital.voteEligibilityNote':
+    'Xaq-u-yeelashada waa la dib-u-eegayaa. Helitaanka hadda wuxuu u baahan yahay Xidig Plus.',
+  'capital.voteNotEligible': 'Hadda xaq uma lihid',
   'capital.voteSignalNote': "Calaamad bulsho oo aan qasab ahayn — way hagtaa, ma go'aamiso.",
   'capital.voteApprove': 'Ansixi',
   'capital.voteReject': 'Diid',
   // Sharraxaadda kaararka codka (plain register — native batch)
-  'capital.voteApproveDesc': 'Calaamadee taageeradaada in mashruucan la hor keeno bulshada.',
+  'capital.voteApproveDesc': 'Calaamadee in mashruucan la hor keeno bulshada.',
   'capital.voteRejectDesc': 'Calaamadee in kani aanu weli diyaar ahayn.',
   'capital.voteRetract': 'Ka noqo codka',
   'capital.voteTally': '{approve} ansixi · {reject} diid · {total} wadar',
-  // Interests bar (Garab / help)
+  // Interests bar (Taageer / help)
   'capital.interestHeading': 'Taageer mashruucan',
   'capital.signInToEngage': 'Soo gal si aad u taageerto mashruucan',
   'capital.canHelp': 'Waan caawin karaa',
@@ -1729,7 +1739,7 @@ export const so = {
     'Ku bilow Koox fudud; u dallacsii Warshad marka ay fikraddu culus noqoto. Warbixinno, go’aanno, xiriiriyayaal, iyo xubno — hal meel ayay ku wada jiraan.',
   'marketing.blockCapitalTitle': 'Taageer waxa la dhisayo',
   'marketing.blockCapitalBody':
-    'Garab sii mashaariicda mustaqbalka leh, caawimaad fidi, raacna jadwallada si furan loo dhisayo. Maalgashi hadda laguma bixiyo Xidig.',
+    'Taageer mashaariicda mustaqbalka leh, caawimaad fidi, raacna jadwallada si furan loo dhisayo. Maalgashi hadda laguma bixiyo Xidig.',
   'marketing.blockLiteTitle': 'Loo dhisay internetkeenna',
   'marketing.blockLiteBody':
     'Soomaali iyo Ingiriisi maalinta koowaad. Hab Lite ah oo loogu talagalay xiriirrada gaabis ah — sawirrada, khariidadaha, iyo lifaaqyadu waxay soo baxaan kaliya marka aad taabato.',
@@ -1748,7 +1758,7 @@ export const so = {
   // ha ku qorin (way duugoobi lahayd oo been noqon lahayd).
   'marketing.reportsTeaserCount': 'Akhri dhammaan {count} warbixinnood',
   'marketing.membershipTeaserBody':
-    'Ku biirid lacag la’aan ah. Xubinnimada Taageeraha — qiyaastii $1/bishii — waxay furtaa abuurista Warshadaha iyo codaynta maamulka.',
+    'Ku biirid lacag la’aan ah. Xidig Plus — qiyaastii $1/bishii — waxay kaa caawisaa in Xidig socdo, waxayna kor u qaadaa xadka maalinlaha ah ee qoraallada iyo faallooyinka. Xidig Plus ma iibsato kalsooni, xaqiijin, kaalin, xuquuq maamul, ama helitaan maal.',
 
   // Kaadhka "xiga" ee bogga hore (extras item 8) — wuxuu soo baxaa kaliya
   // marka munaasabad dadweyne oo soo socota jirto.
@@ -1786,7 +1796,7 @@ export const so = {
     'Warshad kasta oo dadweyne horeba waxay u leedahay bog la wadaagi karo. Buugga Warshadaha oo dhammaystiran ayaa halkan ku furmaya dhawaan.',
   'marketing.capitalTeaserTitle': 'Maal — mashaariic ay bulshadu taageerto',
   'marketing.capitalTeaserBody':
-    'Musharaxiinta mashaariicdu waxay ka soo baxaan Warshadaha, si furan ayaa dib loogu eegaa, xubnuhuna way u codeeyaan. Maalgashi laguma bixiyo Xidig, lacagna kuma socoto — waxaad caawin kartaa ama garab u noqon kartaa shaqada.',
+    'Musharaxiinta mashaariicdu waxay ka soo baxaan Warshadaha, si furan ayaa dib loogu eegaa, xubnuhuna way u codeeyaan. Maalgashi laguma bixiyo Xidig, lacagna kuma socoto — waxaad caawin kartaa ama taageeri kartaa shaqada.',
 
   // /about
   'marketing.aboutTitle': 'Ku saabsan Xidig',
@@ -1812,9 +1822,9 @@ export const so = {
   'marketing.memberFreeTitle': 'Xubin — lacag la’aan',
   'marketing.memberFreeBody':
     'Profile shakhsi iyo diiwaan ganacsi, Madasha, buugga, fariimaha, iyo ku biirista Kooxaha. Lacag la’aantu waa joogto.',
-  'marketing.memberSupporterTitle': 'Taageere — qiyaastii $1/bishii',
+  'marketing.memberSupporterTitle': 'Xidig Plus — qiyaastii $1/bishii',
   'marketing.memberSupporterBody':
-    'Dhammaan waxa bilaashka ah, oo lagu daray abuurista Warshadaha, soo bandhigista musharaxiinta, iyo codaynta maamulka bulshada.',
+    'Dhammaan waxa bilaashka ah, oo lagu daray xad maalinle ah oo sare oo qoraallo iyo faallooyin ah — waxayna kaa caawisaa in Xidig socdo. Xidig Plus ma iibsato kalsooni, xaqiijin, kaalin, xuquuq maamul, ama helitaan maal.',
   'marketing.memberBillingNote':
     'Lacag-bixintu weli ma shaqeyso. Qiimaha rasmiga ah waxaa lala xaqiijiyaa xubnaha ka hor inta aan qofna lacag laga qaadin.',
 
@@ -1891,7 +1901,7 @@ export const so = {
     'Daacad ahow, sharciga raac, Xidigna badbaado. Ha dhibin, ha khiyaanayn, ha is-moodsiin, spam ha dirin, waxyaabo sharci-darro ama waxyeello leh ha qorin, goobtana ha weerarin. Heerarka buuxa waxay ku jiraan Tilmaamaha Bulshadayada, oo qayb ka ah shuruudahan. Waxa jebiya waa la saari karaa.',
   'marketing.termsFeesTitle': 'Xubinnimo iyo khidmado',
   'marketing.termsFeesBody':
-    'Ku biirista iyo xubinnimada aasaasiga ah waa lacag la’aan, lacag la’aantuna way sii jiri doontaa. Xubinnimada Taageeruhu — oo furta abuurista Warshad, hor-dhigista musharaxiin, iyo codbixin maamul-bulsheed — waxay ku kici doontaa qiyaastii $1 bishii marka lacag-bixintu shaqeyso. Lacag-bixintu weli firfircoon ma aha; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin, wax lacag ahna lama qaado ogolaanshahaaga la’aantiis.',
+    'Ku biirista iyo xubinnimada aasaasiga ah waa lacag la’aan, lacag la’aantuna way sii jiri doontaa. Xubinnimada Xidig Plus — oo furta abuurista Warshad, hor-dhigista musharaxiin, iyo codbixin maamul-bulsheed — waxay ku kici doontaa qiyaastii $1 bishii marka lacag-bixintu shaqeyso. Lacag-bixintu weli firfircoon ma aha; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin, wax lacag ahna lama qaado ogolaanshahaaga la’aantiis.',
   'marketing.termsCapitalTitle': 'Maal',
   // A3 — PROVISIONAL (G34) conservative wording pending legal-reviewed ToS text.
   'marketing.termsCapitalBody':

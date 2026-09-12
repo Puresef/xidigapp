@@ -14,7 +14,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  *
  * The response echoes {cosigned, count} so the control can update in place.
  * The count is not a reward for taking part — every viewer already sees it
- * (Packet B: Show support unlocks nothing). Route, field and event names keep
+ * (Packet B: Support unlocks nothing). Route, field and event names keep
  * the original `cosign` identifiers; only the display label changed.
  */
 

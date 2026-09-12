@@ -43,9 +43,9 @@ function entry(key: string): GlyphEntry {
 }
 
 describe('glyphs.map.json — display labels', () => {
-  it('garab records the EN display label "Show support" (Packet B) and the bare SO "Garab"', () => {
-    expect(entry('garab').en).toBe('Show support');
-    expect(entry('garab').so).toBe('Garab');
+  it('the support glyph (key garab) records the EN label "Support" and the provisional SO "Taageer"', () => {
+    expect(entry('garab').en).toBe('Support');
+    expect(entry('garab').so).toBe('Taageer');
   });
 });
 

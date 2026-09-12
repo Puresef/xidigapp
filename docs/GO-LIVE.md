@@ -239,7 +239,7 @@ This needs your Google account, so it can't be automated here — do it manually
   upload → confirms the `post-media` bucket + transcode + moderation path).
 - Create a Club, promote to Lab, post in Plaza (image + embed), send a DM
   (confirms Realtime), create a Candidate and confirm that **no invest surface
-  exists for anyone**: the interest bar offers only Show support and "I can help",
+  exists for anyone**: the interest bar offers only Support and "I can help",
   and a direct `POST` to `/api/capital/gate`, `/api/capital/fund-interest`, or
   `/api/candidates/{id}/interests` with `type=invest` returns
   `capital_unavailable` (403). Investing is not offered on Xidig in any region —

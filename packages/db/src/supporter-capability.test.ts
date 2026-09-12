@@ -107,3 +107,12 @@ describe('third tier does not inherit Supporter gates', () => {
     expect(await isSupporterFor(patron)).toBe(true);
   });
 });
+
+describe('paid tier display name (20260912000000)', () => {
+  it('is "Xidig Plus" publicly, while the internal tier id stays "supporter"', async () => {
+    const res = await db.withRole('anon', null, (tx) =>
+      tx.query(`select id, name from public.list_visible_tiers() where id = 'supporter'`),
+    );
+    expect(res.rows).toEqual([{ id: 'supporter', name: 'Xidig Plus' }]);
+  });
+});

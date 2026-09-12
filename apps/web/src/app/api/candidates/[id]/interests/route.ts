@@ -12,7 +12,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  *
  *   help  ("I can help")  — non-financial, any member, NEVER gated.
  *   cosign (Garab)        — non-financial, any member, NEVER gated. Shown as
- *                           "Show support"; the slug stays 'cosign'.
+ *                           "Support"; the slug stays 'cosign'.
  *   invest                — SUBMISSION DISABLED (A2 containment): Xidig does
  *                           not currently offer investment, so a new invest
  *                           intent is refused with the truthful
