@@ -30,7 +30,8 @@ someone to treat it as a live alternative.
 - `docs/rls-phase4-labs.md` — invariant restated as: user-initiated demotion forbidden,
   system-role timeout demotion allowed and logged.
 - `packages/db/supabase/migrations/20260706200000_phase4_labs.sql` — comments only (the
-  migration is already applied to Dev; zero executable lines changed).
+  migration is already applied to Dev — the Supabase project labelled "Dev Xidig App", which
+  is the live production database; zero executable lines changed).
 - `apps/web/src/lib/labs/sweeps.ts`, `apps/web/src/lib/labs/schemas.ts` — comments only.
 - `packages/db/src/phase4-labs.test.ts` — see §4.
 
@@ -64,6 +65,9 @@ this pass describe the decided doctrine; they are not a substitute for the imple
 
 ## 5. Dev migration state
 
-Aniga's and Munaasabado's migrations are applied on Dev. Fariimo's `20260810000000_fariimo_voice`
+"Dev" here is the Supabase project labelled "Dev Xidig App" (`tbdryvhxxiqadseuxclm`), which is
+the **live production database** for xidig.net (see `docs/retention-implementation-plan.md` §3,
+Environments). Treat every "Dev" migration below as production state, and any application as
+approved production work. Aniga's and Munaasabado's migrations are applied on Dev. Fariimo's `20260810000000_fariimo_voice`
 and `20260810003000_fariimo_silent_decline` are still pending — a plain `supabase db push` may
 skip them, so use `--include-all` or apply directly.

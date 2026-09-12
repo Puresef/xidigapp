@@ -8,9 +8,18 @@ gitignored `TEST-COMMUNITY-LOGINS.md`); the email is always
 [`TEST-COMMUNITY-LOGINS.md`](../TEST-COMMUNITY-LOGINS.md). Design +
 what-gets-seeded: [`docs/test-community.md`](./test-community.md).
 
-Run against a dev/staging deploy (never production — the seeder is blocked
-there). Reseed / refresh with
-`pnpm --filter @xidig/web seed:test-community`.
+**Never run or reset this against the production database.** The Supabase
+project labelled "Dev Xidig App" (`tbdryvhxxiqadseuxclm`) **is** the live
+production database for xidig.net, and this dataset was seeded into it on
+18 Jul 2026 under the old guard, which only checked the app process
+(`NODE_ENV=production`) and was insufficient. The seeder now refuses any target
+that is not a verified non-production database (see
+[`docs/test-community.md`](./test-community.md)); no non-production rehearsal
+database is currently verified, so today that means a local stack only. On a
+verified target, reseed / refresh with
+`pnpm --filter @xidig/web seed:test-community`. Every fixture is a quarantined
+test account (`users.is_test`): signed-out visitors get a 404 on its profile,
+and members see a "Test account" notice instead of badges or trust signals.
 
 > Tip: take each shot at desktop width first, then repeat steps 3, 6 and 14 at
 > mobile width — the responsive + low-bandwidth behaviour is part of the story.

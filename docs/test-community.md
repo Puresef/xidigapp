@@ -1,16 +1,42 @@
 # Test community (pre-launch test phase)
 
-A believable miniature society seeded into a **non-production** database so we
-can exercise UX, onboarding, Plaza, Labs, DMs, notifications, moderation,
-search, discovery, membership states and low-bandwidth behaviour before real
-users arrive.
+A believable miniature society designed for a **verified non-production**
+database, so we can exercise UX, onboarding, Plaza, Labs, DMs, notifications,
+moderation, search, discovery, membership states and low-bandwidth behaviour
+before real users arrive.
+
+> **⚠️ Production history (12 Sep 2026).** The Supabase project labelled
+> "Dev Xidig App" (`tbdryvhxxiqadseuxclm`) is the **live production database**
+> for xidig.net, and this dataset was seeded into it on 18 Jul 2026. The old
+> guard only checked the app process (`NODE_ENV=production`); a local dev
+> server pointed at that project passed it. That guard was insufficient. The
+> fixtures on production are now contained (banned, hidden, noindexed) and
+> quarantined (`users.is_test`), not removed. **No non-production rehearsal
+> database is currently verified** — only a local stack qualifies unless a
+> project is explicitly added to the allowlist below.
 
 **This is a different tool from the launch-density seed** (`docs/seeding.md`).
 That seed is governed by the locked "no fake people" rule and ships to
 production. The test community is fake people BY DESIGN and is therefore:
 
-- blocked outright in production (`POST`/`DELETE /api/admin/seed/test-community`
-  both 403 when `NODE_ENV=production`);
+- refused for any database that is not a **verified non-production target**
+  (`apps/web/src/lib/seed/target-guard.ts`). Both verbs of
+  `/api/admin/seed/test-community` check the Supabase URL the server is
+  configured with, **before auth and before building any client**:
+  - the production project ref (`tbdryvhxxiqadseuxclm`) → 403, whatever
+    `NODE_ENV` says;
+  - a missing/unparseable URL, or the two configured URLs disagreeing → 403
+    (fails closed);
+  - any hosted project not on `NON_PRODUCTION_PROJECT_REFS` → 403 (the list is
+    empty today; the paused Staging project is unverified and not on it);
+  - a loopback stack (`supabase start`, CI's `127.0.0.1`) → allowed.
+
+  `NODE_ENV=production` is still refused too. Adding a hosted project to the
+  allowlist is a reviewed, owner-approved change;
+
+- **quarantined**: every account it creates or reuses is marked `users.is_test`
+  (migration `20260912050000`), so it never counts as organic community proof
+  (counters, rankings, awards, trust, search, discovery, public projections);
 - kept OUT of the `seed_entities` registry (member-authored content never
   registers there — `seed_runs` only carries a marker row labelled
   `test-community-v1` so re-runs skip the content phase);
@@ -19,7 +45,8 @@ production. The test community is fake people BY DESIGN and is therefore:
 ## Running it
 
 ```bash
-# Dev server running against the DEV Supabase project, then:
+# App server pointed at a LOCAL stack (supabase start) or an allowlisted
+# non-production project — NEVER "Dev Xidig App" (that is production; refused):
 CRON_SECRET=... APP_URL=http://localhost:3000 pnpm --filter @xidig/web seed:test-community
 
 # Tear down (best-effort — see "Reset semantics"):
@@ -38,6 +65,11 @@ default: the seeder fails fast if neither is set, so no plaintext credential
 lives in the repo. Re-running the seeder resets every existing test account to
 the configured value. Login email is always `<handle>@example.com`; the
 generated `TEST-COMMUNITY-LOGINS.md` (gitignored) is the canonical login list.
+The password value itself is never written to that file or returned by the API.
+
+A fixture handle that is already held by a non-fixture account (any email other
+than that handle's `<handle>@example.com`) is refused — the seeder never resets,
+reuses or marks someone else's account.
 
 ## What gets seeded
 
@@ -81,6 +113,18 @@ risk, test purpose — lives in `personas.ts`; the roster table is generated int
 `TEST-COMMUNITY-LOGINS.md`.
 
 ## Reset semantics (§19 constraints)
+
+`--reset` runs only on a verified non-production target (same guard as the
+run; production is refused). It selects fixture accounts by **all** of: a
+source-defined fixture handle, that handle's `<handle>@example.com`, and
+`users.is_test` — never the `example.com` domain alone (the test factories,
+verification sessions and any real member can share it). Marker rows are
+removed by exact label, and the seeded award cycles only when the
+`test-community-awards` marker proves this seeder created them.
+
+It is **not** a production cleanup tool. On production the fixtures stay
+quarantined and contained; any removal there is a separate owner- and
+legal-approved plan built on an explicit id list.
 
 `--reset` deletes everything it can, but the schema deliberately forbids
 erasing moderation history: `reports` revoke DELETE even from the service role,
