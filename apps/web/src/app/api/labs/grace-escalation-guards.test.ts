@@ -146,9 +146,19 @@ describe('grace: escalations and venture writes are refused before any data is t
 
 // Past authentication = the handler reached data (sentinel) OR refused the
 // empty test body on validation (400) — both happen only after the guard, the
-// first statement of every handler here. Never a 401/403.
-const passedAuth = (r: { status: number; reached: boolean }) =>
-  r.reached || (r.status !== 401 && r.status !== 403);
+// first statement of every handler here — OR refused with a PAUSED code.
+// Paused escalations (Xidig Plus doctrine, 12 Sep) refuse everyone AFTER the
+// active-account guard with their own neutral 403 code, never 'forbidden'.
+const PAUSED_CODES = new Set([
+  'lab_eligibility_under_review',
+  'put_forward_under_review',
+  'venture_promotion_under_review',
+  'vote_eligibility_under_review',
+]);
+const passedAuth = (r: { status: number; reached: boolean; code: string | null }) =>
+  r.reached ||
+  (r.status !== 401 && r.status !== 403) ||
+  (r.code !== null && PAUSED_CODES.has(r.code));
 
 describe('active: the same writes pass authentication (control)', () => {
   it.each(WRITES)('%s', async (label, handler, p) => {

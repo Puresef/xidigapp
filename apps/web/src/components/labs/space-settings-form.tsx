@@ -41,8 +41,9 @@ export interface SettingsInitial {
 
 /**
  * Space settings (§16): mode-adjacent settings, privacy, member view + the
- * charter. Mode itself changes ONLY via the promote-only ladder (Promote to
- * Lab / Put forward as a Venture). Stage demotion is system-driven only
+ * charter. Mode itself changes ONLY via the promote-only ladder, which is
+ * PAUSED (Xidig Plus doctrine, owner 12 Sep). Leads see a neutral "under
+ * review" note there instead of the Promote / Put-forward buttons. Stage demotion is system-driven only
  * (timeout path, Maal F2), so it is deliberately absent here. Every save
  * PATCHes the API (role-checked, history-logged); the RSC refreshes after.
  *
@@ -67,8 +68,9 @@ export function SpaceSettingsForm({
   media: LabMediaView;
   skillNeeds: { id: string; skill: string }[];
   /**
-   * Offer the promotion ladder (Club→Lab, Lab→Candidate). False for an
-   * account in the deletion grace — the server refuses both (spaceControls).
+   * Who is shown the promotion-ladder section (spaceControls). False for an
+   * account in the deletion grace. While escalation is paused, the section
+   * carries only a neutral note, with no Promote / Put-forward actions.
    */
   canEscalate?: boolean;
 }) {
@@ -81,7 +83,6 @@ export function SpaceSettingsForm({
   const [saved, setSaved] = useState(false);
 
   const [skillInput, setSkillInput] = useState('');
-  const [candidateName, setCandidateName] = useState('');
   const [targetLabId, setTargetLabId] = useState('');
 
   const [iconThumbUrl, setIconThumbUrl] = useState(media.iconThumbUrl);
@@ -409,59 +410,15 @@ export function SpaceSettingsForm({
         </div>
       </section>
 
-      {/* Promotion ladder (§16) — members promote only; demotion is system-driven.
-          Absent (not disabled) when the account may not escalate. */}
+      {/* Promotion ladder (§16) — PAUSED (Xidig Plus doctrine, owner 12 Sep:
+          "pause, don't broaden"). Club→Lab, Lab→Candidate and Lab→Venture are
+          refused by the server for everyone. The section says so neutrally,
+          with no actions and never an upgrade prompt. Absent entirely when the
+          account may not escalate at all (the deletion grace). */}
       {canEscalate ? (
         <section className="xidig-section">
           <h2 className="xidig-section__title">{t('lab.tabSettings')}</h2>
           <p className="xidig-field__hint">{t('lab.settingsPromoteHint')}</p>
-          {form.spaceMode === 'club' ? (
-            <button
-              type="button"
-              className="xidig-button xidig-button--primary"
-              disabled={pending}
-              onClick={() =>
-                void run(() =>
-                  apiPost(`/api/labs/${labId}/promote`, {
-                    target: 'lab',
-                    problemStatement: form.problemStatement.trim() || undefined,
-                    hypothesis: form.hypothesis.trim() || undefined,
-                    successDefinition: form.successDefinition.trim() || undefined,
-                  }).then(() => undefined),
-                )
-              }
-            >
-              {t('lab.actionPromoteLab')}
-            </button>
-          ) : (
-            <div className="xidig-form">
-              <p className="xidig-field__hint">{t('lab.candidateHandoffNote')}</p>
-              <label className="xidig-field">
-                <span className="xidig-field__label">{t('lab.actionPromoteCandidate')}</span>
-                <input
-                  className="xidig-field__input"
-                  value={candidateName}
-                  onChange={(e) => setCandidateName(e.target.value)}
-                  maxLength={80}
-                />
-              </label>
-              <button
-                type="button"
-                className="xidig-button xidig-button--primary"
-                disabled={pending || !candidateName.trim()}
-                onClick={() =>
-                  void run(() =>
-                    apiPost(`/api/labs/${labId}/promote`, {
-                      target: 'candidate',
-                      name: candidateName.trim(),
-                    }).then(() => undefined),
-                  )
-                }
-              >
-                {t('lab.actionPromoteCandidate')}
-              </button>
-            </div>
-          )}
         </section>
       ) : null}
 

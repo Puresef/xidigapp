@@ -10,7 +10,7 @@ import { ReviewForm } from '@/components/capital/review-form';
 import { RubricDisplay } from '@/components/capital/rubric-display';
 import { StatusBadge } from '@/components/capital/status-badge';
 import { Timeline } from '@/components/capital/timeline';
-import { VotePanel } from '@/components/capital/vote-panel';
+import { CandidateVotePaused } from '@/components/capital/vote-paused';
 import { BackLink } from '@/components/back-link';
 import { Banner } from '@/components/banner';
 import { ReportControl } from '@/components/report-control';
@@ -22,7 +22,6 @@ import { MediaSlot } from '@/components/media/media-slot';
 import { getAuthContext } from '@/lib/auth/guards';
 import { isActiveAccount, isActiveAdmin, isActiveModOrAdmin } from '@/lib/auth/privilege';
 import { candidateControls } from '@/lib/labs/standing-controls';
-import { voteWindow } from '@/lib/capital/tally';
 import {
   getCandidateView,
   getPublicCandidateView,
@@ -32,7 +31,6 @@ import {
 import { getLitePrefs } from '@/lib/lite/server';
 import type { LitePrefs } from '@/lib/lite/prefs';
 import { getT } from '@/lib/locale';
-import { hasCapability } from '@/lib/membership';
 import { getSupabaseAdmin } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -112,14 +110,10 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
   const canReview = isModOrAdmin && !isLabMember && candidate.status !== 'draft';
   const isConflicted = isModOrAdmin && isLabMember;
 
-  // Governance vote panel mirrors the cast route's gate exactly — the same
-  // vote_candidate capability, never a tier slug (api/candidates/[id]/vote).
-  const supporter = await hasCapability(ctx, 'vote_candidate');
-  const windowOpen =
-    candidate.vote_opens_at !== null &&
-    ['submitted', 'in_review'].includes(candidate.status) &&
-    voteWindow(candidate.vote_opens_at).isOpen();
-  const showVotePanel = supporter && windowOpen;
+  // Candidate vote: PAUSED for everyone (Xidig Plus doctrine, owner 12 Sep).
+  // The paid tier is never consulted, and no tally reaches this page. Every
+  // signed-in member sees the same neutral state wherever a vote would sit.
+  const showVoteSection = ['submitted', 'in_review'].includes(candidate.status);
 
   const isEditor =
     candidate.created_by_user_id === ctx.appUser.id || isActiveAdmin(ctx.appUser);
@@ -161,28 +155,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
 
         <RubricDisplay rubric={view.rubric} reviews={view.reviews} />
 
-        {showVotePanel ? (
-          <VotePanel
-            candidateId={id}
-            initialTally={view.voteTally}
-            initialVote={view.viewer.vote}
-          />
-        ) : windowOpen ? (
-          // Owner ruling (12 Sep): the paid-tier gate on this vote conflicts
-          // with the doctrine (Xidig Plus buys no governance) and is under
-          // review. A non-eligible member sees the constraint stated plainly —
-          // not a sales pitch — and no tally, exactly as before.
-          <section
-            className="xidig-section xidig-capital-vote"
-            aria-label={t('capital.voteHeading')}
-          >
-            <h2 className="xidig-section__title">{t('capital.voteHeading')}</h2>
-            <p className="xidig-card__meta">{t('capital.voteEligibilityNote')}</p>
-            <button type="button" className="xidig-button xidig-button--secondary" disabled>
-              {t('capital.voteNotEligible')}
-            </button>
-          </section>
-        ) : null}
+        {showVoteSection ? <CandidateVotePaused /> : null}
 
         {/* Reviewer console */}
         {isConflicted ? (

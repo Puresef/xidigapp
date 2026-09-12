@@ -101,34 +101,83 @@ describe('canonical product terms', () => {
   });
 
   it('Xidig Plus copy never sells trust, verification, ranking, governance, candidates, Labs or capital', () => {
-    // Owner ruling 12 Sep: value-proposition copy may name only real,
-    // allowed benefits, and says what Plus does NOT buy.
+    // Owner doctrine (12 Sep): Xidig Plus is patronage, resource and convenience
+    // ONLY. EVERY value in EITHER locale that names Xidig Plus is checked, not a
+    // hand-picked list. None may pair it with a forbidden power. The one
+    // exception is the explicit "does not buy …" sentence, which is removed
+    // before matching.
+    const flatten = (v: unknown): string =>
+      typeof v === 'string' ? v : Object.values(v as Record<string, string>).join(' ');
+    const EN_DISCLAIMER =
+      'does not buy trust, verification, ranking, governance rights or capital access';
+    const SO_DISCLAIMER = 'ma iibsato kalsooni, xaqiijin, kaalin, xuquuq maamul, ama helitaan maal';
+    const EN_FORBIDDEN =
+      /\b(Labs?|candidates?|vot(e|es|ing)|governance|capital|trust|verif\w*|ranking|unlock\w*|credib\w*)\b/i;
+    const SO_FORBIDDEN =
+      /(Warshad|musharax|codbixin|\bcod\b|maamul|maalgash|kalsooni|xaqiijin|furta)/i;
+    let checked = 0;
+    for (const [key, value] of Object.entries(en)) {
+      const text = flatten(value);
+      if (!text.includes('Xidig Plus')) continue;
+      checked++;
+      expect(text.replace(EN_DISCLAIMER, ''), key).not.toMatch(EN_FORBIDDEN);
+    }
+    for (const [key, value] of Object.entries(so)) {
+      const text = flatten(value);
+      if (!text.includes('Xidig Plus')) continue;
+      checked++;
+      expect(text.replace(SO_DISCLAIMER, ''), key).not.toMatch(SO_FORBIDDEN);
+    }
+    expect(checked).toBeGreaterThanOrEqual(6); // teaser, plan title/body, ToS × 2 locales
     for (const key of [
       'marketing.membershipTeaserBody',
       'marketing.memberSupporterBody',
     ] as const) {
-      const text = en[key];
-      expect(text).not.toMatch(
-        /governance vot|voting in|putting candidates|creating Labs|Lab creation|unlocks/i,
-      );
-      expect(text).toContain(
-        'does not buy trust, verification, ranking, governance rights or capital access',
-      );
+      expect(en[key]).toContain(EN_DISCLAIMER);
+      expect(so[key]).toContain(SO_DISCLAIMER);
     }
-    // Where mechanics still gate a governance action, copy states a temporary
-    // eligibility constraint — never "Xidig Plus vote".
+  });
+
+  it('paused governance/escalation copy is neutral: "under review", never the paid tier or an upgrade', () => {
+    // Candidate voting, candidate submission, Lab creation/promotion and the
+    // Venture stage are PAUSED for everyone (owner, 12 Sep: "pause, don't
+    // broaden"). Their copy says so neutrally.
     expect(en['capital.voteHeading']).toBe('Candidate vote');
     expect(en['capital.voteEligibilityNote']).toBe(
-      'Eligibility is under review. Current access requires Xidig Plus.',
+      'Candidate voting is paused while eligibility is under review.',
     );
-    expect(en['capital.voteNotEligible']).toBe('Not currently eligible');
-    expect(en['capital.submitHint']).toContain('Eligibility is under review');
+    const PAUSED_KEYS = [
+      'capital.voteEligibilityNote',
+      'capital.submitHint',
+      'lab.modeLabHint',
+      'lab.createSupporterNote',
+      'lab.settingsPromoteHint',
+      'error.labEligibilityUnderReview',
+      'error.putForwardUnderReview',
+      'error.venturePromotionUnderReview',
+      'error.voteEligibilityUnderReview',
+    ] as const;
+    for (const key of PAUSED_KEYS) {
+      expect(en[key], key).toMatch(/paused while eligibility is under review/);
+      expect(en[key], key).not.toMatch(/Xidig Plus|upgrade|\$1|requires/i);
+      expect(so[key], key).toMatch(/waa la hakiyay/);
+      expect(so[key], key).not.toMatch(/Xidig Plus|kor u qaad|\$1|u baahan/i);
+    }
+    // The retired upsell and the Lab-creation refusal text are gone for good.
+    expect('action.upgradeSupporter' in en).toBe(false);
+    expect('error.notSupporter' in en).toBe(false);
     // A ballot option must not borrow the support action's word.
     expect(en['capital.voteApproveDesc']).not.toMatch(/support/i);
   });
 
-  it('the ToS fees clause is renamed only — its legal meaning is left for legal review', () => {
-    expect(en['marketing.termsFeesBody']).toContain('Xidig Plus membership — which unlocks');
+  it('the ToS fees clause no longer promises forbidden powers (interim wording, legal review pending)', () => {
+    // Only the "which unlocks …" claim was removed. The legal wording and the
+    // TERMS_VERSION bump belong to legal review. Neither is claimed final.
+    for (const text of [en['marketing.termsFeesBody'], so['marketing.termsFeesBody']]) {
+      expect(text).toContain('Xidig Plus');
+      expect(text).not.toMatch(/unlock|\bLabs?\b|candidates?|voting|governance/i);
+      expect(text).not.toMatch(/furta|Warshad|musharax|codbixin|maamul/i);
+    }
   });
 
   it('the support note says what support is NOT — never an investment, vote, rating or check of work', () => {

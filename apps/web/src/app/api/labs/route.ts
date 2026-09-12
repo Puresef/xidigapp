@@ -12,7 +12,6 @@ import {
   LAB_COLUMNS,
   type LabRow,
 } from '@/lib/labs/views';
-import { hasCapability } from '@/lib/membership';
 import { decodeCursor, encodeCursor, keysetBefore, pageSizeSchema } from '@/lib/pagination';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { BADGE_SLUGS } from '@/lib/reputation/constants';
@@ -28,9 +27,13 @@ import { getSupabaseAdmin } from '@/lib/supabase/server';
  * head-only exact counts on the caller's client, so the numbers can never
  * reveal a Space the caller's RLS hides.
  *
- * POST creates a Space as a Club or a Lab. A Lab requires the create_lab
- * capability (Supporter) — Clubs are free. Validation runs BEFORE any write;
- * inserts go through the service role (no client write policies).
+ * POST creates a Space. A Club is free and is the ordinary project: updates,
+ * decisions, artifacts and members. Opening a new LAB is PAUSED for everyone
+ * (Xidig Plus doctrine, owner 12 Sep: "pause, don't broaden"). Lab mode is
+ * the rung to candidate and Venture escalation, so it is neither sold to the
+ * paid tier nor opened to all until a non-paid eligibility model is approved.
+ * Validation runs BEFORE any write; inserts go through the service role (no
+ * client write policies).
  */
 
 const querySchema = labListQuerySchema.extend({ limit: pageSizeSchema });
@@ -94,11 +97,9 @@ export async function POST(request: Request): Promise<Response> {
     const input = labCreateSchema.parse(await request.json());
     const admin = getSupabaseAdmin();
 
-    // Creating a Lab needs the create_lab capability (§27); a Club is free.
-    // Capability row, not tier slug — a tier holds this only when granted.
-    if (input.mode === 'lab' && !(await hasCapability(ctx, 'create_lab'))) {
-      throw new ApiError('not_supporter', 403);
-    }
+    // Opening a Lab is paused for everyone, whatever their tier. The paid tier
+    // no longer decides it (the create_lab capability is not consulted).
+    if (input.mode === 'lab') throw new ApiError('lab_eligibility_under_review', 403);
 
     const allowed = await checkRateLimit(`labs:create:${ctx.appUser.id}`, {
       max: LAB_CREATE_LIMIT,
@@ -114,17 +115,8 @@ export async function POST(request: Request): Promise<Response> {
       if ((tags ?? []).length !== tagIds.length) throw new ApiError('tag_invalid', 400);
     }
 
-    // §16 playbook: validate the referenced starter exists + is active.
-    if (input.mode === 'lab' && input.playbookId) {
-      const { data: playbook, error } = await admin
-        .from('lab_playbooks')
-        .select('id')
-        .eq('id', input.playbookId)
-        .eq('is_active', true)
-        .maybeSingle();
-      if (error) throw new Error(`playbook validation failed: ${error.message}`);
-      if (!playbook) throw new ApiError('playbook_invalid', 400);
-    }
+    // §16 playbook starters belong to Lab creation, which is paused above.
+    // A Club carries no playbook (labCreateSchema's club branch has none).
 
     const lab = await createLab(admin, ctx.appUser.id, input);
 

@@ -130,7 +130,3 @@ export async function getProfileCountry(
   if (error) throw new Error(`profile country lookup failed: ${error.message}`);
   return data?.location_country_code ?? null;
 }
-
-// Capability checks live in the shared membership boundary now; re-exported
-// here so existing Capital imports keep working.
-export { hasCapability } from '@/lib/membership';

@@ -11,10 +11,17 @@ import { keysetBefore, type Cursor } from '@/lib/pagination';
  * Capital / Maal read models (§10/§17). Candidate rows are fetched under the
  * CALLER's RLS (can_read_candidate governs draft/reviewers-only/members
  * visibility, so whatever RLS hides is a plain 404). Cross-user hydration —
- * lab name/slug, creator profile, vote tally, interest counts — goes through the
- * service role: votes are ballot-private (own-row-only) so the tally comes from
- * the SECURITY DEFINER candidate_vote_tally rpc, and interest counts from
- * candidate_interest_counts (social proof without enumerating who).
+ * lab name/slug, creator profile, interest counts — goes through the service
+ * role: interest counts come from candidate_interest_counts (social proof
+ * without enumerating who).
+ *
+ * NO vote tally is projected (Xidig Plus doctrine, owner 12 Sep). The
+ * candidate vote is paused, and every stored ballot was cast under the old
+ * paid-tier gate. This view is the single projection behind the /c/[id] page
+ * and every /api/candidates/[id] response (GET, PATCH, submit, decision), so
+ * dropping the tally here strips it from all of them. candidate_vote_tally is
+ * server-only (migration 20260912100000) and has no app caller while the vote
+ * is paused.
  *
  * The public projection uses a NARROW column set + service role (anon has no RLS
  * read) and NEVER exposes invest language — build-in-public only.
@@ -136,12 +143,6 @@ export interface ReviewRow {
   reviewer: AuthorRef | null;
 }
 
-export interface VoteTally {
-  approve: number;
-  reject: number;
-  total: number;
-}
-
 export type { InterestCounts } from '@/lib/capital/interest-counts';
 
 /** The viewer's own signals (RLS reads — own-row-only on votes/interests). */
@@ -163,7 +164,6 @@ export interface CandidateView {
   creator: AuthorRef | null;
   rubric: RubricAggregate;
   reviews: ReviewRow[];
-  voteTally: VoteTally;
   interestCounts: InterestCounts;
   viewer: ViewerSignals;
   media: CandidateMediaView;
@@ -217,22 +217,6 @@ async function fetchLabs(admin: Admin, labIds: string[]): Promise<Map<string, La
   return labs;
 }
 
-/**
- * Vote tally via the SECURITY DEFINER rpc (ballots are own-row-only, so a plain
- * count would be blocked). The rpc name is not in database.types.ts until the DB
- * agent's migration is merged — cast the name until then.
- */
-async function fetchVoteTally(admin: Admin, candidateId: string): Promise<VoteTally> {
-  const { data, error } = await admin.rpc('candidate_vote_tally' as never, {
-    cand: candidateId,
-  } as never);
-  if (error) throw new Error(`vote tally failed: ${error.message}`);
-  const row = (Array.isArray(data) ? data[0] : data) as
-    | { approve: number; reject: number; total: number }
-    | undefined;
-  return { approve: row?.approve ?? 0, reject: row?.reject ?? 0, total: row?.total ?? 0 };
-}
-
 async function fetchInterestCounts(admin: Admin, candidateId: string): Promise<InterestCounts> {
   const { data, error } = await admin.rpc('candidate_interest_counts' as never, {
     cand: candidateId,
@@ -274,11 +258,10 @@ export async function getCandidateView(
     (v): v is string => typeof v === 'string',
   );
 
-  const [authors, labs, voteTally, interestCounts, reviewsResult, myVoteResult, myInterestsResult] =
+  const [authors, labs, interestCounts, reviewsResult, myVoteResult, myInterestsResult] =
     await Promise.all([
       fetchAuthors(admin, [candidate.created_by_user_id]),
       fetchLabs(admin, labIds),
-      fetchVoteTally(admin, id),
       fetchInterestCounts(admin, id),
       // Reviews are readable wherever the candidate is → RLS-scoped read.
       supabase
@@ -319,7 +302,6 @@ export async function getCandidateView(
     creator: authors.get(candidate.created_by_user_id) ?? null,
     rubric: rubricAggregate(candidate),
     reviews,
-    voteTally,
     interestCounts,
     viewer: {
       vote: (myVoteResult.data?.vote as Enums<'vote_choice'>) ?? null,

@@ -85,7 +85,10 @@ export const en = {
   'action.garab': 'Support',
   'action.garabActive': 'Supporting',
   'action.garabRemove': 'Remove support',
-  'action.garabCount': { one: '{count} person supports this', other: '{count} people support this' },
+  'action.garabCount': {
+    one: '{count} person supports this',
+    other: '{count} people support this',
+  },
   'action.garabNote':
     'Support is encouragement only — not an investment, a vote, a rating, or a check of anyone’s work.',
   'action.canHelp': 'I can help',
@@ -113,7 +116,6 @@ export const en = {
   'action.sendInvite': 'Send invite',
   'action.appeal': 'Appeal',
   'action.resend': 'Resend',
-  'action.upgradeSupporter': 'Upgrade for $1/month',
   // Abuur = the create action (naming review 5 Jul: header button, not a nav
   // tab — locked by vocabulary.test.ts alongside the tab names).
   'action.abuur': 'Create',
@@ -271,8 +273,19 @@ export const en = {
     'This message request hasn’t been accepted yet. You’ll be able to chat once they accept.',
 
   // --- Labs / Warshad (§27 Labs block) ---
-  // Paid tier = "Xidig Plus" (owner-edited PRD Relook §24; formerly "Supporter").
-  'error.notSupporter': 'Creating a Lab requires Xidig Plus.',
+  // Xidig Plus doctrine (owner, 12 Sep): the paid tier never decides Lab
+  // creation, candidate submission, candidate voting or Venture escalation.
+  // Those paths are PAUSED for everyone until a non-paid eligibility model is
+  // approved. Neutral "under review" copy only: never "requires Xidig Plus",
+  // never an upgrade prompt (these codes carry no CTA).
+  'error.labEligibilityUnderReview':
+    'Opening a new Lab is paused while eligibility is under review. You can run your project as a Club.',
+  'error.putForwardUnderReview':
+    'Putting a project forward as a candidate is paused while eligibility is under review.',
+  'error.venturePromotionUnderReview':
+    'Moving a Lab to the Venture stage is paused while eligibility is under review.',
+  'error.voteEligibilityUnderReview':
+    'Candidate voting is paused while eligibility is under review.',
   'error.capitalUnavailable': "Investing isn't offered on Xidig right now.",
   'error.charterIncomplete':
     'Your Lab charter needs a few more fields before it can go live. Complete them here.',
@@ -1435,15 +1448,17 @@ export const en = {
   // Discover tab label + its RLS-honest count ("All (12)").
   'lab.tabWithCount': '{label} ({count})',
   'lab.emptyList':
-    'No Spaces yet. Start a Club to gather people around an idea, or open a Lab to build a venture.',
+    'No Spaces yet. Start a Club to gather people around an idea and work on it together.',
   'lab.createCta': 'Start a Space',
   'lab.createTitle': 'Start a Space',
   'lab.createModeQuestion': 'What are you starting?',
   'lab.modeClub': 'Club',
   'lab.modeClubHint': 'Casual — gather people around a topic. Free to start.',
   'lab.modeLab': 'Lab',
-  'lab.modeLabHint': 'Serious — a charter-backed venture track. Needs Xidig Plus.',
-  'lab.createSupporterNote': 'Creating a Lab requires Xidig Plus.',
+  'lab.modeLabHint':
+    'Charter-backed. Opening new Labs is paused while eligibility is under review.',
+  'lab.createSupporterNote':
+    'Opening a new Lab is paused while eligibility is under review. A Club has the same everyday tools: updates, decisions, artifacts and members.',
   'lab.fieldName': 'Name',
   'lab.fieldSlug': 'Address',
   'lab.fieldSlugHint':
@@ -1567,7 +1582,7 @@ export const en = {
   'lab.sprintNone': 'No sprint deadline set',
   'lab.settingsTitle': 'Space settings',
   'lab.settingsPromoteHint':
-    'Clubs promote to Labs by completing the charter. Promotion keeps everything — members, history, and this address. There’s no going back down.',
+    'Promoting to a Lab, putting a project forward as a candidate and moving to the Venture stage are paused while eligibility is under review. Everything else in this Space keeps working.',
   'lab.settingsSaved': 'Settings saved.',
   'lab.publicBadge': 'Building in public',
   'lab.badgeDormant': 'Dormant',
@@ -1736,12 +1751,12 @@ export const en = {
   'capital.reviewersOnlyHint':
     "Hide this Candidate from members until it's decided; only reviewers and your Lab can see it.",
   'capital.submitCta': 'Submit for review',
-  // Owner ruling (12 Sep): the candidate vote is NOT a paid-tier benefit. The
-  // mechanics still gate it on the paid tier today, so copy states that as a
-  // temporary eligibility constraint — never as a value proposition. The
-  // mechanics conflict is a separate gated issue (reconciliation record).
+  // Xidig Plus doctrine (owner, 12 Sep): candidate submission and the candidate
+  // vote are not paid-tier benefits, and both are PAUSED until a non-paid
+  // eligibility model is approved. Neutral copy only; the paid tier is never
+  // named as the way in.
   'capital.submitHint':
-    'Submitting opens a 7-day candidate vote and sends it to reviewers. Eligibility is under review; current voting access requires Xidig Plus.',
+    'Putting candidates forward for review is paused while eligibility is under review. Your draft is kept and stays editable.',
   // Rubric / reviews
   'capital.rubricHeading': 'Review scores',
   'capital.rubricTeam': 'Team',
@@ -1765,8 +1780,7 @@ export const en = {
   'capital.decisionReasonHint': 'A short, fair note the Lab will see.',
   // Candidate vote (formerly "Supporter vote" — never "Xidig Plus vote").
   'capital.voteHeading': 'Candidate vote',
-  'capital.voteEligibilityNote': 'Eligibility is under review. Current access requires Xidig Plus.',
-  'capital.voteNotEligible': 'Not currently eligible',
+  'capital.voteEligibilityNote': 'Candidate voting is paused while eligibility is under review.',
   'capital.voteSignalNote': "A non-binding community signal — it guides, it doesn't decide.",
   'capital.voteApprove': 'Approve',
   'capital.voteReject': 'Reject',
@@ -1894,12 +1908,12 @@ export const en = {
   // directories in Phase B — until then these explain, never fake)
   'marketing.labsTeaserTitle': 'Labs — build in public',
   'marketing.labsTeaserBody':
-    'A Lab is a small team building openly: a charter, weekly updates, milestones, and an honest dormant flag when life happens. Strong Labs can put a venture candidate before the community.',
+    'A Lab is a small team building openly: a charter, weekly updates, milestones, and an honest dormant flag when life happens. Opening new Labs and putting candidates forward are paused while eligibility is under review.',
   'marketing.labsTeaserNote':
     'Every public Lab already has a shareable page. The full Lab directory opens here soon.',
   'marketing.capitalTeaserTitle': 'Capital — community-supported ventures',
   'marketing.capitalTeaserBody':
-    'Venture candidates rise from Labs, get reviewed in the open, and face a member vote. Investing is not offered on Xidig and there are no financial flows — what you can do is offer help or support the work.',
+    'Venture candidates are reviewed in the open. Putting new candidates forward and candidate voting are paused while the rules are reviewed. Investing is not offered on Xidig and there are no financial flows — what you can do is offer help or support the work.',
 
   // /about
   'marketing.aboutTitle': 'About Xidig',
@@ -1911,7 +1925,7 @@ export const en = {
     'We build in public, we don’t fake numbers, and we design for a 2G connection in Mogadishu first.',
   'marketing.aboutCapitalTitle': 'How Capital works',
   'marketing.aboutCapitalBody':
-    'Ventures start as Labs, become candidates, and are reviewed in the open. Investing is not currently offered on Xidig — there is no fund and no offer of investment, and any future financial feature is subject to legal review before it exists.',
+    'Ventures start as Labs and are reviewed in the open; putting new candidates forward is paused while eligibility is under review. Investing is not currently offered on Xidig — there is no fund and no offer of investment, and any future financial feature is subject to legal review before it exists.',
   'marketing.aboutRolesTitle': 'Roles, not careers',
   'marketing.aboutRolesBody':
     'Xidig has no hiring page. Community roles — moderators, verifiers, mentors — are earned and appointed from within the membership.',
@@ -2003,8 +2017,12 @@ export const en = {
   'marketing.termsConductBody':
     'Be honest, be lawful, and keep Xidig safe. Don’t harass, deceive, impersonate, spam, or post unlawful or harmful content, and don’t abuse or attack the platform. The full standards live in our Community Guidelines, which form part of these terms. Content that breaks them can be removed.',
   'marketing.termsFeesTitle': 'Membership and fees',
+  // LEGAL REVIEW PENDING (interim, 12 Sep): the clause no longer claims Xidig
+  // Plus unlocks Labs, candidates or governance voting. Only that claim was
+  // removed; the rest is unchanged. TERMS_VERSION is deliberately NOT bumped:
+  // versioning and re-acceptance belong to the legal review.
   'marketing.termsFeesBody':
-    'Joining and core membership are free, and free stays free. Xidig Plus membership — which unlocks creating Labs, putting candidates forward, and voting in community governance — will cost around $1 per month once billing goes live. Billing is not active yet; the confirmed price is announced to members before anyone is charged, and nothing is billed without your agreement.',
+    'Joining and core membership are free, and free stays free. Xidig Plus membership will cost around $1 per month once billing goes live. Billing is not active yet; the confirmed price is announced to members before anyone is charged, and nothing is billed without your agreement.',
   'marketing.termsCapitalTitle': 'Capital',
   // A3: conservative post-A2 wording — investment is not offered and intent is
   // no longer captured. Placeholder pending exact legal-reviewed ToS text.

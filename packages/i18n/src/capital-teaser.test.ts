@@ -53,8 +53,10 @@ describe('capital teaser says investing is not offered', () => {
     // Retired: intent capture existed once; it does not now.
     expect(text).not.toMatch(/intent|ujeeddo keliya|diiwaangeli/);
     // Forbidden: no future activation, no eligibility, no returns, no diligence.
+    // (The stems take \w* so "eligibility"/"returns" match: a bare \beligib\b
+    // never matched a real word, and the lock was dead until 12 Sep.)
     expect(text).not.toMatch(
-      /\b(soon|later|coming|will (open|launch|activate)|eligib|return|due diligence|vetted)\b/,
+      /\b(soon|later|coming|will (open|launch|activate)|eligib\w*|returns?|due diligence|vetted)\b/,
     );
     expect(text).not.toMatch(/dhawaan|hadhow|mustaqbal/);
   });

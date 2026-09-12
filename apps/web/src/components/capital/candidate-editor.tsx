@@ -6,7 +6,7 @@ import { useId, useState, type ChangeEvent } from 'react';
 import type { Enums } from '@xidig/db';
 import { useT } from '@xidig/i18n/react';
 
-import { ApiRequestError, apiPatch, apiPost } from '@/lib/api-client';
+import { ApiRequestError, apiPatch } from '@/lib/api-client';
 import {
   CANDIDATE_ASK_MAX,
   CANDIDATE_NAME_MAX,
@@ -26,9 +26,11 @@ import { FilePickerButton } from '../file-picker-button';
 /**
  * Draft/submitted candidate editor (§17). Creator/lead only (the page + the
  * PATCH API both re-check). Content fields, logo/cover upload (POST /api/media
- * kind candidate_logo/candidate_cover → PATCH with the returned media id), a
- * reviewers-only visibility toggle, and the submit action (draft → submitted,
- * opens the 7-day vote window server-side). Uploads talk to /api/media as
+ * kind candidate_logo/candidate_cover → PATCH with the returned media id) and a
+ * reviewers-only visibility toggle. Submitting (draft → submitted) is PAUSED
+ * (Xidig Plus doctrine, owner 12 Sep): a draft shows a neutral "under review"
+ * note and no submit action, and the server refuses submit independently. The
+ * draft stays editable. Uploads talk to /api/media as
  * multipart, so they use a raw fetch (apiPost is JSON-only), mirroring the
  * plaza ImagePicker.
  */
@@ -147,24 +149,6 @@ export function CandidateEditor({ candidate }: { candidate: CandidateRow }) {
     })();
   }
 
-  function submit() {
-    if (pending) return;
-    void (async () => {
-      setPending(true);
-      setError(null);
-      try {
-        // Phase 7: analytics (candidate_submitted)
-        await apiPost(`/api/candidates/${candidate.id}/submit`, {});
-        router.push(`/c/${candidate.id}`);
-      } catch (cause) {
-        if (cause instanceof ApiRequestError) setError(cause.plain);
-        else setError({ code: 'server_error', message: '' });
-      } finally {
-        setPending(false);
-      }
-    })();
-  }
-
   return (
     <section className="xidig-section xidig-capital-editor">
       {error ? <PlainErrorBanner error={error} /> : null}
@@ -266,16 +250,6 @@ export function CandidateEditor({ candidate }: { candidate: CandidateRow }) {
         >
           {t('action.save')}
         </button>
-        {isSubmittable ? (
-          <button
-            type="button"
-            className="xidig-button xidig-button--primary"
-            disabled={pending || name.trim() === ''}
-            onClick={submit}
-          >
-            {t('capital.submitCta')}
-          </button>
-        ) : null}
       </div>
       {isSubmittable ? <p className="xidig-field__hint">{t('capital.submitHint')}</p> : null}
     </section>

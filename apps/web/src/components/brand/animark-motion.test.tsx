@@ -187,7 +187,9 @@ describe('surfaces — never animate', () => {
   });
 
   it('the capital call sites pass the surface, so the policy enforces it', () => {
-    for (const rel of ['../capital/vote-panel.tsx', '../capital/interest-bar.tsx']) {
+    // vote-panel.tsx is gone: the candidate vote is PAUSED (Xidig Plus doctrine,
+    // 12 Sep) and its replacement renders no mark and no cast ceremony.
+    for (const rel of ['../capital/interest-bar.tsx']) {
       const src = readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
       expect(src).toContain('surface="capital"');
     }

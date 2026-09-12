@@ -316,8 +316,14 @@ describe('candidate_votes are own-row-only; tally via candidate_vote_tally()', (
     expect(await countVisible(voterA, 'candidate_votes', aVoteId)).toBe(1); // own ballot
     expect(await countVisible(voterB, 'candidate_votes', aVoteId)).toBe(0); // not B's ballot
 
-    // Aggregate tally is available (counts only, no identities).
-    const tally = await db.asUser(voterA, (tx) =>
+    // The aggregate tally is SERVER-ONLY (20260912100000, Xidig Plus
+    // doctrine: the vote is paused and live tallies are hidden). A member —
+    // even a voter — is refused. The service role still aggregates (counts
+    // only, no identities).
+    await expect(
+      db.asUser(voterA, (tx) => tx.query(`select * from candidate_vote_tally($1)`, [cand])),
+    ).rejects.toThrow(/permission denied/);
+    const tally = await db.withRole('service_role', null, (tx) =>
       tx.query(`select * from candidate_vote_tally($1)`, [cand]),
     );
     const row = tally.rows[0] as { approve: number; reject: number; total: number };

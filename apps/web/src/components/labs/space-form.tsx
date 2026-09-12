@@ -20,13 +20,24 @@ import { createClient } from '@/lib/supabase-browser';
 import { PlainErrorBanner } from '../auth/plain-error';
 
 /**
- * Create-Space form (§16). Choose Club (casual, free) or Lab (charter-backed,
- * Supporter-gated — the server enforces the gate and returns §27 copy). A Lab
- * requires the three charter fields up front. Teaching hints throughout (§20).
- * `allowLab={false}` (an account in the deletion grace, which the server
- * refuses Lab creation) offers Club only.
+ * Create-Space form (§16). Choose Club (the free ordinary project) or Lab
+ * (charter-backed; the three charter fields are required up front). Teaching
+ * hints throughout (§20).
+ *
+ * `labPaused` (Xidig Plus doctrine, owner 12 Sep: "pause, don't broaden"):
+ * opening a new Lab is paused for everyone while eligibility is under review,
+ * so the Lab option is shown DISABLED with a neutral note. It is never an
+ * upgrade prompt, and the paid tier is never mentioned. The server refuses
+ * independently (403 lab_eligibility_under_review).
+ * `allowLab={false}` (an account in the deletion grace) hides the Lab option.
  */
-export function SpaceForm({ allowLab = true }: { allowLab?: boolean }) {
+export function SpaceForm({
+  allowLab = true,
+  labPaused = false,
+}: {
+  allowLab?: boolean;
+  labPaused?: boolean;
+}) {
   const t = useT();
   const router = useRouter();
 
@@ -156,12 +167,16 @@ export function SpaceForm({ allowLab = true }: { allowLab?: boolean }) {
               type="radio"
               name="mode"
               checked={mode === 'lab'}
+              disabled={labPaused}
               onChange={() => setMode('lab')}
             />
             <span>
               <strong>{t('lab.modeLab')}</strong> — {t('lab.modeLabHint')}
             </span>
           </label>
+        ) : null}
+        {allowLab && labPaused ? (
+          <p className="xidig-field__hint">{t('lab.createSupporterNote')}</p>
         ) : null}
       </fieldset>
 

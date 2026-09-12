@@ -116,7 +116,6 @@ export const so = {
   'action.sendInvite': 'Dir martiqaad',
   'action.appeal': 'Codso racfaan',
   'action.resend': 'Dib u dir',
-  'action.upgradeSupporter': 'Kor u qaad $1/bishii',
   // Abuur = the create action (locked by vocabulary.test.ts)
   'action.abuur': 'Abuur',
   'action.follow': 'Raac',
@@ -1124,7 +1123,17 @@ export const so = {
   // Paid tier = the brand "Xidig Plus" in both locales (owner-edited PRD §24);
   // "Taageere" now reads as the support ACTION, and native paid-tier naming is
   // gated — so no Somali tier noun is invented here.
-  'error.notSupporter': 'Abuurista Warshad waxay u baahan tahay Xidig Plus.',
+  // Xidig Plus doctrine (owner, 12 Sep): these paths are PAUSED for everyone.
+  // PROVISIONAL wording pending the native SO review (G34) — neutral status
+  // only, never an upgrade prompt, never "requires Xidig Plus".
+  'error.labEligibilityUnderReview':
+    'Furitaanka Warshad cusub waa la hakiyay inta xaq-u-yeelashada dib loo eegayo. Mashruucaaga waxaad ku wadi kartaa Koox.',
+  'error.putForwardUnderReview':
+    'Hor-dhigista mashruuc musharax ahaan waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
+  'error.venturePromotionUnderReview':
+    'U dallacaadda Warshad heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
+  'error.voteEligibilityUnderReview':
+    'Codbixinta musharaxa waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   // PROVISIONAL wording pending the native SO review (G34) — neutral status only.
   'error.capitalUnavailable': 'Maalgashi hadda laguma bixiyo Xidig.',
   'error.charterIncomplete':
@@ -1351,15 +1360,17 @@ export const so = {
   // Calanka tab-ka + tiradiisa ("Dhammaan (12)").
   'lab.tabWithCount': '{label} ({count})',
   'lab.emptyList':
-    'Weli meelo ma jiraan. Bilow Koox si aad dad ugu soo ururiso fikrad, ama fur Warshad si aad ganacsi u dhisto.',
+    'Weli meelo ma jiraan. Bilow Koox si aad dad ugu soo ururiso fikrad oo aad wax wada qabataan.',
   'lab.createCta': 'Bilow Meel',
   'lab.createTitle': 'Bilow Meel',
   'lab.createModeQuestion': 'Maxaad bilaabaysaa?',
   'lab.modeClub': 'Koox',
   'lab.modeClubHint': 'Fudud — dad ku soo ururso mawduuc. Bilaash ah.',
   'lab.modeLab': 'Warshad',
-  'lab.modeLabHint': 'Dhab ah — jid ganacsi oo axdi leh. Waxay u baahan tahay Xidig Plus.',
-  'lab.createSupporterNote': 'Abuurista Warshad waxay u baahan tahay Xidig Plus.',
+  'lab.modeLabHint':
+    'Axdi leh. Furitaanka Warshado cusub waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
+  'lab.createSupporterNote':
+    "Furitaanka Warshad cusub waa la hakiyay inta xaq-u-yeelashada dib loo eegayo. Kooxdu waxay leedahay qalabka maalinlaha ah ee isku mid ah: warbixino, go'aanno, wax-soo-saar iyo xubno.",
   'lab.fieldName': 'Magac',
   'lab.fieldSlug': 'Ciwaan',
   'lab.fieldSlugHint':
@@ -1483,7 +1494,7 @@ export const so = {
   'lab.sprintNone': 'Wakhti wareeg lama dejin',
   'lab.settingsTitle': 'Dejinta Meesha',
   'lab.settingsPromoteHint':
-    'Kooxuhu waxay u dallacaan Warshad iyagoo dhammaystiraya axdiga. Dallacaadu wax walba way haysaa — xubnaha, taariikhda, iyo ciwaankan. Dib uma noqoto.',
+    'U dallacaadda Warshad, hor-dhigista mashruuc musharax ahaan iyo u dallacaadda heerka Maal waa la hakiyay inta xaq-u-yeelashada dib loo eegayo. Wax kasta oo kale oo Meeshan ku jira way shaqaynayaan.',
   'lab.settingsSaved': 'Dejinta waa la kaydiyay.',
   'lab.publicBadge': 'Dhisid dadweyne',
   'lab.badgeDormant': 'Hurdo',
@@ -1652,7 +1663,7 @@ export const so = {
     'Ka qari Musharaxan xubnaha ilaa la go’aamiyo; kaliya dib-u-eegayaasha iyo Warshaddaadu way arki karaan.',
   'capital.submitCta': 'U gudbi dib-u-eegis',
   'capital.submitHint':
-    'Gudbintu waxay furaysaa cod musharax 7-maalmood ah, waxayna u dirtaa dib-u-eegayaasha. Xaq-u-yeelashada waa la dib-u-eegayaa; codbixinta hadda waxay u baahan tahay Xidig Plus.',
+    'Hor-dhigista musharaxiinta dib-u-eegis waa la hakiyay inta xaq-u-yeelashada dib loo eegayo. Qabyadaadu way kaydsan tahay, waadna wax ka beddeli kartaa.',
   // Rubric / reviews
   'capital.rubricHeading': 'Dhibcaha dib-u-eegista',
   'capital.rubricTeam': 'Kooxda',
@@ -1674,12 +1685,11 @@ export const so = {
   'capital.decisionDecline': 'Diid',
   'capital.decisionReasonLabel': 'Sababta (Warshadda ayaa la tusi doonaa)',
   'capital.decisionReasonHint': 'Qoraal gaaban oo cadaalad ah oo Warshaddu arki doonto.',
-  // Supporter governance vote
-  // PROVISIONAL (G34) — "Candidate vote"; eligibility stated as a temporary constraint.
+  // Candidate vote — PAUSED (Xidig Plus doctrine, owner 12 Sep).
+  // PROVISIONAL (G34) — "Candidate vote"; the paused state is stated neutrally.
   'capital.voteHeading': 'Codka Musharaxa',
   'capital.voteEligibilityNote':
-    'Xaq-u-yeelashada waa la dib-u-eegayaa. Helitaanka hadda wuxuu u baahan yahay Xidig Plus.',
-  'capital.voteNotEligible': 'Hadda xaq uma lihid',
+    'Codbixinta musharaxa waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   'capital.voteSignalNote': "Calaamad bulsho oo aan qasab ahayn — way hagtaa, ma go'aamiso.",
   'capital.voteApprove': 'Ansixi',
   'capital.voteReject': 'Diid',
@@ -1797,12 +1807,12 @@ export const so = {
   // /labs iyo /capital teasers
   'marketing.labsTeaserTitle': 'Warshad — si furan wax u dhis',
   'marketing.labsTeaserBody':
-    'Warshaddu waa koox yar oo si furan wax u dhisaysa: axdi, warbixin toddobaadle, horumar, iyo calaamad daacad ah marka hawshu hakato. Warshadaha xooggan waxay bulshada hor keeni karaan musharax mashruuc.',
+    'Warshaddu waa koox yar oo si furan wax u dhisaysa: axdi, warbixin toddobaadle, horumar, iyo calaamad daacad ah marka hawshu hakato. Furitaanka Warshado cusub iyo hor-dhigista musharaxiin waa la hakiyay inta xaq-u-yeelashada dib loo eegayo.',
   'marketing.labsTeaserNote':
     'Warshad kasta oo dadweyne horeba waxay u leedahay bog la wadaagi karo. Buugga Warshadaha oo dhammaystiran ayaa halkan ku furmaya dhawaan.',
   'marketing.capitalTeaserTitle': 'Maal — mashaariic ay bulshadu taageerto',
   'marketing.capitalTeaserBody':
-    'Musharaxiinta mashaariicdu waxay ka soo baxaan Warshadaha, si furan ayaa dib loogu eegaa, xubnuhuna way u codeeyaan. Maalgashi laguma bixiyo Xidig, lacagna kuma socoto — waxaad caawin kartaa ama taageeri kartaa shaqada.',
+    'Musharaxiinta mashaariicda si furan ayaa dib loogu eegaa. Hor-dhigista musharaxiin cusub iyo codbixinta musharaxa waa la hakiyay inta xeerarka dib loo eegayo. Maalgashi laguma bixiyo Xidig, lacagna kuma socoto — waxaad caawin kartaa ama taageeri kartaa shaqada.',
 
   // /about
   'marketing.aboutTitle': 'Ku saabsan Xidig',
@@ -1814,7 +1824,7 @@ export const so = {
     'Si furan ayaanu wax u dhisnaa, tiro been ah ma sameyno, waxaanuna marka hore u naqshadeynaa xiriirka 2G ee Muqdisho.',
   'marketing.aboutCapitalTitle': 'Sida Maal u shaqeeyo',
   'marketing.aboutCapitalBody':
-    'Mashaariicdu waxay ku bilaabmaan Warshad, waxay noqdaan musharax, si furanna dib ayaa loo eegaa. Maalgashi hadda laguma bixiyo Xidig — ma jiro sanduuq, mana jiro dalab maalgashi; adeeg kasta oo lacageed oo mustaqbalka ah waxaa hor mari doonta dib-u-eegis sharci.',
+    'Mashaariicdu waxay ku bilaabmaan Warshad, si furanna dib ayaa loo eegaa; hor-dhigista musharaxiin cusub waa la hakiyay inta xaq-u-yeelashada dib loo eegayo. Maalgashi hadda laguma bixiyo Xidig — ma jiro sanduuq, mana jiro dalab maalgashi; adeeg kasta oo lacageed oo mustaqbalka ah waxaa hor mari doonta dib-u-eegis sharci.',
   'marketing.aboutRolesTitle': 'Doorar, ma aha shaqooyin',
   'marketing.aboutRolesBody':
     'Xidig ma laha bog shaqo. Doorarka bulshada — maamulayaal, xaqiijiyayaal, la-taliyayaal — waxaa laga soo doortaa xubnaha gudahooda.',
@@ -1906,8 +1916,12 @@ export const so = {
   'marketing.termsConductBody':
     'Daacad ahow, sharciga raac, Xidigna badbaado. Ha dhibin, ha khiyaanayn, ha is-moodsiin, spam ha dirin, waxyaabo sharci-darro ama waxyeello leh ha qorin, goobtana ha weerarin. Heerarka buuxa waxay ku jiraan Tilmaamaha Bulshadayada, oo qayb ka ah shuruudahan. Waxa jebiya waa la saari karaa.',
   'marketing.termsFeesTitle': 'Xubinnimo iyo khidmado',
+  // LEGAL REVIEW PENDING (interim, 12 Sep): the clause no longer claims Xidig
+  // Plus unlocks Labs, candidates or governance voting. Only that claim was
+  // removed; the rest is unchanged. TERMS_VERSION is deliberately NOT bumped:
+  // versioning and re-acceptance belong to the legal review.
   'marketing.termsFeesBody':
-    'Ku biirista iyo xubinnimada aasaasiga ah waa lacag la’aan, lacag la’aantuna way sii jiri doontaa. Xubinnimada Xidig Plus — oo furta abuurista Warshad, hor-dhigista musharaxiin, iyo codbixin maamul-bulsheed — waxay ku kici doontaa qiyaastii $1 bishii marka lacag-bixintu shaqeyso. Lacag-bixintu weli firfircoon ma aha; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin, wax lacag ahna lama qaado ogolaanshahaaga la’aantiis.',
+    'Ku biirista iyo xubinnimada aasaasiga ah waa lacag la’aan, lacag la’aantuna way sii jiri doontaa. Xubinnimada Xidig Plus waxay ku kici doontaa qiyaastii $1 bishii marka lacag-bixintu shaqeyso. Lacag-bixintu weli firfircoon ma aha; qiimaha rasmiga ah waxaa lagu dhawaaqaa xubnaha ka hor inta aan qofna lacag laga qaadin, wax lacag ahna lama qaado ogolaanshahaaga la’aantiis.',
   'marketing.termsCapitalTitle': 'Maal',
   // A3 — PROVISIONAL (G34) conservative wording pending legal-reviewed ToS text.
   'marketing.termsCapitalBody':

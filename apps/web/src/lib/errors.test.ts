@@ -75,3 +75,30 @@ describe('isErrorCode', () => {
     expect(isErrorCode(undefined)).toBe(false);
   });
 });
+
+describe('Xidig Plus doctrine: paused-power refusals are neutral (owner, 12 Sep)', () => {
+  const PAUSED = [
+    'lab_eligibility_under_review',
+    'put_forward_under_review',
+    'venture_promotion_under_review',
+    'vote_eligibility_under_review',
+  ] as const;
+
+  it.each(PAUSED)('%s carries no CTA, so it is never an upgrade prompt', (code) => {
+    expect(isErrorCode(code)).toBe(true);
+    expect(ERROR_DEFS[code]).not.toHaveProperty('cta');
+    for (const locale of ['en', 'so'] as const) {
+      const err = resolveError(code, createTranslator(locale));
+      expect(err.cta).toBeUndefined();
+      expect(err.message).not.toMatch(/Xidig Plus|upgrade|\$1|kor u qaad/i);
+    }
+  });
+
+  it('the retired Lab-creation upsell code is gone', () => {
+    expect(isErrorCode('not_supporter')).toBe(false);
+    // No refusal anywhere in the catalog links to an upgrade.
+    for (const def of Object.values(ERROR_DEFS) as Array<{ cta?: { labelKey: string } }>) {
+      expect(def.cta?.labelKey ?? '').not.toMatch(/upgrade/i);
+    }
+  });
+});

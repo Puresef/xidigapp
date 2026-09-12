@@ -68,13 +68,18 @@ const buttons = (host: HTMLElement) =>
   [...host.querySelectorAll('button')].map((b) => b.textContent?.trim() ?? '');
 
 describe('SpaceSettingsForm promotion ladder', () => {
-  it('active Club lead is offered Promote to Lab (control)', async () => {
-    expect(buttons(await settings('club', true))).toContain(t('lab.actionPromoteLab'));
-  });
-
-  it('active Lab lead is offered the Candidate handoff (control)', async () => {
-    expect(buttons(await settings('lab', true))).toContain(t('lab.actionPromoteCandidate'));
-  });
+  // Xidig Plus doctrine (owner, 12 Sep): Club→Lab, Lab→Candidate and Lab→Venture
+  // are PAUSED for everyone. A lead who could escalate is shown a neutral
+  // "under review" note, and no escalation action is offered to anyone.
+  it.each(['club', 'lab'] as const)(
+    'an active %s lead sees the paused note and no escalation action',
+    async (mode) => {
+      const host = await settings(mode, true);
+      expect(host.textContent).toContain(t('lab.settingsPromoteHint'));
+      expect(buttons(host)).not.toContain(t('lab.actionPromoteLab'));
+      expect(buttons(host)).not.toContain(t('lab.actionPromoteCandidate'));
+    },
+  );
 
   it.each(['club', 'lab'] as const)(
     'a %s lead in the grace is offered neither promotion',
@@ -82,6 +87,7 @@ describe('SpaceSettingsForm promotion ladder', () => {
       const host = await settings(mode, false);
       expect(buttons(host)).not.toContain(t('lab.actionPromoteLab'));
       expect(buttons(host)).not.toContain(t('lab.actionPromoteCandidate'));
+      expect(host.textContent).not.toContain(t('lab.settingsPromoteHint'));
       // Ordinary settings are still offered.
       expect(host.querySelectorAll('input, textarea, select').length).toBeGreaterThan(0);
     },
@@ -99,5 +105,16 @@ describe('SpaceForm mode choice', () => {
     const host = await mount(createElement(SpaceForm, { allowLab: false }));
     expect(radios(host).length).toBe(1);
     expect(host.textContent).not.toContain(t('lab.modeLabHint'));
+  });
+
+  it('while Lab creation is paused, Lab is shown DISABLED with the neutral note', async () => {
+    const host = await mount(createElement(SpaceForm, { labPaused: true }));
+    const all = radios(host);
+    expect(all.length).toBe(2);
+    const lab = [...all].find((r) => (r as HTMLInputElement).disabled) as HTMLInputElement;
+    expect(lab).toBeDefined();
+    expect([...all].filter((r) => (r as HTMLInputElement).disabled).length).toBe(1);
+    expect(host.textContent).toContain(t('lab.createSupporterNote'));
+    expect(host.textContent).not.toMatch(/Xidig Plus|Upgrade/);
   });
 });

@@ -177,10 +177,17 @@ export const ERROR_DEFS = {
   dm_not_accepted: { messageKey: 'error.dmNotAccepted' },
 
   // --- Labs / Warshad (§27 Labs block) -----------------------------------------------
-  not_supporter: {
-    messageKey: 'error.notSupporter',
-    cta: { labelKey: 'action.upgradeSupporter', href: '/settings' },
-  },
+  // Xidig Plus doctrine (owner, 12 Sep): the paid tier never decides Lab
+  // creation, candidate submission, candidate voting or Venture escalation.
+  // Until a non-paid eligibility model is approved, those paths are PAUSED
+  // for everyone ("pause, don't broaden"). These refusals are deliberately
+  // CTA-free — never an upgrade prompt — and say "under review", never
+  // "requires Xidig Plus". The old `not_supporter` code (Lab-creation text
+  // + "Upgrade for $1/month") is retired.
+  lab_eligibility_under_review: { messageKey: 'error.labEligibilityUnderReview' },
+  put_forward_under_review: { messageKey: 'error.putForwardUnderReview' },
+  venture_promotion_under_review: { messageKey: 'error.venturePromotionUnderReview' },
+  vote_eligibility_under_review: { messageKey: 'error.voteEligibilityUnderReview' },
   charter_incomplete: { messageKey: 'error.charterIncomplete' },
   lab_slug_taken: { messageKey: 'error.labSlugTaken' },
   lab_join_closed: { messageKey: 'error.labJoinClosed' },

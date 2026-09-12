@@ -248,13 +248,13 @@ describe.each(BLOCKED)('a %s account with a still-valid token', (status) => {
 
   it('gets nothing from the member-data RPCs', async () => {
     expect(await rows(c().member, `select * from public.poll_results($1)`, [poll])).toBe(0);
-    expect(
-      await db.asUser(
-        c().member,
-        async (tx) =>
-          (await tx.query(`select * from public.candidate_vote_tally($1)`, [candidate])).rows[0],
+    // The candidate vote tally is server-only (20260912100000, Xidig Plus
+    // doctrine): every client role is refused outright, not just blocked ones.
+    await expect(
+      db.asUser(c().member, (tx) =>
+        tx.query(`select * from public.candidate_vote_tally($1)`, [candidate]),
       ),
-    ).toEqual({ approve: 0, reject: 0, total: 0 });
+    ).rejects.toThrow(/permission denied/);
     // Packet B (20260911001000) revoked EXECUTE on the interest counts from
     // every client role, so a blocked account is refused outright. That is
     // stronger than the zero-row lifecycle guard, which it composes with.
@@ -331,13 +331,14 @@ describe.each(ALLOWED)('positive control: a %s account keeps member access', (st
 
   it('still gets the member-data RPCs', async () => {
     expect(await rows(c().member, `select * from public.poll_results($1)`, [poll])).toBe(1);
-    expect(
-      await db.asUser(
-        c().member,
-        async (tx) =>
-          (await tx.query(`select * from public.candidate_vote_tally($1)`, [candidate])).rows[0],
+    // Not a lifecycle effect: the live candidate tally is hidden from EVERY
+    // member while the vote is paused (20260912100000). The service-role
+    // control below still aggregates it.
+    await expect(
+      db.asUser(c().member, (tx) =>
+        tx.query(`select * from public.candidate_vote_tally($1)`, [candidate]),
       ),
-    ).toEqual({ approve: 1, reject: 0, total: 1 });
+    ).rejects.toThrow(/permission denied/);
     expect(
       await scalar(
         c().member,

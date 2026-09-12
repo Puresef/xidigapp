@@ -342,11 +342,12 @@ describe('GET /api/labs — tab counts', () => {
   });
 });
 
-describe('POST /api/labs — the Lab-create gate is the create_lab capability', () => {
-  it('403s mode=lab without create_lab, and pins the exact capability name', async () => {
+describe('POST /api/labs — opening a Lab is paused for everyone (Xidig Plus doctrine)', () => {
+  it('403s mode=lab with lab_eligibility_under_review, whatever the tier — the tier is never consulted', async () => {
     authHolder.ctx = contextFor(new FakeClient());
     adminHolder.client = new FakeClient();
-    membershipMock.hasCapability.mockResolvedValueOnce(false);
+    // Even a caller whose tier WOULD have held create_lab is refused.
+    membershipMock.hasCapability.mockResolvedValue(true);
 
     const response = await POST(
       new Request('https://app.xidig.net/api/labs', {
@@ -362,11 +363,14 @@ describe('POST /api/labs — the Lab-create gate is the create_lab capability', 
         }),
       }),
     );
+    const body = (await response.json()) as { error?: { code?: string; cta?: unknown } };
 
     expect(response.status).toBe(403);
-    // The capability NAME is the contract — a swap to any other gate the
-    // supporter tier happens to hold must fail here, not in production when
-    // a third tier arrives.
-    expect(membershipMock.hasCapability).toHaveBeenCalledWith(expect.anything(), 'create_lab');
+    expect(body.error?.code).toBe('lab_eligibility_under_review');
+    // Neutral: no upgrade prompt rides on the refusal.
+    expect(body.error?.cta ?? null).toBeNull();
+    // The paid tier no longer decides Lab creation: no capability lookup at all.
+    expect(membershipMock.hasCapability).not.toHaveBeenCalled();
+    membershipMock.hasCapability.mockReset();
   });
 });

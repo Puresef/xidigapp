@@ -28,7 +28,12 @@ export interface SpaceControls {
   showSettingsLink: boolean;
   /** The decision-log composer. */
   canRecordDecision: boolean;
-  /** Promote to Lab / put forward as a Candidate. */
+  /**
+   * Who is shown the promotion-ladder section. While escalation is paused
+   * (Xidig Plus doctrine, owner 12 Sep) it carries only a neutral note, and
+   * the server refuses every promote target. This decides who SEES the note,
+   * not who may escalate.
+   */
   canEscalate: boolean;
 }
 
