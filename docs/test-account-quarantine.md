@@ -53,7 +53,67 @@ proof wherever `main`'s app reads.
   **throws** on a lookup error: a proof surface that cannot tell test accounts
   apart must not guess.
 
+## Before pushing this branch (Vercel preview safety)
+
+**Pushing this branch is itself unsafe until the migration is applied.**
+Checked read-only on 13 Sep 2026:
+
+- **A push creates a running Preview deployment.**
+  - Vercel's GitHub integration deploys every pushed branch head.
+  - GitHub's deployment history for the repo shows a `Preview` deployment for
+    every recent branch push, all `success`. That includes `cd947ce` (the
+    integration/quarantine head) and the earlier `/out` hotfix branch
+    (`5e9774f`).
+  - The root `vercel.json` has no `git.deploymentEnabled` or `ignoreCommand`.
+- **Previews almost certainly use the live database.** The Preview environment's
+  variables are only visible in the Vercel dashboard, so this is not verified
+  from the repo. But:
+  - the project labelled "Dev Xidig App" is the only active Supabase project
+    (Staging is paused);
+  - previews build and serve;
+  - `docs/GO-LIVE.md` step 5 put the env vars on Production "and Preview if you
+    want preview deploys to boot".
+
+  Treat every preview as running against production.
+
+- **So a push before the migration runs `users.is_test` code against a
+  database without the column.**
+  - Every quarantine read fails: those pages and APIs error for anyone viewing
+    the preview.
+  - The new code performs no writes.
+  - Previews are behind Vercel Authentication (an anonymous request gets a 302
+    to `vercel.com/sso-api`), so only logged-in Vercel team members can reach
+    it.
+  - Vercel crons call only the production deployment, and the two hourly
+    external jobs target `https://xidig.net` only, so no scheduled work runs on
+    a preview.
+  - Nothing prerendered at build reads the database (only `/robots.txt` and
+    `/sitemap.xml` are static).
+  - It still breaks the migration-first rule, so don't push first.
+- **There is no per-push skip marker.** Vercel documents no commit-message skip.
+  The documented mechanisms are all persistent configuration and owner
+  decisions:
+  - a dashboard Ignored Build Step;
+  - `ignoreCommand` in `vercel.json`;
+  - `git.deploymentEnabled` in `vercel.json`, per branch.
+
+  None is configured here, and none has been tested on this repo.
+
+- **Safe paths to review or push:**
+  - apply the migration first (owner-approved), then push. A preview is then
+    harmless;
+  - review the patch or bundle handoff offline;
+  - the owner configures an Ignored Build Step for this branch before pushing.
+- **Existing exposure of the same kind:** the already-pushed integration head
+  `cd947ce` reads `users.is_test`, and its Preview has been live since 12 Sep
+  21:14 UTC. If Preview uses production, that preview is already running
+  migration-dependent code against it (behind Vercel Authentication, read-only
+  failures). Whether to remove or ignore it is an owner decision.
+
 ## Deploy order (production)
+
+**`20260912050000` must precede ANY runtime of this code against production.**
+That means the production deploy **and** any Vercel Preview: see above.
 
 1. **Before applying:** run the read-only pre-check (below) against production.
    - It confirms a test-community `seed_runs` marker exists.
@@ -93,9 +153,10 @@ proof wherever `main`'s app reads.
   method first: the same method as those entries, or a reconciled ledger.
 - This hotfix carries **no** other migration. In particular, the Plus
   migrations `20260912100000` / `20260912100100` are not part of it.
-- The weekly digest cron runs Mondays at 08:00 UTC (`apps/web/vercel.json`).
-  Until migration and app are both live, the deployed app still selects
-  fixture accounts as digest recipients and candidates.
+- **Digest deadline: Monday 14 Sep 2026, 08:00 UTC.** The weekly digest cron
+  runs Mondays at 08:00 UTC (root `vercel.json`, production deployment only).
+  Until migration and app are both live in production, the deployed app still
+  selects fixture accounts as digest recipients and candidates.
 
 Read-only pre-check (a `SELECT` version of the backfill; changes nothing):
 
