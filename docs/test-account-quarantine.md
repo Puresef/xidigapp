@@ -1,8 +1,26 @@
 # Test-account quarantine (`users.is_test`) — production hotfix
 
-**Status (12 Sep 2026):** built on `claude/hotfix-test-account-quarantine`, off
-`main @ 5e9774f`. The migration is written but **not applied to any database**.
-Nothing is deployed.
+**Status (13 Sep 2026):** built on `claude/hotfix-test-account-quarantine`, off
+`main @ 5e9774f`. **Migration `20260912050000` is APPLIED to production**
+("Dev Xidig App", `tbdryvhxxiqadseuxclm`) — owner-approved.
+
+- **Method:** Supabase `apply_migration` with the file's exact contents. The
+  ledger row is version `20260913023309`, name
+  `20260912050000_test_account_quarantine` (entry 57, the same apply-time
+  convention as the 19 before it).
+- **Verified after apply:**
+  - the column is `boolean not null default false`;
+  - `anon` and `authenticated` cannot insert or update it;
+  - exactly 63 rows are marked (62 fixtures + `zz_deltest_decoy`, 2 of them
+    AI helpers). The marked set equals the expected set in both directions;
+  - no `@example.com`-only sweep: 124 other `@example.com` accounts are
+    unmarked;
+  - 0 marked accounts are on a non-`@example.com` email;
+  - users, profiles and seed_runs counts are unchanged (209 / 204 / 3);
+  - only the 63 marked rows were touched (the `updated_at` trigger);
+  - no Plus migration is applied.
+- **Not yet done:** the app code on this branch is not pushed or deployed.
+  Pushing no longer breaks the migration-first rule.
 
 This is the minimal port of the quarantine slice from
 `claude/integration-plus-retention @ cd947ce` (commits `b5fe717`, `9f3a566`,
